@@ -1,0 +1,144 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{86C9833E-894B-4633-ACFA-EFE4157BBBE6}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <RootNamespace>EdB.PrepareCarefully</RootNamespace>
+    <AssemblyName>EdBPrepareCarefully</AssemblyName>
+    <ReleaseVersion>0.14.1.1</ReleaseVersion>
+    <UseMSBuildEngine>False</UseMSBuildEngine>
+    <TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
+    <ApplicationManifest>ScenPart_PlayerPawnsArriveMethodCarefully.manifest</ApplicationManifest>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug</OutputPath>
+    <DefineConstants>DEBUG;</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <ConsolePause>false</ConsolePause>
+    <CustomCommands>
+      <CustomCommands>
+        <Command type="AfterBuild" command="deploy.bat ${TargetFile}" workingdir="${ProjectDir}" />
+      </CustomCommands>
+    </CustomCommands>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>full</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release</OutputPath>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <ConsolePause>false</ConsolePause>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="System" />
+    <Reference Include="System.Xml" />
+    <Reference Include="System.Xml.Linq" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Source\BackstoryModel.cs" />
+    <Compile Include="Source\ColonistFiles.cs" />
+    <Compile Include="Source\ColonistSaver.cs" />
+    <Compile Include="Source\ColorValidator.cs" />
+    <Compile Include="Source\Configuration.cs" />
+    <Compile Include="Source\CostCalculator.cs" />
+    <Compile Include="Source\Dialog_Colonist.cs" />
+    <Compile Include="Source\Dialog_LoadColonist.cs" />
+    <Compile Include="Source\Dialog_LoadPreset.cs" />
+    <Compile Include="Source\Dialog_Preset.cs" />
+    <Compile Include="Source\Dialog_SaveColonist.cs" />
+    <Compile Include="Source\Dialog_SavePreset.cs" />
+    <Compile Include="Source\DragSlider.cs" />
+    <Compile Include="Source\EquipmentDatabase.cs" />
+    <Compile Include="Source\EquipmentDatabaseEntry.cs" />
+    <Compile Include="Source\GraphicsCache.cs" />
+    <Compile Include="Source\ModController.cs" />
+    <Compile Include="Source\ModInitializer.cs" />
+    <Compile Include="Source\ModNotInstalledException.cs" />
+    <Compile Include="Source\Page_ConfigureStartingPawns.cs" />
+    <Compile Include="Source\Page_ConfigureStartingPawnsCarefully.cs" />
+    <Compile Include="Source\Page_Equipment.cs" />
+    <Compile Include="Source\Page_PrepareCarefully.cs" />
+    <Compile Include="Source\PawnLayers.cs" />
+    <Compile Include="Source\PrepareCarefully.cs" />
+    <Compile Include="Source\PresetFiles.cs" />
+    <Compile Include="Source\PresetLoader.cs" />
+    <Compile Include="Source\PresetSaver.cs" />
+    <Compile Include="Source\Randomizer.cs" />
+    <Compile Include="Source\SelectedEquipment.cs" />
+    <Compile Include="Source\StandardEquipment.cs" />
+    <Compile Include="Source\TabRecordExtensions.cs" />
+    <Compile Include="Source\LoadableEquipment.cs" />
+    <Compile Include="Source\IEquipment.cs" />
+    <Compile Include="Source\Genstep_SpawnStartingResources.cs" />
+    <Compile Include="Source\AgeInjuryUtility.cs" />
+    <Compile Include="Source\EquipmentKey.cs" />
+    <Compile Include="Source\Genstep_Colonists.cs" />
+    <Compile Include="Source\ScrollView.cs" />
+    <Compile Include="Source\Dialog_Options.cs" />
+    <Compile Include="Source\Panel_Relations.cs" />
+    <Compile Include="Source\Textures.cs" />
+    <Compile Include="Source\State.cs" />
+    <Compile Include="Source\Logger.cs" />
+    <Compile Include="Source\PawnRelationWorker_Sibling.cs" />
+    <Compile Include="Source\RelationshipManager.cs" />
+    <Compile Include="Source\RelationshipList.cs" />
+    <Compile Include="Source\Panel_Health.cs" />
+    <Compile Include="Source\CustomRelationship.cs" />
+    <Compile Include="Source\HealthManager.cs" />
+    <Compile Include="Source\ImplantManager.cs" />
+    <Compile Include="Source\Implant.cs" />
+    <Compile Include="Source\CustomBodyPart.cs" />
+    <Compile Include="Source\CarefullyPawnRelationDef.cs" />
+    <Compile Include="Source\Version3\PresetLoaderVersion3.cs" />
+    <Compile Include="Source\Version3\SaveRecordPawnV3.cs" />
+    <Compile Include="Source\Version3\SaveRecordRelationshipV3.cs" />
+    <Compile Include="Source\Version3\SaveRecordImplantV3.cs" />
+    <Compile Include="Source\Version3\SaveRecordInjuryV3.cs" />
+    <Compile Include="Source\Version3\ColonistLoaderVersion3.cs" />
+    <Compile Include="Source\ColonistLoader.cs" />
+    <Compile Include="Source\Injury.cs" />
+    <Compile Include="Source\InjuryOption.cs" />
+    <Compile Include="Source\InjuryManager.cs" />
+    <Compile Include="Source\CustomPawnTest.cs" />
+    <Compile Include="Source\CustomPawn.cs" />
+    <Compile Include="Source\PawnColorUtils.cs" />
+    <Compile Include="Source\Genstep_ScenParts.cs" />
+  </ItemGroup>
+  <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
+  <ItemGroup />
+  <ItemGroup>
+    <None Include="Resources\CHANGELOG.txt" />
+    <None Include="Resources\About\About.xml" />
+    <None Include="Resources\Defs\ThingDefs\EdBPrepareCarefully.xml" />
+    <None Include="Resources\Languages\English\Keyed\EdBPrepareCarefully.xml" />
+    <None Include="Resources\Textures\EdB\PrepareCarefully\ButtonDelete.png" />
+    <None Include="Resources\Textures\EdB\PrepareCarefully\ButtonNext.png" />
+    <None Include="Resources\Textures\EdB\PrepareCarefully\ButtonPrevious.png" />
+    <None Include="Resources\Textures\EdB\PrepareCarefully\ButtonRandom.png" />
+    <None Include="Resources\Textures\EdB\PrepareCarefully\CharMakerPortraitBG.png" />
+    <None Include="Resources\Textures\EdB\PrepareCarefully\FieldAtlas.png" />
+    <None Include="Resources\Textures\EdB\PrepareCarefully\NoPassion.png" />
+    <None Include="Resources\Defs\CarefullyPawnRelationDefs\CarefullyPawnRelations_FamilyByBlood.xml" />
+    <None Include="Resources\Defs\CarefullyPawnRelationDefs\CarefullyPawnRelations_FamilyByChoice.xml" />
+    <None Include="Resources\Defs\CarefullyPawnRelationDefs\CarefullyPawnRelations_Misc.xml" />
+    <None Include="Resources\Defs\MapGeneratorDefs\MapGenerators.xml" />
+    <None Include="LICENSE" />
+    <None Include="README.md" />
+  </ItemGroup>
+  <ProjectExtensions>
+    <MonoDevelop>
+      <Properties>
+        <Policies>
+          <StandardHeader Text="using RimWorld;&#xA;using System;&#xA;using System.Collections.Generic;&#xA;using System.Reflection;&#xA;using Verse;" IncludeInNewFiles="True" />
+        </Policies>
+      </Properties>
+    </MonoDevelop>
+  </ProjectExtensions>
+</Project>
