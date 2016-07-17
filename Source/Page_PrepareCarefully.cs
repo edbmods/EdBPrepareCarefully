@@ -80,11 +80,12 @@ namespace EdB.PrepareCarefully
 			TipSignal tip = new TipSignal(() => tooltipText, tooltipText.GetHashCode());
 			TooltipHandler.TipRegion(rect, tip);
 
-			// Removed points.
-			/*
 			GUI.color = ColorText;
 			Text.Anchor = TextAnchor.UpperLeft;
 			Text.Font = GameFont.Small;
+		
+			// Removed points.
+			/*
 			string optionLabel;
 			float optionTop = parentRect.height - 97;
 			optionLabel = "EdB.PrepareCarefully.UsePoints".Translate();
