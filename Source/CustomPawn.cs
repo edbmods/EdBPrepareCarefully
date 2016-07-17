@@ -798,23 +798,6 @@ namespace EdB.PrepareCarefully
 			ComputeBaseSkillLevels();
 			foreach (var record in pawn.skills.skills) {
 				SkillDef def = record.def;
-				/*
-				int level = baseSkillLevels[def];
-				if (level < 0) {
-					level = 0;
-				}
-				level += skillAdjustments[def];
-				if (level > 20) {
-					skillAdjustments[def] -= (level - 20);
-					level = 20;
-				}
-				if (level < 0) {
-					level = 0;
-				}
-				if (IsDisabled(def)) {
-					level = 0;
-				}
-				*/
 				pawn.skills.GetSkill(def).level = GetSkillLevel(def);
 				pawn.skills.GetSkill(def).passion = passions[def];
 			}
@@ -959,6 +942,7 @@ namespace EdB.PrepareCarefully
 			else {
 				incapable = null;
 			}
+			CustomPawn.ClearCachedDisabledWorkTypes(this.pawn.story);
 			return incapable;
 		}
 
@@ -1029,6 +1013,8 @@ namespace EdB.PrepareCarefully
 			// Need to use reflection to set the private graphic path field.
 			typeof(Pawn_StoryTracker).GetField("headGraphicPath", BindingFlags.Instance | BindingFlags.NonPublic).SetValue(pawn.story, pawn.story.HeadGraphicPath);
 			result.story.crownType = pawn.story.crownType;
+			// Clear cached values from the story tracker.
+			CustomPawn.ClearCachedDisabledWorkTypes(pawn.story);
 
 			// Copy apparel.
 			List<Apparel> pawnApparelList = (List<Apparel>)typeof(Pawn_ApparelTracker).GetField("wornApparel",
@@ -1056,6 +1042,12 @@ namespace EdB.PrepareCarefully
 			return result;
 		}
 
+		// TODO: There's probably a better place for this utility method.
+		public static void ClearCachedDisabledWorkTypes(Pawn_StoryTracker story)
+		{
+			typeof(Pawn_StoryTracker).GetField("cachedDisabledWorkTypes", BindingFlags.Instance | BindingFlags.NonPublic).SetValue(story, null);
+		}
+
 		public Pawn ConvertToPawn(bool resolveGraphics) {
 			// TODO: Evaluate
 			//Pawn pawn = PawnGenerator.GeneratePawn(PawnKindDefOf.Colonist, Faction.OfColony);
@@ -1077,6 +1069,11 @@ namespace EdB.PrepareCarefully
 			pawn.story.hairColor = colors[PawnLayers.Hair];
 			// Need to use reflection to set the private graphic path method.
 			typeof(Pawn_StoryTracker).GetField("headGraphicPath", BindingFlags.Instance | BindingFlags.NonPublic).SetValue(pawn.story, HeadGraphicPath);
+			// Clear cached values from the story tracker.
+			// TODO: It might make more sense to create a new instance of Pawn_StoryTracker, but need
+			// to make sure all of the details are filled in with that approach.
+			CustomPawn.ClearCachedDisabledWorkTypes(pawn.story);
+
 			pawn.Name = this.pawn.Name;
 
 			pawn.ageTracker.BirthAbsTicks = this.pawn.ageTracker.BirthAbsTicks;
