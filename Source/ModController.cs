@@ -129,7 +129,7 @@ namespace EdB.PrepareCarefully
 
 		public void ResetTextures()
 		{
-
+			Textures.Reset();
 		}
 
 		public bool ModEnabled
