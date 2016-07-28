@@ -458,7 +458,27 @@ namespace EdB.PrepareCarefully
 				facades.Add(pawnToFacadeMap[pawn]);
 			}
 			relationshipManager = new RelationshipManager(Verse.Find.GameInitData.startingPawns, facades);
-		}			
+		}
+
+		public bool FindScenPart()
+		{
+			if (DefDatabase<MapGeneratorDef>.AllDefs.Count() == 1) {
+				MapGeneratorDef def = DefDatabase<MapGeneratorDef>.AllDefs.First();
+				if (def != null) {
+					foreach (var g in def.genSteps) {
+						if (g.GetType().FullName.Equals("EdB.PrepareCarefully.Genstep_ScenParts")) {
+							return true;
+						}
+					}
+					return false;
+				}
+			}
+			// TODO: We can't figure this out in every situation.  If there's more than one
+			// map generator, the game is going to pick one at random, and we can't know at this
+			// point which one it's going to pick.  In that case, we'll assume that everything is
+			// good.
+			return true;
+		}
 	}
 }
 
