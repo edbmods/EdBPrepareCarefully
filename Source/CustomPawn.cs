@@ -1039,13 +1039,9 @@ namespace EdB.PrepareCarefully
 			// Copy relationships
 			result.relations = pawn.relations;
 
-			return result;
-		}
+			ClearCachedDisabledWorkTypes(result.story);
 
-		// TODO: There's probably a better place for this utility method.
-		public static void ClearCachedDisabledWorkTypes(Pawn_StoryTracker story)
-		{
-			typeof(Pawn_StoryTracker).GetField("cachedDisabledWorkTypes", BindingFlags.Instance | BindingFlags.NonPublic).SetValue(story, null);
+			return result;
 		}
 
 		public Pawn ConvertToPawn(bool resolveGraphics) {
@@ -1110,6 +1106,7 @@ namespace EdB.PrepareCarefully
 			}
 
 			pawn.relations.ClearAllRelations();
+			ClearCachedDisabledWorkTypes(pawn.story);
 
 			return pawn;
 		}
@@ -1209,6 +1206,11 @@ namespace EdB.PrepareCarefully
 		public void ClearCachedLifeStage() {
 			FieldInfo field = typeof(Pawn_AgeTracker).GetField("cachedLifeStageIndex", BindingFlags.NonPublic | BindingFlags.Instance);
 			field.SetValue(pawn.ageTracker, -1);
+		}
+
+		public static void ClearCachedDisabledWorkTypes(Pawn_StoryTracker story)
+		{
+			typeof(Pawn_StoryTracker).GetField("cachedDisabledWorkTypes", BindingFlags.Instance | BindingFlags.NonPublic).SetValue(story, null);
 		}
 	}
 }
