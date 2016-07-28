@@ -15,7 +15,7 @@ namespace EdB.PrepareCarefully
 
 		public virtual string PartName {
 			get {
-				return BodyPartRecord != null ? BodyPartRecord.def.LabelCap : "No part!"; 
+				return BodyPartRecord != null ? BodyPartRecord.def.LabelCap : "EdB.PrepareCarefully.WholeBody".Translate(); 
 			}
 		}
 

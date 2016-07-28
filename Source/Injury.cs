@@ -90,12 +90,23 @@ namespace EdB.PrepareCarefully
 				this.hediff = hediff;
 			}
 			else if (Option.IsOldInjury) {
-				Hediff_Injury hediff = (Hediff_Injury) HediffMaker.MakeHediff(Option.HediffDef, pawn, null);
+				Hediff hediff = HediffMaker.MakeHediff(Option.HediffDef, pawn, null);
 				hediff.Severity = this.Severity;
-				hediff.TryGetComp<HediffComp_GetsOld>().IsOld = true;
-				// TODO: This should not be hard-coded.
-				hediff.TryGetComp<HediffComp_GetsOld>().painFactor = 4;
+
+				HediffComp_GetsOld getsOld = hediff.TryGetComp<HediffComp_GetsOld>();
+				if (getsOld != null) {
+					hediff.TryGetComp<HediffComp_GetsOld>().IsOld = true;
+					// TODO: Pain factor should not be hard-coded.
+					hediff.TryGetComp<HediffComp_GetsOld>().painFactor = 4;
+				}
+
 				pawn.health.AddHediff(hediff, BodyPartRecord, null);
+				this.hediff = hediff;
+			}
+			else {
+				Hediff hediff = HediffMaker.MakeHediff(Option.HediffDef, pawn, null);
+				hediff.Severity = this.Severity;
+				pawn.health.AddHediff(hediff, null, null);
 				this.hediff = hediff;
 			}
 			pawn.health.capacities.Clear();

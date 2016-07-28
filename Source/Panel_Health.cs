@@ -149,20 +149,31 @@ namespace EdB.PrepareCarefully
 						customPawn.AddInjury(injury);
 					}
 					else {
-						foreach (var p in selectedInjury.ValidParts) {
-							BodyPartRecord record = PrepareCarefully.Instance.HealthManager.FirstBodyPartRecord(p);
-							if (record != null) {
-								Injury injury= new Injury();
-								injury.BodyPartRecord = record;
-								injury.Option = selectedInjury;
-								if (selectedSeverity != null) {
-									injury.Severity = selectedSeverity.Value;
+						if (selectedInjury.ValidParts.Count > 0) {
+							foreach (var p in selectedInjury.ValidParts) {
+								BodyPartRecord record = PrepareCarefully.Instance.HealthManager.FirstBodyPartRecord(p);
+								if (record != null) {
+									Injury injury = new Injury();
+									injury.BodyPartRecord = record;
+									injury.Option = selectedInjury;
+									if (selectedSeverity != null) {
+										injury.Severity = selectedSeverity.Value;
+									}
+									customPawn.AddInjury(injury);
 								}
-								customPawn.AddInjury(injury);
+								else {
+									Log.Warning("Could not find body part record for definition: " + p.defName);
+								}
 							}
-							else {
-								Log.Warning("Could not find body part record for definition: " + p.defName);
+						}
+						else {
+							Injury injury = new Injury();
+							injury.BodyPartRecord = null;
+							injury.Option = selectedInjury;
+							if (selectedSeverity != null) {
+								injury.Severity = selectedSeverity.Value;
 							}
+							customPawn.AddInjury(injury);
 						}
 					}
 				};
@@ -243,7 +254,7 @@ namespace EdB.PrepareCarefully
 					},
 					SelectAction = (InjuryOption option) => {
 						selectedInjury = option;
-						if (option.ValidParts == null || option.ValidParts.Count == 0) {
+						if (option.ValidParts == null) {
 							bodyPartSelectionRequired = true;
 						}
 						else {

@@ -21,8 +21,9 @@ namespace EdB.PrepareCarefully
 
 		public void InitializeOptions()
 		{
-			// Add long-term chronic.
+			// Add long-term chronic conditions from the giver that adds new hediffs as pawns age.
 			HediffGiverSetDef giverSetDef = DefDatabase<HediffGiverSetDef>.GetNamedSilentFail("OrganicStandard");
+			HashSet<HediffDef> addedDefs = new HashSet<HediffDef>();
 			if (giverSetDef != null) {
 				foreach (var g in giverSetDef.hediffGivers) {
 					if (g.GetType() == typeof(HediffGiver_Birthday)) {
@@ -36,33 +37,73 @@ namespace EdB.PrepareCarefully
 							option.ValidParts.AddRange(g.partsToAffect);
 						}
 						options.Add(option);
+						if (!addedDefs.Contains(g.hediff)) {
+							addedDefs.Add(g.hediff);
+						}
 					}
 				}
 			}
 
-			// Add old injury options.
+			// Get all of the hediffs that can be added via the "forced hediff" scenario part and
+			// add them to a hash set so that we can quickly look them up.
+			ScenPart_ForcedHediff scenPart = new ScenPart_ForcedHediff();
+			IEnumerable<HediffDef> scenPartDefs = (IEnumerable<HediffDef>) typeof(ScenPart_ForcedHediff).GetMethod("PossibleHediffs", BindingFlags.NonPublic | BindingFlags.Instance).Invoke(scenPart, null);
+			HashSet<HediffDef> scenPartDefSet = new HashSet<HediffDef>(scenPartDefs);
+
+			// Add injury options.
 			List<InjuryOption> oldInjuries = new List<InjuryOption>();
 			foreach (var hd in DefDatabase<HediffDef>.AllDefs) {
-				HediffCompProperties props = hd.CompPropsFor(typeof(HediffComp_GetsOld));
-				if (props != null) {
-					if (hd.defName == "MissingBodyPart") {
-						continue;
-					}
-					String label;
-					if (props.oldLabel != null) {
-						label = props.oldLabel.CapitalizeFirst();
+				// TODO: Missing body part seems to be a special case.  The hediff giver doesn't itself remove
+				// limbs, so disable it until we can add special-case handling.
+				if (hd.defName == "MissingBodyPart") {
+					continue;
+				}
+
+				// Filter out defs that were already added as a chronic condition.
+				if (addedDefs.Contains(hd)) {
+					continue;
+				}
+
+				// Filter out implants.
+				if (hd.hediffClass == typeof(Hediff_AddedPart)) {
+					continue;
+				}
+
+				// If it's old injury, use the old injury properties to get the label.
+				HediffCompProperties getsOldProperties = hd.CompPropsFor(typeof(HediffComp_GetsOld));
+				String label;
+				if (getsOldProperties != null) {
+					if (getsOldProperties.oldLabel != null) {
+						label = getsOldProperties.oldLabel.CapitalizeFirst();
 					}
 					else {
 						Log.Warning("Could not find label for old injury: " + hd.defName);
 						continue;
 					}
-					InjuryOption option = new InjuryOption();
-					option.HediffDef = hd;
-					option.IsOldInjury = true;
-					option.Label = label;
-					oldInjuries.Add(option);
 				}
+				// If it's not an old injury, make sure it's one of the available hediffs that can
+				// be added via ScenPart_ForcedHediff.  If it's not, filter it out.
+				else {
+					if (!scenPartDefSet.Contains(hd)) {
+						continue;
+					}
+					label = hd.LabelCap;
+				}
+
+				// Add the injury option.
+				InjuryOption option = new InjuryOption();
+				option.HediffDef = hd;
+				option.Label = label;
+				if (getsOldProperties != null) {
+					option.IsOldInjury = true;
+				}
+				else {
+					option.ValidParts = new List<BodyPartDef>();
+				}
+				oldInjuries.Add(option);
 			}
+
+
 
 			// Disambiguate duplicate injury labels.
 			HashSet<string> labels = new HashSet<string>();
@@ -122,6 +163,23 @@ namespace EdB.PrepareCarefully
 				}
 			}
 			return null;
+		}
+
+		public bool DoesStageKillPawn(HediffDef def, HediffStage stage)
+		{
+			if (stage.capMods != null) {
+				foreach (var c in stage.capMods) {
+					if (c.capacity == PawnCapacityDefOf.Consciousness) {
+						if (c.setMax == 0f) {
+							return true;
+						}
+						else if (c.offset == -1f) {
+							return true;
+						}
+					}
+				}
+			}
+			return false;
 		}
 	}
 }
