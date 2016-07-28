@@ -231,13 +231,45 @@ namespace EdB.PrepareCarefully
 
 		public double GetBaseThingCost(ThingDef def, ThingDef stuffDef)
 		{
+			if (def == null) {
+				Log.Warning("Prepare Carefully is trying to calculate the cost of a null ThingDef");
+				return 0;
+			}
 			if (def.BaseMarketValue > 0) {
 				if (stuffDef == null) {
 					return def.BaseMarketValue;
 				}
 				else {
-					Thing thing = ThingMaker.MakeThing(def, stuffDef);
-					return thing.MarketValue;
+					// TODO: Alpha 15
+					// Should look at ThingMaker.MakeThing() to decide which validations we need to do
+					// before calling that method to avoid null pointer exceptions.  Should re-evaluate
+					// for each new alpha and then update the todo comment with the next alpha version.
+					if (def.thingClass == null) {
+						Log.Warning("Prepare Carefully trying to calculate the cost of a ThingDef with null thingClass: " + def.defName);
+						return 0;
+					}
+					if (def.MadeFromStuff && stuffDef == null) {
+						Log.Warning("Prepare Carefully trying to calculate the cost of a \"made-from-stuff\" ThingDef without specifying any stuff: " + def.defName);
+						return 0;
+					}
+
+					try {
+						// TODO: Creating an instance of a thing may not be the best way to calculate
+						// its market value.  It may be considered a relatively expensive operation,
+						// especially when a lot of mods are enabled.  There may be a lower-level set of
+						// methods in the vanilla codebase that could be called.  Should investigate.
+						Thing thing = ThingMaker.MakeThing(def, stuffDef);
+						if (thing == null) {
+							Log.Warning("Prepare Carefully failed when calling MakeThing(" + def.defName + ", ...) to calculate a ThingDef's market value");
+							return 0;
+						}
+						return thing.MarketValue;
+					}
+					catch (Exception e) {
+						Log.Warning("Prepare Carefully failed to calculate the cost of a ThingDef (" + def.defName + "): ");
+						Log.Warning(e.ToString());
+						return 0;
+					}
 				}
 			}
 			else {
