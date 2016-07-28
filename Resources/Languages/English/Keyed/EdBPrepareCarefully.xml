@@ -103,7 +103,7 @@
 	<EdB.PrepareCarefully.Close>Close</EdB.PrepareCarefully.Close>
 	<EdB.PrepareCarefully.CannotDeleteRelationship>This relationship cannot be deleted because it was automatically added due to another relationship.  Delete the original relationship to remove this one as well.</EdB.PrepareCarefully.CannotDeleteRelationship>
 	<EdB.PrepareCarefully.RandomizeInjuries>Random Injuries</EdB.PrepareCarefully.RandomizeInjuries>
-	<EdB.PrepareCarefully.RandomizeInjuries.Tooltip>You must remove all injuries from the colonist to enable random injury generation.  Injuries will be determined based on the colonist's age.</EdB.PrepareCarefully.RandomizeInjuries.Tooltip>
+	<EdB.PrepareCarefully.RandomizeInjuries.Tooltip>You must remove all conditions from the colonist to enable random injury generation.  Injuries will be determined based on the colonist's age.</EdB.PrepareCarefully.RandomizeInjuries.Tooltip>
 	<EdB.PrepareCarefully.AddImplant>Add Implant...</EdB.PrepareCarefully.AddImplant>
 	<EdB.PrepareCarefully.SelectImplant>Select an Implant Procedure</EdB.PrepareCarefully.SelectImplant>
 	<EdB.PrepareCarefully.ErrorMustSelectImplant>You must select an implant procedure</EdB.PrepareCarefully.ErrorMustSelectImplant>
@@ -111,9 +111,9 @@
 	<EdB.PrepareCarefully.ErrorMustSelectBodyPart>You must select a location</EdB.PrepareCarefully.ErrorMustSelectBodyPart>
 	<EdB.PrepareCarefully.SelectSeverity>Select a severity level</EdB.PrepareCarefully.SelectSeverity>
 	<EdB.PrepareCarefully.ErrorMustSelectSelectSeverity>You must select a severity level</EdB.PrepareCarefully.ErrorMustSelectSelectSeverity>
-	<EdB.PrepareCarefully.AddInjury>Add Injury...</EdB.PrepareCarefully.AddInjury>
-	<EdB.PrepareCarefully.SelectInjury>Select an Injury</EdB.PrepareCarefully.SelectInjury>
-	<EdB.PrepareCarefully.ErrorMustSelectInjury>You must select an injury</EdB.PrepareCarefully.ErrorMustSelectInjury>
+	<EdB.PrepareCarefully.AddInjury>Add Condition...</EdB.PrepareCarefully.AddInjury>
+	<EdB.PrepareCarefully.SelectInjury>Select a condition</EdB.PrepareCarefully.SelectInjury>
+	<EdB.PrepareCarefully.ErrorMustSelectInjury>You must select a condition</EdB.PrepareCarefully.ErrorMustSelectInjury>
 	<EdB.PrepareCarefully.InjuryLabel>{0} ({1})</EdB.PrepareCarefully.InjuryLabel>
 	<EdB.PrepareCarefully.EquipmentTab.Implants>Implants</EdB.PrepareCarefully.EquipmentTab.Implants>
 	<EdB.PrepareCarefully.EquipmentTab.Buildings>Furniture</EdB.PrepareCarefully.EquipmentTab.Buildings>
@@ -128,5 +128,8 @@
 	<EdB.PrepareCarefully.PresetVersionNotSupported>Pre-alpha 13 versions of presets are not supported.</EdB.PrepareCarefully.PresetVersionNotSupported>
 	<EdB.PrepareCarefully.SavedColonistVersionNotSupported>Pre-alpha 13 versions of saved colonists are not supported.</EdB.PrepareCarefully.SavedColonistVersionNotSupported>
 	<EdB.PrepareCarefully.CostSummary.Implants>Implants: {0}</EdB.PrepareCarefully.CostSummary.Implants>
+
+	<!-- New for Alpha 14 -->
+	<EdB.PrepareCarefully.WholeBody>Whole Body</EdB.PrepareCarefully.WholeBody>
 
 </LanguageData>
