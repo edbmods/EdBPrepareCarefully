@@ -1794,7 +1794,7 @@ namespace EdB.PrepareCarefully
 
 		protected void ShowBackstoryDialog(CustomPawn customPawn, BackstorySlot slot)
 		{
-			Backstory originalBackstory = customPawn.Childhood;
+			Backstory originalBackstory = (slot == BackstorySlot.Childhood) ? customPawn.Childhood : customPawn.Adulthood;
 			Backstory selectedBackstory = originalBackstory;
 			Dialog_Options<Backstory> dialog = new Dialog_Options<Backstory>(slot == BackstorySlot.Childhood ? this.sortedChildhoodBackstories : this.sortedAdulthoodBackstories) {
 				NameFunc = (Backstory backstory) => {
