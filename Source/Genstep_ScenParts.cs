@@ -43,7 +43,52 @@ namespace EdB.PrepareCarefully
 
 				SpawnColonistsWithEquipment(arriveMethodPart);
 				ApplyColonistHealthCustomizations();
+				PrepForMapGen();
 				SpawnStartingResources();
+			}
+		}
+
+		// From MapInitier_NewGame.PreForMapGen() with a change to make an error into a warning.
+		public static void PrepForMapGen()
+		{
+			foreach (Pawn current in Find.GameInitData.startingPawns) {
+				current.SetFactionDirect(Faction.OfPlayer);
+				PawnComponentsUtility.AddAndRemoveDynamicComponents(current, false);
+			}
+			foreach (Pawn current2 in Find.GameInitData.startingPawns) {
+				current2.workSettings.DisableAll();
+			}
+			foreach (WorkTypeDef w in DefDatabase<WorkTypeDef>.AllDefs) {
+				if (w.alwaysStartActive) {
+					foreach (Pawn current3 in from col in Find.GameInitData.startingPawns
+											  where !col.story.WorkTypeIsDisabled(w)
+											  select col) {
+						current3.workSettings.SetPriority(w, 3);
+					}
+				}
+				else {
+					bool flag = false;
+					foreach (Pawn current4 in Find.GameInitData.startingPawns) {
+						if (!current4.story.WorkTypeIsDisabled(w) && current4.skills.AverageOfRelevantSkillsFor(w) >= 6f) {
+							current4.workSettings.SetPriority(w, 3);
+							flag = true;
+						}
+					}
+					if (!flag) {
+						IEnumerable<Pawn> source = from col in Find.GameInitData.startingPawns
+												   where !col.story.WorkTypeIsDisabled(w)
+												   select col;
+						if (source.Any<Pawn>()) {
+							Pawn pawn = source.InRandomOrder(null).MaxBy((Pawn c) => c.skills.AverageOfRelevantSkillsFor(w));
+							pawn.workSettings.SetPriority(w, 3);
+						}
+						else if (w.requireCapableColonist) {
+							// EdB: Show warning instead of an error.
+							//Log.Error("No colonist could do requireCapableColonist work type " + w);
+							Log.Warning("No colonist can do what is thought to be a required work type " + w.gerundLabel);
+						}
+					}
+				}
 			}
 		}
 
