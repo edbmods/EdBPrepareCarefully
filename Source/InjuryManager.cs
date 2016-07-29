@@ -167,6 +167,9 @@ namespace EdB.PrepareCarefully
 
 		public bool DoesStageKillPawn(HediffDef def, HediffStage stage)
 		{
+			if (def.lethalSeverity > -1.0f && stage.minSeverity >= def.lethalSeverity) {
+				return true;
+			}
 			if (stage.capMods != null) {
 				foreach (var c in stage.capMods) {
 					if (c.capacity == PawnCapacityDefOf.Consciousness) {

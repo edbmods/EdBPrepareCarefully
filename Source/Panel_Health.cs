@@ -24,6 +24,7 @@ namespace EdB.PrepareCarefully
 		public IEnumerable<RecipeDef> implantRecipes;
 		public List<CustomBodyPart> partRemovalList = new List<CustomBodyPart>();
 		protected HashSet<BodyPartRecord> disabledBodyParts = new HashSet<BodyPartRecord>();
+		protected HashSet<InjuryOption> disabledInjuryOptions = new HashSet<InjuryOption>();
 
 		protected List<InjurySeverity> severityOptions = new List<InjurySeverity>();
 		protected List<InjurySeverity> oldInjurySeverities = new List<InjurySeverity>();
@@ -137,6 +138,8 @@ namespace EdB.PrepareCarefully
 
 				Dialog_Options<InjurySeverity> severityDialog;
 				Dialog_Options<BodyPartRecord> bodyPartDialog;
+
+				ResetInjuryOptionEnabledState(customPawn);
 
 				Action addInjuryAction = () => {
 					if (bodyPartSelectionRequired) {
@@ -261,6 +264,9 @@ namespace EdB.PrepareCarefully
 							bodyPartSelectionRequired = false;
 						}
 					},
+					EnabledFunc = (InjuryOption option) => {
+						return !disabledInjuryOptions.Contains(option);
+					},
 					ConfirmValidation = () => {
 						if (selectedInjury == null) {
 							return "EdB.PrepareCarefully.ErrorMustSelectInjury";
@@ -383,6 +389,28 @@ namespace EdB.PrepareCarefully
 			GUI.EndGroup();
 		}
 
+		protected void ResetInjuryOptionEnabledState(CustomPawn pawn)
+		{
+			Log.Warning("ResetInjuryOptionEnabledState()");
+			disabledInjuryOptions.Clear();
+			InjuryManager injuryManager = PrepareCarefully.Instance.HealthManager.InjuryManager;
+			foreach (var injuryOption in injuryManager.Options) {
+				InjuryOption option = injuryOption;
+				if (option.IsOldInjury) {
+					continue;
+				}
+				Injury injury = pawn.Injuries.FirstOrDefault((Injury i) => {
+					if (i.Option == option) {
+						Log.Warning("Pawn has the injury already: " + i.Option.HediffDef.defName);
+					}
+					return (i.Option == option);
+				});
+				if (injury != null) {
+					disabledInjuryOptions.Add(injuryOption);
+				}
+			}
+		}
+
 		protected void ResetBodyPartEnabledState(IEnumerable<BodyPartRecord> parts, CustomPawn pawn)
 		{
 			disabledBodyParts.Clear();
@@ -404,7 +432,14 @@ namespace EdB.PrepareCarefully
 
 			int variant = 1;
 			InjurySeverity previous = null;
+
 			foreach (var stage in injuryOption.HediffDef.stages) {
+
+				// Filter out a stage if it will definitely kill the pawn.
+				if (PrepareCarefully.Instance.HealthManager.InjuryManager.DoesStageKillPawn(injuryOption.HediffDef, stage)) {
+					continue;
+				}
+
 				InjurySeverity value = null;
 				if (stage.minSeverity == 0) {
 					value = new InjurySeverity(0.001f, stage);
