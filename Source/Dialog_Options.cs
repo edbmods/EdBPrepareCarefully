@@ -172,7 +172,7 @@ namespace EdB.PrepareCarefully
 					GUI.color = new Color(0.65f, 0.65f, 0.65f);
 					Widgets.Label(new Rect(0, cursor + 2, ContentSize.x - 32, height), name);
 					Texture2D image = Textures.TextureRadioButtonOff;
-					Vector2 topLeft = new Vector2(itemRect.x + itemRect.width - 32, itemRect.y + itemRect.height / 2 - 16);
+					Vector2 topLeft = new Vector2(itemRect.x + itemRect.width - 24, itemRect.y + itemRect.height / 2 - 12);
 					GUI.color = new Color(1, 1, 1, 0.28f);
 					GUI.DrawTexture(new Rect(topLeft.x, topLeft.y, 24, 24), image);
 					GUI.color = Color.white;
