@@ -129,15 +129,6 @@ namespace EdB.PrepareCarefully
 			InitializeSkillLevelsAndPassions();
 			ComputeSkillLevelModifiers();
 
-			//ComputeSkillModifiersFromBackstoriesAndTraits();
-			//ComputeUnadjustedSkillValues();
-			//ComputeBaseSkillLevels();
-			//foreach (SkillRecord record in pawn.skills.skills) {
-			//	skillAdjustments[record.def] = record.level - baseSkillLevels[record.def] - requiredSkillAdjustments[record.def];
-			//	originalSkillAdjustments[record.def] = skillAdjustments[record.def];
-			//}
-			//ComputePawnSkillLevels();
-
 			graphics.Clear();
 			colors.Clear();
 			PawnGraphicSet pawnGraphics = pawn.Drawer.renderer.graphics;
