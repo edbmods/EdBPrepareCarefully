@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using UnityEngine;
 using Verse;
 
 namespace EdB.PrepareCarefully
@@ -299,23 +300,16 @@ namespace EdB.PrepareCarefully
 					Log.Warning(string.Format("Unrecognized resource/equipment.  This may be caused by an invalid thing/stuff combination. (thing = {0}, stuff={1})", thing, stuff));
 					continue;
 				}
-				if (!entry.gear && !entry.animal) {
-					int stackSize = entry.def.stackLimit;
-					if (stackSize > 75) {
-						stackSize = 75;
-					}
-					if (entry.def == ThingDefOf.Component && e.Count <= 100) {
-						stackSize = 10;
-					}
-					int stacks = e.count / stackSize;
-					int remainder = e.count % stackSize;
-					//Log.Message("Scatter " + e.def.defName + ": " + stacks + " stacks of " + stackSize + " + " + remainder);
 
+				// TODO: Look into what the clusterSize and minSpacing parameters do.  If we are spawning an
+				// exceptionally large number of a given resource, would the numbers for those parameters
+				// need to be increased to allow the scatterer to find a place on the map?
+				if (!entry.gear && !entry.animal) {
 					new Genstep_ScatterThings {
 						nearPlayerStart = true,
 						thingDef = e.def,
 						stuff = e.stuffDef,
-						clusterSize = stackSize,
+						clusterSize = 4,
 						count = e.Count,
 						spotMustBeStandable = true,
 						minSpacing = 5f
