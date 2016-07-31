@@ -156,6 +156,7 @@ namespace EdB.PrepareCarefully
 				delegate { this.ChangePawnLayer(PawnLayers.Hat); },
 			});
 
+			// Initialize and sort hair lists.
 			foreach (HairDef hairDef in DefDatabase<HairDef>.AllDefs) {
 				if (hairDef.hairGender != HairGender.Male) {
 					femaleHairDefs.Add(hairDef);
@@ -164,6 +165,28 @@ namespace EdB.PrepareCarefully
 					maleHairDefs.Add(hairDef);
 				}
 			}
+			femaleHairDefs.Sort((HairDef x, HairDef y) => {
+				if (x.label == null) {
+					return -1;
+				}
+				else if (y.label == null) {
+					return 1;
+				}
+				else {
+					return x.label.CompareTo(y.label);
+				}
+			});
+			femaleHairDefs.Sort((HairDef x, HairDef y) => {
+				if (x.label == null) {
+					return -1;
+				}
+				else if (y.label == null) {
+					return 1;
+				}
+				else {
+					return x.label.CompareTo(y.label);
+				}
+			});
 				
 			for (int i = 0; i < PawnLayers.Count; i++) {
 				if (PawnLayers.IsApparelLayer(i)) {
@@ -218,6 +241,23 @@ namespace EdB.PrepareCarefully
 						}
 						apparelStuffLookup[thingDef] = stuffList;
 					}
+				}
+			}
+
+			// Sort the apparel lists
+			foreach (var list in apparelLists) {
+				if (list != null) {
+					list.Sort((ThingDef x, ThingDef y) => {
+						if (x.label == null) {
+							return -1;
+						}
+						else if (y.label == null) {
+							return 1;
+						}
+						else {
+							return x.label.CompareTo(y.label);
+						}
+					});
 				}
 			}
 
