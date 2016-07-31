@@ -201,7 +201,7 @@ namespace EdB.PrepareCarefully
 
 			// Get all apparel options
 			foreach (ThingDef apparelDef in DefDatabase<ThingDef>.AllDefs) {
-				if (apparelDef.apparel == null || apparelDef.defName == "Apparel_PersonalShield") {
+				if (apparelDef.apparel == null) {
 					continue;
 				}
 				int layer = PawnLayers.ToPawnLayerIndex(apparelDef.apparel);
