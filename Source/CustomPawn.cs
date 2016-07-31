@@ -144,6 +144,8 @@ namespace EdB.PrepareCarefully
 			colors.Add(Color.white);
 			graphics.Add(null);
 			colors.Add(Color.white);
+			graphics.Add(null);
+			colors.Add(Color.white);
 
 			graphics.Add(GraphicDatabaseHeadRecords.GetHeadNamed(pawn.story.HeadGraphicPath, pawn.story.SkinColor));
 			colors.Add(pawn.story.SkinColor);
@@ -671,28 +673,45 @@ namespace EdB.PrepareCarefully
 		}
 
 		protected void ApparelAcceptanceTest() {
+			// Clear out any conflicts from a previous check.
 			apparelConflicts.Clear();
+
+			// Assume that each peice of apparel will be accepted.
 			for (int i = PawnLayers.TopClothingLayer; i >= PawnLayers.BottomClothingLayer; i--) {
 				this.acceptedApparel[i] = this.selectedApparel[i];
 			}
 
+			// Go through each layer.
 			for (int i = PawnLayers.TopClothingLayer; i >= PawnLayers.BottomClothingLayer; i--) {
+
+				// If no apparel was selected for this layer, go to the next layer.
 				if (selectedApparel[i] == null) {
 					continue;
 				}
+
 				ThingDef apparel = selectedApparel[i];
 				if (apparel.apparel != null && apparel.apparel.layers != null && apparel.apparel.layers.Count > 1) {
 					foreach (ApparelLayer layer in apparel.apparel.layers) {
+						// If the apparel's layer matches the current layer, go to the apparel's next layer. 
 						if (layer == PawnLayers.ToApparelLayer(i)) {
 							continue;
 						}
+
+						// If the apparel covers another layer as well as the current one, check to see
+						// if the user has selected another piece of apparel for that layer.  If so, check
+						// to see if it covers any of the same body parts.  If it does, it's a conflict.
 						int disallowedLayer = PawnLayers.ToPawnLayerIndex(layer);
 						if (this.selectedApparel[disallowedLayer] != null) {
-							ApparelConflict conflict = new ApparelConflict();
-							conflict.def = selectedApparel[i];
-							conflict.conflict = selectedApparel[disallowedLayer];
-							apparelConflicts.Add(conflict);
-							this.acceptedApparel[disallowedLayer] = null;
+							foreach (var group in this.selectedApparel[disallowedLayer].apparel.bodyPartGroups) {
+								if (apparel.apparel.bodyPartGroups.Contains(group)) {
+									ApparelConflict conflict = new ApparelConflict();
+									conflict.def = selectedApparel[i];
+									conflict.conflict = selectedApparel[disallowedLayer];
+									apparelConflicts.Add(conflict);
+									this.acceptedApparel[disallowedLayer] = null;
+									break;
+								}
+							}
 						}
 					}
 				}
@@ -1071,11 +1090,12 @@ namespace EdB.PrepareCarefully
 			List<Apparel> apparel = (List<Apparel>)wornApparelField.GetValue(result.apparel);
 			apparel.Clear();
 
-			AddApparel(PawnLayers.Pants, apparel);
-			AddApparel(PawnLayers.BottomClothingLayer, apparel);
-			AddApparel(PawnLayers.MiddleClothingLayer, apparel);
-			AddApparel(PawnLayers.TopClothingLayer, apparel);
-			AddApparel(PawnLayers.Hat, apparel);
+			AddApparel(result, PawnLayers.Pants);
+			AddApparel(result, PawnLayers.BottomClothingLayer);
+			AddApparel(result, PawnLayers.MiddleClothingLayer);
+			AddApparel(result, PawnLayers.TopClothingLayer);
+			AddApparel(result, PawnLayers.Accessory);
+			AddApparel(result, PawnLayers.Hat);
 
 			foreach (SkillRecord skill in result.skills.skills) {
 				int value = this.GetSkillLevel(skill.def);
@@ -1111,7 +1131,7 @@ namespace EdB.PrepareCarefully
 			return ConvertToPawn(true);
 		}
 
-		public void AddApparel(int layer, List<Apparel> list)
+		public void AddApparel(Pawn targetPawn, int layer)
 		{
 			if (acceptedApparel[layer] != null) {
 				Apparel a;
@@ -1123,7 +1143,11 @@ namespace EdB.PrepareCarefully
 					a = (Apparel)ThingMaker.MakeThing(selectedApparel[layer], null);
 					a.DrawColor = colors[layer];
 				}
-				list.Add(a);
+
+				PawnGenerator.PostProcessGeneratedGear(a, targetPawn);
+				if (ApparelUtility.HasPartsToWear(targetPawn, a.def)) {
+					targetPawn.apparel.Wear(a, false);
+				}
 			}
 		}
 

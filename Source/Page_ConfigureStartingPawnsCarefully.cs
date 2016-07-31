@@ -144,6 +144,7 @@ namespace EdB.PrepareCarefully
 				PawnLayers.BottomClothingLayer,
 				PawnLayers.MiddleClothingLayer,
 				PawnLayers.TopClothingLayer,
+				PawnLayers.Accessory,
 				PawnLayers.Hat
 			});
 			pawnLayerActions = new List<Action>(new Action[] {
@@ -153,7 +154,8 @@ namespace EdB.PrepareCarefully
 				delegate { this.ChangePawnLayer(PawnLayers.BottomClothingLayer); },
 				delegate { this.ChangePawnLayer(PawnLayers.MiddleClothingLayer); },
 				delegate { this.ChangePawnLayer(PawnLayers.TopClothingLayer); },
-				delegate { this.ChangePawnLayer(PawnLayers.Hat); },
+				delegate { this.ChangePawnLayer(PawnLayers.Accessory); },
+				delegate { this.ChangePawnLayer(PawnLayers.Hat); }
 			});
 
 			// Initialize and sort hair lists.
@@ -817,6 +819,15 @@ namespace EdB.PrepareCarefully
 				List<FloatMenuOption> list = new List<FloatMenuOption>();
 				int layerCount = this.pawnLayerActions.Count;
 				for (int i = 0; i < layerCount; i++) {
+					int pawnLayer = pawnLayers[i];
+					// Only add apparel layers that have items.
+					if (PawnLayers.IsApparelLayer(pawnLayer)) {
+						if (pawnLayer == PawnLayers.Accessory) {
+							if (apparelLists[pawnLayer] == null || apparelLists[pawnLayer].Count == 0) {
+								continue;
+							}
+						}
+					}
 					label = PawnLayers.Label(pawnLayers[i]);
 					list.Add(new FloatMenuOption(label, this.pawnLayerActions[i], MenuOptionPriority.Medium, null, null, 0, null));
 				}
@@ -1268,6 +1279,7 @@ namespace EdB.PrepareCarefully
 			Rect headRect = new Rect(bodyRect.x, bodyRect.y - 30, 128, 128);
 			List<Graphic> graphics = customPawn.graphics;
 			DrawGraphics(bodyRect, PawnLayers.BodyType, PawnLayers.TopClothingLayer);
+			DrawGraphic(bodyRect, PawnLayers.Accessory);
 			DrawGraphic(headRect, PawnLayers.HeadType);
 			DrawOneGraphic(headRect, PawnLayers.Hat, PawnLayers.Hair);
 
