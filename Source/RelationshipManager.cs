@@ -61,7 +61,6 @@ namespace EdB.PrepareCarefully
 				}
 				if (inverse != null) {
 					inverseRelationships[def] = inverse;
-					//Log.Message(def.defName + " is inverse of " + inverse.defName);
 				}
 			}
 		}

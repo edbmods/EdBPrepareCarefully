@@ -1028,9 +1028,6 @@ namespace EdB.PrepareCarefully
 				record.passion = s.passion;
 				record.xpSinceLastLevel = s.xpSinceLastLevel;
 				result.skills.skills.Add(record);
-				if (record.level < 0) {
-					Log.Error("WTF");
-				}
 			}
 
 			// Copy relationships
