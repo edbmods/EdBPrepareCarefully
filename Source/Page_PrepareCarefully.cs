@@ -109,6 +109,7 @@ namespace EdB.PrepareCarefully
 
 		protected void DrawPresetButtons()
 		{
+			GUI.color = Color.white;
 			float middle = 982f / 2f;
 			float buttonWidth = 150;
 			float buttonSpacing = 24;

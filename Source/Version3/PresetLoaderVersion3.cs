@@ -115,7 +115,7 @@ namespace EdB.PrepareCarefully
 				HashSet<IExposable> saveables = (HashSet<IExposable>) (typeof(PostLoadInitter).GetField("saveablesToPostLoad", BindingFlags.NonPublic | BindingFlags.Static).GetValue(null));
 				saveables.Clear();
 
-				PrepareCarefully.Instance.Config.pointsEnabled = usePoints;
+				//PrepareCarefully.Instance.Config.pointsEnabled = usePoints;
 			}
 			catch (Exception e) {
 				Log.Error("Failed to load preset file");
