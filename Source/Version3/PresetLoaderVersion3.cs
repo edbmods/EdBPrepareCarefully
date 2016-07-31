@@ -379,9 +379,6 @@ namespace EdB.PrepareCarefully
 			pawn.ClearCachedAbilities();
 			pawn.ClearCachedLifeStage();
 
-			//Log.Message("Loaded pawn: " + pawn.Name);
-			//Log.Message("  Market Value: \n  " + StatDefOf.MarketValue.Worker.GetExplanation(StatRequest.For(pawn.Pawn), ToStringNumberSense.Absolute));
-
 			return pawn;
 		}
 
