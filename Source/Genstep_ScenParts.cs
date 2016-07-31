@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using UnityEngine;
 using Verse;
 
 namespace EdB.PrepareCarefully
@@ -300,22 +301,11 @@ namespace EdB.PrepareCarefully
 					continue;
 				}
 				if (!entry.gear && !entry.animal) {
-					int stackSize = entry.def.stackLimit;
-					if (stackSize > 75) {
-						stackSize = 75;
-					}
-					if (entry.def == ThingDefOf.Component && e.Count <= 100) {
-						stackSize = 10;
-					}
-					int stacks = e.count / stackSize;
-					int remainder = e.count % stackSize;
-					//Log.Message("Scatter " + e.def.defName + ": " + stacks + " stacks of " + stackSize + " + " + remainder);
-
 					new Genstep_ScatterThings {
 						nearPlayerStart = true,
 						thingDef = e.def,
 						stuff = e.stuffDef,
-						clusterSize = stackSize,
+						clusterSize = 4,
 						count = e.Count,
 						spotMustBeStandable = true,
 						minSpacing = 5f
