@@ -342,8 +342,21 @@ namespace EdB.PrepareCarefully
 				{
 					continue;
 				}
-				Pawn source = lookup[r.source];
-				Pawn target = lookup[r.target];
+				Pawn source = null;
+				Pawn target = null;
+				if (!lookup.TryGetValue(r.source, out source)) {
+					Log.Warning("Prepare Carefully could not find source pawn when trying to create relationship (" + r.def.defName + "): " + r.source.Name);
+					continue;
+				}
+				if (!lookup.TryGetValue(r.target, out target)) {
+					Log.Warning("Prepare Carefully could not find target pawn when trying to create relationship (" + r.def.defName + "): " + r.target.Name);
+					continue;
+				}
+
+				// TODO: If either of those lookups are failing, we're not tracking pawns properly
+				// somewhere.  I've seen those lookups fail after deleting colonists (but not
+				// consistently).  Should track down the root cause.
+
 				worker.CreateRelation(source, target, ref request);
 			}
 		}
