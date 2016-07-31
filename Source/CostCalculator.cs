@@ -124,13 +124,13 @@ namespace EdB.PrepareCarefully
 				cost.marketValue -= injuryValue;
 			}
 
-			double skillCount = pawn.passions.Keys.Count();
+			double skillCount = pawn.currentPassions.Keys.Count();
 			double passionLevelCount = 0;
 			double passionLevelCost = 20;
 			double passionateSkillCount = 0;
-			foreach (SkillDef def in pawn.passions.Keys)
+			foreach (SkillDef def in pawn.currentPassions.Keys)
 			{
-				Passion passion = pawn.passions[def];
+				Passion passion = pawn.currentPassions[def];
 				int level = pawn.GetSkillLevel(def);
 
 				if (passion == Passion.Major) {

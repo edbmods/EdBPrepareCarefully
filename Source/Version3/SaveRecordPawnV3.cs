@@ -65,8 +65,8 @@ namespace EdB.PrepareCarefully
 			}
 			foreach (var skill in pawn.Pawn.skills.skills) {
 				this.skillNames.Add(skill.def.defName);
-				this.skillValues.Add(pawn.GetSkillAdjustments(skill.def));
-				this.passions.Add(pawn.passions[skill.def]);
+				this.skillValues.Add(pawn.GetUnmodifiedSkillLevel(skill.def));
+				this.passions.Add(pawn.currentPassions[skill.def]);
 				this.originalPassions.Add(pawn.originalPassions[skill.def]);
 			}
 			for (int layer = 0; layer < PawnLayers.Count; layer++) {
@@ -198,8 +198,8 @@ namespace EdB.PrepareCarefully
 				if (def == null) {
 					continue;
 				}
-				pawn.passions[def] = this.passions[i];
-				pawn.SetSkillAdjustment(def, this.skillValues[i]);
+				pawn.currentPassions[def] = this.passions[i];
+				pawn.SetUnmodifiedSkillLevel(def, this.skillValues[i]);
 			}
 
 			for (int i = 0; i < PawnLayers.Count; i++) {

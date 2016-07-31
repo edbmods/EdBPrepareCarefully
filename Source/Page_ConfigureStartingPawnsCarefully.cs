@@ -388,7 +388,7 @@ namespace EdB.PrepareCarefully
 			try {
 				GUI.BeginGroup(innerRect);
 				DrawNameAndDescription();
-				DrawRandomizeAll();
+				DrawRandomizeAllButton();
 				DrawGenderAndAge();
 				DrawColonistSaveButtons();
 				DrawPortrait();
@@ -583,7 +583,7 @@ namespace EdB.PrepareCarefully
 		protected static Rect SectionRectSkills = new Rect(SectionRectGenderAndAge.x + SectionRectGenderAndAge.width + SectionPadding.x, 0, RightColumnWidth, 400);
 		protected static Rect SectionRectIncapable = new Rect(SectionRectSkills.x, SectionRectSkills.y + SectionRectSkills.height + SectionPadding.y, RightColumnWidth, 105);
 
-		protected void DrawRandomizeAll()
+		protected void DrawRandomizeAllButton()
 		{
 			CustomPawn customPawn = CurrentPawn;
 			GUI.color = SectionBackgroundColor;
@@ -915,7 +915,7 @@ namespace EdB.PrepareCarefully
 			GUI.DrawTexture(randomRect, Textures.TextureButtonRandom);
 			if (Widgets.ButtonInvisible(randomRect, false)) {
 				SoundDefOf.TickLow.PlayOneShotOnCamera();
-				randomizer.RandomizePawn(customPawn);
+				randomizer.RandomizeAppearance(customPawn);
 			}
 		}
 
@@ -2006,7 +2006,7 @@ namespace EdB.PrepareCarefully
 			GUI.DrawTexture(RectButtonResetSkills, Textures.TextureButtonReset);
 			if (Widgets.ButtonInvisible(RectButtonResetSkills, false)) {
 				SoundDefOf.TickLow.PlayOneShotOnCamera();
-				CurrentPawn.ResetSkills();
+				CurrentPawn.RestoreSkillLevelsAndPassions();
 			}
 
 			int skillCount = customPawn.Pawn.skills.skills.Count;
@@ -2040,7 +2040,7 @@ namespace EdB.PrepareCarefully
 			Rect rect = new Rect(skillsRect.width, 4, 16, 16);
 			for (int i = 0; i < skillCount; i++) {
 
-				if (customPawn.IsDisabled(customPawn.Pawn.skills.skills[i].def)) {
+				if (customPawn.IsSkillDisabled(customPawn.Pawn.skills.skills[i].def)) {
 					rect.y += spacing;
 					continue;
 				}
@@ -2078,8 +2078,8 @@ namespace EdB.PrepareCarefully
 			Rect position = new Rect(skillLevelLabelWidth + 10, 2, 24, 24);
 			for (int i = 0; i < skillCount; i++) {
 				SkillRecord skill = customPawn.Pawn.skills.skills[i];
-				if (!customPawn.IsDisabled(skill.def)) {
-					Passion passion = customPawn.passions[skill.def];
+				if (!customPawn.IsSkillDisabled(skill.def)) {
+					Passion passion = customPawn.currentPassions[skill.def];
 					if (passion > Passion.None) {
 						Texture2D image = (passion != Passion.Major) ? Textures.TexturePassionMinor : Textures.TexturePassionMajor;
 						GUI.color = Color.white;
@@ -2138,13 +2138,13 @@ namespace EdB.PrepareCarefully
 			Widgets.Label(rect2, skill.def.skillLabel);
 			Rect position = new Rect(rect2.xMax, 0, 24, 24);
 			int level = customPawn.GetSkillLevel(skill.def);
-			bool disabled = customPawn.IsDisabled(skill.def);
+			bool disabled = customPawn.IsSkillDisabled(skill.def);
 			if (!disabled) {
 				float barSize = (level > 0 ? (float)level : 0) / 20f;
 				Rect screenRect = new Rect(position.xMax, 0, rect.width - position.xMax, rect.height);
 				FillableBar(screenRect, barSize, Textures.TextureSkillBarFill);
 
-				int baseLevel = customPawn.GetBaseSkillLevel(skill.def);
+				int baseLevel = customPawn.GetSkillModifier(skill.def);
 				float baseBarSize = (baseLevel > 0 ? (float)baseLevel : 0) / 20f;
 				screenRect = new Rect(position.xMax, 0, rect.width - position.xMax, rect.height);
 				FillableBar(screenRect, baseBarSize, Textures.TextureSkillBarFill);
@@ -2155,8 +2155,8 @@ namespace EdB.PrepareCarefully
 
 				if (Widgets.ButtonInvisible(screenRect, false)) {
 					Vector2 pos = Event.current.mousePosition;
-					float x = pos.x - screenRect.x;
-					int value = (int) Math.Round((x / screenRect.width) * 20);
+					float x = pos.x - screenRect.x - 2;
+					int value = (int) Math.Ceiling((x / screenRect.width) * 20);
 					SoundDefOf.TickTiny.PlayOneShotOnCamera();
 					SetSkillLevel(skill, value);
 				}
@@ -2175,7 +2175,11 @@ namespace EdB.PrepareCarefully
 			Widgets.Label(rect3, label);
 			GUI.color = Color.white;
 			GUI.EndGroup();
+
 			TooltipHandler.TipRegion(rect, new TipSignal(GetSkillDescription(skill), skill.def.GetHashCode() * 397945));
+			//TooltipHandler.TipRegion(rect, new TipSignal("Unmodified: " + CurrentPawn.xGetUnmodifiedSkillLevel(skill.def)
+			//		 + "\n" + "Modifiers: " + CurrentPawn.xGetSkillModifier(skill.def)                                         
+			//		+ "\n" + GetSkillDescription(skill), skill.def.GetHashCode() * 397945));
 		}
 
 		// EdB: Copy of private static SkillUI.GetSkillDescription().
@@ -2482,14 +2486,14 @@ namespace EdB.PrepareCarefully
 		{
 			CustomPawn pawn = CurrentPawn;
 			SkillRecord record = pawn.Pawn.skills.skills[skillIndex];
-			pawn.IncreaseSkill(record.def);
+			pawn.IncrementSkillLevel(record.def);
 		}
 
 		protected void DecreaseSkill(int skillIndex)
 		{
 			CustomPawn pawn = CurrentPawn;
 			SkillRecord record = pawn.Pawn.skills.skills[skillIndex];
-			pawn.DecreaseSkill(record.def);
+			pawn.DecrementSkillLevel(record.def);
 		}
 
 		protected void IncreasePassion(int skillIndex)
