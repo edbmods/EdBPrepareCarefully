@@ -300,6 +300,10 @@ namespace EdB.PrepareCarefully
 					Log.Warning(string.Format("Unrecognized resource/equipment.  This may be caused by an invalid thing/stuff combination. (thing = {0}, stuff={1})", thing, stuff));
 					continue;
 				}
+
+				// TODO: Look into what the clusterSize and minSpacing parameters do.  If we are spawning an
+				// exceptionally large number of a given resource, would the numbers for those parameters
+				// need to be increased to allow the scatterer to find a place on the map?
 				if (!entry.gear && !entry.animal) {
 					new Genstep_ScatterThings {
 						nearPlayerStart = true,
