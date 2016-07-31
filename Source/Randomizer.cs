@@ -52,7 +52,7 @@ namespace EdB.PrepareCarefully
 			}
 		}
 
-		public void RandomizePawn(CustomPawn customPawn)
+		public void RandomizeAppearance(CustomPawn customPawn)
 		{
 			Pawn pawn;
 			int tries = 0;

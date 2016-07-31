@@ -17,13 +17,19 @@ namespace EdB.PrepareCarefully
 
 	public class CustomPawn
 	{
-		public Dictionary<SkillDef, int> baseSkillLevels = new Dictionary<SkillDef, int>();
-		public Dictionary<SkillDef, int> requiredSkillAdjustments = new Dictionary<SkillDef, int>();
-		protected Dictionary<SkillDef, int> skillAdjustments = new Dictionary<SkillDef, int>();
-		protected Dictionary<SkillDef, int> originalSkillAdjustments = new Dictionary<SkillDef, int>();
-		public Dictionary<SkillDef, bool> disabledSkills = new Dictionary<SkillDef, bool>();
-		public Dictionary<SkillDef, Passion> passions = new Dictionary<SkillDef, Passion>();
+		// The pawn's skill values before customization, without modifiers for backstories and traits.
+		// These values are saved so that the user can click the "Reset" button to restore them.
+		protected Dictionary<SkillDef, int> originalSkillLevels = new Dictionary<SkillDef, int>();
+
+		// The pawn's current skill levels, without modifiers for backstories and traits.
+		protected Dictionary<SkillDef, int> currentSkillLevels = new Dictionary<SkillDef, int>();
+	
+		// The pawn's skill value modifiers from selected backstories and traits.
+		protected Dictionary<SkillDef, int> skillLevelModifiers = new Dictionary<SkillDef, int>();
+
 		public Dictionary<SkillDef, Passion> originalPassions = new Dictionary<SkillDef, Passion>();
+		public Dictionary<SkillDef, Passion> currentPassions = new Dictionary<SkillDef, Passion>();
+
 		public bool randomRelations = false;
 		protected string incapable = null;
 		protected Pawn pawn;
@@ -120,14 +126,8 @@ namespace EdB.PrepareCarefully
 			}
 
 			// Set the skills.
-			ComputeBaseSkillLevels();
-			foreach (SkillRecord record in pawn.skills.skills) {
-				skillAdjustments[record.def] = record.level - baseSkillLevels[record.def] - requiredSkillAdjustments[record.def];
-				originalSkillAdjustments[record.def] = skillAdjustments[record.def];
-				passions[record.def] = record.passion;
-				originalPassions[record.def] = record.passion;
-			}
-			ComputePawnSkillLevels();
+			InitializeSkillLevelsAndPassions();
+			ComputeSkillLevelModifiers();
 
 			graphics.Clear();
 			colors.Clear();
@@ -176,6 +176,212 @@ namespace EdB.PrepareCarefully
 			}
 
 			pawn.health.capacities.Clear();
+		}
+
+		public void InitializeSkillLevelsAndPassions()
+		{
+			// Save the original passions and set the current values to the same.
+			foreach (SkillRecord record in pawn.skills.skills) {
+				originalPassions[record.def] = record.passion;
+				currentPassions[record.def] = record.passion;
+			}
+
+			// Compute and save the original unmodified skill levels.
+			// If the user's original, modified skill level was zero, we dont actually know what
+			// their original unadjusted value was.  For example, if they have the brawler trait
+			// (-6 shooting) and their shooting level is zero, what was the original skill level?
+			// We don't know.  It could have been anywhere from 0 to 6.
+			// We could maybe borrow some code from Pawn_StoryTracker.FinalLevelOfSkill() to be
+			// smarter about computing the value (i.e. factoring in the pawn's age, etc.), but
+			// instead we'll just pick a random number from the correct range if this happens.
+			foreach (var record in pawn.skills.skills) {
+				int negativeAdjustment = 0;
+				int positiveAdjustment = 0;
+				int modifier = ComputeSkillModifier(record.def);
+				if (modifier < 0) {
+					negativeAdjustment = -modifier;
+				}
+				else if (modifier > 0) {
+					positiveAdjustment = modifier;
+				}
+
+				// When figuring out the unadjusted value, take into account the special
+				// case where the adjusted value is 0 or 20.
+				int value = record.level;
+				if (value == 0 && negativeAdjustment > 0) {
+					value = Rand.RangeInclusive(1, negativeAdjustment);
+				}
+				else if (value == 20 && positiveAdjustment > 0) {
+					value = Rand.RangeInclusive(20 - positiveAdjustment, 20);
+				}
+				else {
+					value -= positiveAdjustment;
+					value += negativeAdjustment;
+				}
+
+				originalSkillLevels[record.def] = value;
+			}
+
+			// Set the current values to the original values.
+			foreach (SkillRecord record in pawn.skills.skills) {
+				currentSkillLevels[record.def] = originalSkillLevels[record.def];
+			}
+		}
+
+		public void RestoreSkillLevelsAndPassions()
+		{
+			// Restore the original passions.
+			foreach (SkillRecord record in pawn.skills.skills) {
+				currentPassions[record.def] = originalPassions[record.def];
+			}
+
+			// Restore the original skill levels.
+			ApplyOriginalSkillLevels();
+		}
+
+		// Restores the current skill level values to the saved, original values.
+		public void ApplyOriginalSkillLevels()
+		{
+			foreach (var record in pawn.skills.skills) {
+				currentSkillLevels[record.def] = originalSkillLevels[record.def];
+			}
+			CopySkillLevelsToPawn();
+		}
+
+		public void UpdateSkillLevelsForNewBackstoryOrTrait()
+		{
+			ComputeSkillLevelModifiers();
+			// Clear caches.
+			ResetIncapableOf();
+			pawn.health.capacities.Clear();
+		}
+
+		// Computes the skill level modifiers that the pawn gets from the selected backstories and traits.
+		public void ComputeSkillLevelModifiers()
+		{
+			foreach (var record in pawn.skills.skills) {
+				skillLevelModifiers[record.def] = ComputeSkillModifier(record.def);
+			}
+		}
+		protected int ComputeSkillModifier(SkillDef def)
+		{
+			int value = 0;
+			if (pawn.story.childhood.skillGainsResolved.ContainsKey(def)) {
+				value += pawn.story.childhood.skillGainsResolved[def];
+			}
+			if (pawn.story.adulthood.skillGainsResolved.ContainsKey(def)) {
+				value += pawn.story.adulthood.skillGainsResolved[def];
+			}
+			foreach (Trait trait in this.traits) {
+				if (trait != null) {
+					foreach (TraitDegreeData data in trait.def.degreeDatas) {
+						if (data.degree == trait.Degree) {
+							foreach (var pair in data.skillGains) {
+								SkillDef skillDef = pair.Key;
+								if (skillDef == def) {
+									value += pair.Value;
+								}
+							}
+							break;
+						}
+					}
+				}
+			}
+			return value;
+		}
+
+		public void DecrementSkillLevel(SkillDef def)
+		{
+			SetSkillLevel(def, GetSkillLevel(def) - 1);
+		}
+
+		public void IncrementSkillLevel(SkillDef def)
+		{
+			SetSkillLevel(def, GetSkillLevel(def) + 1);
+		}
+
+		public int GetSkillLevel(SkillDef def)
+		{
+			if (this.IsSkillDisabled(def)) {
+				return 0;
+			}
+			else {
+				int value = currentSkillLevels[def] + skillLevelModifiers[def];
+				if (value < SkillRecord.MinLevel) {
+					return SkillRecord.MinLevel;
+				}
+				else if (value > SkillRecord.MaxLevel) {
+					value = SkillRecord.MaxLevel;
+				}
+				return value;
+			}
+		}
+
+		public void SetSkillLevel(SkillDef def, int value)
+		{
+			if (value > 20) {
+				value = 20;
+			}
+			else if (value < 0) {
+				value = 0;
+			}
+			int modifier = skillLevelModifiers[def];
+			if (value < modifier) {
+				currentSkillLevels[def] = 0;
+			}
+			else {
+				currentSkillLevels[def] = value - modifier;
+			}
+			CopySkillLevelsToPawn();
+		}
+
+		// Any time a skill changes, update the underlying pawn with the new values.
+		protected void CopySkillLevelsToPawn()
+		{
+			foreach (var record in pawn.skills.skills) {
+				pawn.skills.GetSkill(record.def).level = GetSkillLevel(record.def);
+			}
+
+		}
+
+		// Set all unmodified skill levels to zero.
+		public void ClearSkills()
+		{
+			foreach (var record in pawn.skills.skills) {
+				currentSkillLevels[record.def] = 0;
+			}
+			CopySkillLevelsToPawn();
+		}
+
+		public bool IsSkillDisabled(SkillDef def)
+		{
+			return pawn.skills.GetSkill(def).TotallyDisabled == true;
+		}
+
+		public int GetSkillModifier(SkillDef def)
+		{
+			return skillLevelModifiers[def];
+		}
+
+		public int GetUnmodifiedSkillLevel(SkillDef def)
+		{
+			return currentSkillLevels[def];
+		}
+
+		public void SetUnmodifiedSkillLevel(SkillDef def, int value)
+		{
+			currentSkillLevels[def] = value;
+			CopySkillLevelsToPawn();
+		}
+
+		public int GetOriginalSkillLevel(SkillDef def)
+		{
+			return originalSkillLevels[def];
+		}
+
+		public void SetOriginalSkillLevel(SkillDef def, int value)
+		{
+			originalSkillLevels[def] = value;
 		}
 
 		protected bool ApparelIsTintedByDefault(ThingDef def, ThingDef stuffDef)
@@ -291,35 +497,35 @@ namespace EdB.PrepareCarefully
 		}
 
 		public void IncreasePassion(SkillDef def) {
-			if (IsDisabled(def)) {
+			if (IsSkillDisabled(def)) {
 				return;
 			}
-			if (passions[def] == Passion.None) {
-				passions[def] = Passion.Minor;
+			if (currentPassions[def] == Passion.None) {
+				currentPassions[def] = Passion.Minor;
 			}
-			else if (passions[def] == Passion.Minor) {
-				passions[def] = Passion.Major;
+			else if (currentPassions[def] == Passion.Minor) {
+				currentPassions[def] = Passion.Major;
 			}
-			else if (passions[def] == Passion.Major) {
-				passions[def] = Passion.None;
+			else if (currentPassions[def] == Passion.Major) {
+				currentPassions[def] = Passion.None;
 			}
-			pawn.skills.GetSkill(def).passion = passions[def];
+			pawn.skills.GetSkill(def).passion = currentPassions[def];
 		}
 
 		public void DecreasePassion(SkillDef def) {
-			if (IsDisabled(def)) {
+			if (IsSkillDisabled(def)) {
 				return;
 			}
-			if (passions[def] == Passion.None) {
-				passions[def] = Passion.Major;
+			if (currentPassions[def] == Passion.None) {
+				currentPassions[def] = Passion.Major;
 			}
-			else if (passions[def] == Passion.Minor) {
-				passions[def] = Passion.None;
+			else if (currentPassions[def] == Passion.Minor) {
+				currentPassions[def] = Passion.None;
 			}
-			else if (passions[def] == Passion.Major) {
-				passions[def] = Passion.Minor;
+			else if (currentPassions[def] == Passion.Major) {
+				currentPassions[def] = Passion.Minor;
 			}
-			pawn.skills.GetSkill(def).passion = passions[def];
+			pawn.skills.GetSkill(def).passion = currentPassions[def];
 		}
 
 		public List<ThingDef> AllAcceptedApparel {
@@ -548,8 +754,7 @@ namespace EdB.PrepareCarefully
 			}
 			set {
 				pawn.story.childhood = value;
-				ComputePawnSkillLevels();
-				this.pawn.health.capacities.Clear();
+				ResetBackstories();
 			}
 		}
 
@@ -559,25 +764,14 @@ namespace EdB.PrepareCarefully
 			}
 			set {
 				pawn.story.adulthood = value;
-				ComputePawnSkillLevels();
-				this.pawn.health.capacities.Clear();
-				ResetBodyType();
+				ResetBackstories();
 			}
 		}
 
-		protected void CheckSkills() {
-			foreach (var record in pawn.skills.skills) {
-				int value = GetSkillLevel(record.def);
-				if (value > 20) {
-					skillAdjustments[record.def] -= (value - 20);
-				}
-				if (IsDisabled(record.def)) {
-					record.passion = Passion.None;
-				}
-				else {
-					record.passion = passions[record.def];
-				}
-			}
+		protected void ResetBackstories()
+		{
+			UpdateSkillLevelsForNewBackstoryOrTrait();
+			ResetBodyType();
 		}
 
 		public string HeadGraphicPath {
@@ -627,9 +821,7 @@ namespace EdB.PrepareCarefully
 					pawn.story.traits.GainTrait(trait);
 				}
 			}
-			ResetIncapableOf();
-			pawn.health.capacities.Clear();
-			ComputePawnSkillLevels();
+			UpdateSkillLevelsForNewBackstoryOrTrait();
 		}
 
 		public bool HasTrait(Trait trait) {
@@ -766,170 +958,6 @@ namespace EdB.PrepareCarefully
 			}
 		}
 
-		public void ResetSkills()
-		{
-			foreach (var record in pawn.skills.skills) {
-				this.skillAdjustments[record.def] = this.originalSkillAdjustments[record.def];
-				this.passions[record.def] = this.originalPassions[record.def];
-			}
-			ComputePawnSkillLevels();
-		}
-
-		public void ClearSkills()
-		{
-			foreach (var record in pawn.skills.skills) {
-				this.skillAdjustments[record.def] = 0;
-				this.passions[record.def] = Passion.None;
-			}
-			ComputePawnSkillLevels();
-		}
-
-		public void ResetOriginalSkillsAndPassions()
-		{
-			foreach (var record in pawn.skills.skills) {
-				this.originalSkillAdjustments[record.def] = this.skillAdjustments[record.def];
-				this.originalPassions[record.def] = this.passions[record.def];
-			}
-		}
-
-		protected void ComputePawnSkillLevels() {
-			ResetIncapableOf();
-			ResetDisabledSkills();
-			ComputeBaseSkillLevels();
-			foreach (var record in pawn.skills.skills) {
-				SkillDef def = record.def;
-				pawn.skills.GetSkill(def).level = GetSkillLevel(def);
-				pawn.skills.GetSkill(def).passion = passions[def];
-			}
-		}
-
-		protected void ComputeBaseSkillLevels()
-		{
-			foreach (var record in pawn.skills.skills) {
-				baseSkillLevels[record.def] = 0;
-			}
-			foreach (SkillDef def in pawn.story.childhood.skillGainsResolved.Keys) {
-				baseSkillLevels[def] += pawn.story.childhood.skillGainsResolved[def];
-			}
-			foreach (SkillDef def in pawn.story.adulthood.skillGainsResolved.Keys) {
-				baseSkillLevels[def] += pawn.story.adulthood.skillGainsResolved[def];
-			}
-			foreach (Trait trait in pawn.story.traits.allTraits) {
-				foreach (TraitDegreeData data in trait.def.degreeDatas) {
-					foreach (var pair in data.skillGains) {
-						SkillDef def = pair.Key;
-						baseSkillLevels[def] += pair.Value;
-					}
-				}
-			}
-			foreach (var pair in baseSkillLevels) {
-				//requiredSkillAdjustments[pair.Key] = pair.Value >= -3 ? 0 : (-pair.Value - 3);
-				requiredSkillAdjustments[pair.Key] = pair.Value < 0 ? -pair.Value : 0;
-			}
-		}
-
-		public int GetBaseSkillLevel(SkillDef def)
-		{
-			return baseSkillLevels[def];
-		}
-
-		public int GetSkillAdjustments(SkillDef def)
-		{
-			return skillAdjustments[def];
-		}
-
-		public int GetRequiredSkillAdjustments(SkillDef def)
-		{
-			return requiredSkillAdjustments[def];
-		}
-
-		public int GetSkillLevel(SkillDef def)
-		{
-			if (this.IsDisabled(def)) {
-				return 0;
-			}
-			else {
-				int level = baseSkillLevels[def] +  requiredSkillAdjustments[def] + skillAdjustments[def];
-				return level;
-			}
-		}
-
-		public void IncreaseSkill(SkillDef def)
-		{
-			if (!IsDisabled(def) && GetSkillLevel(def) < 20) {
-				skillAdjustments[def]++;
-				pawn.skills.GetSkill(def).level = GetSkillLevel(def);
-			}
-		}
-
-		public void SetSkillLevel(SkillDef def, int value)
-		{
-			value -= baseSkillLevels[def];
-			if (value > 20) {
-				value = 20;
-			}
-			else if (value < 0) {
-				value = 0;
-			}
-			if (!IsDisabled(def)) {
-				skillAdjustments[def] = value;
-				pawn.skills.GetSkill(def).level = GetSkillLevel(def);
-			}
-		}
-
-		// Maximum skill level is always 20.
-		protected int MaximumSkillLevel(SkillDef def) {
-			return 20;
-		}
-
-		// Minimum skill level is normal 0, but it may be higher if backstories and traits adjust it.
-		protected int MinimumSkillLevel(SkillDef def) {
-			int value = UnadjustedSkillLevel(def);
-			if (value < 0) {
-				value = 0;
-			}
-			return value;
-		}
-
-		protected int UnadjustedSkillLevel(SkillDef def) {
-			int value = 0;
-			value += pawn.story.childhood.skillGainsResolved[def];
-			value += pawn.story.adulthood.skillGainsResolved[def];
-			foreach (Trait trait in this.traits) {
-				if (trait != null) {
-					foreach (TraitDegreeData data in trait.def.degreeDatas) {
-						foreach (var pair in data.skillGains) {
-							SkillDef skillDef = pair.Key;
-							if (skillDef == def) {
-								value += pair.Value;
-							}
-						}
-					}
-				}
-			}
-			return value;
-		}
-
-		public void SetSkillAdjustment(SkillDef def, int value)
-		{
-			if (value < 0) {
-				value = 0;
-			}
-			if (baseSkillLevels[def] + value > 20) {
-				value -= (baseSkillLevels[def] - 20);
-			}
-			skillAdjustments[def] = value;
-			pawn.skills.GetSkill(def).level = GetSkillLevel(def);
-		}
-
-		public void DecreaseSkill(SkillDef def)
-		{
-			if (!IsDisabled(def) && skillAdjustments[def] > 0) {
-				skillAdjustments[def]--;
-				pawn.skills.GetSkill(def).level = GetSkillLevel(def);
-			}
-		}
-
 		public string ResetIncapableOf()
 		{
 			List<string> incapableList = new List<string>();
@@ -946,44 +974,12 @@ namespace EdB.PrepareCarefully
 			return incapable;
 		}
 
-		public void	ResetDisabledSkills()
-		{
-			foreach (var record in pawn.skills.skills) {
-				disabledSkills[record.def] = false;
-			}
-			foreach (var record in pawn.skills.skills) {
-				if (CheckForDisabledSkill(record.def)) {
-					disabledSkills[record.def] = true;
-				}
-			}
-		}
-
-		protected bool CheckForDisabledSkill(SkillDef def)
-		{
-			foreach (WorkTypeDef w in DefDatabase<WorkTypeDef>.AllDefs) {
-				using (List<SkillDef>.Enumerator enumerator = w.relevantSkills.GetEnumerator()) {
-					while (enumerator.MoveNext()) {
-						if (enumerator.Current == def && pawn.story.WorkTypeIsDisabled(w)) {
-							return true;
-						}
-					}
-				}
-			}
-			return false;
-		}
-
-		public bool IsDisabled(SkillDef skill)
-		{
-			return pawn.skills.GetSkill(skill).TotallyDisabled;
-			//return disabledSkills[skill];
-		}
-
 		public bool IsApparelConflict()
 		{
 			return false;
 		}
 
-		protected Pawn CopyPawn(Pawn pawn)
+		protected Pawn CopyPawn(Pawn source)
 		{
 			// TODO: Evaluate
 			//Pawn result = PawnGenerator.GeneratePawn(PawnKindDefOf.Colonist, Faction.OfColony);
@@ -992,33 +988,31 @@ namespace EdB.PrepareCarefully
 			// Reset health to remove any old injuries.
 			result.health = new Pawn_HealthTracker(result);
 
-			result.gender = pawn.gender;
+			result.gender = source.gender;
 
 			// Copy age.
-			result.ageTracker.BirthAbsTicks = pawn.ageTracker.BirthAbsTicks;
-			result.ageTracker.AgeBiologicalTicks = pawn.ageTracker.AgeBiologicalTicks;
+			result.ageTracker.BirthAbsTicks = source.ageTracker.BirthAbsTicks;
+			result.ageTracker.AgeBiologicalTicks = source.ageTracker.AgeBiologicalTicks;
 
 			// Copy story.
-			result.story.adulthood = pawn.story.adulthood;
-			result.story.childhood = pawn.story.childhood;
+			result.story.adulthood = source.story.adulthood;
+			result.story.childhood = source.story.childhood;
 			result.story.traits = new TraitSet(result);
-			foreach (var t in pawn.story.traits.allTraits) {
+			foreach (var t in source.story.traits.allTraits) {
 				result.story.traits.allTraits.Add(t);
 			}
-			result.story.skinWhiteness = pawn.story.skinWhiteness;
-			NameTriple name = pawn.Name as NameTriple;
+			result.story.skinWhiteness = source.story.skinWhiteness;
+			NameTriple name = source.Name as NameTriple;
 			result.Name = new NameTriple(name.First, name.Nick, name.Last);
-			result.story.hairDef = pawn.story.hairDef;
-			result.story.hairColor = pawn.story.hairColor;
+			result.story.hairDef = source.story.hairDef;
+			result.story.hairColor = source.story.hairColor;
 			// Need to use reflection to set the private graphic path field.
-			typeof(Pawn_StoryTracker).GetField("headGraphicPath", BindingFlags.Instance | BindingFlags.NonPublic).SetValue(pawn.story, pawn.story.HeadGraphicPath);
-			result.story.crownType = pawn.story.crownType;
-			// Clear cached values from the story tracker.
-			CustomPawn.ClearCachedDisabledWorkTypes(pawn.story);
+			typeof(Pawn_StoryTracker).GetField("headGraphicPath", BindingFlags.Instance | BindingFlags.NonPublic).SetValue(source.story, source.story.HeadGraphicPath);
+			result.story.crownType = source.story.crownType;
 
 			// Copy apparel.
 			List<Apparel> pawnApparelList = (List<Apparel>)typeof(Pawn_ApparelTracker).GetField("wornApparel",
-				BindingFlags.NonPublic | BindingFlags.Instance).GetValue(pawn.apparel);
+				BindingFlags.NonPublic | BindingFlags.Instance).GetValue(source.apparel);
 			List<Apparel> resultApparelList = (List<Apparel>)typeof(Pawn_ApparelTracker).GetField("wornApparel",
 				BindingFlags.NonPublic | BindingFlags.Instance).GetValue(result.apparel);
 			resultApparelList.Clear();
@@ -1028,16 +1022,19 @@ namespace EdB.PrepareCarefully
 
 			// Copy skills.
 			result.skills.skills.Clear();
-			foreach (var s in pawn.skills.skills) {
+			foreach (var s in source.skills.skills) {
 				SkillRecord record = new SkillRecord(result, s.def);
 				record.level = s.level;
 				record.passion = s.passion;
 				record.xpSinceLastLevel = s.xpSinceLastLevel;
 				result.skills.skills.Add(record);
+				if (record.level < 0) {
+					Log.Error("WTF");
+				}
 			}
 
 			// Copy relationships
-			result.relations = pawn.relations;
+			result.relations = source.relations;
 
 			ClearCachedDisabledWorkTypes(result.story);
 
@@ -1045,38 +1042,36 @@ namespace EdB.PrepareCarefully
 		}
 
 		public Pawn ConvertToPawn(bool resolveGraphics) {
-			// TODO: Evaluate
-			//Pawn pawn = PawnGenerator.GeneratePawn(PawnKindDefOf.Colonist, Faction.OfColony);
-			Pawn pawn = new Randomizer().GenerateColonist();
+			Pawn result = new Randomizer().GenerateColonist();
 
-			pawn.gender = this.pawn.gender;
-			pawn.story.adulthood = Adulthood;
-			pawn.story.childhood = Childhood;
-			TraitSet traitSet = new TraitSet(pawn);
+			result.gender = this.pawn.gender;
+			result.story.adulthood = Adulthood;
+			result.story.childhood = Childhood;
+			TraitSet traitSet = new TraitSet(result);
 			traitSet.allTraits.Clear();
 			foreach (Trait trait in traits) {
 				if (trait != null) {
 					traitSet.allTraits.Add(trait);
 				}
 			}
-			pawn.story.traits = traitSet;
-			pawn.story.skinWhiteness = this.pawn.story.skinWhiteness;
-			pawn.story.hairDef = this.pawn.story.hairDef;
-			pawn.story.hairColor = colors[PawnLayers.Hair];
+			result.story.traits = traitSet;
+			result.story.skinWhiteness = this.pawn.story.skinWhiteness;
+			result.story.hairDef = this.pawn.story.hairDef;
+			result.story.hairColor = colors[PawnLayers.Hair];
 			// Need to use reflection to set the private graphic path method.
-			typeof(Pawn_StoryTracker).GetField("headGraphicPath", BindingFlags.Instance | BindingFlags.NonPublic).SetValue(pawn.story, HeadGraphicPath);
+			typeof(Pawn_StoryTracker).GetField("headGraphicPath", BindingFlags.Instance | BindingFlags.NonPublic).SetValue(result.story, HeadGraphicPath);
 			// Clear cached values from the story tracker.
 			// TODO: It might make more sense to create a new instance of Pawn_StoryTracker, but need
 			// to make sure all of the details are filled in with that approach.
-			CustomPawn.ClearCachedDisabledWorkTypes(pawn.story);
+			CustomPawn.ClearCachedDisabledWorkTypes(result.story);
 
-			pawn.Name = this.pawn.Name;
+			result.Name = this.pawn.Name;
 
-			pawn.ageTracker.BirthAbsTicks = this.pawn.ageTracker.BirthAbsTicks;
-			pawn.ageTracker.AgeBiologicalTicks = this.pawn.ageTracker.AgeBiologicalTicks;
+			result.ageTracker.BirthAbsTicks = this.pawn.ageTracker.BirthAbsTicks;
+			result.ageTracker.AgeBiologicalTicks = this.pawn.ageTracker.AgeBiologicalTicks;
 
 			FieldInfo wornApparelField = typeof(Pawn_ApparelTracker).GetField("wornApparel", BindingFlags.Instance | BindingFlags.NonPublic);
-			List<Apparel> apparel = (List<Apparel>)wornApparelField.GetValue(pawn.apparel);
+			List<Apparel> apparel = (List<Apparel>)wornApparelField.GetValue(result.apparel);
 			apparel.Clear();
 
 			AddApparel(PawnLayers.Pants, apparel);
@@ -1085,14 +1080,17 @@ namespace EdB.PrepareCarefully
 			AddApparel(PawnLayers.TopClothingLayer, apparel);
 			AddApparel(PawnLayers.Hat, apparel);
 
-			foreach (SkillRecord skill in pawn.skills.skills) {
+			foreach (SkillRecord skill in result.skills.skills) {
 				int value = this.GetSkillLevel(skill.def);
 				if (value < 0) {
 					value = 0;
 				}
+				if (value > 20) {
+					value = 20;
+				}
 				skill.level = value;
-				if (!IsDisabled(skill.def)) {
-					skill.passion = this.passions[skill.def];
+				if (!IsSkillDisabled(skill.def)) {
+					skill.passion = this.currentPassions[skill.def];
 					skill.xpSinceLastLevel = Rand.Range(skill.XpRequiredForLevelUp * 0.1f, skill.XpRequiredForLevelUp * 0.5f);
 				}
 				else {
@@ -1102,13 +1100,13 @@ namespace EdB.PrepareCarefully
 			}
 
 			if (resolveGraphics) {
-				pawn.Drawer.renderer.graphics.ResolveAllGraphics();
+				result.Drawer.renderer.graphics.ResolveAllGraphics();
 			}
 
-			pawn.relations.ClearAllRelations();
-			ClearCachedDisabledWorkTypes(pawn.story);
+			result.relations.ClearAllRelations();
+			ClearCachedDisabledWorkTypes(result.story);
 
-			return pawn;
+			return result;
 		}
 
 		public Pawn ConvertToPawn()

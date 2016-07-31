@@ -262,9 +262,10 @@ namespace EdB.PrepareCarefully
 					Failed = true;
 					continue;
 				}
-				pawn.passions[def] = record.passions[i];
-				pawn.SetSkillAdjustment(def, record.skillValues[i]);
-				pawn.ResetOriginalSkillsAndPassions();
+				pawn.currentPassions[def] = record.passions[i];
+				pawn.originalPassions[def] = record.passions[i];
+				pawn.SetOriginalSkillLevel(def, record.skillValues[i]);
+				pawn.SetUnmodifiedSkillLevel(def, record.skillValues[i]);
 			}
 			if (record.originalPassions != null && record.originalPassions.Count == record.skillNames.Count) {
 				for (int i = 0; i < record.skillNames.Count; i++) {
