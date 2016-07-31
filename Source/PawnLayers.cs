@@ -14,8 +14,9 @@ namespace EdB.PrepareCarefully
 		public const int HeadType = 5;
 		public const int Hair = 6;
 		public const int Hat = 7;
+		public const int Accessory = 8;
 
-		public const int Count = Hat + 1;
+		public const int Count = Accessory + 1;
 
 		public static String Label(int layer) {
 			switch (layer) {
@@ -35,6 +36,8 @@ namespace EdB.PrepareCarefully
 					return "EdB.PawnLayer.Hair".Translate();
 				case Hat:
 					return "EdB.PawnLayer.Hat".Translate();
+				case Accessory:
+					return "EdB.PawnLayer.Accessory".Translate();
 				default:
 					return "";
 			}
@@ -50,6 +53,8 @@ namespace EdB.PrepareCarefully
 					return TopClothingLayer;
 				case ApparelLayer.Overhead:
 					return Hat;
+				case ApparelLayer.Accessory:
+					return Accessory;
 				default:
 					return -1;
 			}
@@ -68,6 +73,8 @@ namespace EdB.PrepareCarefully
 						return MiddleClothingLayer;
 					case ApparelLayer.Shell:
 						return TopClothingLayer;
+					case ApparelLayer.Accessory:
+						return Accessory;
 					case ApparelLayer.Overhead:
 						return Hat;
 					default:
@@ -91,6 +98,8 @@ namespace EdB.PrepareCarefully
 					return ApparelLayer.Shell;
 				case Hat:
 					return ApparelLayer.Overhead;
+				case Accessory:
+					return ApparelLayer.Accessory;
 				default:
 					return ApparelLayer.OnSkin;
 			}
@@ -113,6 +122,8 @@ namespace EdB.PrepareCarefully
 				case Hair:
 					return false;
 				case Hat:
+					return true;
+				case Accessory:
 					return true;
 				default:
 					return false;
