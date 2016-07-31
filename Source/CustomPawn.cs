@@ -144,8 +144,6 @@ namespace EdB.PrepareCarefully
 			colors.Add(Color.white);
 			graphics.Add(null);
 			colors.Add(Color.white);
-			graphics.Add(null);
-			colors.Add(Color.white);
 
 			graphics.Add(GraphicDatabaseHeadRecords.GetHeadNamed(pawn.story.HeadGraphicPath, pawn.story.SkinColor));
 			colors.Add(pawn.story.SkinColor);
@@ -154,6 +152,8 @@ namespace EdB.PrepareCarefully
 			graphics.Add(GraphicsCache.Instance.GetHair(pawn.story.hairDef));
 			colors.Add(pawn.story.hairColor);
 
+			graphics.Add(null);
+			colors.Add(Color.white);
 			graphics.Add(null);
 			colors.Add(Color.white);
 

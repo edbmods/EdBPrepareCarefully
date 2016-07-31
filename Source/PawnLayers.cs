@@ -11,12 +11,12 @@ namespace EdB.PrepareCarefully
 		public const int Pants = 2;
 		public const int MiddleClothingLayer = 3;
 		public const int TopClothingLayer = 4;
-		public const int Accessory = 5;
-		public const int HeadType = 6;
-		public const int Hair = 7;
-		public const int Hat = 8;
+		public const int HeadType = 5;
+		public const int Hair = 6;
+		public const int Hat = 7;
+		public const int Accessory = 8;
 
-		public const int Count = Hat + 1;
+		public const int Count = Accessory + 1;
 
 		public static String Label(int layer) {
 			switch (layer) {
