@@ -7,7 +7,7 @@
     <OutputType>Library</OutputType>
     <RootNamespace>EdB.PrepareCarefully</RootNamespace>
     <AssemblyName>EdBPrepareCarefully</AssemblyName>
-    <ReleaseVersion>0.14.0.5</ReleaseVersion>
+    <ReleaseVersion>0.14.1.1</ReleaseVersion>
     <UseMSBuildEngine>False</UseMSBuildEngine>
     <TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
     <ApplicationManifest>ScenPart_PlayerPawnsArriveMethodCarefully.manifest</ApplicationManifest>
@@ -76,10 +76,8 @@
     <Compile Include="Source\TabRecordExtensions.cs" />
     <Compile Include="Source\LoadableEquipment.cs" />
     <Compile Include="Source\IEquipment.cs" />
-    <Compile Include="Source\Genstep_SpawnStartingResources.cs" />
     <Compile Include="Source\AgeInjuryUtility.cs" />
     <Compile Include="Source\EquipmentKey.cs" />
-    <Compile Include="Source\Genstep_Colonists.cs" />
     <Compile Include="Source\ScrollView.cs" />
     <Compile Include="Source\Dialog_Options.cs" />
     <Compile Include="Source\Panel_Relations.cs" />
