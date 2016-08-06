@@ -138,5 +138,5 @@ Prepare Carefully is a map generation mod.  It appears that you have another mod
 
 Your colonist customizations will be ignored.</EdB.PrepareCarefully.ModConfigProblem.Description>
 	<EdB.PawnLayer.Accessory>Accessory</EdB.PawnLayer.Accessory>
-	
+	<EdB.PrepareCarefully.ScenarioPoints>The starting colonists and resources that were randomly generated for this scenario were worth {0} points.</EdB.PrepareCarefully.ScenarioPoints>
 </LanguageData>

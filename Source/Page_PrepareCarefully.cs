@@ -70,6 +70,8 @@ namespace EdB.PrepareCarefully
 			Widgets.Label(rect, label);
 
 			string tooltipText = "";
+			tooltipText += "EdB.PrepareCarefully.ScenarioPoints".Translate(new object[] { PrepareCarefully.Instance.StartingPoints });
+			tooltipText += "\n\n";
 			foreach (var c in cost.colonistDetails) {
 				tooltipText += "EdB.CostSummaryColonist".Translate(new object[] { c.name, (c.total - c.apparel - c.bionics)}) + "\n";
 			}
@@ -84,8 +86,6 @@ namespace EdB.PrepareCarefully
 			Text.Anchor = TextAnchor.UpperLeft;
 			Text.Font = GameFont.Small;
 		
-			// Removed points.
-			/*
 			string optionLabel;
 			float optionTop = parentRect.height - 97;
 			optionLabel = "EdB.PrepareCarefully.UsePoints".Translate();
@@ -95,16 +95,6 @@ namespace EdB.PrepareCarefully
 			GUI.color = Color.white;
 			TooltipHandler.TipRegion(optionRect, "EdB.PrepareCarefully.UsePoints.Tip".Translate());
 			Widgets.Checkbox(new Vector2(optionRect.x + optionRect.width, optionRect.y - 3), ref Config.pointsEnabled, 24, false);
-
-			GUI.color = ColorText;
-			optionLabel = "EdB.PrepareCarefully.FixedPoints".Translate();
-			Vector2 fixedPointsSize = Text.CalcSize(optionLabel);
-			Rect fixedPointsRect = new Rect(optionRect.x + optionRect.width + 40, optionTop, fixedPointsSize.x + 10, 32);
-			Widgets.Label(fixedPointsRect, optionLabel);
-			GUI.color = Color.white;
-			TooltipHandler.TipRegion(fixedPointsRect, "EdB.PrepareCarefully.FixedPoints.Tip".Translate(new object[] { Config.points }));
-			Widgets.Checkbox(new Vector2(fixedPointsRect.x + fixedPointsRect.width, fixedPointsRect.y - 3), ref Config.fixedPointsEnabled, 24, !Config.pointsEnabled);
-			*/
 		}
 
 		protected void DrawPresetButtons()

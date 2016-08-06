@@ -168,12 +168,11 @@ namespace EdB.PrepareCarefully
 
 		private AcceptanceReport CanStart()
 		{
-			// Removing points.
-			//if (Config.pointsEnabled) {
-			//	if (PrepareCarefully.Instance.PointsRemaining < 0) {
-			//		return new AcceptanceReport("EdB.NotEnoughPoints".Translate());
-			//	}
-			//}
+			if (Config.pointsEnabled) {
+				if (PrepareCarefully.Instance.PointsRemaining < 0) {
+					return new AcceptanceReport("EdB.NotEnoughPoints".Translate());
+				}
+			}
 			int pawnCount = PrepareCarefully.Instance.Pawns.Count;
 			if (Config.hardMaxColonists != null && pawnCount > Config.hardMaxColonists) {
 				if (Config.hardMaxColonists == 1) {
