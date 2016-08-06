@@ -562,13 +562,17 @@ namespace EdB.PrepareCarefully
 		}
 
 		public Color GetStuffColor(int layer) {
-			ThingDef apparelDef = this.selectedApparel[layer];
-			if (apparelDef != null) {
-				Color color = this.colors[layer];
-				if (apparelDef.MadeFromStuff) {
-					ThingDef stuffDef = this.selectedStuff[layer];
-					if (!stuffDef.stuffProps.allowColorGenerators) {
-						return stuffDef.stuffProps.color;
+			if (this.selectedApparel.Count > layer) {
+				ThingDef apparelDef = this.selectedApparel[layer];
+				if (apparelDef != null) {
+					Color color = this.colors[layer];
+					if (apparelDef.MadeFromStuff) {
+						ThingDef stuffDef = this.selectedStuff[layer];
+						if (stuffDef != null && stuffDef.stuffProps != null) {
+							if (!stuffDef.stuffProps.allowColorGenerators) {
+								return stuffDef.stuffProps.color;
+							}
+						}
 					}
 				}
 			}
