@@ -135,13 +135,10 @@ namespace EdB.PrepareCarefully
 		public bool ModEnabled
 		{
 			get {
-				ModMetaData mod = ModLister.AllInstalledMods.First((ModMetaData m) => {
-					return m.Name.Equals(ModName);
+				ModMetaData mod = ModLister.AllInstalledMods.FirstOrDefault((ModMetaData m) => {
+					return m.Name.Equals(ModName) && m.Active;
 				});
-				if (mod == null) {
-					return false;
-				}
-				return mod.Active;
+				return mod != null;
 			}
 		}
     }
