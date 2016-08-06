@@ -110,9 +110,11 @@ namespace EdB.PrepareCarefully
 			cost.Clear();
 			cost.name = pawn.NickName;
 
+			// Start with the market value plus a bit of a mark-up.
 			cost.marketValue = pawn.Pawn.MarketValue;
 			cost.marketValue += 300;
 
+			// Reduce cost if random injuries have been chosen.
 			if (pawn.RandomInjuries) {
 				float ageMultiplier = pawn.BiologicalAge;
 				if (ageMultiplier > 100) {
@@ -124,6 +126,9 @@ namespace EdB.PrepareCarefully
 				cost.marketValue -= injuryValue;
 			}
 
+			// Calculate passion cost.  Each passion above 8 makes all passions
+			// cost more.  Minor passion counts as one passion.  Major passion
+			// counts as 3.
 			double skillCount = pawn.currentPassions.Keys.Count();
 			double passionLevelCount = 0;
 			double passionLevelCost = 20;
@@ -134,7 +139,7 @@ namespace EdB.PrepareCarefully
 				int level = pawn.GetSkillLevel(def);
 
 				if (passion == Passion.Major) {
-					passionLevelCount += 2.0;
+					passionLevelCount += 3.0;
 					passionateSkillCount += 1.0;
 				}
 				else if (passion == Passion.Minor) {
@@ -142,14 +147,14 @@ namespace EdB.PrepareCarefully
 					passionateSkillCount += 1.0;
 				}
 			}
-
+			double levelCost = passionLevelCost;
 			if (passionLevelCount > 8) {
 				double penalty = passionLevelCount - 8;
-				cost.marketValue += (passionLevelCost + 10) * penalty;
-				passionLevelCount -= 8;
+				levelCost += penalty * 0.25;
 			}
-			cost.marketValue += passionLevelCost * passionLevelCount;
+			cost.marketValue += levelCost * passionLevelCount;
 
+			// Calculat cost of worn apparel.
 			for (int layer = 0; layer < PawnLayers.Count; layer++) {
 				if (PawnLayers.IsApparelLayer(layer)) {
 					var def = pawn.GetAcceptedApparel(layer);
@@ -176,7 +181,8 @@ namespace EdB.PrepareCarefully
 					cost.apparel += c;
 				}
 			}
-				
+
+			// Calculate cost for any materials needed for implants.
 			foreach (Implant option in pawn.Implants) {
 
 				// Check if there are any ancestor parts that override the selection.
@@ -213,6 +219,8 @@ namespace EdB.PrepareCarefully
 			cost.apparel = Math.Ceiling(cost.apparel);
 			cost.bionics = Math.Ceiling(cost.bionics);
 
+			// Use a multiplier to balance pawn cost vs. equipment cost.
+			// Disabled for now.
 			cost.Multiply(1.0);
 
 			cost.ComputeTotal();

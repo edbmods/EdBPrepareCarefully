@@ -93,12 +93,7 @@ namespace EdB.PrepareCarefully
 
 		public int PointsRemaining {
 			get {
-				if (config.fixedPointsEnabled) {
-					return config.points - (int) Cost.total;
-				}
-				else {
-					return StartingPoints - (int) Cost.total;
-				}
+				return StartingPoints - (int) Cost.total;
 			}
 		}
 

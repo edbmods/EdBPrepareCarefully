@@ -13,7 +13,6 @@ namespace EdB.PrepareCarefully
 		public int maxColonists = 12;
 		public Nullable<int> hardMaxColonists = null;
 		public bool pointsEnabled = false;
-		public bool fixedPointsEnabled = false;
 	}
 }
 
