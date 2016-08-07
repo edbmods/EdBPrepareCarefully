@@ -12,7 +12,7 @@ namespace EdB.PrepareCarefully
     class ModController : UnityEngine.MonoBehaviour
     {
 		public static readonly string ModName = "EdB Prepare Carefully";
-		public static readonly string Version = "0.13.0.3";
+		public static readonly string Version = "0.14.2.1";
 
 		Window currentLayer = null;
 		bool gameplay = false;
