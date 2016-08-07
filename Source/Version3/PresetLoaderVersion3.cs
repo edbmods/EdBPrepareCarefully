@@ -28,7 +28,6 @@ namespace EdB.PrepareCarefully
 
 				Scribe_Values.LookValue<bool>(ref usePoints, "usePoints", true, false);
 				Scribe_Values.LookValue<int>(ref startingPoints, "startingPoints", 0, false);
-				PrepareCarefully.Instance.StartingPoints = startingPoints;
 				Scribe_Values.LookValue<string>(ref ModString, "mods", "", false);
 
 				try {
