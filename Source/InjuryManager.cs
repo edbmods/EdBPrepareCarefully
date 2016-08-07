@@ -128,14 +128,13 @@ namespace EdB.PrepareCarefully
 				}
 			}
 
-			// Sort injury options by their label before adding them to the full list of injury options.
-			oldInjuries.Sort((InjuryOption x, InjuryOption y) => {
-				return string.Compare(x.Label, y.Label);
-			});
+			// Add old injuries to the full list of injury options
+			options.AddRange(oldInjuries);
+
+			// Sort by name.
 			options.Sort((InjuryOption x, InjuryOption y) => {
 				return string.Compare(x.Label, y.Label);
 			});
-			options.AddRange(oldInjuries);
 		}
 
 		public void InitializePawnInjuries(Pawn pawn, CustomPawn customPawn)
