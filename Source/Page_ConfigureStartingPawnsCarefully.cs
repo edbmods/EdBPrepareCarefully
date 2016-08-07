@@ -178,7 +178,7 @@ namespace EdB.PrepareCarefully
 					return x.label.CompareTo(y.label);
 				}
 			});
-			femaleHairDefs.Sort((HairDef x, HairDef y) => {
+			maleHairDefs.Sort((HairDef x, HairDef y) => {
 				if (x.label == null) {
 					return -1;
 				}
