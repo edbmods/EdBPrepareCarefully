@@ -36,15 +36,15 @@
 	<EdB.PointsRemaining>Points Remaining: {0}</EdB.PointsRemaining>
 	<EdB.PointsSpent>Points Spent: {0}</EdB.PointsSpent>
 	<EdB.PointsUnlimited>Unlimited</EdB.PointsUnlimited>
-	<EdB.PointsBalancedStart>Use Points</EdB.PointsBalancedStart>
-	<EdB.PointsBalancedStartTip>Enable points if you want to maintain a balanced start by paying for skills, additional colonists and equipment from a fixed number of points.  Or disable points entirely to set up your starting colonists however you'd like!</EdB.PointsBalancedStartTip>
+	<EdB.PointsBalancedStart>Use Point Limits</EdB.PointsBalancedStart>
+	<EdB.PointsBalancedStartTip></EdB.PointsBalancedStartTip>
 	<EdB.Cost>Cost</EdB.Cost>
 	<EdB.NotEnoughPoints>You've spent too many points.</EdB.NotEnoughPoints>
 	<EdB.PresetPawnLoadFailed>Failed to load colonists from the preset.  Check that all required mods are enabled.</EdB.PresetPawnLoadFailed>
 	<EdB.PresetIncompatible>Failed to load colonists from the preset.  Was the preset created with an earlier version of the game?</EdB.PresetIncompatible>
-	<EdB.DisablePoints>Disable points</EdB.DisablePoints>
-	<EdB.EnablePoints>Enable points</EdB.EnablePoints>
-	<EdB.BackstoryWarning>The description for this backstory may not match the name and/or gender that you've selected for this colonist.</EdB.BackstoryWarning>
+	<EdB.BackstoryWarning>The description for this backstory may not match the name and/or gender that you've selected for this colonist.
+
+This has no impact on gameplay, but you may notice the mismatch when reading the backstory.</EdB.BackstoryWarning>
 	<EdB.Age>Age:</EdB.Age>
 	<EdB.NewColonistTab>New Colonist</EdB.NewColonistTab>
 	<EdB.LoadColonistButton>Load Colonist</EdB.LoadColonistButton>
@@ -86,8 +86,10 @@
 	<EdB.PrepareCarefully.EquipmentTab.Animals>Animals</EdB.PrepareCarefully.EquipmentTab.Animals>
 
 	<!-- New for Alpha 13 -->
-	<EdB.PrepareCarefully.UsePoints>Use Points</EdB.PrepareCarefully.UsePoints>
-	<EdB.PrepareCarefully.UsePoints.Tip>Enable points if you want to maintain a balanced start by paying for skills, additional colonists and equipment from a pool of available points.  Disable points to prepare your starting colonists with no limitations.</EdB.PrepareCarefully.UsePoints.Tip>
+	<EdB.PrepareCarefully.UsePoints>Use Point Limits</EdB.PrepareCarefully.UsePoints>
+	<EdB.PrepareCarefully.UsePoints.Tip>Enable point limits if you want to maintain a balanced start by paying for skills, additional colonists and equipment from a fixed number of available points.  Your starting points will match the point cost of the characters and resources that were randomly generated for your chosen scenario.
+
+Disable point limits to prepare your starting colonists with no limitations.</EdB.PrepareCarefully.UsePoints.Tip>
 	<EdB.PrepareCarefully.FixedPoints>Fixed Points</EdB.PrepareCarefully.FixedPoints>
 	<EdB.PrepareCarefully.FixedPoints.Tip>Enable this option to use a fixed number of {0} points instead of using a number of points that matches your random starting colonists.</EdB.PrepareCarefully.FixedPoints.Tip>
 	<EdB.PrepareCarefully.AddRelationship>Add Relation...</EdB.PrepareCarefully.AddRelationship>
