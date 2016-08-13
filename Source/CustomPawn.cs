@@ -264,7 +264,9 @@ namespace EdB.PrepareCarefully
 			foreach (var record in pawn.skills.skills) {
 				skillLevelModifiers[record.def] = ComputeSkillModifier(record.def);
 			}
+			CopySkillLevelsToPawn();
 		}
+
 		protected int ComputeSkillModifier(SkillDef def)
 		{
 			int value = 0;
@@ -343,7 +345,6 @@ namespace EdB.PrepareCarefully
 			foreach (var record in pawn.skills.skills) {
 				pawn.skills.GetSkill(record.def).level = GetSkillLevel(record.def);
 			}
-
 		}
 
 		// Set all unmodified skill levels to zero.
@@ -561,13 +562,17 @@ namespace EdB.PrepareCarefully
 		}
 
 		public Color GetStuffColor(int layer) {
-			ThingDef apparelDef = this.selectedApparel[layer];
-			if (apparelDef != null) {
-				Color color = this.colors[layer];
-				if (apparelDef.MadeFromStuff) {
-					ThingDef stuffDef = this.selectedStuff[layer];
-					if (!stuffDef.stuffProps.allowColorGenerators) {
-						return stuffDef.stuffProps.color;
+			if (this.selectedApparel.Count > layer) {
+				ThingDef apparelDef = this.selectedApparel[layer];
+				if (apparelDef != null) {
+					Color color = this.colors[layer];
+					if (apparelDef.MadeFromStuff) {
+						ThingDef stuffDef = this.selectedStuff[layer];
+						if (stuffDef != null && stuffDef.stuffProps != null) {
+							if (!stuffDef.stuffProps.allowColorGenerators) {
+								return stuffDef.stuffProps.color;
+							}
+						}
 					}
 				}
 			}

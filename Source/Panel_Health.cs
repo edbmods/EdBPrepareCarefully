@@ -391,7 +391,6 @@ namespace EdB.PrepareCarefully
 
 		protected void ResetInjuryOptionEnabledState(CustomPawn pawn)
 		{
-			Log.Warning("ResetInjuryOptionEnabledState()");
 			disabledInjuryOptions.Clear();
 			InjuryManager injuryManager = PrepareCarefully.Instance.HealthManager.InjuryManager;
 			foreach (var injuryOption in injuryManager.Options) {
@@ -400,9 +399,6 @@ namespace EdB.PrepareCarefully
 					continue;
 				}
 				Injury injury = pawn.Injuries.FirstOrDefault((Injury i) => {
-					if (i.Option == option) {
-						Log.Warning("Pawn has the injury already: " + i.Option.HediffDef.defName);
-					}
 					return (i.Option == option);
 				});
 				if (injury != null) {

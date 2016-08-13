@@ -33,54 +33,6 @@ namespace EdB.PrepareCarefully
 				if (type != -1) {
 					AddThingDef(def, type);
 				}
-				/*
-				if (def.weaponTags != null && def.weaponTags.Count > 0) {
-					if (def.equipmentType != EquipmentType.None && !def.destroyOnDrop && def.canBeSpawningInventory) {
-						AddThingDef(def, EquipmentDatabaseEntry.TypeWeapon);
-					}
-					continue;
-				}
-
-				if (def.apparel != null) {
-					if (!def.destroyOnDrop) {
-						AddThingDef(def, EquipmentDatabaseEntry.TypeApparel);
-					}
-					continue;
-				}
-
-				if (def.CountAsResource) {
-					if (def.ingestible != null) {
-						AddThingDef(def, EquipmentDatabaseEntry.TypeFood);
-						continue;
-					}
-
-					if ("AIPersonaCore".Equals(def.defName)) {
-						AddThingDef(def, EquipmentDatabaseEntry.TypeUncategorized);
-						continue;
-					}
-					if ("Neurotrainer".Equals(def.defName)) {
-						continue;
-					}
-
-					AddThingDef(def, EquipmentDatabaseEntry.TypeResource);
-					continue;
-				}
-
-				if (def.building != null) {
-					if (def.Minifiable) {
-						AddThingDef(def, EquipmentDatabaseEntry.TypeBuilding);
-					}
-				}
-
-				if (def.isBodyPartOrImplant) {
-					AddThingDef(def, EquipmentDatabaseEntry.TypeImplant);
-					continue;
-				}
-
-				if (def.race != null && def.race.Animal == true) {
-					AddThingDef(def, EquipmentDatabaseEntry.TypeAnimal);
-				}
-				*/
 			}
 		}
 
