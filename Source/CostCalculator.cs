@@ -150,7 +150,7 @@ namespace EdB.PrepareCarefully
 			double levelCost = passionLevelCost;
 			if (passionLevelCount > 8) {
 				double penalty = passionLevelCount - 8;
-				levelCost += penalty * 0.25;
+				levelCost += penalty * 0.4;
 			}
 			cost.marketValue += levelCost * passionLevelCount;
 
