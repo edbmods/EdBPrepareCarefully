@@ -90,8 +90,6 @@ This has no impact on gameplay, but you may notice the mismatch when reading the
 	<EdB.PrepareCarefully.UsePoints.Tip>Enable point limits if you want to maintain a balanced start by paying for skills, additional colonists and equipment from a fixed number of available points.  Your starting points will match the point cost of the characters and resources that were randomly generated for your chosen scenario.
 
 Disable point limits to prepare your starting colonists with no limitations.</EdB.PrepareCarefully.UsePoints.Tip>
-	<EdB.PrepareCarefully.FixedPoints>Fixed Points</EdB.PrepareCarefully.FixedPoints>
-	<EdB.PrepareCarefully.FixedPoints.Tip>Enable this option to use a fixed number of {0} points instead of using a number of points that matches your random starting colonists.</EdB.PrepareCarefully.FixedPoints.Tip>
 	<EdB.PrepareCarefully.AddRelationship>Add Relation...</EdB.PrepareCarefully.AddRelationship>
 	<EdB.PrepareCarefully.SelectColonist>Select a Colonist</EdB.PrepareCarefully.SelectColonist>
 	<EdB.PrepareCarefully.SelectRelationship>Select a Relationship</EdB.PrepareCarefully.SelectRelationship>
