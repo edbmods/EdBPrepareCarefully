@@ -115,7 +115,7 @@ Disable point limits to prepare your starting colonists with no limitations.</Ed
 	<EdB.PrepareCarefully.SelectInjury>Select a condition</EdB.PrepareCarefully.SelectInjury>
 	<EdB.PrepareCarefully.ErrorMustSelectInjury>You must select a condition</EdB.PrepareCarefully.ErrorMustSelectInjury>
 	<EdB.PrepareCarefully.InjuryLabel>{0} ({1})</EdB.PrepareCarefully.InjuryLabel>
-	<EdB.PrepareCarefully.EquipmentTab.Implants>Implants</EdB.PrepareCarefully.EquipmentTab.Implants>
+	<!--<EdB.PrepareCarefully.EquipmentTab.Implants>Implants</EdB.PrepareCarefully.EquipmentTab.Implants> Removed in Alpha 15 -->
 	<EdB.PrepareCarefully.EquipmentTab.Buildings>Furniture</EdB.PrepareCarefully.EquipmentTab.Buildings>
 	<EdB.PrepareCarefully.Severity.OptionLabel.2>2 Damage</EdB.PrepareCarefully.Severity.OptionLabel.2>
 	<EdB.PrepareCarefully.Severity.OptionLabel.3>3 Damage</EdB.PrepareCarefully.Severity.OptionLabel.3>
@@ -139,4 +139,8 @@ Prepare Carefully is a map generation mod.  It appears that you have another mod
 Your colonist customizations will be ignored.</EdB.PrepareCarefully.ModConfigProblem.Description>
 	<EdB.PawnLayer.Accessory>Accessory</EdB.PawnLayer.Accessory>
 	<EdB.PrepareCarefully.ScenarioPoints>The starting colonists and resources that were randomly generated for this scenario were worth {0} points.</EdB.PrepareCarefully.ScenarioPoints>
+
+	<!-- New for Alpha 15 -->
+	<EdB.PrepareCarefully.EquipmentTab.Medical>Medical</EdB.PrepareCarefully.EquipmentTab.Medical>
+	
 </LanguageData>

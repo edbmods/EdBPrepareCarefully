@@ -2,3 +2,5 @@
 *.userprefs
 bin
 obj
+Libraries/*
+!Libraries/README.md

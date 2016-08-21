@@ -473,8 +473,8 @@ namespace EdB.PrepareCarefully
 			if (DefDatabase<MapGeneratorDef>.AllDefs.Count() == 1) {
 				MapGeneratorDef def = DefDatabase<MapGeneratorDef>.AllDefs.First();
 				if (def != null) {
-					foreach (var g in def.genSteps) {
-						if (g.GetType().FullName.Equals("EdB.PrepareCarefully.Genstep_ScenParts")) {
+					foreach (var g in def.GenStepsInOrder) {
+						if (g.genStep != null && g.genStep.GetType().FullName.Equals("EdB.PrepareCarefully.Genstep_ScenParts")) {
 							return true;
 						}
 					}

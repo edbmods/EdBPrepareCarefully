@@ -53,7 +53,7 @@ namespace EdB.PrepareCarefully
 			tabs.Add(new TabRecord("EdB.EquipmentTab.Food".Translate(), delegate { this.ChangeTab(1); }, false));
 			tabs.Add(new TabRecord("EdB.EquipmentTab.Weapons".Translate(), delegate { this.ChangeTab(2); }, false));
 			tabs.Add(new TabRecord("EdB.EquipmentTab.Apparel".Translate(), delegate { this.ChangeTab(3); }, false));
-			tabs.Add(new TabRecord("EdB.PrepareCarefully.EquipmentTab.Implants".Translate(), delegate { this.ChangeTab(4); }, false));
+			tabs.Add(new TabRecord("EdB.PrepareCarefully.EquipmentTab.Medical".Translate(), delegate { this.ChangeTab(4); }, false));
 			tabs.Add(new TabRecord("EdB.PrepareCarefully.EquipmentTab.Buildings".Translate(), delegate { this.ChangeTab(5); }, false));
 			tabs.Add(new TabRecord("EdB.PrepareCarefully.EquipmentTab.Animals".Translate(), delegate { this.ChangeTab(6); }, false));
 
