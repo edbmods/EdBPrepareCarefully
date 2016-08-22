@@ -1005,8 +1005,6 @@ namespace EdB.PrepareCarefully
 
 		protected Pawn CopyPawn(Pawn source)
 		{
-			// TODO: Evaluate
-			//Pawn result = PawnGenerator.GeneratePawn(PawnKindDefOf.Colonist, Faction.OfColony);
 			Pawn result = new Randomizer().GenerateColonist();
 
 			// Reset health to remove any old injuries.
