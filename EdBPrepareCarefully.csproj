@@ -113,7 +113,7 @@
     <Compile Include="Source\CustomPawnTest.cs" />
     <Compile Include="Source\CustomPawn.cs" />
     <Compile Include="Source\PawnColorUtils.cs" />
-    <Compile Include="Source\Genstep_ScenParts.cs" />
+    <Compile Include="Source\GenStep_ScenParts.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup />

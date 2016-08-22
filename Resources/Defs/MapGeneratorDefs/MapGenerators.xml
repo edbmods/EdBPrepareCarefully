@@ -5,7 +5,7 @@
     <defName>ScenParts</defName>
     <mapGenerator>MainMapGenerator</mapGenerator>
     <order>700</order>
-    <genStep Class="EdB.PrepareCarefully.Genstep_ScenParts"/>
+    <genStep Class="EdB.PrepareCarefully.GenStep_ScenParts"/>
   </GenStepDef>
 
 </Defs>

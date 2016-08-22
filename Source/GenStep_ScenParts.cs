@@ -9,9 +9,9 @@ using Verse;
 namespace EdB.PrepareCarefully
 {
 	// Alternate map generation to include customized pawn, equipment and resources.
-	public class Genstep_ScenParts : GenStep
+	public class GenStep_ScenParts : GenStep
 	{
-		public Genstep_ScenParts()
+		public GenStep_ScenParts()
 		{
 		}
 
