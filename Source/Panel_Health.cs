@@ -143,26 +143,14 @@ namespace EdB.PrepareCarefully
 
 				Action addInjuryAction = () => {
 					if (bodyPartSelectionRequired) {
-						Injury injury = new Injury();
-						injury.BodyPartRecord = selectedBodyPart;
-						injury.Option = selectedInjury;
-						if (selectedSeverity != null) {
-							injury.Severity = selectedSeverity.Value;
-						}
-						customPawn.AddInjury(injury);
+						AddInjuryToPawn(customPawn, selectedInjury, selectedSeverity, selectedBodyPart);
 					}
 					else {
 						if (selectedInjury.ValidParts.Count > 0) {
 							foreach (var p in selectedInjury.ValidParts) {
 								BodyPartRecord record = PrepareCarefully.Instance.HealthManager.FirstBodyPartRecord(p);
 								if (record != null) {
-									Injury injury = new Injury();
-									injury.BodyPartRecord = record;
-									injury.Option = selectedInjury;
-									if (selectedSeverity != null) {
-										injury.Severity = selectedSeverity.Value;
-									}
-									customPawn.AddInjury(injury);
+									AddInjuryToPawn(customPawn, selectedInjury, selectedSeverity, record);
 								}
 								else {
 									Log.Warning("Could not find body part record for definition: " + p.defName);
@@ -170,13 +158,7 @@ namespace EdB.PrepareCarefully
 							}
 						}
 						else {
-							Injury injury = new Injury();
-							injury.BodyPartRecord = null;
-							injury.Option = selectedInjury;
-							if (selectedSeverity != null) {
-								injury.Severity = selectedSeverity.Value;
-							}
-							customPawn.AddInjury(injury);
+							AddInjuryToPawn(customPawn, selectedInjury, selectedSeverity, null);
 						}
 					}
 				};
@@ -186,7 +168,12 @@ namespace EdB.PrepareCarefully
 					CancelButtonLabel = "EdB.PrepareCarefully.Cancel",
 					HeaderLabel = "EdB.PrepareCarefully.SelectSeverity",
 					NameFunc = (InjurySeverity option) => {
-						return option.Label;
+						if (!string.IsNullOrEmpty(option.Label)) {
+							return option.Label;
+						}
+						else {
+							return selectedInjury.HediffDef.LabelCap;
+						}
 					},
 					SelectedFunc = (InjurySeverity option) => {
 						return option == selectedSeverity;
@@ -237,6 +224,9 @@ namespace EdB.PrepareCarefully
 							Find.WindowStack.Add(severityDialog);
 						}
 						else {
+							if (severityOptions.Count > 0) {
+								selectedSeverity = this.severityOptions[0];
+							}
 							addInjuryAction();
 						}
 					}
@@ -277,7 +267,6 @@ namespace EdB.PrepareCarefully
 					},
 					CloseAction = () => {
 						ResetSeverityOptions(selectedInjury);
-						selectedSeverity = this.severityOptions[0];
 						if (bodyPartSelectionRequired) {
 							bodyPartDialog.Options = PrepareCarefully.Instance.HealthManager.AllSkinCoveredBodyParts;
 							ResetBodyPartEnabledState(bodyPartDialog.Options, customPawn);
@@ -287,6 +276,9 @@ namespace EdB.PrepareCarefully
 							Find.WindowStack.Add(severityDialog);
 						}
 						else {
+							if (severityOptions.Count > 0) {
+								selectedSeverity = this.severityOptions[0];
+							}
 							addInjuryAction();
 						}
 					}
@@ -389,6 +381,20 @@ namespace EdB.PrepareCarefully
 			GUI.EndGroup();
 		}
 
+		protected void AddInjuryToPawn(CustomPawn pawn, InjuryOption option, InjurySeverity severity, BodyPartRecord bodyPart)
+		{
+			Injury injury = new Injury();
+			injury.BodyPartRecord = bodyPart;
+			injury.Option = option;
+			if (severity != null) {
+				injury.Severity = severity.Value;
+			}
+			else {
+				injury.Severity = option.HediffDef.initialSeverity;
+			}
+			pawn.AddInjury(injury);
+		}
+
 		protected void ResetInjuryOptionEnabledState(CustomPawn pawn)
 		{
 			disabledInjuryOptions.Clear();
@@ -421,6 +427,14 @@ namespace EdB.PrepareCarefully
 		protected void ResetSeverityOptions(InjuryOption injuryOption)
 		{
 			severityOptions.Clear();
+
+			// Don't add stages for addictions since they are handled sort of differently.
+			if (injuryOption.HediffDef.hediffClass != null && typeof(Hediff_Addiction).IsAssignableFrom(injuryOption.HediffDef.hediffClass)) {
+				return;
+			}
+
+			// If the injury has no stages, add the old injury severity options.
+			// TODO: Is this right?
 			if (injuryOption.HediffDef.stages == null || injuryOption.HediffDef.stages.Count == 0) {
 				severityOptions.AddRange(oldInjurySeverities);
 				return;
@@ -436,9 +450,14 @@ namespace EdB.PrepareCarefully
 					continue;
 				}
 
+				if (!stage.everVisible) {
+					continue;
+				}
+
 				InjurySeverity value = null;
 				if (stage.minSeverity == 0) {
-					value = new InjurySeverity(0.001f, stage);
+					float severity = injuryOption.HediffDef.initialSeverity > 0 ? injuryOption.HediffDef.initialSeverity : 0.001f;
+					value = new InjurySeverity(severity, stage);
 				}
 				else {
 					value = new InjurySeverity(stage.minSeverity, stage);

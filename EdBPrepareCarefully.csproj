@@ -7,7 +7,7 @@
     <OutputType>Library</OutputType>
     <RootNamespace>EdB.PrepareCarefully</RootNamespace>
     <AssemblyName>EdBPrepareCarefully</AssemblyName>
-    <ReleaseVersion>0.14.2.1</ReleaseVersion>
+    <ReleaseVersion>0.15.0.1</ReleaseVersion>
     <UseMSBuildEngine>False</UseMSBuildEngine>
     <TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
     <ApplicationManifest>ScenPart_PlayerPawnsArriveMethodCarefully.manifest</ApplicationManifest>
@@ -39,6 +39,12 @@
     <Reference Include="System" />
     <Reference Include="System.Xml" />
     <Reference Include="System.Xml.Linq" />
+    <Reference Include="Assembly-CSharp">
+      <HintPath>Libraries\Assembly-CSharp.dll</HintPath>
+    </Reference>
+    <Reference Include="UnityEngine">
+      <HintPath>Libraries\UnityEngine.dll</HintPath>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -107,7 +113,7 @@
     <Compile Include="Source\CustomPawnTest.cs" />
     <Compile Include="Source\CustomPawn.cs" />
     <Compile Include="Source\PawnColorUtils.cs" />
-    <Compile Include="Source\Genstep_ScenParts.cs" />
+    <Compile Include="Source\GenStep_ScenParts.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup />
@@ -129,6 +135,10 @@
     <None Include="Resources\Defs\MapGeneratorDefs\MapGenerators.xml" />
     <None Include="LICENSE" />
     <None Include="README.md" />
+    <None Include="Libraries\README.md" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Libraries\" />
   </ItemGroup>
   <ProjectExtensions>
     <MonoDevelop>

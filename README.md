@@ -8,7 +8,7 @@ Note that the solution has dependencies on the following DLLs:
 - Assembly-CSharp.dll
 - UnityEngine.dll
 
-You'll need to add those dependencies to your project.  Since they might reference file paths on your local development environment, I did not include them in the project files.
+Copy those dependencies from the RimWorld game directory into the "Libraries" directory.  Be sure to make _copies_ of the originals--don't accidentally move/delete them from the original game directory.
 
 The result of the build will be the following DLL:
 - EdBPrepareCarefully.dll

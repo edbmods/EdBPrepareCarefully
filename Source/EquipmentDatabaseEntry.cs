@@ -13,7 +13,7 @@ namespace EdB.PrepareCarefully
 		public static readonly int TypeWeapon = 3;
 		public static readonly int TypeApparel = 4;
 		public static readonly int TypeAnimal = 5;
-		public static readonly int TypeImplant = 6;
+		public static readonly int TypeMedical = 6;
 		public static readonly int TypeBuilding = 7;
 
 		public ThingDef def;
