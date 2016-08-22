@@ -29,7 +29,7 @@ namespace EdB.PrepareCarefully
 			}
 		}
 
-		protected float severity = 2;
+		protected float severity = 0;
 
 		protected string stageLabel = null;
 

@@ -35,6 +35,15 @@ namespace EdB.PrepareCarefully
 			set { oldInjury = value; }
 		}
 
+		public bool IsAddiction {
+			get {
+				if (hediffDef.hediffClass != null && typeof(Hediff_Addiction).IsAssignableFrom(hediffDef.hediffClass)) {
+					return true;
+				}
+				return false;
+			}
+		}
+
 		public bool RemovesPart {
 			get { return removesPart; }
 			set { removesPart = value; }
@@ -57,7 +66,13 @@ namespace EdB.PrepareCarefully
 
 		public bool HasStageLabel {
 			get {
-				return (hediffDef.stages != null && hediffDef.stages.Count > 1);
+				if (hediffDef.stages == null || hediffDef.stages.Count <= 1) {
+					return false;
+				}
+				if (IsAddiction) {
+					return false;
+				}
+				return true;
 			}
 		}
 
