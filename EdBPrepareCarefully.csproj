@@ -64,9 +64,6 @@
     <Compile Include="Source\EquipmentDatabase.cs" />
     <Compile Include="Source\EquipmentDatabaseEntry.cs" />
     <Compile Include="Source\GraphicsCache.cs" />
-    <Compile Include="Source\ModController.cs" />
-    <Compile Include="Source\ModInitializer.cs" />
-    <Compile Include="Source\ModNotInstalledException.cs" />
     <Compile Include="Source\Page_ConfigureStartingPawns.cs" />
     <Compile Include="Source\Page_ConfigureStartingPawnsCarefully.cs" />
     <Compile Include="Source\Page_Equipment.cs" />
@@ -120,7 +117,6 @@
   <ItemGroup>
     <None Include="Resources\CHANGELOG.txt" />
     <None Include="Resources\About\About.xml" />
-    <None Include="Resources\Defs\ThingDefs\EdBPrepareCarefully.xml" />
     <None Include="Resources\Languages\English\Keyed\EdBPrepareCarefully.xml" />
     <None Include="Resources\Textures\EdB\PrepareCarefully\ButtonDelete.png" />
     <None Include="Resources\Textures\EdB\PrepareCarefully\ButtonNext.png" />
@@ -136,9 +132,11 @@
     <None Include="LICENSE" />
     <None Include="README.md" />
     <None Include="Libraries\README.md" />
+    <None Include="Resources\Defs\Scenarios\ScenParts_Fixed.xml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Libraries\" />
+    <Folder Include="Resources\Defs\Scenarios\" />
   </ItemGroup>
   <ProjectExtensions>
     <MonoDevelop>

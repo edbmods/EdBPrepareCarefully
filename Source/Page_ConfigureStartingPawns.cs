@@ -89,6 +89,7 @@ namespace EdB.PrepareCarefully
 			// base.DoBottomButtons(rect, "Start".Translate(), null, null, true);
 			Action prepareCarefullyAction = () => {
 				PrepareCarefully.Instance.Initialize();
+				PrepareCarefully.Instance.OriginalPage = this;
 				Find.WindowStack.Add(new Page_ConfigureStartingPawnsCarefully());
 				if (!PrepareCarefully.Instance.FindScenPart()) {
 					Find.WindowStack.Add(new Dialog_Confirm("EdB.PrepareCarefully.ModConfigProblem.Description".Translate(),
