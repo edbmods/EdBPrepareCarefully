@@ -177,6 +177,7 @@ namespace EdB.PrepareCarefully
 				}
 			}
 
+			ResetIncapableOf();
 			pawn.health.capacities.Clear();
 		}
 
@@ -984,6 +985,7 @@ namespace EdB.PrepareCarefully
 
 		public string ResetIncapableOf()
 		{
+			CustomPawn.ClearCachedDisabledWorkTypes(this.pawn.story);
 			List<string> incapableList = new List<string>();
 			foreach (var tag in pawn.story.DisabledWorkTags) {
 				incapableList.Add(WorkTypeDefsUtility.LabelTranslated(tag));
@@ -994,7 +996,6 @@ namespace EdB.PrepareCarefully
 			else {
 				incapable = null;
 			}
-			CustomPawn.ClearCachedDisabledWorkTypes(this.pawn.story);
 			return incapable;
 		}
 
@@ -1003,6 +1004,9 @@ namespace EdB.PrepareCarefully
 			return false;
 		}
 
+		// Takes the source pawn and creates a copy of it.  It is not a 100% deep copy.  It creates a new, random pawn
+		// and then copies the bits and pieces from the source to create a "good-enough" copy.  There could be flaws in
+		// the result, but doing a true deep copy would be tougher maintain.
 		protected Pawn CopyPawn(Pawn source)
 		{
 			Pawn result = new Randomizer().GenerateColonist();
@@ -1060,6 +1064,7 @@ namespace EdB.PrepareCarefully
 			return result;
 		}
 
+		// Uses the customized settings within the CustomPawn to create a new Pawn.
 		public Pawn ConvertToPawn(bool resolveGraphics) {
 			Pawn result = new Randomizer().GenerateColonist();
 
