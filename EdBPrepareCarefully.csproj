@@ -7,7 +7,7 @@
     <OutputType>Library</OutputType>
     <RootNamespace>EdB.PrepareCarefully</RootNamespace>
     <AssemblyName>EdBPrepareCarefully</AssemblyName>
-    <ReleaseVersion>0.14.2.1</ReleaseVersion>
+    <ReleaseVersion>0.15.1.1</ReleaseVersion>
     <UseMSBuildEngine>False</UseMSBuildEngine>
     <TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
     <ApplicationManifest>ScenPart_PlayerPawnsArriveMethodCarefully.manifest</ApplicationManifest>
@@ -39,6 +39,12 @@
     <Reference Include="System" />
     <Reference Include="System.Xml" />
     <Reference Include="System.Xml.Linq" />
+    <Reference Include="Assembly-CSharp">
+      <HintPath>Libraries\Assembly-CSharp.dll</HintPath>
+    </Reference>
+    <Reference Include="UnityEngine">
+      <HintPath>Libraries\UnityEngine.dll</HintPath>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -58,9 +64,6 @@
     <Compile Include="Source\EquipmentDatabase.cs" />
     <Compile Include="Source\EquipmentDatabaseEntry.cs" />
     <Compile Include="Source\GraphicsCache.cs" />
-    <Compile Include="Source\ModController.cs" />
-    <Compile Include="Source\ModInitializer.cs" />
-    <Compile Include="Source\ModNotInstalledException.cs" />
     <Compile Include="Source\Page_ConfigureStartingPawns.cs" />
     <Compile Include="Source\Page_ConfigureStartingPawnsCarefully.cs" />
     <Compile Include="Source\Page_Equipment.cs" />
@@ -107,14 +110,13 @@
     <Compile Include="Source\CustomPawnTest.cs" />
     <Compile Include="Source\CustomPawn.cs" />
     <Compile Include="Source\PawnColorUtils.cs" />
-    <Compile Include="Source\Genstep_ScenParts.cs" />
+    <Compile Include="Source\GenStep_ScenParts.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup />
   <ItemGroup>
     <None Include="Resources\CHANGELOG.txt" />
     <None Include="Resources\About\About.xml" />
-    <None Include="Resources\Defs\ThingDefs\EdBPrepareCarefully.xml" />
     <None Include="Resources\Languages\English\Keyed\EdBPrepareCarefully.xml" />
     <None Include="Resources\Textures\EdB\PrepareCarefully\ButtonDelete.png" />
     <None Include="Resources\Textures\EdB\PrepareCarefully\ButtonNext.png" />
@@ -129,6 +131,12 @@
     <None Include="Resources\Defs\MapGeneratorDefs\MapGenerators.xml" />
     <None Include="LICENSE" />
     <None Include="README.md" />
+    <None Include="Libraries\README.md" />
+    <None Include="Resources\Defs\Scenarios\ScenParts_Fixed.xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Libraries\" />
+    <Folder Include="Resources\Defs\Scenarios\" />
   </ItemGroup>
   <ProjectExtensions>
     <MonoDevelop>

@@ -44,13 +44,16 @@ namespace EdB.PrepareCarefully
 				}
 			}
 
-			if (def.apparel != null) {
+			if (def.IsApparel) {
 				if (!def.destroyOnDrop) {
 					return EquipmentDatabaseEntry.TypeApparel;
 				}
 			}
 
 			if (def.CountAsResource) {
+				if (def.IsDrug || def.IsMedicine) {
+					return EquipmentDatabaseEntry.TypeMedical;
+				}
 				if (def.ingestible != null) {
 					return EquipmentDatabaseEntry.TypeFood;
 				}
@@ -72,7 +75,7 @@ namespace EdB.PrepareCarefully
 			}
 
 			if (def.isBodyPartOrImplant) {
-				return EquipmentDatabaseEntry.TypeImplant;
+				return EquipmentDatabaseEntry.TypeMedical;
 			}
 
 			if (def.race != null && def.race.Animal == true) {
@@ -145,7 +148,7 @@ namespace EdB.PrepareCarefully
 		public List<EquipmentDatabaseEntry> Implants {
 			get {
 				List<EquipmentDatabaseEntry> result = entries.Values.ToList().FindAll((EquipmentDatabaseEntry e) => {
-					return e.type == EquipmentDatabaseEntry.TypeImplant;
+					return e.type == EquipmentDatabaseEntry.TypeMedical;
 				});
 				result.Sort((EquipmentDatabaseEntry a, EquipmentDatabaseEntry b) => {
 					return a.Label.CompareTo(b.Label);

@@ -9,9 +9,9 @@ using Verse;
 namespace EdB.PrepareCarefully
 {
 	// Alternate map generation to include customized pawn, equipment and resources.
-	public class Genstep_ScenParts : Genstep
+	public class GenStep_ScenParts : GenStep
 	{
-		public Genstep_ScenParts()
+		public GenStep_ScenParts()
 		{
 		}
 
@@ -305,7 +305,7 @@ namespace EdB.PrepareCarefully
 				// exceptionally large number of a given resource, would the numbers for those parameters
 				// need to be increased to allow the scatterer to find a place on the map?
 				if (!entry.gear && !entry.animal) {
-					new Genstep_ScatterThings {
+					new GenStep_ScatterThings {
 						nearPlayerStart = true,
 						thingDef = e.def,
 						stuff = e.stuffDef,

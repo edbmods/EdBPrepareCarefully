@@ -150,8 +150,8 @@ namespace EdB.PrepareCarefully
 			this.equipment.Clear();
 		}
 
-		protected Dictionary<CustomPawn, Pawn> facadeToPawnMap = new Dictionary<CustomPawn, Pawn>();
-		protected Dictionary<Pawn, CustomPawn> pawnToFacadeMap = new Dictionary<Pawn, CustomPawn>();
+		protected Dictionary<CustomPawn, Pawn> customPawnToOriginalPawnMap = new Dictionary<CustomPawn, Pawn>();
+		protected Dictionary<Pawn, CustomPawn> originalPawnToCustomPawnMap = new Dictionary<Pawn, CustomPawn>();
 
 		public void Initialize()
 		{
@@ -448,24 +448,24 @@ namespace EdB.PrepareCarefully
 
 		public void InitializePawns()
 		{
-			this.facadeToPawnMap.Clear();
-			this.pawnToFacadeMap.Clear();
-			foreach (Pawn p in Verse.Find.GameInitData.startingPawns) {
-				CustomPawn f = new CustomPawn(p);
-				facadeToPawnMap.Add(f, p);
-				pawnToFacadeMap.Add(p, f);
-				this.pawns.Add(f);
-				healthManager.InjuryManager.InitializePawnInjuries(p, f);
+			this.customPawnToOriginalPawnMap.Clear();
+			this.originalPawnToCustomPawnMap.Clear();
+			foreach (Pawn originalPawn in Verse.Find.GameInitData.startingPawns) {
+				CustomPawn customPawn = new CustomPawn(originalPawn);
+				customPawnToOriginalPawnMap.Add(customPawn, originalPawn);
+				originalPawnToCustomPawnMap.Add(originalPawn, customPawn);
+				this.pawns.Add(customPawn);
+				healthManager.InjuryManager.InitializePawnInjuries(originalPawn, customPawn);
 			}
 		}
 			
 		public void InitializeRelationshipManager(List<CustomPawn> pawns)
 		{
-			List<CustomPawn> facades = new List<CustomPawn>();
+			List<CustomPawn> customPawns = new List<CustomPawn>();
 			foreach (Pawn pawn in Verse.Find.GameInitData.startingPawns) {
-				facades.Add(pawnToFacadeMap[pawn]);
+				customPawns.Add(originalPawnToCustomPawnMap[pawn]);
 			}
-			relationshipManager = new RelationshipManager(Verse.Find.GameInitData.startingPawns, facades);
+			relationshipManager = new RelationshipManager(Verse.Find.GameInitData.startingPawns, customPawns);
 		}
 
 		public bool FindScenPart()
@@ -473,8 +473,8 @@ namespace EdB.PrepareCarefully
 			if (DefDatabase<MapGeneratorDef>.AllDefs.Count() == 1) {
 				MapGeneratorDef def = DefDatabase<MapGeneratorDef>.AllDefs.First();
 				if (def != null) {
-					foreach (var g in def.genSteps) {
-						if (g.GetType().FullName.Equals("EdB.PrepareCarefully.Genstep_ScenParts")) {
+					foreach (var g in def.GenStepsInOrder) {
+						if (g.genStep != null && g.genStep.GetType().FullName.Equals(typeof(EdB.PrepareCarefully.GenStep_ScenParts).FullName)) {
 							return true;
 						}
 					}
