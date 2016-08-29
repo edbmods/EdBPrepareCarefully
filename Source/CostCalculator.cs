@@ -248,7 +248,7 @@ namespace EdB.PrepareCarefully
 					return def.BaseMarketValue;
 				}
 				else {
-					// TODO: Alpha 15
+					// TODO: Alpha 16
 					// Should look at ThingMaker.MakeThing() to decide which validations we need to do
 					// before calling that method to avoid null pointer exceptions.  Should re-evaluate
 					// for each new alpha and then update the todo comment with the next alpha version.

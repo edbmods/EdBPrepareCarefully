@@ -965,19 +965,21 @@ namespace EdB.PrepareCarefully
 					});
 				}
 			}
-
 			ResetHead();
 			ResetBodyType();
 		}
 
 		protected void ResetBodyType()
 		{
-			graphics[PawnLayers.BodyType] = GraphicGetter_NakedHumanlike.GetNakedBodyGraphic(pawn.story.BodyType, ShaderDatabase.Cutout, pawn.story.SkinColor);
+			BodyType bodyType = pawn.story.BodyType;
+			Graphic bodyTypeGraphic = GraphicGetter_NakedHumanlike.GetNakedBodyGraphic(bodyType, ShaderDatabase.Cutout,
+					pawn.story.SkinColor);
+			graphics[PawnLayers.BodyType] = bodyTypeGraphic;
 			foreach (ThingDef def in selectedApparel) {
 				if (def != null) {
 					int layer = PawnLayers.ToPawnLayerIndex(def.apparel);
 					if (layer != -1) {
-						graphics[layer] = GraphicsCache.Instance.GetApparel(def, pawn.story.BodyType);
+						graphics[layer] = GraphicsCache.Instance.GetApparel(def, bodyType);
 					}
 				}
 			}
