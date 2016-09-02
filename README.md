@@ -2,7 +2,7 @@
 
 ## Building Prepare Carefully
 
-Open the solution file in either Xamarin Studio/MonoDevelop or in Visual Studio.
+The solution file was created using Xamarin Studio/MonoDevelop, but it should also work in Visual Studio.  Note that the project targets the older 3.5 version of the .NET framework used by the Unity engine on top of which RimWorld is built.
 
 Note that the solution has dependencies on the following DLLs:
 - Assembly-CSharp.dll
