@@ -13,9 +13,10 @@ Copy those dependencies from the RimWorld game directory into the "Libraries" di
 The result of the build will be the following DLL:
 - EdBPrepareCarefully.dll
 
-This DLL should be packaged with the contents of the `Resources` directory, inside a `Resources/Assemblies` directory.
+This DLL must be packaged with the contents of the `Resources` directory to create a working mod. The DLL should be placed inside an `Assemblies` directory.
 
-The build does not automate the creation of the mod distribution directory.
+To automatically build the mod directory for your Release DLL, run the `dist.bat` script.  This will copy all of the mod resources and the DLL into a `dist/EdBPrepareCarefully` directory.  Copy this `EdBPrepareCarefully` directory into your RimWorld `Mods` folder.
+
 
 ## Versioning
 
