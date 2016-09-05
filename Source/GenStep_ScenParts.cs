@@ -161,12 +161,15 @@ namespace EdB.PrepareCarefully
 
 						Thing thing = null;
 						if (entry.def.MadeFromStuff && entry.stuffDef == null) {
+							ThingDef defaultStuffDef = null;
 							if (entry.def.apparel != null) {
-								thing = ThingMaker.MakeThing(entry.def, ThingDef.Named("Synthread"));
+								defaultStuffDef = ThingDef.Named("Synthread");
 							}
-							else {
-								Log.Warning("Could not add item.  Item is \"made from stuff\" but no material was specified and there is no known default.");
+							if (thing == null) {
+								Log.Warning("Item " + entry.def.defName + " is \"made from stuff\" but no material was specified. This may be caused by a misconfigured modded item or scenario.");
+								Log.Warning("The item will be spawned into the map and assigned a default material, if possible, but you will see an error if you are in Development Mode.");
 							}
+							thing = ThingMaker.MakeThing(entry.def, defaultStuffDef);
 						}
 						else {
 							thing = ThingMaker.MakeThing(entry.def, entry.stuffDef);
@@ -174,8 +177,6 @@ namespace EdB.PrepareCarefully
 
 						if (thing != null) {
 							thing.stackCount = stackCount;
-							count -= stackCount;
-
 							if (entry.def.weaponTags != null && entry.def.weaponTags.Count > 0) {
 								weapons.Add(thing);
 							}
@@ -189,6 +190,10 @@ namespace EdB.PrepareCarefully
 								other.Add(thing);
 							}
 						}
+
+						// Decrement the count whether we were able to add a valid thing or not.  If we don't decrement,
+						// we'll be stuck in an infinite while loop.
+						count -= stackCount;
 					}
 				}
 				else if (entry.animal) {
