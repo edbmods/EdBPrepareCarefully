@@ -5,6 +5,6 @@
 	     We leave a placeholder pawn relation def since that should leave no side-effects.
 	-->
 	<EdB.PrepareCarefully.CarefullyPawnRelationDef>
-		<defName>EdBPrepareCarefullyInitializer</defName>
+		<defName>EdBPrepareCarefullyDummyDefinition</defName>
 	</EdB.PrepareCarefully.CarefullyPawnRelationDef>
 </ThingDefs>
