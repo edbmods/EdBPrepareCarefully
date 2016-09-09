@@ -11,7 +11,9 @@ namespace EdB.PrepareCarefully
 		public Pawn GenerateColonist()
 		{
 			PawnKindDef kindDef = Faction.OfPlayer.def.basicMemberKind;
-			Pawn pawn = PawnGenerator.GeneratePawn(kindDef, Faction.OfPlayer);
+			Pawn pawn = PawnGenerator.GeneratePawn(new PawnGenerationRequest(kindDef, Faction.OfPlayer,
+					PawnGenerationContext.PlayerStarter, true, false, false, false, false, false, 0f, false, true,
+			        false, null, null, null, null, null, null));
 			return pawn;
 		}
 
