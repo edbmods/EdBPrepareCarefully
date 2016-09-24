@@ -264,10 +264,11 @@ namespace EdB.PrepareCarefully
 			}
 
 			// Iterate through each solid bio.  Find the corresponding backstories.  If the backstory description contains the bio's name
-			// the mark the backstory as name-specific.  If the bio does not has HE/HIS/etc, mark the backstory as gender-specific.
+			// then mark the backstory as name-specific.  If the bio does not have HE/HIS/etc, mark the backstory as gender-specific.
 
 			List<Backstory> backstories = BackstoryDatabase.allBackstories.Values.ToList();
 			foreach (Backstory backstory in backstories) {
+
 
 				if (!backstory.shuffleable && (!backstory.baseDesc.Contains("NAME") || (!backstory.baseDesc.Contains("HECAP") && !backstory.baseDesc.Contains("HE ")
 					&& !backstory.baseDesc.Contains("HIS") && !backstory.baseDesc.Contains("HISCAP") && !backstory.baseDesc.Contains("HIM")))) {
@@ -317,12 +318,9 @@ namespace EdB.PrepareCarefully
 			hairColors.Add(new Color(0.9294118f, 0.7921569f, 0.6117647f));
 
 			// Set up default skin colors
-			skinColors.Add(new Color(0.3882353f, 0.2745098f, 0.1411765f));
-			skinColors.Add(new Color(0.509804f, 0.3568628f, 0.1882353f));
-			skinColors.Add(new Color(0.8941177f, 0.6196079f, 0.3529412f));
-			skinColors.Add(new Color(1f, 0.9372549f, 0.7411765f));
-			skinColors.Add(new Color(1f, 0.9372549f, 0.8352941f));
-			skinColors.Add(new Color(0.9490196f, 0.9294118f, 0.8784314f));
+			foreach (Color color in PawnColorUtils.Colors) {
+				skinColors.Add(color);
+			}
 
 			this.ChangePawnLayer(pawnLayers[0]);
 
@@ -401,7 +399,7 @@ namespace EdB.PrepareCarefully
 			if (this.IsBroken) {
 				return;
 			}
-									
+
 			Rect rect = new Rect(0, 80, inRect.width, inRect.height - 60 - 80);
 			Widgets.DrawMenuSection(rect, true);
 			int tabCount = PrepareCarefully.Instance.Pawns.Count;
