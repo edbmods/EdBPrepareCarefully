@@ -20,11 +20,11 @@ namespace EdB.PrepareCarefully
 		//	new Color(0.9490196f, 0.9294118f, 0.8784314f),
 		//};
 
-		// The same colors, but rounded to the 3 fractional digits.  When colors are saved to a preset, they are
-		// automatically rounded, so we need to use these rounded values when loading them.  Could avoid this if
-		// we didn't store the color directly in the preset, but used the same value that the game stores in save
-		// files.  Should have done this from the beginning but will keeping using colors for now to keep preset
-		// backwards compatibility.
+		// The same colors, but rounded to 3 fractional digits.  When colors are saved to a preset, they are
+		// automatically rounded, so we need to use these rounded values when loading them.  We could avoid this if
+		// we didn't store the color directly in the preset, and instead used the same value that the game stores in
+		// save files.  Since we didn't do this from the beginning, we'll keeping using colors for now to keep presets
+		// backwards-compatibile.
 		public static Color[] RoundedColors;
 
 		// The values are copied from the PawnSkinColors class, but after being copied they will look something like this.
