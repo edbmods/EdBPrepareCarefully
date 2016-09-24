@@ -400,6 +400,11 @@ namespace EdB.PrepareCarefully
 				return;
 			}
 
+			if (!Textures.Loaded) {
+				FatalError("Textures failed to load", null);
+				return;
+			}
+
 			Rect rect = new Rect(0, 80, inRect.width, inRect.height - 60 - 80);
 			Widgets.DrawMenuSection(rect, true);
 			int tabCount = PrepareCarefully.Instance.Pawns.Count;
