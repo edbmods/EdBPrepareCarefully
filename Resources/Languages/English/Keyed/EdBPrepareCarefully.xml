@@ -142,5 +142,10 @@ Your colonist customizations will be ignored.</EdB.PrepareCarefully.ModConfigPro
 
 	<!-- New for Alpha 15 -->
 	<EdB.PrepareCarefully.EquipmentTab.Medical>Medical</EdB.PrepareCarefully.EquipmentTab.Medical>
-	
+
+	<EdB.PrepareCarefully.UnrecoverableError.Header>Unrecoverable Error</EdB.PrepareCarefully.UnrecoverableError.Header>
+	<EdB.PrepareCarefully.UnrecoverableError.Message>Something went wrong, and Prepare Carefully was not able to recover.  The following error message may help identify the problem:
+
+"{0}"</EdB.PrepareCarefully.UnrecoverableError.Message>
+
 </LanguageData>

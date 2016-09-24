@@ -155,6 +155,7 @@ namespace EdB.PrepareCarefully
 
 		public void Initialize()
 		{
+			Textures.Reset();
 			Clear();
 			PawnColorUtils.InitializeColors();
 			InitializePawns();

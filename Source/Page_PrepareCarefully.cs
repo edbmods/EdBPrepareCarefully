@@ -37,11 +37,28 @@ namespace EdB.PrepareCarefully
 		}
 			
 		protected void FatalError(string message, Exception e) {
-			Log.Error("An unrecoverable error has occurred in the Prepare Carefully mod");
-			Log.Error(message);
-			Log.Error(e.ToString());
-			Log.Error(e.StackTrace);
 			this.broken = true;
+			string displayMessage = null;
+			if (e != null) {
+				displayMessage = e.ToString();
+			}
+			if (displayMessage.NullOrEmpty()) {
+				displayMessage = message;
+			}
+			if (displayMessage.NullOrEmpty()) {
+				displayMessage = "Unknown error";
+			}
+			Find.WindowStack.Add(new Dialog_Confirm("EdB.PrepareCarefully.UnrecoverableError.Message".Translate(new object[] { displayMessage }),
+					delegate {
+						PrepareCarefully.Instance.Clear();
+						this.Close(true);
+						Log.Error("An unrecoverable error has occurred in the Prepare Carefully mod");
+						Log.Error(message);
+						if (e != null) {
+							Log.Error(e.ToString());
+							Log.Error(e.StackTrace);
+						}
+			}, false, "EdB.PrepareCarefully.UnrecoverableError.Header".Translate(), false));
 		}
 
 		protected void DrawCost(Rect parentRect)
