@@ -156,6 +156,7 @@ namespace EdB.PrepareCarefully
 		public void Initialize()
 		{
 			Clear();
+			PawnColorUtils.InitializeColors();
 			InitializePawns();
 			InitializeRelationshipManager(this.pawns);
 			InitializeDefaultEquipment();

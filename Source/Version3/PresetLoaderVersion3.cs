@@ -216,7 +216,7 @@ namespace EdB.PrepareCarefully
 
 			pawn.HeadGraphicPath = record.headGraphicPath;
 			pawn.SetColor(PawnLayers.Hair, record.hairColor);
-			pawn.SetColor(PawnLayers.HeadType, record.skinColor);
+			pawn.SetColor(PawnLayers.HeadType, PawnColorUtils.FromRoundedColor(record.skinColor));
 			Backstory backstory = FindBackstory(record.childhood);
 			if (backstory != null) {
 				pawn.Childhood = backstory;
