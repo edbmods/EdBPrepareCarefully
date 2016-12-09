@@ -85,8 +85,8 @@ namespace EdB.PrepareCarefully
 
 		protected Randomizer randomizer = new Randomizer();
 
-		protected int maxAge = 90;
-		protected int minAge = 15;
+		protected int maxAge = 99;
+		protected int minAge = 14;
 		protected int maxChronologicalAge = 3200;
 
 		protected ScrollView HealthScrollView = new ScrollView();
@@ -284,9 +284,9 @@ namespace EdB.PrepareCarefully
 
 			// Create sorted versions of the backstory lists
 			sortedChildhoodBackstories = new List<Backstory>(childhoodBackstories);
-			sortedChildhoodBackstories.Sort((b1, b2) => b1.title.CompareTo(b2.title));
+			sortedChildhoodBackstories.Sort((b1, b2) => b1.Title.CompareTo(b2.Title));
 			sortedAdulthoodBackstories = new List<Backstory>(adulthoodBackstories);
-			sortedAdulthoodBackstories.Sort((b1, b2) => b1.title.CompareTo(b2.title));
+			sortedAdulthoodBackstories.Sort((b1, b2) => b1.Title.CompareTo(b2.Title));
 
 			// Get all trait options
 			foreach (TraitDef def in DefDatabase<TraitDef>.AllDefs) {
@@ -294,12 +294,12 @@ namespace EdB.PrepareCarefully
 				int count = degreeData.Count;
 				if (count > 0) {
 					for (int i = 0; i < count; i++) {
-						Trait trait = new Trait(def, degreeData[i].degree);
+						Trait trait = new Trait(def, degreeData[i].degree, true);
 						traits.Add(trait);
 					}
 				}
 				else {
-					traits.Add(new Trait(def, 0));
+					traits.Add(new Trait(def, 0, true));
 				}
 			}
 
@@ -745,7 +745,7 @@ namespace EdB.PrepareCarefully
 			GUI.EndGroup();
 		}
 
-		private static Color DisabledColor = new Color(1, 1, 1, 0.3f);
+		private static Color DisabledColor = new Color(1, 1, 1, 0.27647f);
 		private static Color DisabledNextPreviousButtonColor = new Color(ButtonColor.r, ButtonColor.g, ButtonColor.b, 0.4f);
 		protected void DrawDisabledFieldSelector(Rect fieldRect, string label, Color textColor)
 		{
@@ -832,7 +832,7 @@ namespace EdB.PrepareCarefully
 						}
 					}
 					label = PawnLayers.Label(pawnLayers[i]);
-					list.Add(new FloatMenuOption(label, this.pawnLayerActions[i], MenuOptionPriority.Medium, null, null, 0, null));
+					list.Add(new FloatMenuOption(label, this.pawnLayerActions[i], MenuOptionPriority.Default, null, null, 0, null, null));
 				}
 				Find.WindowStack.Add(new FloatMenu(list, null, false));
 			}
@@ -1460,8 +1460,8 @@ namespace EdB.PrepareCarefully
 			string label = customPawn.Gender == Gender.Male ? "Male".Translate() : "Female".Translate();
 			if (Widgets.ButtonText(RectGenderButton, label.CapitalizeFirst(), true, false, true)) {
 				List<FloatMenuOption> list = new List<FloatMenuOption>();
-				list.Add(new FloatMenuOption("Male".Translate().CapitalizeFirst(), delegate { this.SetGender(Gender.Male); }, MenuOptionPriority.Medium, null, null, 0, null));
-				list.Add(new FloatMenuOption("Female".Translate().CapitalizeFirst(), delegate { this.SetGender(Gender.Female); }, MenuOptionPriority.Medium, null, null, 0, null));
+				list.Add(new FloatMenuOption("Male".Translate().CapitalizeFirst(), delegate { this.SetGender(Gender.Male); }, MenuOptionPriority.Default, null, null, 0, null, null));
+				list.Add(new FloatMenuOption("Female".Translate().CapitalizeFirst(), delegate { this.SetGender(Gender.Female); }, MenuOptionPriority.Default, null, null, 0, null, null));
 				Find.WindowStack.Add(new FloatMenu(list, null, false));
 			}
 
@@ -1619,7 +1619,9 @@ namespace EdB.PrepareCarefully
 			if (!fieldRect.Contains(Event.current.mousePosition)) {
 				GUI.color = TextColor;
 			}
-			Widgets.Label(fieldRect, customPawn.Childhood.title);
+			if (customPawn.Childhood != null) {
+				Widgets.Label(fieldRect, customPawn.Childhood.Title);
+			}
 			GUI.color = Color.white;
 			fieldRect.y -= 2;
 			fieldRect.x += 2;
@@ -1669,11 +1671,25 @@ namespace EdB.PrepareCarefully
 			}
 
 
-			GUI.color = Color.white;
+			Backstory adulthood = customPawn.Adulthood;
+			bool isAdult = adulthood != null;
+			if (isAdult) {
+				GUI.color = Color.white;
+			}
+			else {
+				GUI.color = ButtonDisabledColor;
+			}
+
 			Text.Font = GameFont.Small;
 			Text.Anchor = TextAnchor.UpperLeft;
 			Widgets.Label(new Rect(0, 70, 300, 32), "Adulthood".Translate());
 			fieldRect.y += 35;
+			if (isAdult) {
+				GUI.color = Color.white;
+			}
+			else {
+				GUI.color = DisabledColor;
+			}
 			Widgets.DrawAtlas(fieldRect, Textures.TextureFieldAtlas);
 
 			Text.Anchor = TextAnchor.MiddleCenter;
@@ -1682,54 +1698,65 @@ namespace EdB.PrepareCarefully
 			if (!fieldRect.Contains(Event.current.mousePosition)) {
 				GUI.color = TextColor;
 			}
-			Widgets.Label(fieldRect, customPawn.Adulthood.title);
+			else {
+				GUI.color = Color.white;
+			}
+			if (isAdult && customPawn.Adulthood != null) {
+				Widgets.Label(fieldRect, customPawn.Adulthood.Title);
+			}
 			GUI.color = Color.white;
 			fieldRect.y -= 2;
 			fieldRect.x += 2;
 
-			if (problemBackstories.Contains(customPawn.Adulthood)) {
-				fieldRect.width -= 30;
-				TooltipHandler.TipRegion(new Rect(fieldRect.x, fieldRect.y, fieldRect.width - 30, fieldRect.height), customPawn.Adulthood.FullDescriptionFor(customPawn.Pawn));
-				if (Widgets.ButtonInvisible(fieldRect, false)) {
-					ShowBackstoryDialog(customPawn, BackstorySlot.Adulthood);
+			// Draw the problem backstory notice.
+			if (isAdult) {
+				if (problemBackstories.Contains(customPawn.Adulthood)) {
+					fieldRect.width -= 30;
+					TooltipHandler.TipRegion(new Rect(fieldRect.x, fieldRect.y, fieldRect.width - 30, fieldRect.height), customPawn.Adulthood.FullDescriptionFor(customPawn.Pawn));
+					if (Widgets.ButtonInvisible(fieldRect, false)) {
+						ShowBackstoryDialog(customPawn, BackstorySlot.Adulthood);
+					}
+					fieldRect.width += 30;
+
+					Rect problemRect = new Rect(fieldRect.x + fieldRect.width - 26, fieldRect.y + 4, 20, 20);
+					GUI.DrawTexture(problemRect, Textures.TextureAlertSmall);
+					TooltipHandler.TipRegion(problemRect, "EdB.BackstoryWarning".Translate());
 				}
-				fieldRect.width += 30;
-
-				Rect problemRect = new Rect(fieldRect.x + fieldRect.width - 26, fieldRect.y + 4, 20, 20);
-				GUI.DrawTexture(problemRect, Textures.TextureAlertSmall);
-				TooltipHandler.TipRegion(problemRect, "EdB.BackstoryWarning".Translate());
-			}
-			else {
-				TooltipHandler.TipRegion(fieldRect, customPawn.Adulthood.FullDescriptionFor(customPawn.Pawn));
-				if (Widgets.ButtonInvisible(fieldRect, false)) {
-					ShowBackstoryDialog(customPawn, BackstorySlot.Adulthood);
+				else {
+					TooltipHandler.TipRegion(fieldRect, customPawn.Adulthood.FullDescriptionFor(customPawn.Pawn));
+					if (Widgets.ButtonInvisible(fieldRect, false)) {
+						ShowBackstoryDialog(customPawn, BackstorySlot.Adulthood);
+					}
 				}
 			}
 
-			buttonRect = new Rect(fieldRect.x - 17, 72, 16, 16);
-			if (buttonRect.Contains(Event.current.mousePosition)) {
-				GUI.color = ButtonHighlightColor;
-			}
-			else {
-				GUI.color = ButtonColor;
-			}
-			GUI.DrawTexture(buttonRect, Textures.TextureButtonPrevious);
-			if (Widgets.ButtonInvisible(buttonRect, false)) {
-				SoundDefOf.TickTiny.PlayOneShotOnCamera();
-				this.SelectPreviousBackstory(1);
-			}
+			// Draw the next/previous buttons.
+			if (isAdult) {
+				buttonRect = new Rect(fieldRect.x - 17, 72, 16, 16);
+				if (buttonRect.Contains(Event.current.mousePosition)) {
+					GUI.color = ButtonHighlightColor;
+				}
+				else {
+					GUI.color = ButtonColor;
+				}
+				GUI.DrawTexture(buttonRect, Textures.TextureButtonPrevious);
+				if (Widgets.ButtonInvisible(buttonRect, false)) {
+					SoundDefOf.TickTiny.PlayOneShotOnCamera();
+					this.SelectPreviousBackstory(1);
+				}
 
-			buttonRect = new Rect(fieldRect.x + fieldRect.width + 1, 72, 16, 16);
-			if (buttonRect.Contains(Event.current.mousePosition)) {
-				GUI.color = ButtonHighlightColor;
-			}
-			else {
-				GUI.color = ButtonColor;
-			}
-			GUI.DrawTexture(buttonRect, Textures.TextureButtonNext);
-			if (Widgets.ButtonInvisible(buttonRect, false)) {
-				SoundDefOf.TickTiny.PlayOneShotOnCamera();
-				this.SelectNextBackstory(1);
+				buttonRect = new Rect(fieldRect.x + fieldRect.width + 1, 72, 16, 16);
+				if (buttonRect.Contains(Event.current.mousePosition)) {
+					GUI.color = ButtonHighlightColor;
+				}
+				else {
+					GUI.color = ButtonColor;
+				}
+				GUI.DrawTexture(buttonRect, Textures.TextureButtonNext);
+				if (Widgets.ButtonInvisible(buttonRect, false)) {
+					SoundDefOf.TickTiny.PlayOneShotOnCamera();
+					this.SelectNextBackstory(1);
+				}
 			}
 				
 			GUI.EndGroup();
@@ -1853,7 +1880,7 @@ namespace EdB.PrepareCarefully
 			Backstory selectedBackstory = originalBackstory;
 			Dialog_Options<Backstory> dialog = new Dialog_Options<Backstory>(slot == BackstorySlot.Childhood ? this.sortedChildhoodBackstories : this.sortedAdulthoodBackstories) {
 				NameFunc = (Backstory backstory) => {
-					return backstory.title;
+					return backstory.Title;
 				},
 				DescriptionFunc = (Backstory backstory) => {
 					return backstory.FullDescriptionFor(customPawn.Pawn);
@@ -2248,7 +2275,7 @@ namespace EdB.PrepareCarefully
 				stringBuilder.AppendLine(string.Concat(new object[] {
 					"Level".Translate(),
 					" ",
-					sk.level,
+					sk.Level,
 					": ",
 					sk.LevelDescriptor
 				}));
@@ -2472,7 +2499,7 @@ namespace EdB.PrepareCarefully
 			CustomPawn customPawn = CurrentPawn;
 			int index;
 			if (backstoryIndex == 0) {
-				index = childhoodBackstories.FindIndex((Backstory b) => { return b.uniqueSaveKey.Equals(customPawn.Childhood.uniqueSaveKey); });
+				index = childhoodBackstories.FindIndex((Backstory b) => { return b.identifier.Equals(customPawn.Childhood.identifier); });
 				if (index > -1) {
 					int newIndex = index + 1;
 					if (newIndex >= childhoodBackstories.Count) {
@@ -2485,7 +2512,7 @@ namespace EdB.PrepareCarefully
 				}
 			}
 			else {
-				index = adulthoodBackstories.FindIndex((Backstory b) => { return b.uniqueSaveKey.Equals(customPawn.Adulthood.uniqueSaveKey); });
+				index = adulthoodBackstories.FindIndex((Backstory b) => { return b.identifier.Equals(customPawn.Adulthood.identifier); });
 				if (index > -1) {
 					int newIndex = index + 1;
 					if (newIndex >= adulthoodBackstories.Count) {
@@ -2504,7 +2531,7 @@ namespace EdB.PrepareCarefully
 			CustomPawn customPawn = CurrentPawn;
 			int index;
 			if (backstoryIndex == 0) {
-				index = childhoodBackstories.FindIndex((Backstory b) => { return b.uniqueSaveKey.Equals(customPawn.Childhood.uniqueSaveKey); });
+				index = childhoodBackstories.FindIndex((Backstory b) => { return b.identifier.Equals(customPawn.Childhood.identifier); });
 				if (index > -1) {
 					int newIndex = index - 1;
 					if (newIndex < 0) {
@@ -2517,7 +2544,7 @@ namespace EdB.PrepareCarefully
 				}
 			}
 			else {
-				index = adulthoodBackstories.FindIndex((Backstory b) => { return b.uniqueSaveKey.Equals(customPawn.Adulthood.uniqueSaveKey); });
+				index = adulthoodBackstories.FindIndex((Backstory b) => { return b.identifier.Equals(customPawn.Adulthood.identifier); });
 				if (index > -1) {
 					int newIndex = index - 1;
 					if (newIndex < 0) {

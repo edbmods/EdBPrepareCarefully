@@ -45,8 +45,16 @@ namespace EdB.PrepareCarefully
 		public SaveRecordPawnV3(CustomPawn pawn)
 		{
 			this.gender = pawn.Gender;
-			this.adulthood = pawn.Adulthood.uniqueSaveKey;
-			this.childhood = pawn.Childhood.uniqueSaveKey;
+			// TODO: Alpha 16.  Figure out if this is going to break backwards compatibility.
+			//this.adulthood = pawn.Adulthood.uniqueSaveKey;
+			//this.childhood = pawn.Childhood.uniqueSaveKey;
+			if (pawn.Adulthood != null) {
+				this.adulthood = pawn.Adulthood.identifier;
+			}
+			else {
+				this.adulthood = pawn.LastSelectedAdulthood.identifier;
+			}
+			this.childhood = pawn.Childhood.identifier;
 			this.skinColor = pawn.SkinColor;
 			this.hairDef = pawn.HairDef.defName;
 			this.hairColor = pawn.GetColor(PawnLayers.Hair);
@@ -144,7 +152,7 @@ namespace EdB.PrepareCarefully
 		public Backstory FindBackstory(string name)
 		{
 			return BackstoryDatabase.allBackstories.Values.ToList().Find((Backstory b) => {
-				return b.uniqueSaveKey.Equals(name);
+				return b.identifier.Equals(name);
 			});
 		}
 
@@ -159,13 +167,13 @@ namespace EdB.PrepareCarefully
 				if (count > 0) {
 					for (int i = 0; i < count; i++) {
 						if (degree == degreeData[i].degree) {
-							Trait trait = new Trait(def, degreeData[i].degree);
+							Trait trait = new Trait(def, degreeData[i].degree, true);
 							return trait;
 						}
 					}
 				}
 				else {
-					return new Trait(def, 0);
+					return new Trait(def, 0, true);
 				}
 			}
 			return null;

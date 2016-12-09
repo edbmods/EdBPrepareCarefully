@@ -25,14 +25,14 @@ namespace EdB.PrepareCarefully
 
 		// Populates color arrays from PawnSkinColors.SkinColors.  Uses an indirect method of getting the color values
 		// instead of just copying the color list via reflection.  This will make it work better with mods that
-		// detour the color methods in that class--as long as they detour the GetSkinDataLeftIndexByWhiteness() method.
+		// detour the color methods in that class--as long as they detour the GetSkinDataIndexOfMelanin() method.
 		public static void InitializeColors()
 		{
 			List<float> values = new List<float>();
 
 			// Get the private GetSkinDataLeftIndexByWhiteness() method from the PawnSkinColors class.
-			MethodInfo getSkinDataLeftIndexByWhitenessMethod = typeof(PawnSkinColors)
-					.GetMethod("GetSkinDataLeftIndexByWhiteness",
+			MethodInfo getSkinDataIndexOfMelaninMethod = typeof(PawnSkinColors)
+					.GetMethod("GetSkinDataIndexOfMelanin",
 				    BindingFlags.NonPublic | BindingFlags.Static, null, new Type[] { typeof(float) }, null);
 
 			// Iterate all values from 0.0f to 1.0f, using increments of 0.01f, to get the left index for each value.
@@ -43,7 +43,7 @@ namespace EdB.PrepareCarefully
 			float f = 0.01f;
 			int counter = 1;
 			while (f < 1.0f) {
-				int result = (int) getSkinDataLeftIndexByWhitenessMethod.Invoke(null, new object[] { f });
+				int result = (int) getSkinDataIndexOfMelaninMethod.Invoke(null, new object[] { f });
 				if (result != currentIndex) {
 					currentIndex = result;
 					values.Add(f);

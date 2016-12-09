@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 using Verse;
+using System.Reflection;
 
 namespace EdB.PrepareCarefully
 {
@@ -12,7 +13,7 @@ namespace EdB.PrepareCarefully
 		{
 			PawnKindDef kindDef = Faction.OfPlayer.def.basicMemberKind;
 			Pawn pawn = PawnGenerator.GeneratePawn(new PawnGenerationRequest(kindDef, Faction.OfPlayer,
-					PawnGenerationContext.PlayerStarter, true, false, false, false, false, false, 0f, false, true,
+					PawnGenerationContext.PlayerStarter, null, true, false, false, false, false, false, 0f, false, true,
 			        false, null, null, null, null, null, null));
 			return pawn;
 		}
@@ -25,9 +26,22 @@ namespace EdB.PrepareCarefully
 
 		public void RandomizeBackstory(CustomPawn customPawn)
 		{
-			Pawn pawn = GenerateColonist();
-			customPawn.Adulthood = pawn.story.adulthood;
-			customPawn.Childhood = pawn.story.childhood;
+			MethodInfo method = typeof(PawnBioAndNameGenerator).GetMethod("SetBackstoryInSlot", BindingFlags.Static | BindingFlags.NonPublic);
+			object[] arguments = new object[] { customPawn.Pawn, BackstorySlot.Childhood, null, Faction.OfPlayer.def };
+			method.Invoke(null, arguments);
+			customPawn.Childhood = arguments[2] as Backstory;
+			arguments = new object[] { customPawn.Pawn, BackstorySlot.Adulthood, null, Faction.OfPlayer.def };
+			method.Invoke(null, arguments);
+			customPawn.Adulthood = arguments[2] as Backstory;
+		}
+
+		public static Backstory RandomAdulthood(CustomPawn customPawn)
+		{
+			MethodInfo method = typeof(PawnBioAndNameGenerator).GetMethod("SetBackstoryInSlot", BindingFlags.Static | BindingFlags.NonPublic);
+			object[] arguments = new object[] { customPawn.Pawn, BackstorySlot.Adulthood, null, Faction.OfPlayer.def };
+			method.Invoke(null, arguments);
+			Backstory result = arguments[2] as Backstory;
+			return result;
 		}
 
 		public void RandomizeTraits(CustomPawn customPawn)
@@ -88,7 +102,8 @@ namespace EdB.PrepareCarefully
 		{
 			Pawn pawn = GenerateColonist();
 			pawn.gender = customPawn.Gender;
-			Name name = NameGenerator.GeneratePawnName(pawn, NameStyle.Full, null);
+			//Name name = NameGenerator.GeneratePawnName(pawn, NameStyle.Full, null);
+			Name name = PawnBioAndNameGenerator.GeneratePawnName(pawn, NameStyle.Full, null);
 			NameTriple nameTriple = name as NameTriple;
 			customPawn.Name = nameTriple;
 		}

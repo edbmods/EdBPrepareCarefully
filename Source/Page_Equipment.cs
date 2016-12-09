@@ -395,7 +395,7 @@ namespace EdB.PrepareCarefully
 									ThingDef stuffDef = entry.stuffDef;
 									list.Add(new FloatMenuOption("ThingInfo".Translate(), delegate {
 										Find.WindowStack.Add(new Dialog_InfoCard(thingDef, stuffDef));
-									}, MenuOptionPriority.Medium, null, null, 0, null));
+									}, MenuOptionPriority.Default, null, null, 0, null, null));
 									Find.WindowStack.Add(new FloatMenu(list, null, false));
 								}
 								else {
@@ -655,7 +655,7 @@ namespace EdB.PrepareCarefully
 									ThingDef stuffDef = customPawn.stuffDef;
 									list.Add(new FloatMenuOption("ThingInfo".Translate(), delegate {
 										Find.WindowStack.Add(new Dialog_InfoCard(thingDef, stuffDef));
-									}, MenuOptionPriority.Medium, null, null, 0, null));
+									}, MenuOptionPriority.Default, null, null, 0, null, null));
 									Find.WindowStack.Add(new FloatMenu(list, null, false));
 								}
 								else {

@@ -177,7 +177,9 @@ namespace EdB.PrepareCarefully
 			stringBuilder.AppendLine();
 			stringBuilder.AppendLine("------------------");
 			Hediff_Injury hediff_Injury = hediff as Hediff_Injury;
-			string damageLabel = hediff.DamageLabel;
+			// TODO: Alpha 16. Check on this label change.
+			//string damageLabel = hediff.DamageLabel;
+			string damageLabel = hediff.LabelInBrackets;
 			if (!hediff.Label.NullOrEmpty() || !damageLabel.NullOrEmpty() || !hediff.CapMods.NullOrEmpty<PawnCapacityModifier>()) {
 				stringBuilder.Append(hediff.LabelCap);
 				if (!damageLabel.NullOrEmpty()) {

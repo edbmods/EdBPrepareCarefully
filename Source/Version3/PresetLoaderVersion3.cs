@@ -225,13 +225,15 @@ namespace EdB.PrepareCarefully
 				Log.Warning("Could not load childhood backstory definition \"" + record.childhood + "\"");
 				Failed = true;
 			}
-			backstory = FindBackstory(record.adulthood);
-			if (backstory != null) {
-				pawn.Adulthood = backstory;
-			}
-			else {
-				Log.Warning("Could not load adulthood backstory definition \"" + record.adulthood + "\"");
-				Failed = true;
+			if (record.adulthood != null) {
+				backstory = FindBackstory(record.adulthood);
+				if (backstory != null) {
+					pawn.Adulthood = backstory;
+				}
+				else {
+					Log.Warning("Could not load adulthood backstory definition \"" + record.adulthood + "\"");
+					Failed = true;
+				}
 			}
 
 			int traitCount = pawn.Traits.Count();
@@ -430,7 +432,7 @@ namespace EdB.PrepareCarefully
 		public Backstory FindBackstory(string name)
 		{
 			return BackstoryDatabase.allBackstories.Values.ToList().Find((Backstory b) => {
-				return b.uniqueSaveKey.Equals(name);
+				return b.identifier.Equals(name);
 			});
 		}
 
@@ -445,13 +447,13 @@ namespace EdB.PrepareCarefully
 				if (count > 0) {
 					for (int i = 0; i < count; i++) {
 						if (degree == degreeData[i].degree) {
-							Trait trait = new Trait(def, degreeData[i].degree);
+							Trait trait = new Trait(def, degreeData[i].degree, true);
 							return trait;
 						}
 					}
 				}
 				else {
-					return new Trait(def, 0);
+					return new Trait(def, 0, true);
 				}
 			}
 			return null;

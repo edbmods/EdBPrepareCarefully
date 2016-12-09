@@ -49,6 +49,7 @@ namespace EdB.PrepareCarefully
 		protected string apparelConflictText = null;
 		protected List<ApparelConflict> apparelConflicts = new List<ApparelConflict>();
 		protected bool randomInjuries = false;
+		protected Backstory adulthood = null;
 
 		// The tick of the year when the pawn was born.
 		protected long birthTicks = 0;
@@ -61,6 +62,7 @@ namespace EdB.PrepareCarefully
 
 		public CustomPawn()
 		{
+			this.adulthood = Randomizer.RandomAdulthood(this);
 		}
 
 		public CustomPawn(Pawn pawn)
@@ -133,7 +135,8 @@ namespace EdB.PrepareCarefully
 			colors.Clear();
 			PawnGraphicSet pawnGraphics = pawn.Drawer.renderer.graphics;
 
-			graphics.Add(GraphicGetter_NakedHumanlike.GetNakedBodyGraphic(pawn.story.BodyType, ShaderDatabase.CutoutSkin, pawn.story.SkinColor));
+			// TODO: Alpha 16.  Does this mean we can change body type?!  Exciting.
+			graphics.Add(GraphicGetter_NakedHumanlike.GetNakedBodyGraphic(pawn.story.bodyType, ShaderDatabase.CutoutSkin, pawn.story.SkinColor));
 			colors.Add(pawn.story.SkinColor);
 
 			graphics.Add(null);
@@ -163,7 +166,7 @@ namespace EdB.PrepareCarefully
 				selectedStuff.Add(null);
 			}
 			foreach (Apparel current in this.pawn.apparel.WornApparel) {
-				Graphic graphic = GraphicsCache.Instance.GetApparel(current.def, pawn.story.BodyType);
+				Graphic graphic = GraphicsCache.Instance.GetApparel(current.def, pawn.story.bodyType);
 				Color color = current.DrawColor;
 				int layer = PawnLayers.ToPawnLayerIndex(current.def.apparel);
 				if (layer != -1) {
@@ -179,6 +182,12 @@ namespace EdB.PrepareCarefully
 
 			ResetIncapableOf();
 			pawn.health.capacities.Clear();
+
+			// Copy the adulthood backstory or set a random one if it's null
+			this.adulthood = pawn.story.adulthood;
+			if (adulthood == null) {
+				this.adulthood = Randomizer.RandomAdulthood(this);
+			}
 		}
 
 		public void InitializeSkillLevelsAndPassions()
@@ -210,7 +219,7 @@ namespace EdB.PrepareCarefully
 
 				// When figuring out the unadjusted value, take into account the special
 				// case where the adjusted value is 0 or 20.
-				int value = record.level;
+				int value = record.Level;
 				if (value == 0 && negativeAdjustment > 0) {
 					value = Rand.RangeInclusive(1, negativeAdjustment);
 				}
@@ -271,20 +280,28 @@ namespace EdB.PrepareCarefully
 		protected int ComputeSkillModifier(SkillDef def)
 		{
 			int value = 0;
-			if (pawn.story.childhood.skillGainsResolved.ContainsKey(def)) {
-				value += pawn.story.childhood.skillGainsResolved[def];
+			if (pawn.story != null && pawn.story.childhood != null && pawn.story.childhood.skillGainsResolved != null) {
+				if (pawn.story.childhood.skillGainsResolved.ContainsKey(def)) {
+					value += pawn.story.childhood.skillGainsResolved[def];
+				}
 			}
-			if (pawn.story.adulthood.skillGainsResolved.ContainsKey(def)) {
-				value += pawn.story.adulthood.skillGainsResolved[def];
+			if (pawn.story != null && pawn.story.adulthood != null && pawn.story.adulthood.skillGainsResolved != null) {
+				if (pawn.story.adulthood.skillGainsResolved.ContainsKey(def)) {
+					value += pawn.story.adulthood.skillGainsResolved[def];
+				}
 			}
 			foreach (Trait trait in this.traits) {
-				if (trait != null) {
+				if (trait != null && trait.def != null && trait.def.degreeDatas != null) {
 					foreach (TraitDegreeData data in trait.def.degreeDatas) {
 						if (data.degree == trait.Degree) {
-							foreach (var pair in data.skillGains) {
-								SkillDef skillDef = pair.Key;
-								if (skillDef == def) {
-									value += pair.Value;
+							if (data.skillGains != null) {
+								foreach (var pair in data.skillGains) {
+									if (pair.Key != null) {
+										SkillDef skillDef = pair.Key;
+										if (skillDef == def) {
+											value += pair.Value;
+										}
+									}
 								}
 							}
 							break;
@@ -311,7 +328,13 @@ namespace EdB.PrepareCarefully
 				return 0;
 			}
 			else {
-				int value = currentSkillLevels[def] + skillLevelModifiers[def];
+				int value = 0;
+				if (currentSkillLevels.ContainsKey(def)) {
+					value = currentSkillLevels[def];
+					if (skillLevelModifiers.ContainsKey(def)) {
+						value += skillLevelModifiers[def];
+					}
+				}
 				if (value < SkillRecord.MinLevel) {
 					return SkillRecord.MinLevel;
 				}
@@ -344,7 +367,7 @@ namespace EdB.PrepareCarefully
 		protected void CopySkillLevelsToPawn()
 		{
 			foreach (var record in pawn.skills.skills) {
-				pawn.skills.GetSkill(record.def).level = GetSkillLevel(record.def);
+				pawn.skills.GetSkill(record.def).Level = GetSkillLevel(record.def);
 			}
 		}
 
@@ -474,7 +497,7 @@ namespace EdB.PrepareCarefully
 				if (pawn.story.adulthood == null) {
 					return name.Nick;
 				}
-				return name.Nick + ", " + pawn.story.adulthood.titleShort;
+				return name.Nick + ", " + pawn.story.adulthood.TitleShort;
 			}
 		}
 
@@ -498,6 +521,12 @@ namespace EdB.PrepareCarefully
 				return i.BodyPartRecord == record;
 			});
 			return implant != null;
+		}
+
+		public bool IsAdult {
+			get {
+				return this.BiologicalAge > 19;
+			}
 		}
 
 		public void IncreasePassion(SkillDef def) {
@@ -788,8 +817,25 @@ namespace EdB.PrepareCarefully
 				return pawn.story.adulthood;
 			}
 			set {
-				pawn.story.adulthood = value;
+				if (value != null) {
+					adulthood = value;
+				}
+				if (IsAdult) {
+					pawn.story.adulthood = value;
+				}
+				else {
+					pawn.story.adulthood = null;
+				}
 				ResetBackstories();
+			}
+		}
+
+		public Backstory LastSelectedAdulthood {
+			get {
+				return adulthood;
+			}
+			set {
+				this.adulthood = value;
 			}
 		}
 
@@ -874,7 +920,7 @@ namespace EdB.PrepareCarefully
 
 		public BodyType BodyType {
 			get {
-				return pawn.story.BodyType;
+				return pawn.story.bodyType;
 			}
 		}
 
@@ -895,7 +941,7 @@ namespace EdB.PrepareCarefully
 				return pawn.story.SkinColor;
 			}
 			set {
-				pawn.story.skinWhiteness = PawnColorUtils.GetSkinValue(value);
+				pawn.story.melanin = PawnColorUtils.GetSkinValue(value);
 				this.colors[PawnLayers.HeadType] = value;
 				this.colors[PawnLayers.BodyType] = value;
 			}
@@ -939,6 +985,14 @@ namespace EdB.PrepareCarefully
 				pawn.ageTracker.AgeBiologicalTicks += diff * 3600000L;
 				ClearCachedLifeStage();
 				ClearCachedAbilities();
+				if (IsAdult && pawn.story.adulthood == null) {
+					pawn.story.adulthood = adulthood;
+					ResetBackstories();
+				}
+				else if (!IsAdult && pawn.story.adulthood != null) {
+					pawn.story.adulthood = null;
+					ResetBackstories();
+				}
 			}
 		}
 
@@ -971,7 +1025,7 @@ namespace EdB.PrepareCarefully
 
 		protected void ResetBodyType()
 		{
-			BodyType bodyType = pawn.story.BodyType;
+			BodyType bodyType = pawn.story.bodyType;
 			Graphic bodyTypeGraphic = GraphicGetter_NakedHumanlike.GetNakedBodyGraphic(bodyType, ShaderDatabase.Cutout,
 					pawn.story.SkinColor);
 			graphics[PawnLayers.BodyType] = bodyTypeGraphic;
@@ -1029,11 +1083,12 @@ namespace EdB.PrepareCarefully
 			foreach (var t in source.story.traits.allTraits) {
 				result.story.traits.allTraits.Add(t);
 			}
-			result.story.skinWhiteness = source.story.skinWhiteness;
+			result.story.melanin = source.story.melanin;
 			NameTriple name = source.Name as NameTriple;
 			result.Name = new NameTriple(name.First, name.Nick, name.Last);
 			result.story.hairDef = source.story.hairDef;
 			result.story.hairColor = source.story.hairColor;
+			result.story.bodyType = source.story.bodyType;
 			// Need to use reflection to set the private graphic path field.
 			typeof(Pawn_StoryTracker).GetField("headGraphicPath", BindingFlags.Instance | BindingFlags.NonPublic).SetValue(source.story, source.story.HeadGraphicPath);
 			result.story.crownType = source.story.crownType;
@@ -1052,7 +1107,7 @@ namespace EdB.PrepareCarefully
 			result.skills.skills.Clear();
 			foreach (var s in source.skills.skills) {
 				SkillRecord record = new SkillRecord(result, s.def);
-				record.level = s.level;
+				record.Level = s.Level;
 				record.passion = s.passion;
 				record.xpSinceLastLevel = s.xpSinceLastLevel;
 				result.skills.skills.Add(record);
@@ -1081,7 +1136,7 @@ namespace EdB.PrepareCarefully
 				}
 			}
 			result.story.traits = traitSet;
-			result.story.skinWhiteness = this.pawn.story.skinWhiteness;
+			result.story.melanin = this.pawn.story.melanin;
 			result.story.hairDef = this.pawn.story.hairDef;
 			result.story.hairColor = colors[PawnLayers.Hair];
 			// Need to use reflection to set the private graphic path method.
@@ -1115,7 +1170,7 @@ namespace EdB.PrepareCarefully
 				if (value > 20) {
 					value = 20;
 				}
-				skill.level = value;
+				skill.Level = value;
 				if (!IsSkillDisabled(skill.def)) {
 					skill.passion = this.currentPassions[skill.def];
 					skill.xpSinceLastLevel = Rand.Range(skill.XpRequiredForLevelUp * 0.1f, skill.XpRequiredForLevelUp * 0.5f);
