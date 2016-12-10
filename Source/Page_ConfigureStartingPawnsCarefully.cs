@@ -1145,76 +1145,91 @@ namespace EdB.PrepareCarefully
 		{
 			CustomPawn customPawn = CurrentPawn;
 
-			int currentIndex = PawnColorUtils.GetColorLeftIndex(customPawn.SkinColor);
+			int currentSwatchIndex = PawnColorUtils.GetLeftIndexForValue(customPawn.MelaninLevel);
+			Color currentSwatchColor = PawnColorUtils.Colors[currentSwatchIndex];
 
-			Color currentColor = PawnColorUtils.Colors[currentIndex];
-			Rect rect = new Rect(SwatchPosition.x, cursorY, SwatchSize.x, SwatchSize.y);
+			Rect swatchRect = new Rect(SwatchPosition.x, cursorY, SwatchSize.x, SwatchSize.y);
 
+			// Draw the swatch selection boxes.
 			int colorCount = PawnColorUtils.Colors.Length - 1;
 			int clickedIndex = -1;
-			for (int i=0; i<colorCount; i++) {
+			for (int i = 0; i < colorCount; i++) {
 				Color color = PawnColorUtils.Colors[i];
-				bool selected = (i == currentIndex);
-				if (selected) {
-					Rect selectionRect = new Rect(rect.x - 2, rect.y - 2, SwatchSize.x + 4, SwatchSize.y + 4);
+
+				// If the swatch is selected, draw a heavier border around it.
+				bool isThisSwatchSelected = (i == currentSwatchIndex);
+				if (isThisSwatchSelected) {
+					Rect selectionRect = new Rect(swatchRect.x - 2, swatchRect.y - 2, SwatchSize.x + 4, SwatchSize.y + 4);
 					GUI.color = ColorSwatchSelection;
 					GUI.DrawTexture(selectionRect, BaseContent.WhiteTex);
 				}
 
-				Rect borderRect = new Rect(rect.x - 1, rect.y - 1, SwatchSize.x + 2, SwatchSize.y + 2);
+				// Draw the border around the swatch.
+				Rect borderRect = new Rect(swatchRect.x - 1, swatchRect.y - 1, SwatchSize.x + 2, SwatchSize.y + 2);
 				GUI.color = ColorSwatchBorder;
 				GUI.DrawTexture(borderRect, BaseContent.WhiteTex);
 
+				// Draw the swatch itself.
 				GUI.color = color;
-				GUI.DrawTexture(rect, BaseContent.WhiteTex);
+				GUI.DrawTexture(swatchRect, BaseContent.WhiteTex);
 
-				if (!selected) {
-					if (Widgets.ButtonInvisible(rect, false)) {
+				if (!isThisSwatchSelected) {
+					if (Widgets.ButtonInvisible(swatchRect, false)) {
 						clickedIndex = i;
-						currentColor = color;
+						//currentSwatchColor = color;
 					}
 				}
 
-				rect.x += SwatchSpacing.x;
-				if (rect.x >= 227) {
-					rect.y += SwatchSpacing.y;
-					rect.x = SwatchPosition.x;
+				// Advance the swatch rect cursor position and wrap it if necessary.
+				swatchRect.x += SwatchSpacing.x;
+				if (swatchRect.x >= 227) {
+					swatchRect.y += SwatchSpacing.y;
+					swatchRect.x = SwatchPosition.x;
 				}
 			}
 
+			// Draw the current color box.
 			GUI.color = Color.white;
-
-			if (rect.x != SwatchPosition.x) {
-				rect.x = SwatchPosition.x;
-				rect.y += SwatchSpacing.y;
+			Rect currentColorRect = new Rect(SwatchPosition.x, swatchRect.y + 4, 49, 49);
+			if (swatchRect.x != SwatchPosition.x) {
+				currentColorRect.y += SwatchSpacing.y;
 			}
-			rect.y += 4;
-			rect.width = 49;
-			rect.height = 49;
 			GUI.color = ColorSwatchBorder;
-			GUI.DrawTexture(rect, BaseContent.WhiteTex);
+			GUI.DrawTexture(currentColorRect, BaseContent.WhiteTex);
 			GUI.color = customPawn.SkinColor;
-			GUI.DrawTexture(rect.ContractedBy(1), BaseContent.WhiteTex);
+			GUI.DrawTexture(currentColorRect.ContractedBy(1), BaseContent.WhiteTex);
 			GUI.color = Color.white;
 
-			float minValue = 0.000001f;
-			float t = PawnColorUtils.GetSkinLerpValue(customPawn.SkinColor);
+			// Figure out the lerp value so that we can draw the slider.
+			float minValue = 0.00f;
+			float maxValue = 0.99f;
+			float t = PawnColorUtils.GetRelativeLerpValue(customPawn.MelaninLevel);
 			if (t < minValue) {
 				t = minValue;
 			}
-
+			else if (t > maxValue) {
+				t = maxValue;
+			}
 			if (clickedIndex != -1) {
 				t = minValue;
 			}
 
-			float newValue = GUI.HorizontalSlider(new Rect(rect.x + 56, rect.y + 18, 136, 16), t, minValue, 1);
+			// Draw the slider.
+			float newValue = GUI.HorizontalSlider(new Rect(currentColorRect.x + 56, currentColorRect.y + 18, 136, 16), t, minValue, 1);
+			if (newValue < minValue) {
+				newValue = minValue;
+			}
+			else if (newValue > maxValue) {
+				newValue = maxValue;
+			}
 			GUI.color = Color.white;
 
+			// If the user selected a new swatch or changed the lerp value, set a new color value.
 			if (t != newValue || clickedIndex != -1) {
 				if (clickedIndex != -1) {
-					currentIndex = clickedIndex;
+					currentSwatchIndex = clickedIndex;
 				}
-				customPawn.SkinColor = PawnColorUtils.FindColor(currentIndex, newValue);
+				customPawn.MelaninLevel = PawnColorUtils.GetValueFromRelativeLerp(currentSwatchIndex, newValue);
 			}
 		}
 

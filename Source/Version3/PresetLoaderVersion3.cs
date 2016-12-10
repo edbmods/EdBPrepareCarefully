@@ -184,9 +184,7 @@ namespace EdB.PrepareCarefully
 
 		public CustomPawn LoadPawn(SaveRecordPawnV3 record)
 		{
-			// TODO: Ahlpa 14 Evaluate
 			Pawn source = new Randomizer().GenerateColonist();
-			//Pawn source = PawnGenerator.GeneratePawn(PawnKindDefOf.Colonist, Faction.OfPlayer);
 
 			CustomPawn pawn = new CustomPawn(source);
 			pawn.Gender = record.gender;
@@ -216,7 +214,14 @@ namespace EdB.PrepareCarefully
 
 			pawn.HeadGraphicPath = record.headGraphicPath;
 			pawn.SetColor(PawnLayers.Hair, record.hairColor);
-			pawn.SetColor(PawnLayers.HeadType, PawnColorUtils.FromRoundedColor(record.skinColor));
+
+			if (record.melanin >= 0.0f) {
+				pawn.MelaninLevel = record.melanin;
+			}
+			else {
+				pawn.MelaninLevel = PawnColorUtils.FindMelaninValueFromColor(record.skinColor);
+			}
+
 			Backstory backstory = FindBackstory(record.childhood);
 			if (backstory != null) {
 				pawn.Childhood = backstory;

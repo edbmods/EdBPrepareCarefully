@@ -614,12 +614,6 @@ namespace EdB.PrepareCarefully
 			if (PawnLayers.IsApparelLayer(layer)) {
 				colorCache[new EquipmentKey(selectedApparel[layer], selectedStuff[layer])] = color;
 			}
-			if (layer == PawnLayers.BodyType) {
-				SkinColor = color;
-			}
-			else if (layer == PawnLayers.HeadType) {
-				SkinColor = color;
-			}
 		}
 
 		public bool ColorMatches(Color a, Color b) {
@@ -940,10 +934,15 @@ namespace EdB.PrepareCarefully
 			get {
 				return pawn.story.SkinColor;
 			}
+		}
+
+		public float MelaninLevel {
+			get {
+				return pawn.story.melanin;
+			}
 			set {
-				pawn.story.melanin = PawnColorUtils.GetSkinValue(value);
-				this.colors[PawnLayers.HeadType] = value;
-				this.colors[PawnLayers.BodyType] = value;
+				pawn.story.melanin = value;
+				this.colors[PawnLayers.BodyType] = this.colors[PawnLayers.HeadType] = pawn.story.SkinColor;
 			}
 		}
 

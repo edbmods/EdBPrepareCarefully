@@ -15,6 +15,7 @@ namespace EdB.PrepareCarefully
 		public List<string> traitNames = new List<string>();
 		public List<int> traitDegrees = new List<int>();
 		public Color skinColor;
+		public float melanin;
 		public string hairDef;
 		public Color hairColor;
 		public string headGraphicPath;
@@ -55,7 +56,8 @@ namespace EdB.PrepareCarefully
 				this.adulthood = pawn.LastSelectedAdulthood.identifier;
 			}
 			this.childhood = pawn.Childhood.identifier;
-			this.skinColor = pawn.SkinColor;
+			this.skinColor = pawn.Pawn.story.SkinColor;
+			this.melanin = pawn.Pawn.story.melanin;
 			this.hairDef = pawn.HairDef.defName;
 			this.hairColor = pawn.GetColor(PawnLayers.Hair);
 			this.headGraphicPath = pawn.HeadGraphicPath;
@@ -105,6 +107,7 @@ namespace EdB.PrepareCarefully
 			Scribe_Collections.LookList<string>(ref this.traitNames, "traitNames", LookMode.Value, null);
 			Scribe_Collections.LookList<int>(ref this.traitDegrees, "traitDegrees", LookMode.Value, null);
 			Scribe_Values.LookValue<Color>(ref this.skinColor, "skinColor", Color.white, false);
+			Scribe_Values.LookValue<float>(ref this.melanin, "melanin", -1.0f, false);
 			Scribe_Values.LookValue<string>(ref this.hairDef, "hairDef", null, false);
 			Scribe_Values.LookValue<Color>(ref this.hairColor, "hairColor", Color.white, false);
 			Scribe_Values.LookValue<string>(ref this.headGraphicPath, "headGraphicPath", null, false);

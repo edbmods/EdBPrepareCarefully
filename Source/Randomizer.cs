@@ -81,7 +81,7 @@ namespace EdB.PrepareCarefully
 			customPawn.HairDef = pawn.story.hairDef;
 			customPawn.SetColor(PawnLayers.Hair, pawn.story.hairColor);
 			customPawn.HeadGraphicPath = pawn.story.HeadGraphicPath;
-			customPawn.SetColor(PawnLayers.BodyType, pawn.story.SkinColor);
+			customPawn.MelaninLevel = pawn.story.melanin;
 
 			for (int i = 0; i < PawnLayers.Count; i++) {
 				if (PawnLayers.IsApparelLayer(i)) {
