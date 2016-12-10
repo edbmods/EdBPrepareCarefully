@@ -39,7 +39,6 @@ namespace EdB.PrepareCarefully
 
 		protected const int LayerCount = PawnLayers.Count;
 
-		public List<Graphic> graphics = new List<Graphic>(LayerCount);
 		protected List<Color> colors = new List<Color>(LayerCount);
 
 		protected List<ThingDef> selectedApparel = new List<ThingDef>(LayerCount);
@@ -59,6 +58,7 @@ namespace EdB.PrepareCarefully
 		protected List<Implant> implants = new List<Implant>();
 		protected List<Injury> injuries = new List<Injury>();
 		public List<CustomBodyPart> bodyParts = new List<CustomBodyPart>();
+		protected ThingCache thingCache = new ThingCache();
 
 		public CustomPawn()
 		{
@@ -131,33 +131,17 @@ namespace EdB.PrepareCarefully
 			InitializeSkillLevelsAndPassions();
 			ComputeSkillLevelModifiers();
 
-			graphics.Clear();
 			colors.Clear();
-			PawnGraphicSet pawnGraphics = pawn.Drawer.renderer.graphics;
-
-			graphics.Add(GraphicGetter_NakedHumanlike.GetNakedBodyGraphic(pawn.story.bodyType, ShaderDatabase.CutoutSkin, pawn.story.SkinColor));
 			colors.Add(pawn.story.SkinColor);
-
-			graphics.Add(null);
-			colors.Add(Color.white);
-			graphics.Add(null);
-			colors.Add(Color.white);
-			graphics.Add(null);
-			colors.Add(Color.white);
-			graphics.Add(null);
-			colors.Add(Color.white);
-
-			graphics.Add(GraphicDatabaseHeadRecords.GetHeadNamed(pawn.story.HeadGraphicPath, pawn.story.SkinColor));
 			colors.Add(pawn.story.SkinColor);
-			ResetHead();
-
-			graphics.Add(GraphicsCache.Instance.GetHair(pawn.story.hairDef));
 			colors.Add(pawn.story.hairColor);
-
-			graphics.Add(null);
 			colors.Add(Color.white);
-			graphics.Add(null);
 			colors.Add(Color.white);
+			colors.Add(Color.white);
+			colors.Add(Color.white);
+			colors.Add(Color.white);
+			colors.Add(Color.white);
+			ResetHead();
 
 			for (int i = 0; i < PawnLayers.Count; i++) {
 				selectedApparel.Add(null);
@@ -169,15 +153,15 @@ namespace EdB.PrepareCarefully
 				Color color = current.DrawColor;
 				int layer = PawnLayers.ToPawnLayerIndex(current.def.apparel);
 				if (layer != -1) {
-					graphics[layer] = graphic;
-					SetSelectedApparel(layer, current.def);
+					SetSelectedApparelInternal(layer, current.def);
 					acceptedApparel[layer] = current.def;
 					SetSelectedStuff(layer, current.Stuff);
 					if (ApparelIsTintedByDefault(current.def, current.Stuff)) {
-						SetColor(layer, color);
+						SetColorInternal(layer, color);
 					}
 				}
 			}
+			ResetApparel();
 
 			ResetIncapableOf();
 			pawn.health.capacities.Clear();
@@ -609,6 +593,14 @@ namespace EdB.PrepareCarefully
 		}
 
 		public void SetColor(int layer, Color color) {
+			SetColorInternal(layer, color);
+			ResetApparel();
+		}
+
+		// Separate method that can be called internally without clearing the graphics caches or copying
+		// to the target pawn.
+		public void SetColorInternal(int layer, Color color)
+		{
 			this.colors[layer] = color;
 			if (PawnLayers.IsApparelLayer(layer)) {
 				colorCache[new EquipmentKey(selectedApparel[layer], selectedStuff[layer])] = color;
@@ -627,18 +619,31 @@ namespace EdB.PrepareCarefully
 			}
 		}
 
+		private void ResetApparel()
+		{
+			CopyApparelToPawn(this.pawn);
+			ClearCachedPortrait();
+		}
+
 		public ThingDef GetSelectedApparel(int layer) {
 			return this.selectedApparel[layer];
 		}
 
 		public void SetSelectedApparel(int layer, ThingDef def) {
+			SetSelectedApparelInternal(layer, def);
+			ResetApparel();
+		}
+
+		// Separate method that can be called internally without clearing the graphics caches or copying
+		// to the target pawn.
+		private void SetSelectedApparelInternal(int layer, ThingDef def)
+		{
 			if (layer < 0) {
 				return;
 			}
 			this.selectedApparel[layer] = def;
 			if (def != null) {
 				ThingDef stuffDef = this.GetSelectedStuff(layer);
-				this.graphics[layer] = GraphicsCache.Instance.GetApparel(def, BodyType);
 				EquipmentKey pair = new EquipmentKey(def, stuffDef);
 				if (colorCache.ContainsKey(pair)) {
 					this.colors[layer] = colorCache[pair];
@@ -663,9 +668,6 @@ namespace EdB.PrepareCarefully
 						}
 					}
 				}
-			}
-			else {
-				this.graphics[layer] = null;
 			}
 			this.acceptedApparel[layer] = def;
 			ApparelAcceptanceTest();
@@ -959,12 +961,6 @@ namespace EdB.PrepareCarefully
 			}
 			set {
 				pawn.story.hairDef = value;
-				if (value == null) {
-					graphics[PawnLayers.Hair] = null;
-				}
-				else {
-					graphics[PawnLayers.Hair] = GraphicsCache.Instance.GetHair(value);
-				}
 				ClearCachedPortrait();
 			}
 		}
@@ -1007,7 +1003,6 @@ namespace EdB.PrepareCarefully
 		{
 			// Need to use reflection to set the private field.
 			typeof(Pawn_StoryTracker).GetField("headGraphicPath", BindingFlags.Instance | BindingFlags.NonPublic).SetValue(pawn.story, FilterHeadPathForGender(pawn.story.HeadGraphicPath));
-			graphics[PawnLayers.HeadType] = GraphicDatabaseHeadRecords.GetHeadNamed(pawn.story.HeadGraphicPath, pawn.story.SkinColor);
 		}
 
 		protected void ResetGender()
@@ -1041,15 +1036,6 @@ namespace EdB.PrepareCarefully
 			BodyType bodyType = pawn.story.bodyType;
 			Graphic bodyTypeGraphic = GraphicGetter_NakedHumanlike.GetNakedBodyGraphic(bodyType, ShaderDatabase.Cutout,
 					pawn.story.SkinColor);
-			graphics[PawnLayers.BodyType] = bodyTypeGraphic;
-			foreach (ThingDef def in selectedApparel) {
-				if (def != null) {
-					int layer = PawnLayers.ToPawnLayerIndex(def.apparel);
-					if (layer != -1) {
-						graphics[layer] = GraphicsCache.Instance.GetApparel(def, bodyType);
-					}
-				}
-			}
 		}
 
 		public string ResetIncapableOf()
@@ -1134,6 +1120,26 @@ namespace EdB.PrepareCarefully
 			return result;
 		}
 
+		protected void CopyApparelToPawn(Pawn pawn)
+		{
+			// Remove all apparel on the pawn and put it in the thing cache for potential later re-use.
+			FieldInfo wornApparelField = typeof(Pawn_ApparelTracker).GetField("wornApparel", BindingFlags.Instance | BindingFlags.NonPublic);
+			List<Apparel> apparel = (List<Apparel>)wornApparelField.GetValue(pawn.apparel);
+			foreach (var a in apparel) {
+				a.wearer = null;
+				thingCache.Put(a);
+			}
+			apparel.Clear();
+
+			// Set each piece of apparel on the pawn.
+			AddApparel(pawn, PawnLayers.Pants);
+			AddApparel(pawn, PawnLayers.BottomClothingLayer);
+			AddApparel(pawn, PawnLayers.MiddleClothingLayer);
+			AddApparel(pawn, PawnLayers.TopClothingLayer);
+			AddApparel(pawn, PawnLayers.Accessory);
+			AddApparel(pawn, PawnLayers.Hat);
+		}
+
 		// Uses the customized settings within the CustomPawn to create a new Pawn.
 		public Pawn ConvertToPawn(bool resolveGraphics) {
 			Pawn result = new Randomizer().GenerateColonist();
@@ -1165,16 +1171,7 @@ namespace EdB.PrepareCarefully
 			result.ageTracker.BirthAbsTicks = this.pawn.ageTracker.BirthAbsTicks;
 			result.ageTracker.AgeBiologicalTicks = this.pawn.ageTracker.AgeBiologicalTicks;
 
-			FieldInfo wornApparelField = typeof(Pawn_ApparelTracker).GetField("wornApparel", BindingFlags.Instance | BindingFlags.NonPublic);
-			List<Apparel> apparel = (List<Apparel>)wornApparelField.GetValue(result.apparel);
-			apparel.Clear();
-
-			AddApparel(result, PawnLayers.Pants);
-			AddApparel(result, PawnLayers.BottomClothingLayer);
-			AddApparel(result, PawnLayers.MiddleClothingLayer);
-			AddApparel(result, PawnLayers.TopClothingLayer);
-			AddApparel(result, PawnLayers.Accessory);
-			AddApparel(result, PawnLayers.Hat);
+			CopyApparelToPawn(result);
 
 			foreach (SkillRecord skill in result.skills.skills) {
 				int value = this.GetSkillLevel(skill.def);
@@ -1215,11 +1212,13 @@ namespace EdB.PrepareCarefully
 			if (acceptedApparel[layer] != null) {
 				Apparel a;
 				if (selectedApparel[layer].MadeFromStuff) {
-					a = (Apparel)ThingMaker.MakeThing(selectedApparel[layer], selectedStuff[layer]);
+					a = (Apparel)thingCache.Get(selectedApparel[layer], selectedStuff[layer]);
+					//a = (Apparel)ThingMaker.MakeThing(selectedApparel[layer], selectedStuff[layer]);
 					a.DrawColor = colors[layer] * GetStuffColor(layer);
 				}
 				else {
-					a = (Apparel)ThingMaker.MakeThing(selectedApparel[layer], null);
+					a = (Apparel)thingCache.Get(selectedApparel[layer]);
+					//a = (Apparel)ThingMaker.MakeThing(selectedApparel[layer], null);
 					a.DrawColor = colors[layer];
 				}
 
