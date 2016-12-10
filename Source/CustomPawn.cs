@@ -846,6 +846,7 @@ namespace EdB.PrepareCarefully
 				// Need to use reflection to set the private field.
 				typeof(Pawn_StoryTracker).GetField("headGraphicPath", BindingFlags.Instance | BindingFlags.NonPublic).SetValue(pawn.story, value);
 				ResetHead();
+				ClearCachedPortrait();
 			}
 		}
 
@@ -918,6 +919,7 @@ namespace EdB.PrepareCarefully
 			set {
 				pawn.story.bodyType = value;
 				ResetBodyType();
+				ClearCachedPortrait();
 			}
 		}
 
@@ -929,6 +931,7 @@ namespace EdB.PrepareCarefully
 				if (pawn.gender != value) {
 					pawn.gender = value;
 					ResetGender();
+					ClearCachedPortrait();
 				}
 			}
 		}
@@ -946,6 +949,7 @@ namespace EdB.PrepareCarefully
 			set {
 				pawn.story.melanin = value;
 				this.colors[PawnLayers.BodyType] = this.colors[PawnLayers.HeadType] = pawn.story.SkinColor;
+				ClearCachedPortrait();
 			}
 		}
 
@@ -961,6 +965,7 @@ namespace EdB.PrepareCarefully
 				else {
 					graphics[PawnLayers.Hair] = GraphicsCache.Instance.GetHair(value);
 				}
+				ClearCachedPortrait();
 			}
 		}
 
@@ -1098,7 +1103,7 @@ namespace EdB.PrepareCarefully
 			result.story.hairColor = source.story.hairColor;
 			result.story.bodyType = source.story.bodyType;
 			// Need to use reflection to set the private graphic path field.
-			typeof(Pawn_StoryTracker).GetField("headGraphicPath", BindingFlags.Instance | BindingFlags.NonPublic).SetValue(source.story, source.story.HeadGraphicPath);
+			typeof(Pawn_StoryTracker).GetField("headGraphicPath", BindingFlags.Instance | BindingFlags.NonPublic).SetValue(result.story, source.story.HeadGraphicPath);
 			result.story.crownType = source.story.crownType;
 
 			// Copy apparel.
@@ -1304,6 +1309,12 @@ namespace EdB.PrepareCarefully
 		public static void ClearCachedDisabledWorkTypes(Pawn_StoryTracker story)
 		{
 			typeof(Pawn_StoryTracker).GetField("cachedDisabledWorkTypes", BindingFlags.Instance | BindingFlags.NonPublic).SetValue(story, null);
+		}
+
+		public void ClearCachedPortrait()
+		{
+			pawn.Drawer.renderer.graphics.ResolveAllGraphics();
+			PortraitsCache.SetDirty(this.pawn);
 		}
 	}
 }

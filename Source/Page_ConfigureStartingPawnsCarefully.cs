@@ -1318,13 +1318,10 @@ namespace EdB.PrepareCarefully
 			CustomPawn customPawn = CurrentPawn;
 			GUI.BeginGroup(rect);
 
-			Rect bodyRect = new Rect(rect.width / 2 - 64, rect.height / 2 - 64, 128, 128);
-			Rect headRect = new Rect(bodyRect.x, bodyRect.y - 30, 128, 128);
-			List<Graphic> graphics = customPawn.graphics;
-			DrawGraphics(bodyRect, PawnLayers.BodyType, PawnLayers.TopClothingLayer);
-			DrawGraphic(bodyRect, PawnLayers.Accessory);
-			DrawGraphic(headRect, PawnLayers.HeadType);
-			DrawOneGraphic(headRect, PawnLayers.Hat, PawnLayers.Hair);
+			Vector2 pawnSize = new Vector2(128f, 180f);
+			Rect pawnRect = new Rect(rect.width * 0.5f - pawnSize.x * 0.5f, 10 + rect.height * 0.5f - pawnSize.y * 0.5f, pawnSize.x, pawnSize.y);
+			RenderTexture texture = PortraitsCache.Get(customPawn.Pawn, pawnSize, new Vector3(0, 0, 0), 1.0f);
+			GUI.DrawTexture(pawnRect, (Texture)texture);
 
 			GUI.EndGroup();
 			GUI.color = Color.white;
