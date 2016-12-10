@@ -71,6 +71,8 @@ namespace EdB.PrepareCarefully
 		protected List<HairDef> femaleHairDefs = new List<HairDef>();
 		protected List<Color> skinColors = new List<Color>();
 		protected List<Color> hairColors = new List<Color>();
+		protected List<BodyType> maleBodyTypes = new List<BodyType>();
+		protected List<BodyType> femaleBodyTypes = new List<BodyType>();
 		protected LeftPanelMode leftPanelMode = LeftPanelMode.Appearance;
 
 		protected bool bionicsMode = false;
@@ -131,6 +133,16 @@ namespace EdB.PrepareCarefully
 				femaleHeads.Add(path);
 			}
 
+			maleBodyTypes.Add(BodyType.Male);
+			maleBodyTypes.Add(BodyType.Thin);
+			maleBodyTypes.Add(BodyType.Fat);
+			maleBodyTypes.Add(BodyType.Hulk);
+
+			femaleBodyTypes.Add(BodyType.Female);
+			femaleBodyTypes.Add(BodyType.Thin);
+			femaleBodyTypes.Add(BodyType.Fat);
+			femaleBodyTypes.Add(BodyType.Hulk);
+
 			bodyTypeLabels.Add(BodyType.Fat, "EdB.BodyType.Fat".Translate());
 			bodyTypeLabels.Add(BodyType.Hulk, "EdB.BodyType.Hulk".Translate());
 			bodyTypeLabels.Add(BodyType.Thin, "EdB.BodyType.Thin".Translate());
@@ -138,8 +150,9 @@ namespace EdB.PrepareCarefully
 			bodyTypeLabels.Add(BodyType.Female, "EdB.BodyType.Average".Translate());
 
 			pawnLayers = new List<int>(new int[] {
-				PawnLayers.Hair,
+				PawnLayers.BodyType,
 				PawnLayers.HeadType,
+				PawnLayers.Hair,
 				PawnLayers.Pants,
 				PawnLayers.BottomClothingLayer,
 				PawnLayers.MiddleClothingLayer,
@@ -148,8 +161,9 @@ namespace EdB.PrepareCarefully
 				PawnLayers.Hat
 			});
 			pawnLayerActions = new List<Action>(new Action[] {
-				delegate { this.ChangePawnLayer(PawnLayers.Hair); },
+				delegate { this.ChangePawnLayer(PawnLayers.BodyType); },
 				delegate { this.ChangePawnLayer(PawnLayers.HeadType); },
+				delegate { this.ChangePawnLayer(PawnLayers.Hair); },
 				delegate { this.ChangePawnLayer(PawnLayers.Pants); },
 				delegate { this.ChangePawnLayer(PawnLayers.BottomClothingLayer); },
 				delegate { this.ChangePawnLayer(PawnLayers.MiddleClothingLayer); },
@@ -862,6 +876,10 @@ namespace EdB.PrepareCarefully
 						SoundDefOf.TickTiny.PlayOneShotOnCamera();
 						SelectNextHead(-1);
 					}
+					else if (this.selectedPawnLayer == PawnLayers.BodyType) {
+						SoundDefOf.TickTiny.PlayOneShotOnCamera();
+						SelectNextBodyType(-1);
+					}
 					else if (this.selectedPawnLayer == PawnLayers.Hair) {
 						SoundDefOf.TickTiny.PlayOneShotOnCamera();
 						SelectNextHair(-1);
@@ -875,6 +893,10 @@ namespace EdB.PrepareCarefully
 					if (this.selectedPawnLayer == PawnLayers.HeadType) {
 						SoundDefOf.TickTiny.PlayOneShotOnCamera();
 						SelectNextHead(1);
+					}
+					else if (this.selectedPawnLayer == PawnLayers.BodyType) {
+						SoundDefOf.TickTiny.PlayOneShotOnCamera();
+						SelectNextBodyType(1);
 					}
 					else if (this.selectedPawnLayer == PawnLayers.Hair) {
 						SoundDefOf.TickTiny.PlayOneShotOnCamera();
@@ -890,6 +912,9 @@ namespace EdB.PrepareCarefully
 			if (Widgets.ButtonInvisible(fieldRect, false)) {
 				if (this.selectedPawnLayer == PawnLayers.HeadType) {
 					ShowHeadDialog();
+				}
+				else if (this.selectedPawnLayer == PawnLayers.BodyType) {
+					ShowBodyTypeDialog();
 				}
 				else if (this.selectedPawnLayer == PawnLayers.Hair) {
 					ShowHairDialog();
@@ -1811,6 +1836,26 @@ namespace EdB.PrepareCarefully
 			Find.WindowStack.Add(dialog);
 		}
 
+		protected void ShowBodyTypeDialog()
+		{
+			CustomPawn customPawn = CurrentPawn;
+			List<BodyType> bodyTypes = customPawn.Gender == Gender.Male ? maleBodyTypes : femaleBodyTypes;
+			Dialog_Options<BodyType> dialog = new Dialog_Options<BodyType>(bodyTypes) {
+				NameFunc = (BodyType bodyType) => {
+					return bodyTypeLabels[bodyType];
+				},
+				SelectedFunc = (BodyType bodyType) => {
+					return customPawn.BodyType == bodyType;
+				},
+				SelectAction = (BodyType bodyType) => {
+					customPawn.BodyType = bodyType;
+					this.pawnLayerLabel = bodyTypeLabels[bodyType];
+				},
+				CloseAction = () => { }
+			};
+			Find.WindowStack.Add(dialog);
+		}
+
 		protected void ShowHairDialog()
 		{
 			CustomPawn customPawn = CurrentPawn;
@@ -1845,23 +1890,24 @@ namespace EdB.PrepareCarefully
 					return customPawn.GetSelectedApparel(layer) == apparel;
 				},
 				SelectAction = (ThingDef apparel) => {
-					if (apparel != null) {
-						this.pawnLayerLabel = apparel.LabelCap;
-						if (apparel.MadeFromStuff) {
-							if (customPawn.GetSelectedStuff(layer) == null) {
-								customPawn.SetSelectedStuff(layer, apparelStuffLookup[apparel][0]);
-							}
+					this.pawnLayerLabel = apparel.LabelCap;
+					if (apparel.MadeFromStuff) {
+						if (customPawn.GetSelectedStuff(layer) == null) {
+							customPawn.SetSelectedStuff(layer, apparelStuffLookup[apparel][0]);
 						}
-						else {
-							customPawn.SetSelectedStuff(layer, null);
-						}
-						customPawn.SetSelectedApparel(layer, apparel);
 					}
 					else {
-						customPawn.SetSelectedApparel(layer, null);
 						customPawn.SetSelectedStuff(layer, null);
-						this.pawnLayerLabel = "EdB.None".Translate();
 					}
+					customPawn.SetSelectedApparel(layer, apparel);
+				},
+				NoneSelectedFunc = () => {
+					return customPawn.GetSelectedApparel(layer) == null;
+				},
+				SelectNoneAction = () => {
+					customPawn.SetSelectedApparel(layer, null);
+					customPawn.SetSelectedStuff(layer, null);
+					this.pawnLayerLabel = "EdB.None".Translate();
 				}
 			};
 			Find.WindowStack.Add(dialog);
@@ -1983,12 +2029,15 @@ namespace EdB.PrepareCarefully
 						},
 						CloseAction = () => {
 							customPawn.SetTrait(localIndex, selectedTrait);
+						},
+						NoneSelectedFunc = () => {
+							return selectedTrait == null;
+						},
+						SelectNoneAction = () => {
+							selectedTrait = null;
 						}
 					};
 					Find.WindowStack.Add(dialog);
-
-
-					//Find.WindowStack.Add(new Dialog_Traits(customPawn, localIndex, this.sortedTraits));
 				}
 
 				Rect buttonRect = new Rect(fieldRect.x - 17, fieldRect.y + 6, 16, 16);
@@ -2387,6 +2436,26 @@ namespace EdB.PrepareCarefully
 			}
 			customPawn.HeadGraphicPath = heads[index];
 			this.pawnLayerLabel = GetHeadLabel(customPawn.HeadGraphicPath);
+		}
+
+		protected void SelectNextBodyType(int direction)
+		{
+			CustomPawn customPawn = CurrentPawn;
+			List<BodyType> bodyTypes = customPawn.Gender == Gender.Male ? maleBodyTypes : femaleBodyTypes;
+			int index = bodyTypes.IndexOf(customPawn.BodyType);
+			if (index == -1) {
+				Log.Warning("Could not find the current pawn's body type in list of available options: " + customPawn.BodyType);
+				return;
+			}
+			index += direction;
+			if (index < 0) {
+				index = bodyTypes.Count - 1;
+			}
+			else if (index >= bodyTypes.Count) {
+				index = 0;
+			}
+			customPawn.BodyType = bodyTypes[index];
+			this.pawnLayerLabel = bodyTypeLabels[customPawn.BodyType];
 		}
 
 		protected void SelectNextHair(int direction)

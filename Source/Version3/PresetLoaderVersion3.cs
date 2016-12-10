@@ -241,6 +241,27 @@ namespace EdB.PrepareCarefully
 				}
 			}
 
+			// Get the body type from the save record.  If there's no value in the save, then assign the 
+			// default body type from the pawn's backstories.
+			BodyType? bodyType = null;
+			try {
+				bodyType = (BodyType)Enum.Parse(typeof(BodyType), record.bodyType);
+			}
+			catch (Exception) {
+				Log.Warning("Invalid body type value \"" + record.bodyType + "\"");
+			}
+			if (!bodyType.HasValue) {
+				if (pawn.Adulthood != null) {
+					bodyType = pawn.Adulthood.BodyTypeFor(pawn.Gender);
+				}
+				else {
+					bodyType = pawn.Childhood.BodyTypeFor(pawn.Gender);
+				}
+			}
+			if (bodyType.HasValue) {
+				pawn.BodyType = bodyType.Value;
+			}
+
 			int traitCount = pawn.Traits.Count();
 			for (int i = 0; i < traitCount; i++) {
 				pawn.ClearTrait(i);

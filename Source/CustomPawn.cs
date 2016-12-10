@@ -135,7 +135,6 @@ namespace EdB.PrepareCarefully
 			colors.Clear();
 			PawnGraphicSet pawnGraphics = pawn.Drawer.renderer.graphics;
 
-			// TODO: Alpha 16.  Does this mean we can change body type?!  Exciting.
 			graphics.Add(GraphicGetter_NakedHumanlike.GetNakedBodyGraphic(pawn.story.bodyType, ShaderDatabase.CutoutSkin, pawn.story.SkinColor));
 			colors.Add(pawn.story.SkinColor);
 
@@ -916,6 +915,10 @@ namespace EdB.PrepareCarefully
 			get {
 				return pawn.story.bodyType;
 			}
+			set {
+				pawn.story.bodyType = value;
+				ResetBodyType();
+			}
 		}
 
 		public Gender Gender {
@@ -1010,12 +1013,18 @@ namespace EdB.PrepareCarefully
 						return def.hairGender != HairGender.Male;
 					});
 				}
+				if (BodyType == BodyType.Male) {
+					BodyType = BodyType.Female;
+				}
 			}
 			else {
 				if (HairDef.hairGender == HairGender.Female) {
 					HairDef = DefDatabase<HairDef>.AllDefsListForReading.Find((HairDef def) => {
 						return def.hairGender != HairGender.Female;
 					});
+				}
+				if (BodyType == BodyType.Female) {
+					BodyType = BodyType.Male;
 				}
 			}
 			ResetHead();
@@ -1136,6 +1145,7 @@ namespace EdB.PrepareCarefully
 			}
 			result.story.traits = traitSet;
 			result.story.melanin = this.pawn.story.melanin;
+			result.story.bodyType = this.pawn.story.bodyType;
 			result.story.hairDef = this.pawn.story.hairDef;
 			result.story.hairColor = colors[PawnLayers.Hair];
 			// Need to use reflection to set the private graphic path method.

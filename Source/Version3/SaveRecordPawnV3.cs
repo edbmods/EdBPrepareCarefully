@@ -19,6 +19,7 @@ namespace EdB.PrepareCarefully
 		public string hairDef;
 		public Color hairColor;
 		public string headGraphicPath;
+		public string bodyType;
 		public string firstName;
 		public string lastName;
 		public string nickName;
@@ -61,6 +62,7 @@ namespace EdB.PrepareCarefully
 			this.hairDef = pawn.HairDef.defName;
 			this.hairColor = pawn.GetColor(PawnLayers.Hair);
 			this.headGraphicPath = pawn.HeadGraphicPath;
+			this.bodyType = Enum.GetName(typeof(BodyType), pawn.BodyType);
 			this.firstName = pawn.FirstName;
 			this.nickName = pawn.NickName;
 			this.lastName = pawn.LastName;
@@ -108,6 +110,7 @@ namespace EdB.PrepareCarefully
 			Scribe_Collections.LookList<int>(ref this.traitDegrees, "traitDegrees", LookMode.Value, null);
 			Scribe_Values.LookValue<Color>(ref this.skinColor, "skinColor", Color.white, false);
 			Scribe_Values.LookValue<float>(ref this.melanin, "melanin", -1.0f, false);
+			Scribe_Values.LookValue<string>(ref this.bodyType, "bodyType", null, false);
 			Scribe_Values.LookValue<string>(ref this.hairDef, "hairDef", null, false);
 			Scribe_Values.LookValue<Color>(ref this.hairColor, "hairColor", Color.white, false);
 			Scribe_Values.LookValue<string>(ref this.headGraphicPath, "headGraphicPath", null, false);
