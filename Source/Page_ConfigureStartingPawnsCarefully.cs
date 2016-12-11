@@ -83,8 +83,6 @@ namespace EdB.PrepareCarefully
 
 		protected int selectedStuff = 0;
 
-		protected HashSet<Backstory> problemBackstories = new HashSet<Backstory>();
-
 		protected Randomizer randomizer = new Randomizer();
 
 		protected int maxAge = 99;
@@ -277,17 +275,9 @@ namespace EdB.PrepareCarefully
 				}
 			}
 
-			// Iterate through each solid bio.  Find the corresponding backstories.  If the backstory description contains the bio's name
-			// then mark the backstory as name-specific.  If the bio does not have HE/HIS/etc, mark the backstory as gender-specific.
-
+			// Go through all of the backstories and mark them as childhood or adult.
 			List<Backstory> backstories = BackstoryDatabase.allBackstories.Values.ToList();
 			foreach (Backstory backstory in backstories) {
-
-
-				if (!backstory.shuffleable && (!backstory.baseDesc.Contains("NAME") || (!backstory.baseDesc.Contains("HECAP") && !backstory.baseDesc.Contains("HE ")
-					&& !backstory.baseDesc.Contains("HIS") && !backstory.baseDesc.Contains("HISCAP") && !backstory.baseDesc.Contains("HIM")))) {
-					problemBackstories.Add(backstory);
-				}
 				if (backstory.slot == BackstorySlot.Childhood) {
 					childhoodBackstories.Add(backstory);
 				}
@@ -1463,22 +1453,10 @@ namespace EdB.PrepareCarefully
 			fieldRect.y -= 2;
 			fieldRect.x += 2;
 
-			if (problemBackstories.Contains(customPawn.Childhood)) {
-				fieldRect.width -= 30;
-				TooltipHandler.TipRegion(fieldRect, customPawn.Childhood.FullDescriptionFor(customPawn.Pawn));
-				if (Widgets.ButtonInvisible(fieldRect, false)) {
-					ShowBackstoryDialog(customPawn, BackstorySlot.Childhood);
-				}
-				fieldRect.width += 30;
-				Rect problemRect = new Rect(fieldRect.x + fieldRect.width - 26, fieldRect.y + 4, 20, 20);
-				GUI.DrawTexture(problemRect, Textures.TextureAlertSmall);
-				TooltipHandler.TipRegion(problemRect, "EdB.BackstoryWarning".Translate());
-			}
-			else {
-				TooltipHandler.TipRegion(fieldRect, customPawn.Childhood.FullDescriptionFor(customPawn.Pawn));
-				if (Widgets.ButtonInvisible(fieldRect, false)) {
-					ShowBackstoryDialog(customPawn, BackstorySlot.Childhood);
-				}
+			// Handle the tooltip and clicks.
+			TooltipHandler.TipRegion(fieldRect, customPawn.Childhood.FullDescriptionFor(customPawn.Pawn));
+			if (Widgets.ButtonInvisible(fieldRect, false)) {
+				ShowBackstoryDialog(customPawn, BackstorySlot.Childhood);
 			}
 
 			Rect buttonRect = new Rect(fieldRect.x - 17, 38, 16, 16);
@@ -1545,25 +1523,11 @@ namespace EdB.PrepareCarefully
 			fieldRect.y -= 2;
 			fieldRect.x += 2;
 
-			// Draw the problem backstory notice.
+			// Handle the tooltip and clicks.
 			if (isAdult) {
-				if (problemBackstories.Contains(customPawn.Adulthood)) {
-					fieldRect.width -= 30;
-					TooltipHandler.TipRegion(new Rect(fieldRect.x, fieldRect.y, fieldRect.width - 30, fieldRect.height), customPawn.Adulthood.FullDescriptionFor(customPawn.Pawn));
-					if (Widgets.ButtonInvisible(fieldRect, false)) {
-						ShowBackstoryDialog(customPawn, BackstorySlot.Adulthood);
-					}
-					fieldRect.width += 30;
-
-					Rect problemRect = new Rect(fieldRect.x + fieldRect.width - 26, fieldRect.y + 4, 20, 20);
-					GUI.DrawTexture(problemRect, Textures.TextureAlertSmall);
-					TooltipHandler.TipRegion(problemRect, "EdB.BackstoryWarning".Translate());
-				}
-				else {
-					TooltipHandler.TipRegion(fieldRect, customPawn.Adulthood.FullDescriptionFor(customPawn.Pawn));
-					if (Widgets.ButtonInvisible(fieldRect, false)) {
-						ShowBackstoryDialog(customPawn, BackstorySlot.Adulthood);
-					}
+				TooltipHandler.TipRegion(fieldRect, customPawn.Adulthood.FullDescriptionFor(customPawn.Pawn));
+				if (Widgets.ButtonInvisible(fieldRect, false)) {
+					ShowBackstoryDialog(customPawn, BackstorySlot.Adulthood);
 				}
 			}
 
