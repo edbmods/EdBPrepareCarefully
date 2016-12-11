@@ -1189,7 +1189,7 @@ namespace EdB.PrepareCarefully
 					skill.passion = Passion.None;
 					skill.xpSinceLastLevel = 0;
 				}
-				typeof(SkillRecord).GetField("cachedTotallyDisabled", BindingFlags.NonPublic | BindingFlags.Instance).SetValue(skill, BoolUnknown.Unknown);
+				CustomPawn.ClearCachedDisabledSkillRecord(skill);
 			}
 
 			if (resolveGraphics) {
@@ -1306,6 +1306,11 @@ namespace EdB.PrepareCarefully
 		public static void ClearCachedDisabledWorkTypes(Pawn_StoryTracker story)
 		{
 			typeof(Pawn_StoryTracker).GetField("cachedDisabledWorkTypes", BindingFlags.Instance | BindingFlags.NonPublic).SetValue(story, null);
+		}
+
+		public static void ClearCachedDisabledSkillRecord(SkillRecord record)
+		{
+			typeof(SkillRecord).GetField("cachedTotallyDisabled", BindingFlags.NonPublic | BindingFlags.Instance).SetValue(record, BoolUnknown.Unknown);
 		}
 
 		public void ClearCachedPortrait()
