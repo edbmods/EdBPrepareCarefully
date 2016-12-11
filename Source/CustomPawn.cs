@@ -133,12 +133,12 @@ namespace EdB.PrepareCarefully
 
 			colors.Clear();
 			colors.Add(pawn.story.SkinColor);
+			colors.Add(Color.white);
+			colors.Add(Color.white);
+			colors.Add(Color.white);
+			colors.Add(Color.white);
 			colors.Add(pawn.story.SkinColor);
 			colors.Add(pawn.story.hairColor);
-			colors.Add(Color.white);
-			colors.Add(Color.white);
-			colors.Add(Color.white);
-			colors.Add(Color.white);
 			colors.Add(Color.white);
 			colors.Add(Color.white);
 			ResetHead();
@@ -604,6 +604,9 @@ namespace EdB.PrepareCarefully
 			this.colors[layer] = color;
 			if (PawnLayers.IsApparelLayer(layer)) {
 				colorCache[new EquipmentKey(selectedApparel[layer], selectedStuff[layer])] = color;
+			}
+			if (layer == PawnLayers.Hair) {
+				pawn.story.hairColor = color;
 			}
 		}
 
