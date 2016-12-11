@@ -1164,10 +1164,6 @@ namespace EdB.PrepareCarefully
 			result.story.hairColor = colors[PawnLayers.Hair];
 			// Need to use reflection to set the private graphic path method.
 			typeof(Pawn_StoryTracker).GetField("headGraphicPath", BindingFlags.Instance | BindingFlags.NonPublic).SetValue(result.story, HeadGraphicPath);
-			// Clear cached values from the story tracker.
-			// TODO: It might make more sense to create a new instance of Pawn_StoryTracker, but need
-			// to make sure all of the details are filled in with that approach.
-			CustomPawn.ClearCachedDisabledWorkTypes(result.story);
 
 			result.Name = this.pawn.Name;
 
@@ -1193,6 +1189,7 @@ namespace EdB.PrepareCarefully
 					skill.passion = Passion.None;
 					skill.xpSinceLastLevel = 0;
 				}
+				typeof(SkillRecord).GetField("cachedTotallyDisabled", BindingFlags.NonPublic | BindingFlags.Instance).SetValue(skill, BoolUnknown.Unknown);
 			}
 
 			if (resolveGraphics) {
@@ -1216,12 +1213,10 @@ namespace EdB.PrepareCarefully
 				Apparel a;
 				if (selectedApparel[layer].MadeFromStuff) {
 					a = (Apparel)thingCache.Get(selectedApparel[layer], selectedStuff[layer]);
-					//a = (Apparel)ThingMaker.MakeThing(selectedApparel[layer], selectedStuff[layer]);
 					a.DrawColor = colors[layer] * GetStuffColor(layer);
 				}
 				else {
 					a = (Apparel)thingCache.Get(selectedApparel[layer]);
-					//a = (Apparel)ThingMaker.MakeThing(selectedApparel[layer], null);
 					a.DrawColor = colors[layer];
 				}
 
