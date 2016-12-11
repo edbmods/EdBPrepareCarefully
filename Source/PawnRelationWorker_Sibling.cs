@@ -6,9 +6,8 @@ using Verse;
 
 namespace EdB.PrepareCarefully
 {
-	// TODO: Alpha 16.  Already re-copied the class, but now need to figure out which customizations I had added
-	// and re-add them.
-	// EdB: Copy of RimWorld.PawnRelationWorker_Sibling with changes to 
+	// EdB: Copy of RimWorld.PawnRelationWorker_Sibling with changes to handle sibling assignment better in
+	// the context of the Relationship tab.
 	public class PawnRelationWorker_Sibling : PawnRelationWorker
 	{
 		//
@@ -129,8 +128,21 @@ namespace EdB.PrepareCarefully
 		//
 		// Methods
 		//
+		// EdB: Copy of CreateRelation() with changes to assign the other pawn's mother or father to this sibling if
+		// they exist.  The logic that's in there already seems to take this into account, but doing it this
+		// results in more predictable behavior in the context of Prepare Carefully customization.
 		public override void CreateRelation(Pawn generated, Pawn other, ref PawnGenerationRequest request)
 		{
+			// EdB: Added this block to immediately assign the other pawn's parent to the sibling.
+			bool otherPawnHasMother = other.GetMother() != null;
+			bool otherPawnHasFather = other.GetFather() != null;
+			if (generated.GetMother() != null && generated.GetFather() != null && !otherPawnHasMother && !otherPawnHasFather) {
+				other.SetMother(generated.GetMother());
+				other.SetFather(generated.GetFather());
+				return;
+			}
+			// EdB: This is the end of the change.  Everything after this is the original implementation.
+
 			bool flag = other.GetMother() != null;
 			bool flag2 = other.GetFather() != null;
 			bool flag3 = Rand.Value < 0.85f;

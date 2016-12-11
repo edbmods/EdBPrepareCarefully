@@ -24,8 +24,6 @@ namespace EdB.PrepareCarefully
 			else {
 				ReplaceColonists();
 
-				// TODO: Alpha 16
-				// Evaluate to see of all of the steps are still valid.
 				ScenPart_PlayerPawnsArriveMethod arriveMethodPart = null;
 				foreach (ScenPart current in Find.Scenario.AllParts) {
 					ScenPart_StartingThing_Defined startingThings = current as ScenPart_StartingThing_Defined;

@@ -8,7 +8,7 @@ using Verse.Sound;
 namespace EdB.PrepareCarefully
 {
 	// EdB: Copy of the RimWorld.Page_ConfigureStartingPawns with changes to add the middle "Prepare Carefully" button.
-	// Updated for Alpha 16.  TODO: Replace with a new copy and re-do changes when Alpha 17 comes out.
+	// TODO: Alpha 17.  Replace with a new copy and re-do changes every time a new alpha comes out.
 	public class Page_ConfigureStartingPawns : Page
 	{
 		//

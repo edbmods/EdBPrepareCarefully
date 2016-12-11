@@ -145,9 +145,7 @@ namespace EdB.PrepareCarefully
 		protected void InitializeTooltip() {
 			StringBuilder stringBuilder = new StringBuilder();
 			Hediff_Injury hediff_Injury = hediff as Hediff_Injury;
-			// TODO: Alpha 16.  Figure out what this label is used for and figure out the right replacement.
-			//string damageLabel = hediff.DamageLabel;
-			string damageLabel = hediff.LabelInBrackets;
+			string damageLabel = hediff.SeverityLabel;
 			if (!hediff.Label.NullOrEmpty() || !damageLabel.NullOrEmpty() || !hediff.CapMods.NullOrEmpty<PawnCapacityModifier>()) {
 				stringBuilder.Append(hediff.LabelCap);
 				if (!damageLabel.NullOrEmpty()) {

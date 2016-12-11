@@ -70,8 +70,6 @@ namespace EdB.PrepareCarefully
 				}
 
 				// If it's old injury, use the old injury properties to get the label.
-				// TODO: Alpha 16. Make sure that this is still the right way to look up comp properties,
-				// now that there are multiple comp properties classes.
 				HediffCompProperties p = hd.CompPropsFor(typeof(HediffComp_GetsOld));
 				HediffCompProperties_GetsOld getsOldProperties = p as HediffCompProperties_GetsOld;
 				String label;
@@ -120,8 +118,6 @@ namespace EdB.PrepareCarefully
 				}
 			}
 			foreach (var option in oldInjuries) {
-				// TODO: Alpha 16. Make sure that this is still the right way to look up comp properties,
-				// now that there are multiple comp properties classes.
 				HediffCompProperties p = option.HediffDef.CompPropsFor(typeof(HediffComp_GetsOld));
 				HediffCompProperties_GetsOld props = p as HediffCompProperties_GetsOld;
 				if (props != null) {

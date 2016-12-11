@@ -47,9 +47,6 @@ namespace EdB.PrepareCarefully
 		public SaveRecordPawnV3(CustomPawn pawn)
 		{
 			this.gender = pawn.Gender;
-			// TODO: Alpha 16.  Figure out if this is going to break backwards compatibility.
-			//this.adulthood = pawn.Adulthood.uniqueSaveKey;
-			//this.childhood = pawn.Childhood.uniqueSaveKey;
 			if (pawn.Adulthood != null) {
 				this.adulthood = pawn.Adulthood.identifier;
 			}
