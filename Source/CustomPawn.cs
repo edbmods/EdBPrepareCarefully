@@ -39,7 +39,6 @@ namespace EdB.PrepareCarefully
 
 		protected const int LayerCount = PawnLayers.Count;
 
-		public List<Graphic> graphics = new List<Graphic>(LayerCount);
 		protected List<Color> colors = new List<Color>(LayerCount);
 
 		protected List<ThingDef> selectedApparel = new List<ThingDef>(LayerCount);
@@ -49,6 +48,7 @@ namespace EdB.PrepareCarefully
 		protected string apparelConflictText = null;
 		protected List<ApparelConflict> apparelConflicts = new List<ApparelConflict>();
 		protected bool randomInjuries = false;
+		protected Backstory adulthood = null;
 
 		// The tick of the year when the pawn was born.
 		protected long birthTicks = 0;
@@ -58,9 +58,11 @@ namespace EdB.PrepareCarefully
 		protected List<Implant> implants = new List<Implant>();
 		protected List<Injury> injuries = new List<Injury>();
 		public List<CustomBodyPart> bodyParts = new List<CustomBodyPart>();
+		protected ThingCache thingCache = new ThingCache();
 
 		public CustomPawn()
 		{
+			this.adulthood = Randomizer.RandomAdulthood(this);
 		}
 
 		public CustomPawn(Pawn pawn)
@@ -129,33 +131,17 @@ namespace EdB.PrepareCarefully
 			InitializeSkillLevelsAndPassions();
 			ComputeSkillLevelModifiers();
 
-			graphics.Clear();
 			colors.Clear();
-			PawnGraphicSet pawnGraphics = pawn.Drawer.renderer.graphics;
-
-			graphics.Add(GraphicGetter_NakedHumanlike.GetNakedBodyGraphic(pawn.story.BodyType, ShaderDatabase.CutoutSkin, pawn.story.SkinColor));
 			colors.Add(pawn.story.SkinColor);
-
-			graphics.Add(null);
 			colors.Add(Color.white);
-			graphics.Add(null);
 			colors.Add(Color.white);
-			graphics.Add(null);
 			colors.Add(Color.white);
-			graphics.Add(null);
 			colors.Add(Color.white);
-
-			graphics.Add(GraphicDatabaseHeadRecords.GetHeadNamed(pawn.story.HeadGraphicPath, pawn.story.SkinColor));
 			colors.Add(pawn.story.SkinColor);
-			ResetHead();
-
-			graphics.Add(GraphicsCache.Instance.GetHair(pawn.story.hairDef));
 			colors.Add(pawn.story.hairColor);
-
-			graphics.Add(null);
 			colors.Add(Color.white);
-			graphics.Add(null);
 			colors.Add(Color.white);
+			ResetHead();
 
 			for (int i = 0; i < PawnLayers.Count; i++) {
 				selectedApparel.Add(null);
@@ -163,22 +149,28 @@ namespace EdB.PrepareCarefully
 				selectedStuff.Add(null);
 			}
 			foreach (Apparel current in this.pawn.apparel.WornApparel) {
-				Graphic graphic = GraphicsCache.Instance.GetApparel(current.def, pawn.story.BodyType);
+				Graphic graphic = GraphicsCache.Instance.GetApparel(current.def, pawn.story.bodyType);
 				Color color = current.DrawColor;
 				int layer = PawnLayers.ToPawnLayerIndex(current.def.apparel);
 				if (layer != -1) {
-					graphics[layer] = graphic;
-					SetSelectedApparel(layer, current.def);
+					SetSelectedApparelInternal(layer, current.def);
 					acceptedApparel[layer] = current.def;
 					SetSelectedStuff(layer, current.Stuff);
 					if (ApparelIsTintedByDefault(current.def, current.Stuff)) {
-						SetColor(layer, color);
+						SetColorInternal(layer, color);
 					}
 				}
 			}
+			ResetApparel();
 
 			ResetIncapableOf();
 			pawn.health.capacities.Clear();
+
+			// Copy the adulthood backstory or set a random one if it's null
+			this.adulthood = pawn.story.adulthood;
+			if (adulthood == null) {
+				this.adulthood = Randomizer.RandomAdulthood(this);
+			}
 		}
 
 		public void InitializeSkillLevelsAndPassions()
@@ -210,7 +202,7 @@ namespace EdB.PrepareCarefully
 
 				// When figuring out the unadjusted value, take into account the special
 				// case where the adjusted value is 0 or 20.
-				int value = record.level;
+				int value = record.Level;
 				if (value == 0 && negativeAdjustment > 0) {
 					value = Rand.RangeInclusive(1, negativeAdjustment);
 				}
@@ -271,20 +263,28 @@ namespace EdB.PrepareCarefully
 		protected int ComputeSkillModifier(SkillDef def)
 		{
 			int value = 0;
-			if (pawn.story.childhood.skillGainsResolved.ContainsKey(def)) {
-				value += pawn.story.childhood.skillGainsResolved[def];
+			if (pawn.story != null && pawn.story.childhood != null && pawn.story.childhood.skillGainsResolved != null) {
+				if (pawn.story.childhood.skillGainsResolved.ContainsKey(def)) {
+					value += pawn.story.childhood.skillGainsResolved[def];
+				}
 			}
-			if (pawn.story.adulthood.skillGainsResolved.ContainsKey(def)) {
-				value += pawn.story.adulthood.skillGainsResolved[def];
+			if (pawn.story != null && pawn.story.adulthood != null && pawn.story.adulthood.skillGainsResolved != null) {
+				if (pawn.story.adulthood.skillGainsResolved.ContainsKey(def)) {
+					value += pawn.story.adulthood.skillGainsResolved[def];
+				}
 			}
 			foreach (Trait trait in this.traits) {
-				if (trait != null) {
+				if (trait != null && trait.def != null && trait.def.degreeDatas != null) {
 					foreach (TraitDegreeData data in trait.def.degreeDatas) {
 						if (data.degree == trait.Degree) {
-							foreach (var pair in data.skillGains) {
-								SkillDef skillDef = pair.Key;
-								if (skillDef == def) {
-									value += pair.Value;
+							if (data.skillGains != null) {
+								foreach (var pair in data.skillGains) {
+									if (pair.Key != null) {
+										SkillDef skillDef = pair.Key;
+										if (skillDef == def) {
+											value += pair.Value;
+										}
+									}
 								}
 							}
 							break;
@@ -311,7 +311,13 @@ namespace EdB.PrepareCarefully
 				return 0;
 			}
 			else {
-				int value = currentSkillLevels[def] + skillLevelModifiers[def];
+				int value = 0;
+				if (currentSkillLevels.ContainsKey(def)) {
+					value = currentSkillLevels[def];
+					if (skillLevelModifiers.ContainsKey(def)) {
+						value += skillLevelModifiers[def];
+					}
+				}
 				if (value < SkillRecord.MinLevel) {
 					return SkillRecord.MinLevel;
 				}
@@ -344,7 +350,7 @@ namespace EdB.PrepareCarefully
 		protected void CopySkillLevelsToPawn()
 		{
 			foreach (var record in pawn.skills.skills) {
-				pawn.skills.GetSkill(record.def).level = GetSkillLevel(record.def);
+				pawn.skills.GetSkill(record.def).Level = GetSkillLevel(record.def);
 			}
 		}
 
@@ -474,7 +480,7 @@ namespace EdB.PrepareCarefully
 				if (pawn.story.adulthood == null) {
 					return name.Nick;
 				}
-				return name.Nick + ", " + pawn.story.adulthood.titleShort;
+				return name.Nick + ", " + pawn.story.adulthood.TitleShort;
 			}
 		}
 
@@ -498,6 +504,12 @@ namespace EdB.PrepareCarefully
 				return i.BodyPartRecord == record;
 			});
 			return implant != null;
+		}
+
+		public bool IsAdult {
+			get {
+				return this.BiologicalAge > 19;
+			}
 		}
 
 		public void IncreasePassion(SkillDef def) {
@@ -581,15 +593,20 @@ namespace EdB.PrepareCarefully
 		}
 
 		public void SetColor(int layer, Color color) {
+			SetColorInternal(layer, color);
+			ResetApparel();
+		}
+
+		// Separate method that can be called internally without clearing the graphics caches or copying
+		// to the target pawn.
+		public void SetColorInternal(int layer, Color color)
+		{
 			this.colors[layer] = color;
 			if (PawnLayers.IsApparelLayer(layer)) {
 				colorCache[new EquipmentKey(selectedApparel[layer], selectedStuff[layer])] = color;
 			}
-			if (layer == PawnLayers.BodyType) {
-				SkinColor = color;
-			}
-			else if (layer == PawnLayers.HeadType) {
-				SkinColor = color;
+			if (layer == PawnLayers.Hair) {
+				pawn.story.hairColor = color;
 			}
 		}
 
@@ -605,18 +622,31 @@ namespace EdB.PrepareCarefully
 			}
 		}
 
+		private void ResetApparel()
+		{
+			CopyApparelToPawn(this.pawn);
+			ClearCachedPortrait();
+		}
+
 		public ThingDef GetSelectedApparel(int layer) {
 			return this.selectedApparel[layer];
 		}
 
 		public void SetSelectedApparel(int layer, ThingDef def) {
+			SetSelectedApparelInternal(layer, def);
+			ResetApparel();
+		}
+
+		// Separate method that can be called internally without clearing the graphics caches or copying
+		// to the target pawn.
+		private void SetSelectedApparelInternal(int layer, ThingDef def)
+		{
 			if (layer < 0) {
 				return;
 			}
 			this.selectedApparel[layer] = def;
 			if (def != null) {
 				ThingDef stuffDef = this.GetSelectedStuff(layer);
-				this.graphics[layer] = GraphicsCache.Instance.GetApparel(def, BodyType);
 				EquipmentKey pair = new EquipmentKey(def, stuffDef);
 				if (colorCache.ContainsKey(pair)) {
 					this.colors[layer] = colorCache[pair];
@@ -641,9 +671,6 @@ namespace EdB.PrepareCarefully
 						}
 					}
 				}
-			}
-			else {
-				this.graphics[layer] = null;
 			}
 			this.acceptedApparel[layer] = def;
 			ApparelAcceptanceTest();
@@ -788,8 +815,25 @@ namespace EdB.PrepareCarefully
 				return pawn.story.adulthood;
 			}
 			set {
-				pawn.story.adulthood = value;
+				if (value != null) {
+					adulthood = value;
+				}
+				if (IsAdult) {
+					pawn.story.adulthood = value;
+				}
+				else {
+					pawn.story.adulthood = null;
+				}
 				ResetBackstories();
+			}
+		}
+
+		public Backstory LastSelectedAdulthood {
+			get {
+				return adulthood;
+			}
+			set {
+				this.adulthood = value;
 			}
 		}
 
@@ -807,6 +851,7 @@ namespace EdB.PrepareCarefully
 				// Need to use reflection to set the private field.
 				typeof(Pawn_StoryTracker).GetField("headGraphicPath", BindingFlags.Instance | BindingFlags.NonPublic).SetValue(pawn.story, value);
 				ResetHead();
+				ClearCachedPortrait();
 			}
 		}
 
@@ -874,7 +919,12 @@ namespace EdB.PrepareCarefully
 
 		public BodyType BodyType {
 			get {
-				return pawn.story.BodyType;
+				return pawn.story.bodyType;
+			}
+			set {
+				pawn.story.bodyType = value;
+				ResetBodyType();
+				ClearCachedPortrait();
 			}
 		}
 
@@ -886,6 +936,7 @@ namespace EdB.PrepareCarefully
 				if (pawn.gender != value) {
 					pawn.gender = value;
 					ResetGender();
+					ClearCachedPortrait();
 				}
 			}
 		}
@@ -894,10 +945,16 @@ namespace EdB.PrepareCarefully
 			get {
 				return pawn.story.SkinColor;
 			}
+		}
+
+		public float MelaninLevel {
+			get {
+				return pawn.story.melanin;
+			}
 			set {
-				pawn.story.skinWhiteness = PawnColorUtils.GetSkinValue(value);
-				this.colors[PawnLayers.HeadType] = value;
-				this.colors[PawnLayers.BodyType] = value;
+				pawn.story.melanin = value;
+				this.colors[PawnLayers.BodyType] = this.colors[PawnLayers.HeadType] = pawn.story.SkinColor;
+				ClearCachedPortrait();
 			}
 		}
 
@@ -907,12 +964,7 @@ namespace EdB.PrepareCarefully
 			}
 			set {
 				pawn.story.hairDef = value;
-				if (value == null) {
-					graphics[PawnLayers.Hair] = null;
-				}
-				else {
-					graphics[PawnLayers.Hair] = GraphicsCache.Instance.GetHair(value);
-				}
+				ClearCachedPortrait();
 			}
 		}
 
@@ -939,6 +991,14 @@ namespace EdB.PrepareCarefully
 				pawn.ageTracker.AgeBiologicalTicks += diff * 3600000L;
 				ClearCachedLifeStage();
 				ClearCachedAbilities();
+				if (IsAdult && pawn.story.adulthood == null) {
+					pawn.story.adulthood = adulthood;
+					ResetBackstories();
+				}
+				else if (!IsAdult && pawn.story.adulthood != null) {
+					pawn.story.adulthood = null;
+					ResetBackstories();
+				}
 			}
 		}
 
@@ -946,7 +1006,6 @@ namespace EdB.PrepareCarefully
 		{
 			// Need to use reflection to set the private field.
 			typeof(Pawn_StoryTracker).GetField("headGraphicPath", BindingFlags.Instance | BindingFlags.NonPublic).SetValue(pawn.story, FilterHeadPathForGender(pawn.story.HeadGraphicPath));
-			graphics[PawnLayers.HeadType] = GraphicDatabaseHeadRecords.GetHeadNamed(pawn.story.HeadGraphicPath, pawn.story.SkinColor);
 		}
 
 		protected void ResetGender()
@@ -957,12 +1016,18 @@ namespace EdB.PrepareCarefully
 						return def.hairGender != HairGender.Male;
 					});
 				}
+				if (BodyType == BodyType.Male) {
+					BodyType = BodyType.Female;
+				}
 			}
 			else {
 				if (HairDef.hairGender == HairGender.Female) {
 					HairDef = DefDatabase<HairDef>.AllDefsListForReading.Find((HairDef def) => {
 						return def.hairGender != HairGender.Female;
 					});
+				}
+				if (BodyType == BodyType.Female) {
+					BodyType = BodyType.Male;
 				}
 			}
 			ResetHead();
@@ -971,18 +1036,9 @@ namespace EdB.PrepareCarefully
 
 		protected void ResetBodyType()
 		{
-			BodyType bodyType = pawn.story.BodyType;
+			BodyType bodyType = pawn.story.bodyType;
 			Graphic bodyTypeGraphic = GraphicGetter_NakedHumanlike.GetNakedBodyGraphic(bodyType, ShaderDatabase.Cutout,
 					pawn.story.SkinColor);
-			graphics[PawnLayers.BodyType] = bodyTypeGraphic;
-			foreach (ThingDef def in selectedApparel) {
-				if (def != null) {
-					int layer = PawnLayers.ToPawnLayerIndex(def.apparel);
-					if (layer != -1) {
-						graphics[layer] = GraphicsCache.Instance.GetApparel(def, bodyType);
-					}
-				}
-			}
 		}
 
 		public string ResetIncapableOf()
@@ -1029,13 +1085,14 @@ namespace EdB.PrepareCarefully
 			foreach (var t in source.story.traits.allTraits) {
 				result.story.traits.allTraits.Add(t);
 			}
-			result.story.skinWhiteness = source.story.skinWhiteness;
+			result.story.melanin = source.story.melanin;
 			NameTriple name = source.Name as NameTriple;
 			result.Name = new NameTriple(name.First, name.Nick, name.Last);
 			result.story.hairDef = source.story.hairDef;
 			result.story.hairColor = source.story.hairColor;
+			result.story.bodyType = source.story.bodyType;
 			// Need to use reflection to set the private graphic path field.
-			typeof(Pawn_StoryTracker).GetField("headGraphicPath", BindingFlags.Instance | BindingFlags.NonPublic).SetValue(source.story, source.story.HeadGraphicPath);
+			typeof(Pawn_StoryTracker).GetField("headGraphicPath", BindingFlags.Instance | BindingFlags.NonPublic).SetValue(result.story, source.story.HeadGraphicPath);
 			result.story.crownType = source.story.crownType;
 
 			// Copy apparel.
@@ -1052,7 +1109,7 @@ namespace EdB.PrepareCarefully
 			result.skills.skills.Clear();
 			foreach (var s in source.skills.skills) {
 				SkillRecord record = new SkillRecord(result, s.def);
-				record.level = s.level;
+				record.Level = s.Level;
 				record.passion = s.passion;
 				record.xpSinceLastLevel = s.xpSinceLastLevel;
 				result.skills.skills.Add(record);
@@ -1064,6 +1121,26 @@ namespace EdB.PrepareCarefully
 			ClearCachedDisabledWorkTypes(result.story);
 
 			return result;
+		}
+
+		protected void CopyApparelToPawn(Pawn pawn)
+		{
+			// Remove all apparel on the pawn and put it in the thing cache for potential later re-use.
+			FieldInfo wornApparelField = typeof(Pawn_ApparelTracker).GetField("wornApparel", BindingFlags.Instance | BindingFlags.NonPublic);
+			List<Apparel> apparel = (List<Apparel>)wornApparelField.GetValue(pawn.apparel);
+			foreach (var a in apparel) {
+				a.wearer = null;
+				thingCache.Put(a);
+			}
+			apparel.Clear();
+
+			// Set each piece of apparel on the pawn.
+			AddApparel(pawn, PawnLayers.Pants);
+			AddApparel(pawn, PawnLayers.BottomClothingLayer);
+			AddApparel(pawn, PawnLayers.MiddleClothingLayer);
+			AddApparel(pawn, PawnLayers.TopClothingLayer);
+			AddApparel(pawn, PawnLayers.Accessory);
+			AddApparel(pawn, PawnLayers.Hat);
 		}
 
 		// Uses the customized settings within the CustomPawn to create a new Pawn.
@@ -1081,31 +1158,19 @@ namespace EdB.PrepareCarefully
 				}
 			}
 			result.story.traits = traitSet;
-			result.story.skinWhiteness = this.pawn.story.skinWhiteness;
+			result.story.melanin = this.pawn.story.melanin;
+			result.story.bodyType = this.pawn.story.bodyType;
 			result.story.hairDef = this.pawn.story.hairDef;
 			result.story.hairColor = colors[PawnLayers.Hair];
 			// Need to use reflection to set the private graphic path method.
 			typeof(Pawn_StoryTracker).GetField("headGraphicPath", BindingFlags.Instance | BindingFlags.NonPublic).SetValue(result.story, HeadGraphicPath);
-			// Clear cached values from the story tracker.
-			// TODO: It might make more sense to create a new instance of Pawn_StoryTracker, but need
-			// to make sure all of the details are filled in with that approach.
-			CustomPawn.ClearCachedDisabledWorkTypes(result.story);
 
 			result.Name = this.pawn.Name;
 
 			result.ageTracker.BirthAbsTicks = this.pawn.ageTracker.BirthAbsTicks;
 			result.ageTracker.AgeBiologicalTicks = this.pawn.ageTracker.AgeBiologicalTicks;
 
-			FieldInfo wornApparelField = typeof(Pawn_ApparelTracker).GetField("wornApparel", BindingFlags.Instance | BindingFlags.NonPublic);
-			List<Apparel> apparel = (List<Apparel>)wornApparelField.GetValue(result.apparel);
-			apparel.Clear();
-
-			AddApparel(result, PawnLayers.Pants);
-			AddApparel(result, PawnLayers.BottomClothingLayer);
-			AddApparel(result, PawnLayers.MiddleClothingLayer);
-			AddApparel(result, PawnLayers.TopClothingLayer);
-			AddApparel(result, PawnLayers.Accessory);
-			AddApparel(result, PawnLayers.Hat);
+			CopyApparelToPawn(result);
 
 			foreach (SkillRecord skill in result.skills.skills) {
 				int value = this.GetSkillLevel(skill.def);
@@ -1115,7 +1180,7 @@ namespace EdB.PrepareCarefully
 				if (value > 20) {
 					value = 20;
 				}
-				skill.level = value;
+				skill.Level = value;
 				if (!IsSkillDisabled(skill.def)) {
 					skill.passion = this.currentPassions[skill.def];
 					skill.xpSinceLastLevel = Rand.Range(skill.XpRequiredForLevelUp * 0.1f, skill.XpRequiredForLevelUp * 0.5f);
@@ -1124,6 +1189,7 @@ namespace EdB.PrepareCarefully
 					skill.passion = Passion.None;
 					skill.xpSinceLastLevel = 0;
 				}
+				CustomPawn.ClearCachedDisabledSkillRecord(skill);
 			}
 
 			if (resolveGraphics) {
@@ -1146,11 +1212,11 @@ namespace EdB.PrepareCarefully
 			if (acceptedApparel[layer] != null) {
 				Apparel a;
 				if (selectedApparel[layer].MadeFromStuff) {
-					a = (Apparel)ThingMaker.MakeThing(selectedApparel[layer], selectedStuff[layer]);
+					a = (Apparel)thingCache.Get(selectedApparel[layer], selectedStuff[layer]);
 					a.DrawColor = colors[layer] * GetStuffColor(layer);
 				}
 				else {
-					a = (Apparel)ThingMaker.MakeThing(selectedApparel[layer], null);
+					a = (Apparel)thingCache.Get(selectedApparel[layer]);
 					a.DrawColor = colors[layer];
 				}
 
@@ -1240,6 +1306,17 @@ namespace EdB.PrepareCarefully
 		public static void ClearCachedDisabledWorkTypes(Pawn_StoryTracker story)
 		{
 			typeof(Pawn_StoryTracker).GetField("cachedDisabledWorkTypes", BindingFlags.Instance | BindingFlags.NonPublic).SetValue(story, null);
+		}
+
+		public static void ClearCachedDisabledSkillRecord(SkillRecord record)
+		{
+			typeof(SkillRecord).GetField("cachedTotallyDisabled", BindingFlags.NonPublic | BindingFlags.Instance).SetValue(record, BoolUnknown.Unknown);
+		}
+
+		public void ClearCachedPortrait()
+		{
+			pawn.Drawer.renderer.graphics.ResolveAllGraphics();
+			PortraitsCache.SetDirty(this.pawn);
 		}
 	}
 }

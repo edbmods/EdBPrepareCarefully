@@ -15,19 +15,15 @@ namespace EdB.PrepareCarefully
 		{
 		}
 
-		public override void Generate()
+		public override void Generate(Map map)
 		{
 			if (!PrepareCarefully.Instance.Active) {
-				Find.Scenario.GenerateIntoMap();
+				Find.Scenario.GenerateIntoMap(map);
 				return;
 			}
 			else {
 				ReplaceColonists();
 
-				// TODO: Alpha 14
-				// Do all of the scenario steps except the ones that place equipment and resources.
-				// Skip those an figure out how to add customized equipment.  Need to separate equipment
-				// placed with colonists ("equipment") and equipment scattered near colonists ("resources").\
 				ScenPart_PlayerPawnsArriveMethod arriveMethodPart = null;
 				foreach (ScenPart current in Find.Scenario.AllParts) {
 					ScenPart_StartingThing_Defined startingThings = current as ScenPart_StartingThing_Defined;
@@ -38,29 +34,32 @@ namespace EdB.PrepareCarefully
 						arriveMethodPart = arriveMethod;
 					}
 					if (startingThings == null && thingsNearStart == null && animal == null && arriveMethod == null) {
-						current.GenerateIntoMap();
+						current.GenerateIntoMap(map);
 					}
 				}
 
-				SpawnColonistsWithEquipment(arriveMethodPart);
+				SpawnColonistsWithEquipment(map, arriveMethodPart);
 				ApplyColonistHealthCustomizations();
 				PrepForMapGen();
-				SpawnStartingResources();
+				SpawnStartingResources(map);
 			}
 		}
 
-		// From MapInitier_NewGame.PreForMapGen() with a change to make an error into a warning.
-		public static void PrepForMapGen()
+		// From GameInitData.PrepForMapGen() with a change to make an error into a warning.
+		public void PrepForMapGen()
 		{
+			//foreach (Pawn current in this.startingPawns) {
 			foreach (Pawn current in Find.GameInitData.startingPawns) {
 				current.SetFactionDirect(Faction.OfPlayer);
 				PawnComponentsUtility.AddAndRemoveDynamicComponents(current, false);
 			}
+			//foreach (Pawn current2 in this.startingPawns) {
 			foreach (Pawn current2 in Find.GameInitData.startingPawns) {
 				current2.workSettings.DisableAll();
 			}
 			foreach (WorkTypeDef w in DefDatabase<WorkTypeDef>.AllDefs) {
 				if (w.alwaysStartActive) {
+					//foreach (Pawn current3 in from col in this.startingPawns
 					foreach (Pawn current3 in from col in Find.GameInitData.startingPawns
 											  where !col.story.WorkTypeIsDisabled(w)
 											  select col) {
@@ -69,6 +68,7 @@ namespace EdB.PrepareCarefully
 				}
 				else {
 					bool flag = false;
+					//foreach (Pawn current4 in this.startingPawns) {
 					foreach (Pawn current4 in Find.GameInitData.startingPawns) {
 						if (!current4.story.WorkTypeIsDisabled(w) && current4.skills.AverageOfRelevantSkillsFor(w) >= 6f) {
 							current4.workSettings.SetPriority(w, 3);
@@ -76,6 +76,7 @@ namespace EdB.PrepareCarefully
 						}
 					}
 					if (!flag) {
+						//IEnumerable<Pawn> source = from col in this.startingPawns
 						IEnumerable<Pawn> source = from col in Find.GameInitData.startingPawns
 												   where !col.story.WorkTypeIsDisabled(w)
 												   select col;
@@ -95,7 +96,7 @@ namespace EdB.PrepareCarefully
 
 		// Copy of ScenPart_PlayerPawnsArriveMethod.GenerateIntoMap(), but with changes to spawn custom
 		// equipment.
-		public void SpawnColonistsWithEquipment(ScenPart_PlayerPawnsArriveMethod arriveMethodPart)
+		public void SpawnColonistsWithEquipment(Map map, ScenPart_PlayerPawnsArriveMethod arriveMethodPart)
 		{
 			List<List<Thing>> list = new List<List<Thing>>();
 			foreach (Pawn current in Find.GameInitData.startingPawns) {
@@ -234,7 +235,7 @@ namespace EdB.PrepareCarefully
 			}
 
 			bool instaDrop = Find.GameInitData.QuickStarted || arriveMethod != PlayerPawnsArriveMethod.DropPods;
-			DropPodUtility.DropThingGroupsNear(MapGenerator.PlayerStartSpot, list, 110, instaDrop, true, true);
+			DropPodUtility.DropThingGroupsNear(MapGenerator.PlayerStartSpot, map, list, 110, instaDrop, true, true);
 		}
 
 		private Thing CreateAnimal(EquipmentDatabaseEntry entry)
@@ -247,7 +248,7 @@ namespace EdB.PrepareCarefully
 				Pawn pawn = PawnGenerator.GeneratePawn(kindDef, Faction.OfPlayer);
 				pawn.gender = entry.gender;
 				if (pawn.Name == null || pawn.Name.Numerical) {
-					pawn.Name = NameGenerator.GeneratePawnName(pawn, NameStyle.Full, null);
+					pawn.Name = PawnBioAndNameGenerator.GeneratePawnName(pawn, NameStyle.Full, null);
 				}
 				if (kindDef.RaceProps.petness > 0) {
 					Pawn bondedColonist = Find.GameInitData.startingPawns.RandomElement<Pawn>();
@@ -295,7 +296,7 @@ namespace EdB.PrepareCarefully
 			}
 		}
 
-		public void SpawnStartingResources()
+		public void SpawnStartingResources(Map map)
 		{
 			foreach (var e in PrepareCarefully.Instance.Equipment) {
 				EquipmentDatabaseEntry entry = PrepareCarefully.Instance.EquipmentEntries[e.EquipmentKey];
@@ -318,7 +319,7 @@ namespace EdB.PrepareCarefully
 						count = e.Count,
 						spotMustBeStandable = true,
 						minSpacing = 5f
-					}.Generate();
+					}.Generate(map);
 				}
 			}
 		}

@@ -6,7 +6,7 @@ using Verse;
 
 namespace EdB.PrepareCarefully
 {
-	public class Dialog_Options<T> : Window where T : class
+	public class Dialog_Options<T> : Window
 	{
 		protected Vector2 ContentMargin = new Vector2(10f, 18f);
 		protected Vector2 WindowSize = new Vector2(440f, 584f);
@@ -42,7 +42,7 @@ namespace EdB.PrepareCarefully
 
 		public string CancelButtonLabel = null;
 
-		public Action Initialize = () => {};
+		public Action Initialize = () => { };
 		public Func<T, string> NameFunc = (T) => {
 			return "";
 		};
@@ -56,8 +56,15 @@ namespace EdB.PrepareCarefully
 		public Func<string> ConfirmValidation = () => {
 			return null;
 		};
-		public Action<T> SelectAction = (T) => {};
-		public Action CloseAction = () => {};
+		public Action<T> SelectAction = (T) => { };
+		public Action CloseAction = () => { };
+		public Func<bool> NoneEnabledFunc = () => {
+			return true;
+		};
+		public Func<bool> NoneSelectedFunc = () => {
+			return false;
+		};
+		public Action SelectNoneAction = () => {};
 
 		public Dialog_Options(IEnumerable<T> options)
 		{
@@ -135,10 +142,10 @@ namespace EdB.PrepareCarefully
 				if (height < 30) {
 					height = 30;
 				}
-				bool isEnabled = EnabledFunc(null);
-				bool isSelected = SelectedFunc(null);
+				bool isEnabled = NoneEnabledFunc();
+				bool isSelected = NoneSelectedFunc();
 				if (Widgets.RadioButtonLabeled(new Rect(0, cursor, ContentSize.x - 32, height), "EdB.None".Translate(), isSelected)) {
-					SelectAction(null);
+					SelectNoneAction();
 				}
 				cursor += height;
 				cursor += 2;

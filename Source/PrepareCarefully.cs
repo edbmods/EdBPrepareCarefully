@@ -364,15 +364,6 @@ namespace EdB.PrepareCarefully
 			}
 		}
 
-		public void ReplaceColonists()
-		{
-			List<Pawn> result = new List<Pawn>();
-			foreach (CustomPawn customPawn in pawns) {
-				result.Add(customPawn.ConvertToPawn());
-			}
-			Verse.Find.GameInitData.startingPawns = result;
-		}
-
 		public List<SelectedEquipment> Equipment {
 			get {
 				SyncRemovals();

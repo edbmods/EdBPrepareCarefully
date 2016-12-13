@@ -52,7 +52,7 @@ namespace EdB.PrepareCarefully
 			for (int i = 0; i < count; i++) {
 				if (this.pawn.skills.skills[i].def == def) {
 					SkillRecord record = this.pawn.skills.skills[i];
-					return record.level;
+					return record.Level;
 				}
 			}
 			throw new IndexOutOfRangeException();
@@ -63,7 +63,7 @@ namespace EdB.PrepareCarefully
 			for (int i = 0; i < count; i++) {
 				if (this.pawn.skills.skills[i].def == def) {
 					SkillRecord record = this.pawn.skills.skills[i];
-					record.level = level;
+					record.Level = level;
 					return;
 				}
 			}
