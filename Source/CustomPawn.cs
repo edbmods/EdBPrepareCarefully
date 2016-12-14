@@ -1044,6 +1044,7 @@ namespace EdB.PrepareCarefully
 		public string ResetIncapableOf()
 		{
 			CustomPawn.ClearCachedDisabledWorkTypes(this.pawn.story);
+			CustomPawn.ClearCachedDisabledSkillRecords(this.pawn);
 			List<string> incapableList = new List<string>();
 			foreach (var tag in pawn.story.DisabledWorkTags) {
 				incapableList.Add(WorkTypeDefsUtility.LabelTranslated(tag));
@@ -1189,8 +1190,8 @@ namespace EdB.PrepareCarefully
 					skill.passion = Passion.None;
 					skill.xpSinceLastLevel = 0;
 				}
-				CustomPawn.ClearCachedDisabledSkillRecord(skill);
 			}
+			CustomPawn.ClearCachedDisabledSkillRecords(result);
 
 			if (resolveGraphics) {
 				result.Drawer.renderer.graphics.ResolveAllGraphics();
@@ -1308,9 +1309,12 @@ namespace EdB.PrepareCarefully
 			typeof(Pawn_StoryTracker).GetField("cachedDisabledWorkTypes", BindingFlags.Instance | BindingFlags.NonPublic).SetValue(story, null);
 		}
 
-		public static void ClearCachedDisabledSkillRecord(SkillRecord record)
+		public static void ClearCachedDisabledSkillRecords(Pawn pawn)
 		{
-			typeof(SkillRecord).GetField("cachedTotallyDisabled", BindingFlags.NonPublic | BindingFlags.Instance).SetValue(record, BoolUnknown.Unknown);
+			FieldInfo field = typeof(SkillRecord).GetField("cachedTotallyDisabled", BindingFlags.NonPublic | BindingFlags.Instance);
+			foreach (var record in pawn.skills.skills) {
+				field.SetValue(record, BoolUnknown.Unknown);
+			}
 		}
 
 		public void ClearCachedPortrait()
