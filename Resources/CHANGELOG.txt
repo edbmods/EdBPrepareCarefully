@@ -1,12 +1,12 @@
  _____________________________________________________________________________
  
-   Version 0.16.0.2
+   Version 0.16.1.1
  _____________________________________________________________________________
      
  - Added support for Alpha 16.
  - Added the ability to customize the pawn body type (now that it's supported
    in vanilla).
- - Tweaked the UI for adolescent pawns to removed the adult backstory.
+ - Tweaked the UI for adolescent pawns to remove adult backstory selection.
  - Removed the backstory warning for backstories that do not have replaceable
    names and gender pronouns.
 
