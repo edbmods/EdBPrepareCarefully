@@ -8,6 +8,8 @@ namespace EdB.PrepareCarefully
 	[StaticConstructorOnStartup]
 	public static class Textures
 	{
+		private static bool loaded = false;
+
 		public static Texture2D TexturePassionMajor;
 		public static Texture2D TexturePassionMinor;
 		public static Texture2D TextureFieldAtlas;
@@ -38,6 +40,12 @@ namespace EdB.PrepareCarefully
 			LoadTextures();
 		}
 
+		public static bool Loaded {
+			get {
+				return loaded;
+			}
+		}
+
 		public static void Reset()
 		{
 			LongEventHandler.ExecuteWhenFinished(() => {
@@ -47,6 +55,7 @@ namespace EdB.PrepareCarefully
 
 		private static void LoadTextures()
 		{
+			loaded = false;
 			TexturePassionMajor = ContentFinder<Texture2D>.Get("UI/Icons/PassionMajor", true);
 			TexturePassionMinor = ContentFinder<Texture2D>.Get("UI/Icons/PassionMinor", true);
 			TextureRadioButtonOff = ContentFinder<Texture2D>.Get("UI/Widgets/RadioButOff", true);
@@ -74,7 +83,7 @@ namespace EdB.PrepareCarefully
 			TextureAlternateRow = SolidColorMaterials.NewSolidColorTexture(new Color(1, 1, 1, 0.05f));
 			TextureSkillBarFill = SolidColorMaterials.NewSolidColorTexture(new Color(1f, 1f, 1f, 0.1f));
 
-
+			loaded = true;
 		}
 	}
 }

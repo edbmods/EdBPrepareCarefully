@@ -155,7 +155,9 @@ namespace EdB.PrepareCarefully
 
 		public void Initialize()
 		{
+			Textures.Reset();
 			Clear();
+			PawnColorUtils.InitializeColors();
 			InitializePawns();
 			InitializeRelationshipManager(this.pawns);
 			InitializeDefaultEquipment();
@@ -360,15 +362,6 @@ namespace EdB.PrepareCarefully
 			get {
 				return colonists;
 			}
-		}
-
-		public void ReplaceColonists()
-		{
-			List<Pawn> result = new List<Pawn>();
-			foreach (CustomPawn customPawn in pawns) {
-				result.Add(customPawn.ConvertToPawn());
-			}
-			Verse.Find.GameInitData.startingPawns = result;
 		}
 
 		public List<SelectedEquipment> Equipment {

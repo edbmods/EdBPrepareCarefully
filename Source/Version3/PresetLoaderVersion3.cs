@@ -184,9 +184,7 @@ namespace EdB.PrepareCarefully
 
 		public CustomPawn LoadPawn(SaveRecordPawnV3 record)
 		{
-			// TODO: Ahlpa 14 Evaluate
 			Pawn source = new Randomizer().GenerateColonist();
-			//Pawn source = PawnGenerator.GeneratePawn(PawnKindDefOf.Colonist, Faction.OfPlayer);
 
 			CustomPawn pawn = new CustomPawn(source);
 			pawn.Gender = record.gender;
@@ -216,7 +214,14 @@ namespace EdB.PrepareCarefully
 
 			pawn.HeadGraphicPath = record.headGraphicPath;
 			pawn.SetColor(PawnLayers.Hair, record.hairColor);
-			pawn.SetColor(PawnLayers.HeadType, record.skinColor);
+
+			if (record.melanin >= 0.0f) {
+				pawn.MelaninLevel = record.melanin;
+			}
+			else {
+				pawn.MelaninLevel = PawnColorUtils.FindMelaninValueFromColor(record.skinColor);
+			}
+
 			Backstory backstory = FindBackstory(record.childhood);
 			if (backstory != null) {
 				pawn.Childhood = backstory;
@@ -225,13 +230,36 @@ namespace EdB.PrepareCarefully
 				Log.Warning("Could not load childhood backstory definition \"" + record.childhood + "\"");
 				Failed = true;
 			}
-			backstory = FindBackstory(record.adulthood);
-			if (backstory != null) {
-				pawn.Adulthood = backstory;
+			if (record.adulthood != null) {
+				backstory = FindBackstory(record.adulthood);
+				if (backstory != null) {
+					pawn.Adulthood = backstory;
+				}
+				else {
+					Log.Warning("Could not load adulthood backstory definition \"" + record.adulthood + "\"");
+					Failed = true;
+				}
 			}
-			else {
-				Log.Warning("Could not load adulthood backstory definition \"" + record.adulthood + "\"");
-				Failed = true;
+
+			// Get the body type from the save record.  If there's no value in the save, then assign the 
+			// default body type from the pawn's backstories.
+			BodyType? bodyType = null;
+			try {
+				bodyType = (BodyType)Enum.Parse(typeof(BodyType), record.bodyType);
+			}
+			catch (Exception) {
+				Log.Warning("Invalid body type value \"" + record.bodyType + "\"");
+			}
+			if (!bodyType.HasValue) {
+				if (pawn.Adulthood != null) {
+					bodyType = pawn.Adulthood.BodyTypeFor(pawn.Gender);
+				}
+				else {
+					bodyType = pawn.Childhood.BodyTypeFor(pawn.Gender);
+				}
+			}
+			if (bodyType.HasValue) {
+				pawn.BodyType = bodyType.Value;
 			}
 
 			int traitCount = pawn.Traits.Count();
@@ -430,7 +458,7 @@ namespace EdB.PrepareCarefully
 		public Backstory FindBackstory(string name)
 		{
 			return BackstoryDatabase.allBackstories.Values.ToList().Find((Backstory b) => {
-				return b.uniqueSaveKey.Equals(name);
+				return b.identifier.Equals(name);
 			});
 		}
 
@@ -445,13 +473,13 @@ namespace EdB.PrepareCarefully
 				if (count > 0) {
 					for (int i = 0; i < count; i++) {
 						if (degree == degreeData[i].degree) {
-							Trait trait = new Trait(def, degreeData[i].degree);
+							Trait trait = new Trait(def, degreeData[i].degree, true);
 							return trait;
 						}
 					}
 				}
 				else {
-					return new Trait(def, 0);
+					return new Trait(def, 0, true);
 				}
 			}
 			return null;

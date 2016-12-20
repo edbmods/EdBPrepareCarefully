@@ -15,9 +15,11 @@ namespace EdB.PrepareCarefully
 		public List<string> traitNames = new List<string>();
 		public List<int> traitDegrees = new List<int>();
 		public Color skinColor;
+		public float melanin;
 		public string hairDef;
 		public Color hairColor;
 		public string headGraphicPath;
+		public string bodyType;
 		public string firstName;
 		public string lastName;
 		public string nickName;
@@ -45,12 +47,19 @@ namespace EdB.PrepareCarefully
 		public SaveRecordPawnV3(CustomPawn pawn)
 		{
 			this.gender = pawn.Gender;
-			this.adulthood = pawn.Adulthood.uniqueSaveKey;
-			this.childhood = pawn.Childhood.uniqueSaveKey;
-			this.skinColor = pawn.SkinColor;
+			if (pawn.Adulthood != null) {
+				this.adulthood = pawn.Adulthood.identifier;
+			}
+			else {
+				this.adulthood = pawn.LastSelectedAdulthood.identifier;
+			}
+			this.childhood = pawn.Childhood.identifier;
+			this.skinColor = pawn.Pawn.story.SkinColor;
+			this.melanin = pawn.Pawn.story.melanin;
 			this.hairDef = pawn.HairDef.defName;
 			this.hairColor = pawn.GetColor(PawnLayers.Hair);
 			this.headGraphicPath = pawn.HeadGraphicPath;
+			this.bodyType = Enum.GetName(typeof(BodyType), pawn.BodyType);
 			this.firstName = pawn.FirstName;
 			this.nickName = pawn.NickName;
 			this.lastName = pawn.LastName;
@@ -97,6 +106,8 @@ namespace EdB.PrepareCarefully
 			Scribe_Collections.LookList<string>(ref this.traitNames, "traitNames", LookMode.Value, null);
 			Scribe_Collections.LookList<int>(ref this.traitDegrees, "traitDegrees", LookMode.Value, null);
 			Scribe_Values.LookValue<Color>(ref this.skinColor, "skinColor", Color.white, false);
+			Scribe_Values.LookValue<float>(ref this.melanin, "melanin", -1.0f, false);
+			Scribe_Values.LookValue<string>(ref this.bodyType, "bodyType", null, false);
 			Scribe_Values.LookValue<string>(ref this.hairDef, "hairDef", null, false);
 			Scribe_Values.LookValue<Color>(ref this.hairColor, "hairColor", Color.white, false);
 			Scribe_Values.LookValue<string>(ref this.headGraphicPath, "headGraphicPath", null, false);
@@ -136,99 +147,6 @@ namespace EdB.PrepareCarefully
 			}
 		}
 
-		public CustomPawn CreatePawn()
-		{
-			// TODO: Evaluate
-			//Pawn source = PawnGenerator.GeneratePawn(PawnKindDefOf.Colonist, Faction.OfColony);
-			Pawn source = new Randomizer().GenerateColonist();
-
-			source.health = new Pawn_HealthTracker(source);
-
-			CustomPawn pawn = new CustomPawn(source);
-			pawn.Gender = this.gender;
-			if (age > 0) {
-				pawn.ChronologicalAge = age;
-				pawn.BiologicalAge = age;
-			}
-			if (chronologicalAge > 0) {
-				pawn.ChronologicalAge = chronologicalAge;
-			}
-			if (biologicalAge > 0) {
-				pawn.BiologicalAge = biologicalAge;
-			}
-			pawn.FirstName = this.firstName;
-			pawn.NickName = this.nickName;
-			pawn.LastName = this.lastName;
-
-			HairDef h = FindHairDef(this.hairDef);
-			if (h != null) {
-				pawn.HairDef = h;
-			}
-
-			pawn.HeadGraphicPath = this.headGraphicPath;
-			pawn.SetColor(PawnLayers.Hair, hairColor);
-			pawn.SetColor(PawnLayers.HeadType, skinColor);
-			Backstory backstory = FindBackstory(childhood);
-			if (backstory != null) {
-				pawn.Childhood = backstory;
-			}
-			backstory = FindBackstory(adulthood);
-			if (backstory != null) {
-				pawn.Adulthood = backstory;
-			}
-
-			int traitCount = pawn.Traits.Count();
-			for (int i = 0; i < traitCount; i++) {
-				pawn.ClearTrait(i);
-			}
-			for (int i = 0; i < traitNames.Count; i++) {
-				string traitName = traitNames[i];
-				if (i >= traitCount) {
-					break;
-				}
-				Trait trait = FindTrait(traitName, traitDegrees[i]);
-				if (trait != null) {
-					pawn.SetTrait(i, trait);
-				}
-			}
-
-			for (int i = 0; i < this.skillNames.Count; i++) {
-				string name = this.skillNames[i];
-				SkillDef def = FindSkillDef(pawn.Pawn, name);
-				if (def == null) {
-					continue;
-				}
-				pawn.currentPassions[def] = this.passions[i];
-				pawn.SetUnmodifiedSkillLevel(def, this.skillValues[i]);
-			}
-
-			for (int i = 0; i < PawnLayers.Count; i++) {
-				if (PawnLayers.IsApparelLayer(i)) {
-					pawn.SetSelectedApparel(i, null);
-					pawn.SetSelectedStuff(i, null);
-				}
-			}
-			for (int i = 0; i < this.apparelLayers.Count; i++) {
-				int layer = this.apparelLayers[i];
-				ThingDef def = DefDatabase<ThingDef>.GetNamedSilentFail(this.apparel[i]);
-				if (def == null) {
-					continue;
-				}
-				ThingDef stuffDef = null;
-				if (!string.IsNullOrEmpty(this.apparelStuff[i])) {
-					stuffDef = DefDatabase<ThingDef>.GetNamedSilentFail(this.apparelStuff[i]);
-					if (stuffDef == null) {
-						continue;
-					}
-				}
-				pawn.SetSelectedApparel(layer, def);
-				pawn.SetSelectedStuff(layer, stuffDef);
-				pawn.SetColor(layer, this.apparelColors[i]);
-			}
-
-			return pawn;
-		}
-
 		public HairDef FindHairDef(string name)
 		{
 			return DefDatabase<HairDef>.GetNamedSilentFail(name);
@@ -237,7 +155,7 @@ namespace EdB.PrepareCarefully
 		public Backstory FindBackstory(string name)
 		{
 			return BackstoryDatabase.allBackstories.Values.ToList().Find((Backstory b) => {
-				return b.uniqueSaveKey.Equals(name);
+				return b.identifier.Equals(name);
 			});
 		}
 
@@ -252,13 +170,13 @@ namespace EdB.PrepareCarefully
 				if (count > 0) {
 					for (int i = 0; i < count; i++) {
 						if (degree == degreeData[i].degree) {
-							Trait trait = new Trait(def, degreeData[i].degree);
+							Trait trait = new Trait(def, degreeData[i].degree, true);
 							return trait;
 						}
 					}
 				}
 				else {
-					return new Trait(def, 0);
+					return new Trait(def, 0, true);
 				}
 			}
 			return null;

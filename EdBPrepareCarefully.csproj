@@ -7,9 +7,10 @@
     <OutputType>Library</OutputType>
     <RootNamespace>EdB.PrepareCarefully</RootNamespace>
     <AssemblyName>EdBPrepareCarefully</AssemblyName>
-    <ReleaseVersion>0.15.1.3</ReleaseVersion>
+    <ReleaseVersion>0.16.1.1</ReleaseVersion>
     <UseMSBuildEngine>False</UseMSBuildEngine>
     <TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
+    <ApplicationManifest>Dialog_Confirm.cs.manifest</ApplicationManifest>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -105,6 +106,8 @@
     <Compile Include="Source\CustomPawn.cs" />
     <Compile Include="Source\PawnColorUtils.cs" />
     <Compile Include="Source\GenStep_ScenParts.cs" />
+    <Compile Include="Source\Dialog_Confirm.cs" />
+    <Compile Include="Source\ThingCache.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup />

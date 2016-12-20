@@ -71,6 +71,8 @@ namespace EdB.PrepareCarefully
 		protected List<HairDef> femaleHairDefs = new List<HairDef>();
 		protected List<Color> skinColors = new List<Color>();
 		protected List<Color> hairColors = new List<Color>();
+		protected List<BodyType> maleBodyTypes = new List<BodyType>();
+		protected List<BodyType> femaleBodyTypes = new List<BodyType>();
 		protected LeftPanelMode leftPanelMode = LeftPanelMode.Appearance;
 
 		protected bool bionicsMode = false;
@@ -81,12 +83,10 @@ namespace EdB.PrepareCarefully
 
 		protected int selectedStuff = 0;
 
-		protected HashSet<Backstory> problemBackstories = new HashSet<Backstory>();
-
 		protected Randomizer randomizer = new Randomizer();
 
-		protected int maxAge = 90;
-		protected int minAge = 15;
+		protected int maxAge = 99;
+		protected int minAge = 14;
 		protected int maxChronologicalAge = 3200;
 
 		protected ScrollView HealthScrollView = new ScrollView();
@@ -131,6 +131,16 @@ namespace EdB.PrepareCarefully
 				femaleHeads.Add(path);
 			}
 
+			maleBodyTypes.Add(BodyType.Male);
+			maleBodyTypes.Add(BodyType.Thin);
+			maleBodyTypes.Add(BodyType.Fat);
+			maleBodyTypes.Add(BodyType.Hulk);
+
+			femaleBodyTypes.Add(BodyType.Female);
+			femaleBodyTypes.Add(BodyType.Thin);
+			femaleBodyTypes.Add(BodyType.Fat);
+			femaleBodyTypes.Add(BodyType.Hulk);
+
 			bodyTypeLabels.Add(BodyType.Fat, "EdB.BodyType.Fat".Translate());
 			bodyTypeLabels.Add(BodyType.Hulk, "EdB.BodyType.Hulk".Translate());
 			bodyTypeLabels.Add(BodyType.Thin, "EdB.BodyType.Thin".Translate());
@@ -138,8 +148,9 @@ namespace EdB.PrepareCarefully
 			bodyTypeLabels.Add(BodyType.Female, "EdB.BodyType.Average".Translate());
 
 			pawnLayers = new List<int>(new int[] {
-				PawnLayers.Hair,
+				PawnLayers.BodyType,
 				PawnLayers.HeadType,
+				PawnLayers.Hair,
 				PawnLayers.Pants,
 				PawnLayers.BottomClothingLayer,
 				PawnLayers.MiddleClothingLayer,
@@ -148,8 +159,9 @@ namespace EdB.PrepareCarefully
 				PawnLayers.Hat
 			});
 			pawnLayerActions = new List<Action>(new Action[] {
-				delegate { this.ChangePawnLayer(PawnLayers.Hair); },
+				delegate { this.ChangePawnLayer(PawnLayers.BodyType); },
 				delegate { this.ChangePawnLayer(PawnLayers.HeadType); },
+				delegate { this.ChangePawnLayer(PawnLayers.Hair); },
 				delegate { this.ChangePawnLayer(PawnLayers.Pants); },
 				delegate { this.ChangePawnLayer(PawnLayers.BottomClothingLayer); },
 				delegate { this.ChangePawnLayer(PawnLayers.MiddleClothingLayer); },
@@ -263,16 +275,9 @@ namespace EdB.PrepareCarefully
 				}
 			}
 
-			// Iterate through each solid bio.  Find the corresponding backstories.  If the backstory description contains the bio's name
-			// the mark the backstory as name-specific.  If the bio does not has HE/HIS/etc, mark the backstory as gender-specific.
-
+			// Go through all of the backstories and mark them as childhood or adult.
 			List<Backstory> backstories = BackstoryDatabase.allBackstories.Values.ToList();
 			foreach (Backstory backstory in backstories) {
-
-				if (!backstory.shuffleable && (!backstory.baseDesc.Contains("NAME") || (!backstory.baseDesc.Contains("HECAP") && !backstory.baseDesc.Contains("HE ")
-					&& !backstory.baseDesc.Contains("HIS") && !backstory.baseDesc.Contains("HISCAP") && !backstory.baseDesc.Contains("HIM")))) {
-					problemBackstories.Add(backstory);
-				}
 				if (backstory.slot == BackstorySlot.Childhood) {
 					childhoodBackstories.Add(backstory);
 				}
@@ -283,9 +288,9 @@ namespace EdB.PrepareCarefully
 
 			// Create sorted versions of the backstory lists
 			sortedChildhoodBackstories = new List<Backstory>(childhoodBackstories);
-			sortedChildhoodBackstories.Sort((b1, b2) => b1.title.CompareTo(b2.title));
+			sortedChildhoodBackstories.Sort((b1, b2) => b1.Title.CompareTo(b2.Title));
 			sortedAdulthoodBackstories = new List<Backstory>(adulthoodBackstories);
-			sortedAdulthoodBackstories.Sort((b1, b2) => b1.title.CompareTo(b2.title));
+			sortedAdulthoodBackstories.Sort((b1, b2) => b1.Title.CompareTo(b2.Title));
 
 			// Get all trait options
 			foreach (TraitDef def in DefDatabase<TraitDef>.AllDefs) {
@@ -293,12 +298,12 @@ namespace EdB.PrepareCarefully
 				int count = degreeData.Count;
 				if (count > 0) {
 					for (int i = 0; i < count; i++) {
-						Trait trait = new Trait(def, degreeData[i].degree);
+						Trait trait = new Trait(def, degreeData[i].degree, true);
 						traits.Add(trait);
 					}
 				}
 				else {
-					traits.Add(new Trait(def, 0));
+					traits.Add(new Trait(def, 0, true));
 				}
 			}
 
@@ -317,12 +322,9 @@ namespace EdB.PrepareCarefully
 			hairColors.Add(new Color(0.9294118f, 0.7921569f, 0.6117647f));
 
 			// Set up default skin colors
-			skinColors.Add(new Color(0.3882353f, 0.2745098f, 0.1411765f));
-			skinColors.Add(new Color(0.509804f, 0.3568628f, 0.1882353f));
-			skinColors.Add(new Color(0.8941177f, 0.6196079f, 0.3529412f));
-			skinColors.Add(new Color(1f, 0.9372549f, 0.7411765f));
-			skinColors.Add(new Color(1f, 0.9372549f, 0.8352941f));
-			skinColors.Add(new Color(0.9490196f, 0.9294118f, 0.8784314f));
+			foreach (Color color in PawnColorUtils.Colors) {
+				skinColors.Add(color);
+			}
 
 			this.ChangePawnLayer(pawnLayers[0]);
 
@@ -401,7 +403,12 @@ namespace EdB.PrepareCarefully
 			if (this.IsBroken) {
 				return;
 			}
-									
+
+			if (!Textures.Loaded) {
+				FatalError("Textures failed to load", null);
+				return;
+			}
+
 			Rect rect = new Rect(0, 80, inRect.width, inRect.height - 60 - 80);
 			Widgets.DrawMenuSection(rect, true);
 			int tabCount = PrepareCarefully.Instance.Pawns.Count;
@@ -742,7 +749,7 @@ namespace EdB.PrepareCarefully
 			GUI.EndGroup();
 		}
 
-		private static Color DisabledColor = new Color(1, 1, 1, 0.3f);
+		private static Color DisabledColor = new Color(1, 1, 1, 0.27647f);
 		private static Color DisabledNextPreviousButtonColor = new Color(ButtonColor.r, ButtonColor.g, ButtonColor.b, 0.4f);
 		protected void DrawDisabledFieldSelector(Rect fieldRect, string label, Color textColor)
 		{
@@ -829,7 +836,7 @@ namespace EdB.PrepareCarefully
 						}
 					}
 					label = PawnLayers.Label(pawnLayers[i]);
-					list.Add(new FloatMenuOption(label, this.pawnLayerActions[i], MenuOptionPriority.Medium, null, null, 0, null));
+					list.Add(new FloatMenuOption(label, this.pawnLayerActions[i], MenuOptionPriority.Default, null, null, 0, null, null));
 				}
 				Find.WindowStack.Add(new FloatMenu(list, null, false));
 			}
@@ -859,6 +866,10 @@ namespace EdB.PrepareCarefully
 						SoundDefOf.TickTiny.PlayOneShotOnCamera();
 						SelectNextHead(-1);
 					}
+					else if (this.selectedPawnLayer == PawnLayers.BodyType) {
+						SoundDefOf.TickTiny.PlayOneShotOnCamera();
+						SelectNextBodyType(-1);
+					}
 					else if (this.selectedPawnLayer == PawnLayers.Hair) {
 						SoundDefOf.TickTiny.PlayOneShotOnCamera();
 						SelectNextHair(-1);
@@ -872,6 +883,10 @@ namespace EdB.PrepareCarefully
 					if (this.selectedPawnLayer == PawnLayers.HeadType) {
 						SoundDefOf.TickTiny.PlayOneShotOnCamera();
 						SelectNextHead(1);
+					}
+					else if (this.selectedPawnLayer == PawnLayers.BodyType) {
+						SoundDefOf.TickTiny.PlayOneShotOnCamera();
+						SelectNextBodyType(1);
 					}
 					else if (this.selectedPawnLayer == PawnLayers.Hair) {
 						SoundDefOf.TickTiny.PlayOneShotOnCamera();
@@ -887,6 +902,9 @@ namespace EdB.PrepareCarefully
 			if (Widgets.ButtonInvisible(fieldRect, false)) {
 				if (this.selectedPawnLayer == PawnLayers.HeadType) {
 					ShowHeadDialog();
+				}
+				else if (this.selectedPawnLayer == PawnLayers.BodyType) {
+					ShowBodyTypeDialog();
 				}
 				else if (this.selectedPawnLayer == PawnLayers.Hair) {
 					ShowHairDialog();
@@ -1142,132 +1160,92 @@ namespace EdB.PrepareCarefully
 		{
 			CustomPawn customPawn = CurrentPawn;
 
-			int currentIndex = PawnColorUtils.GetColorLeftIndex(customPawn.SkinColor);
+			int currentSwatchIndex = PawnColorUtils.GetLeftIndexForValue(customPawn.MelaninLevel);
+			Color currentSwatchColor = PawnColorUtils.Colors[currentSwatchIndex];
 
-			Color currentColor = PawnColorUtils.Colors[currentIndex];
-			Rect rect = new Rect(SwatchPosition.x, cursorY, SwatchSize.x, SwatchSize.y);
+			Rect swatchRect = new Rect(SwatchPosition.x, cursorY, SwatchSize.x, SwatchSize.y);
 
+			// Draw the swatch selection boxes.
 			int colorCount = PawnColorUtils.Colors.Length - 1;
 			int clickedIndex = -1;
-			for (int i=0; i<colorCount; i++) {
+			for (int i = 0; i < colorCount; i++) {
 				Color color = PawnColorUtils.Colors[i];
-				bool selected = (i == currentIndex);
-				if (selected) {
-					Rect selectionRect = new Rect(rect.x - 2, rect.y - 2, SwatchSize.x + 4, SwatchSize.y + 4);
+
+				// If the swatch is selected, draw a heavier border around it.
+				bool isThisSwatchSelected = (i == currentSwatchIndex);
+				if (isThisSwatchSelected) {
+					Rect selectionRect = new Rect(swatchRect.x - 2, swatchRect.y - 2, SwatchSize.x + 4, SwatchSize.y + 4);
 					GUI.color = ColorSwatchSelection;
 					GUI.DrawTexture(selectionRect, BaseContent.WhiteTex);
 				}
 
-				Rect borderRect = new Rect(rect.x - 1, rect.y - 1, SwatchSize.x + 2, SwatchSize.y + 2);
+				// Draw the border around the swatch.
+				Rect borderRect = new Rect(swatchRect.x - 1, swatchRect.y - 1, SwatchSize.x + 2, SwatchSize.y + 2);
 				GUI.color = ColorSwatchBorder;
 				GUI.DrawTexture(borderRect, BaseContent.WhiteTex);
 
+				// Draw the swatch itself.
 				GUI.color = color;
-				GUI.DrawTexture(rect, BaseContent.WhiteTex);
+				GUI.DrawTexture(swatchRect, BaseContent.WhiteTex);
 
-				if (!selected) {
-					if (Widgets.ButtonInvisible(rect, false)) {
+				if (!isThisSwatchSelected) {
+					if (Widgets.ButtonInvisible(swatchRect, false)) {
 						clickedIndex = i;
-						currentColor = color;
+						//currentSwatchColor = color;
 					}
 				}
 
-				rect.x += SwatchSpacing.x;
-				if (rect.x >= 227) {
-					rect.y += SwatchSpacing.y;
-					rect.x = SwatchPosition.x;
+				// Advance the swatch rect cursor position and wrap it if necessary.
+				swatchRect.x += SwatchSpacing.x;
+				if (swatchRect.x >= 227) {
+					swatchRect.y += SwatchSpacing.y;
+					swatchRect.x = SwatchPosition.x;
 				}
 			}
 
+			// Draw the current color box.
 			GUI.color = Color.white;
-
-			if (rect.x != SwatchPosition.x) {
-				rect.x = SwatchPosition.x;
-				rect.y += SwatchSpacing.y;
+			Rect currentColorRect = new Rect(SwatchPosition.x, swatchRect.y + 4, 49, 49);
+			if (swatchRect.x != SwatchPosition.x) {
+				currentColorRect.y += SwatchSpacing.y;
 			}
-			rect.y += 4;
-			rect.width = 49;
-			rect.height = 49;
 			GUI.color = ColorSwatchBorder;
-			GUI.DrawTexture(rect, BaseContent.WhiteTex);
+			GUI.DrawTexture(currentColorRect, BaseContent.WhiteTex);
 			GUI.color = customPawn.SkinColor;
-			GUI.DrawTexture(rect.ContractedBy(1), BaseContent.WhiteTex);
+			GUI.DrawTexture(currentColorRect.ContractedBy(1), BaseContent.WhiteTex);
 			GUI.color = Color.white;
 
-			float minValue = 0.000001f;
-			float t = PawnColorUtils.GetSkinLerpValue(customPawn.SkinColor);
+			// Figure out the lerp value so that we can draw the slider.
+			float minValue = 0.00f;
+			float maxValue = 0.99f;
+			float t = PawnColorUtils.GetRelativeLerpValue(customPawn.MelaninLevel);
 			if (t < minValue) {
 				t = minValue;
 			}
-
+			else if (t > maxValue) {
+				t = maxValue;
+			}
 			if (clickedIndex != -1) {
 				t = minValue;
 			}
 
-			float newValue = GUI.HorizontalSlider(new Rect(rect.x + 56, rect.y + 18, 136, 16), t, minValue, 1);
+			// Draw the slider.
+			float newValue = GUI.HorizontalSlider(new Rect(currentColorRect.x + 56, currentColorRect.y + 18, 136, 16), t, minValue, 1);
+			if (newValue < minValue) {
+				newValue = minValue;
+			}
+			else if (newValue > maxValue) {
+				newValue = maxValue;
+			}
 			GUI.color = Color.white;
 
+			// If the user selected a new swatch or changed the lerp value, set a new color value.
 			if (t != newValue || clickedIndex != -1) {
 				if (clickedIndex != -1) {
-					currentIndex = clickedIndex;
+					currentSwatchIndex = clickedIndex;
 				}
-				customPawn.SkinColor = PawnColorUtils.FindColor(currentIndex, newValue);
+				customPawn.MelaninLevel = PawnColorUtils.GetValueFromRelativeLerp(currentSwatchIndex, newValue);
 			}
-		}
-
-		protected void DrawGraphics(Rect rect, int start, int end) {
-			CustomPawn customPawn = CurrentPawn;
-			for (int i=start; i<=end; i++) {
-				if (PawnLayers.IsApparelLayer(i) && customPawn.GetAcceptedApparel(i) == null) {
-					continue;
-				}
-				Graphic g = customPawn.graphics[i];
-				if (g == null) {
-					continue;
-				}
-				Material material = g.MatFront;
-				if (material == null) {
-					continue;
-				}
-				GUI.color = customPawn.GetBlendedColor(i);
-				GUI.DrawTexture(rect, material.mainTexture);
-			}
-		}
-
-		protected void DrawGraphic(Rect rect, int index) {
-			CustomPawn customPawn = CurrentPawn;
-			if (PawnLayers.IsApparelLayer(index) && customPawn.GetAcceptedApparel(index) == null) {
-				return;
-			}
-			Graphic g = customPawn.graphics[index];
-			if (g == null) {
-				return;
-			}
-			Material material = g.MatFront;
-			if (material == null) {
-				return;
-			}
-			GUI.color = customPawn.GetBlendedColor(index);
-			GUI.DrawTexture(rect, material.mainTexture);
-		}
-
-		protected void DrawOneGraphic(Rect rect, int index, int alternate) {
-			CustomPawn customPawn = CurrentPawn;
-			Graphic g = customPawn.graphics[index];
-			Color color = customPawn.GetBlendedColor(index);
-			if (g == null || (PawnLayers.IsApparelLayer(index) && customPawn.GetAcceptedApparel(index) == null)) {
-				g = customPawn.graphics[alternate];
-				color = customPawn.GetBlendedColor(alternate);
-			}
-			if (g == null) {
-				return;
-			}
-			Material material = g.MatFront;
-			if (material == null || (PawnLayers.IsApparelLayer(alternate) && customPawn.GetAcceptedApparel(alternate) == null)) {
-				return;
-			}
-			GUI.color = color;
-			GUI.DrawTexture(rect, material.mainTexture);
 		}
 
 		protected void DrawPawn(Rect rect)
@@ -1275,13 +1253,10 @@ namespace EdB.PrepareCarefully
 			CustomPawn customPawn = CurrentPawn;
 			GUI.BeginGroup(rect);
 
-			Rect bodyRect = new Rect(rect.width / 2 - 64, rect.height / 2 - 64, 128, 128);
-			Rect headRect = new Rect(bodyRect.x, bodyRect.y - 30, 128, 128);
-			List<Graphic> graphics = customPawn.graphics;
-			DrawGraphics(bodyRect, PawnLayers.BodyType, PawnLayers.TopClothingLayer);
-			DrawGraphic(bodyRect, PawnLayers.Accessory);
-			DrawGraphic(headRect, PawnLayers.HeadType);
-			DrawOneGraphic(headRect, PawnLayers.Hat, PawnLayers.Hair);
+			Vector2 pawnSize = new Vector2(128f, 180f);
+			Rect pawnRect = new Rect(rect.width * 0.5f - pawnSize.x * 0.5f, 10 + rect.height * 0.5f - pawnSize.y * 0.5f, pawnSize.x, pawnSize.y);
+			RenderTexture texture = PortraitsCache.Get(customPawn.Pawn, pawnSize, new Vector3(0, 0, 0), 1.0f);
+			GUI.DrawTexture(pawnRect, (Texture)texture);
 
 			GUI.EndGroup();
 			GUI.color = Color.white;
@@ -1292,151 +1267,6 @@ namespace EdB.PrepareCarefully
 		protected static Rect BodyPartBoxRect = new Rect(16, 40, 218, 358);
 		protected static Rect BodyPartBoxScrollRect = new Rect(0, 0, BodyPartBoxRect.width - 2, BodyPartBoxRect.height - 2);
 		protected static Rect OldInjuriesFieldRect = new Rect(18, BodyPartBoxRect.y + BodyPartBoxRect.height + 12, 216, 32);
-		/*
-		protected void DrawHealth()
-		{
-			PawnFacade pawn = CurrentPawn;
-			GUI.color = BodyPartBoxBorderColor;
-			Rect rect = BodyPartBoxRect;
-			Widgets.DrawBox(rect, 1);
-			GUI.color = Color.white;
-			Rect innerRect = rect.ContractedBy(1);
-			GUI.BeginGroup(innerRect);
-
-			Rect scrollRect = BodyPartBoxScrollRect;
-			Rect viewRect = new Rect(scrollRect.x, scrollRect.y, scrollRect.width - 16, bionicsScrollHeight);
-			Widgets.BeginScrollView(scrollRect, ref bionicsScrollPosition, viewRect);
-
-			Rect partRect = new Rect(0, 0, 216, 56);
-			Rect labelRect = new Rect(20, 4, 180, 24);
-			Rect fieldRect = new Rect(20, 21, 163, 28);
-			bool odd = true;
-			foreach (BodyPart bodyPart in this.bodyParts) {
-
-				if (!odd) {
-					GUI.color = new Color(0.1882f, 0.1882f, 0.1882f);
-					GUI.DrawTexture(partRect, BaseContent.WhiteTex);
-				}
-				odd = !odd;
-
-				bool invalid = false;
-				foreach (var p in bodyPart.ancestors) {
-					if (pawn.IsBodyPartReplaced(p)) {
-						invalid = true;
-						break;
-					}
-				}
-
-				if (!invalid) {
-					GUI.color = TextColor;
-				}
-				else {
-					GUI.color = new Color(TextColor.r, TextColor.g, TextColor.b, 0.3f);
-				}
-				Text.Font = GameFont.Tiny;
-				Widgets.Label(labelRect, bodyPart.bodyPartRecord.def.LabelCap);
-				Text.Font = GameFont.Small;
-				GUI.color = Color.white;
-
-				Implant selectedOption = FindSelectedBodyPartOption(bodyPart);
-				if (!invalid) {
-					DrawFieldSelector(fieldRect, selectedOption == null ? "EdB.NormalBodyPart".Translate() : (selectedOption.label),
-						delegate {
-							SetBodyPartOption(bodyPart, FindNextBodyPartOption(bodyPart, 1));
-						},
-						delegate {
-							SetBodyPartOption(bodyPart, FindNextBodyPartOption(bodyPart, -1));
-						},
-						selectedOption == null ? TextColor : BodyPartReplacedFieldColor
-					);
-				}
-				else {
-					DrawDisabledFieldSelector(fieldRect, selectedOption == null ? "EdB.NormalBodyPart".Translate() : (selectedOption.label),
-						selectedOption == null ? TextColor : BodyPartReplacedFieldColor);
-				}
-
-				partRect.y += partRect.height;
-				labelRect.y += partRect.height;
-				fieldRect.y += partRect.height;
-			}
-
-			if (Event.current.type == EventType.Layout) {
-				bionicsScrollHeight = partRect.y;
-			}
-
-			GUI.EndScrollView();
-			GUI.EndGroup();
-
-			GUI.color = TextColor;
-			bool oldInjuriesValue = pawn.OldInjuries;
-			Vector2 size = Text.CalcSize("EdB.OldInjuries".Translate());
-			labelRect = OldInjuriesFieldRect;
-			labelRect.x += labelRect.width / 2 - (size.x + 20 + 16) / 2;
-			Widgets.Label(labelRect, "EdB.OldInjuries".Translate());
-			size.x += 16;
-			size.y = 0;
-			Widgets.Checkbox(labelRect.min + size, ref oldInjuriesValue, 24, false);
-
-			pawn.OldInjuries = oldInjuriesValue;
-		}
-		*/
-
-		/*
-		public void SetBodyPartOption(BodyPart part, Implant option) {
-			PawnFacade pawn = CurrentPawn;
-			if (option != null) {
-				pawn.implants[part.bodyPartRecord] = option;
-			}
-			else {
-				if (pawn.implants.ContainsKey(part.bodyPartRecord)) {
-					pawn.implants.Remove(part.bodyPartRecord);
-				}
-			}
-		}
-
-		public Implant FindSelectedBodyPartOption(BodyPart part)
-		{
-			PawnFacade pawn = CurrentPawn;
-			Implant selection;
-			if (pawn.implants.TryGetValue(part.bodyPartRecord, out selection)) {
-				return selection;
-			}
-			return null;
-		}
-
-		public int FindBodyPartOptionIndex(BodyPart part)
-		{
-			PawnFacade pawn = CurrentPawn;
-			Implant selection;
-			if (!pawn.implants.TryGetValue(part.bodyPartRecord, out selection)) {
-				return -1;
-			}
-			int count = part.options.Count;
-			for (int i = 0; i < count; i++) {
-				if (part.options[i].Equals(selection)) {
-					return i;
-				}
-			}
-			return -1;
-		}
-
-		public Implant FindNextBodyPartOption(BodyPart part, int direction)
-		{
-			int index = FindBodyPartOptionIndex(part);
-			index += direction;
-			if (index >= part.options.Count) {
-				return null;
-			}
-			else if (index < -1) {
-				index = part.options.Count - 1;
-			}
-			if (index == -1) {
-				return null;
-			}
-			return part.options[index];
-		}
-
-		*/
 
 		protected static Rect RectGenderButton = new Rect(0, 0, 100, 28);
 		protected static Rect RectAgeLabel = new Rect(108, 2, 45, 28);
@@ -1457,8 +1287,8 @@ namespace EdB.PrepareCarefully
 			string label = customPawn.Gender == Gender.Male ? "Male".Translate() : "Female".Translate();
 			if (Widgets.ButtonText(RectGenderButton, label.CapitalizeFirst(), true, false, true)) {
 				List<FloatMenuOption> list = new List<FloatMenuOption>();
-				list.Add(new FloatMenuOption("Male".Translate().CapitalizeFirst(), delegate { this.SetGender(Gender.Male); }, MenuOptionPriority.Medium, null, null, 0, null));
-				list.Add(new FloatMenuOption("Female".Translate().CapitalizeFirst(), delegate { this.SetGender(Gender.Female); }, MenuOptionPriority.Medium, null, null, 0, null));
+				list.Add(new FloatMenuOption("Male".Translate().CapitalizeFirst(), delegate { this.SetGender(Gender.Male); }, MenuOptionPriority.Default, null, null, 0, null, null));
+				list.Add(new FloatMenuOption("Female".Translate().CapitalizeFirst(), delegate { this.SetGender(Gender.Female); }, MenuOptionPriority.Default, null, null, 0, null, null));
 				Find.WindowStack.Add(new FloatMenu(list, null, false));
 			}
 
@@ -1616,27 +1446,17 @@ namespace EdB.PrepareCarefully
 			if (!fieldRect.Contains(Event.current.mousePosition)) {
 				GUI.color = TextColor;
 			}
-			Widgets.Label(fieldRect, customPawn.Childhood.title);
+			if (customPawn.Childhood != null) {
+				Widgets.Label(fieldRect, customPawn.Childhood.Title);
+			}
 			GUI.color = Color.white;
 			fieldRect.y -= 2;
 			fieldRect.x += 2;
 
-			if (problemBackstories.Contains(customPawn.Childhood)) {
-				fieldRect.width -= 30;
-				TooltipHandler.TipRegion(fieldRect, customPawn.Childhood.FullDescriptionFor(customPawn.Pawn));
-				if (Widgets.ButtonInvisible(fieldRect, false)) {
-					ShowBackstoryDialog(customPawn, BackstorySlot.Childhood);
-				}
-				fieldRect.width += 30;
-				Rect problemRect = new Rect(fieldRect.x + fieldRect.width - 26, fieldRect.y + 4, 20, 20);
-				GUI.DrawTexture(problemRect, Textures.TextureAlertSmall);
-				TooltipHandler.TipRegion(problemRect, "EdB.BackstoryWarning".Translate());
-			}
-			else {
-				TooltipHandler.TipRegion(fieldRect, customPawn.Childhood.FullDescriptionFor(customPawn.Pawn));
-				if (Widgets.ButtonInvisible(fieldRect, false)) {
-					ShowBackstoryDialog(customPawn, BackstorySlot.Childhood);
-				}
+			// Handle the tooltip and clicks.
+			TooltipHandler.TipRegion(fieldRect, customPawn.Childhood.FullDescriptionFor(customPawn.Pawn));
+			if (Widgets.ButtonInvisible(fieldRect, false)) {
+				ShowBackstoryDialog(customPawn, BackstorySlot.Childhood);
 			}
 
 			Rect buttonRect = new Rect(fieldRect.x - 17, 38, 16, 16);
@@ -1666,11 +1486,25 @@ namespace EdB.PrepareCarefully
 			}
 
 
-			GUI.color = Color.white;
+			Backstory adulthood = customPawn.Adulthood;
+			bool isAdult = adulthood != null;
+			if (isAdult) {
+				GUI.color = Color.white;
+			}
+			else {
+				GUI.color = ButtonDisabledColor;
+			}
+
 			Text.Font = GameFont.Small;
 			Text.Anchor = TextAnchor.UpperLeft;
 			Widgets.Label(new Rect(0, 70, 300, 32), "Adulthood".Translate());
 			fieldRect.y += 35;
+			if (isAdult) {
+				GUI.color = Color.white;
+			}
+			else {
+				GUI.color = DisabledColor;
+			}
 			Widgets.DrawAtlas(fieldRect, Textures.TextureFieldAtlas);
 
 			Text.Anchor = TextAnchor.MiddleCenter;
@@ -1679,54 +1513,51 @@ namespace EdB.PrepareCarefully
 			if (!fieldRect.Contains(Event.current.mousePosition)) {
 				GUI.color = TextColor;
 			}
-			Widgets.Label(fieldRect, customPawn.Adulthood.title);
+			else {
+				GUI.color = Color.white;
+			}
+			if (isAdult && customPawn.Adulthood != null) {
+				Widgets.Label(fieldRect, customPawn.Adulthood.Title);
+			}
 			GUI.color = Color.white;
 			fieldRect.y -= 2;
 			fieldRect.x += 2;
 
-			if (problemBackstories.Contains(customPawn.Adulthood)) {
-				fieldRect.width -= 30;
-				TooltipHandler.TipRegion(new Rect(fieldRect.x, fieldRect.y, fieldRect.width - 30, fieldRect.height), customPawn.Adulthood.FullDescriptionFor(customPawn.Pawn));
-				if (Widgets.ButtonInvisible(fieldRect, false)) {
-					ShowBackstoryDialog(customPawn, BackstorySlot.Adulthood);
-				}
-				fieldRect.width += 30;
-
-				Rect problemRect = new Rect(fieldRect.x + fieldRect.width - 26, fieldRect.y + 4, 20, 20);
-				GUI.DrawTexture(problemRect, Textures.TextureAlertSmall);
-				TooltipHandler.TipRegion(problemRect, "EdB.BackstoryWarning".Translate());
-			}
-			else {
+			// Handle the tooltip and clicks.
+			if (isAdult) {
 				TooltipHandler.TipRegion(fieldRect, customPawn.Adulthood.FullDescriptionFor(customPawn.Pawn));
 				if (Widgets.ButtonInvisible(fieldRect, false)) {
 					ShowBackstoryDialog(customPawn, BackstorySlot.Adulthood);
 				}
 			}
 
-			buttonRect = new Rect(fieldRect.x - 17, 72, 16, 16);
-			if (buttonRect.Contains(Event.current.mousePosition)) {
-				GUI.color = ButtonHighlightColor;
-			}
-			else {
-				GUI.color = ButtonColor;
-			}
-			GUI.DrawTexture(buttonRect, Textures.TextureButtonPrevious);
-			if (Widgets.ButtonInvisible(buttonRect, false)) {
-				SoundDefOf.TickTiny.PlayOneShotOnCamera();
-				this.SelectPreviousBackstory(1);
-			}
+			// Draw the next/previous buttons.
+			if (isAdult) {
+				buttonRect = new Rect(fieldRect.x - 17, 72, 16, 16);
+				if (buttonRect.Contains(Event.current.mousePosition)) {
+					GUI.color = ButtonHighlightColor;
+				}
+				else {
+					GUI.color = ButtonColor;
+				}
+				GUI.DrawTexture(buttonRect, Textures.TextureButtonPrevious);
+				if (Widgets.ButtonInvisible(buttonRect, false)) {
+					SoundDefOf.TickTiny.PlayOneShotOnCamera();
+					this.SelectPreviousBackstory(1);
+				}
 
-			buttonRect = new Rect(fieldRect.x + fieldRect.width + 1, 72, 16, 16);
-			if (buttonRect.Contains(Event.current.mousePosition)) {
-				GUI.color = ButtonHighlightColor;
-			}
-			else {
-				GUI.color = ButtonColor;
-			}
-			GUI.DrawTexture(buttonRect, Textures.TextureButtonNext);
-			if (Widgets.ButtonInvisible(buttonRect, false)) {
-				SoundDefOf.TickTiny.PlayOneShotOnCamera();
-				this.SelectNextBackstory(1);
+				buttonRect = new Rect(fieldRect.x + fieldRect.width + 1, 72, 16, 16);
+				if (buttonRect.Contains(Event.current.mousePosition)) {
+					GUI.color = ButtonHighlightColor;
+				}
+				else {
+					GUI.color = ButtonColor;
+				}
+				GUI.DrawTexture(buttonRect, Textures.TextureButtonNext);
+				if (Widgets.ButtonInvisible(buttonRect, false)) {
+					SoundDefOf.TickTiny.PlayOneShotOnCamera();
+					this.SelectNextBackstory(1);
+				}
 			}
 				
 			GUI.EndGroup();
@@ -1760,6 +1591,26 @@ namespace EdB.PrepareCarefully
 				SelectAction = (string head) => {
 					customPawn.HeadGraphicPath = head;
 					this.pawnLayerLabel = GetHeadLabel(customPawn.HeadGraphicPath);
+				},
+				CloseAction = () => { }
+			};
+			Find.WindowStack.Add(dialog);
+		}
+
+		protected void ShowBodyTypeDialog()
+		{
+			CustomPawn customPawn = CurrentPawn;
+			List<BodyType> bodyTypes = customPawn.Gender == Gender.Male ? maleBodyTypes : femaleBodyTypes;
+			Dialog_Options<BodyType> dialog = new Dialog_Options<BodyType>(bodyTypes) {
+				NameFunc = (BodyType bodyType) => {
+					return bodyTypeLabels[bodyType];
+				},
+				SelectedFunc = (BodyType bodyType) => {
+					return customPawn.BodyType == bodyType;
+				},
+				SelectAction = (BodyType bodyType) => {
+					customPawn.BodyType = bodyType;
+					this.pawnLayerLabel = bodyTypeLabels[bodyType];
 				},
 				CloseAction = () => { }
 			};
@@ -1800,23 +1651,24 @@ namespace EdB.PrepareCarefully
 					return customPawn.GetSelectedApparel(layer) == apparel;
 				},
 				SelectAction = (ThingDef apparel) => {
-					if (apparel != null) {
-						this.pawnLayerLabel = apparel.LabelCap;
-						if (apparel.MadeFromStuff) {
-							if (customPawn.GetSelectedStuff(layer) == null) {
-								customPawn.SetSelectedStuff(layer, apparelStuffLookup[apparel][0]);
-							}
+					this.pawnLayerLabel = apparel.LabelCap;
+					if (apparel.MadeFromStuff) {
+						if (customPawn.GetSelectedStuff(layer) == null) {
+							customPawn.SetSelectedStuff(layer, apparelStuffLookup[apparel][0]);
 						}
-						else {
-							customPawn.SetSelectedStuff(layer, null);
-						}
-						customPawn.SetSelectedApparel(layer, apparel);
 					}
 					else {
-						customPawn.SetSelectedApparel(layer, null);
 						customPawn.SetSelectedStuff(layer, null);
-						this.pawnLayerLabel = "EdB.None".Translate();
 					}
+					customPawn.SetSelectedApparel(layer, apparel);
+				},
+				NoneSelectedFunc = () => {
+					return customPawn.GetSelectedApparel(layer) == null;
+				},
+				SelectNoneAction = () => {
+					customPawn.SetSelectedApparel(layer, null);
+					customPawn.SetSelectedStuff(layer, null);
+					this.pawnLayerLabel = "EdB.None".Translate();
 				}
 			};
 			Find.WindowStack.Add(dialog);
@@ -1850,7 +1702,7 @@ namespace EdB.PrepareCarefully
 			Backstory selectedBackstory = originalBackstory;
 			Dialog_Options<Backstory> dialog = new Dialog_Options<Backstory>(slot == BackstorySlot.Childhood ? this.sortedChildhoodBackstories : this.sortedAdulthoodBackstories) {
 				NameFunc = (Backstory backstory) => {
-					return backstory.title;
+					return backstory.Title;
 				},
 				DescriptionFunc = (Backstory backstory) => {
 					return backstory.FullDescriptionFor(customPawn.Pawn);
@@ -1938,12 +1790,15 @@ namespace EdB.PrepareCarefully
 						},
 						CloseAction = () => {
 							customPawn.SetTrait(localIndex, selectedTrait);
+						},
+						NoneSelectedFunc = () => {
+							return selectedTrait == null;
+						},
+						SelectNoneAction = () => {
+							selectedTrait = null;
 						}
 					};
 					Find.WindowStack.Add(dialog);
-
-
-					//Find.WindowStack.Add(new Dialog_Traits(customPawn, localIndex, this.sortedTraits));
 				}
 
 				Rect buttonRect = new Rect(fieldRect.x - 17, fieldRect.y + 6, 16, 16);
@@ -2245,7 +2100,7 @@ namespace EdB.PrepareCarefully
 				stringBuilder.AppendLine(string.Concat(new object[] {
 					"Level".Translate(),
 					" ",
-					sk.level,
+					sk.Level,
 					": ",
 					sk.LevelDescriptor
 				}));
@@ -2342,6 +2197,26 @@ namespace EdB.PrepareCarefully
 			}
 			customPawn.HeadGraphicPath = heads[index];
 			this.pawnLayerLabel = GetHeadLabel(customPawn.HeadGraphicPath);
+		}
+
+		protected void SelectNextBodyType(int direction)
+		{
+			CustomPawn customPawn = CurrentPawn;
+			List<BodyType> bodyTypes = customPawn.Gender == Gender.Male ? maleBodyTypes : femaleBodyTypes;
+			int index = bodyTypes.IndexOf(customPawn.BodyType);
+			if (index == -1) {
+				Log.Warning("Could not find the current pawn's body type in list of available options: " + customPawn.BodyType);
+				return;
+			}
+			index += direction;
+			if (index < 0) {
+				index = bodyTypes.Count - 1;
+			}
+			else if (index >= bodyTypes.Count) {
+				index = 0;
+			}
+			customPawn.BodyType = bodyTypes[index];
+			this.pawnLayerLabel = bodyTypeLabels[customPawn.BodyType];
 		}
 
 		protected void SelectNextHair(int direction)
@@ -2469,7 +2344,7 @@ namespace EdB.PrepareCarefully
 			CustomPawn customPawn = CurrentPawn;
 			int index;
 			if (backstoryIndex == 0) {
-				index = childhoodBackstories.FindIndex((Backstory b) => { return b.uniqueSaveKey.Equals(customPawn.Childhood.uniqueSaveKey); });
+				index = childhoodBackstories.FindIndex((Backstory b) => { return b.identifier.Equals(customPawn.Childhood.identifier); });
 				if (index > -1) {
 					int newIndex = index + 1;
 					if (newIndex >= childhoodBackstories.Count) {
@@ -2482,7 +2357,7 @@ namespace EdB.PrepareCarefully
 				}
 			}
 			else {
-				index = adulthoodBackstories.FindIndex((Backstory b) => { return b.uniqueSaveKey.Equals(customPawn.Adulthood.uniqueSaveKey); });
+				index = adulthoodBackstories.FindIndex((Backstory b) => { return b.identifier.Equals(customPawn.Adulthood.identifier); });
 				if (index > -1) {
 					int newIndex = index + 1;
 					if (newIndex >= adulthoodBackstories.Count) {
@@ -2501,7 +2376,7 @@ namespace EdB.PrepareCarefully
 			CustomPawn customPawn = CurrentPawn;
 			int index;
 			if (backstoryIndex == 0) {
-				index = childhoodBackstories.FindIndex((Backstory b) => { return b.uniqueSaveKey.Equals(customPawn.Childhood.uniqueSaveKey); });
+				index = childhoodBackstories.FindIndex((Backstory b) => { return b.identifier.Equals(customPawn.Childhood.identifier); });
 				if (index > -1) {
 					int newIndex = index - 1;
 					if (newIndex < 0) {
@@ -2514,7 +2389,7 @@ namespace EdB.PrepareCarefully
 				}
 			}
 			else {
-				index = adulthoodBackstories.FindIndex((Backstory b) => { return b.uniqueSaveKey.Equals(customPawn.Adulthood.uniqueSaveKey); });
+				index = adulthoodBackstories.FindIndex((Backstory b) => { return b.identifier.Equals(customPawn.Adulthood.identifier); });
 				if (index > -1) {
 					int newIndex = index - 1;
 					if (newIndex < 0) {

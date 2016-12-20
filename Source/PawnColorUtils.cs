@@ -9,58 +9,98 @@ namespace EdB.PrepareCarefully
 {
 	public class PawnColorUtils
 	{
-		public static readonly Color[] Colors = new Color[] {
-			new Color(0.3882353f, 0.2745098f, 0.1411765f),
-			new Color(0.509804f, 0.3568628f, 0.1882353f),
-			new Color(0.8941177f, 0.6196079f, 0.3529412f),
-			new Color(1f, 0.9372549f, 0.7411765f),
-			new Color(1f, 0.9372549f, 0.8352941f),
-			new Color(0.9490196f, 0.9294118f, 0.8784314f),
-		};
+		// The values will match the color values in the PawnSkinColors class.  We use a round-about way of getting at
+		// those color values in the InitializeColors() method.
+		public static Color[] Colors;
 
-		public static readonly float[] ColorValues = new float[] { 0f, 0.1f, 0.25f, 0.5f, 0.75f, 1f };
+		// The same colors, but rounded to 3 fractional digits.  When colors are saved to a preset, they are
+		// automatically rounded, so we need to use these rounded values when loading them.  We could avoid this if
+		// we didn't store the color directly in the preset, and instead used the same value that the game stores in
+		// save files.  Since we didn't do this from the beginning, we'll keeping using colors for now to keep presets
+		// backwards-compatibile.
+		public static Color[] RoundedColors;
 
-		public static readonly float[] ColorSelectors = new float[] { 0f, 0.05f, 0.2f, 0.285f, 0.785f, 1f };
+		// The values will match the color values in the PawnSkinColors class.
+		public static float[] ColorValues;
 
-
-		public static Color GetSkinColor(float value)
+		// Populates color arrays from PawnSkinColors.SkinColors.  Uses an indirect method of getting the color values
+		// instead of just copying the color list via reflection.  This will make it work better with mods that
+		// detour the color methods in that class--as long as they detour the GetSkinDataIndexOfMelanin() method.
+		public static void InitializeColors()
 		{
-			int leftIndex = GetColorLeftIndex(value);
-			if (leftIndex == Colors.Length - 1) {
-				return Colors[leftIndex];
+			List<float> values = new List<float>();
+
+			// Get the private GetSkinDataLeftIndexByWhiteness() method from the PawnSkinColors class.
+			MethodInfo getSkinDataIndexOfMelaninMethod = typeof(PawnSkinColors)
+					.GetMethod("GetSkinDataIndexOfMelanin",
+				    BindingFlags.NonPublic | BindingFlags.Static, null, new Type[] { typeof(float) }, null);
+
+			// Iterate all values from 0.0f to 1.0f, using increments of 0.01f, to get the left index for each value.
+			// Use this technique to construct a list of all of the indexes and their values.  Once we have the list
+			// of indexes and their values, we can use the GetSkinColor() method to get the actual colors.
+			int currentIndex = 0;
+			values.Add(0.0f);
+			float f = 0.01f;
+			int counter = 1;
+			while (f < 1.0f) {
+				int result = (int) getSkinDataIndexOfMelaninMethod.Invoke(null, new object[] { f });
+				if (result != currentIndex) {
+					currentIndex = result;
+					values.Add(f);
+				}
+				counter++;
+				double d = (double)counter / 100.0;
+				f = (float)d;
 			}
-			float t = Mathf.InverseLerp(ColorValues[leftIndex], ColorValues[leftIndex + 1], value);
-			return Color.Lerp(Colors[leftIndex], Colors[leftIndex + 1], t);
+			values.Add(1.0f);
+
+			// Allocate the arrays and fill them with the correct values.
+			int length = values.Count;
+			Colors = new Color[length];
+			ColorValues = new float[length];
+			RoundedColors = new Color[length];
+			for (int i = 0; i < length; i++) {
+				float v = values[i];
+				Color color = PawnSkinColors.GetSkinColor(v);
+				Colors[i] = color;
+				RoundedColors[i] = color;
+				RoundedColors[i].r = (float)Math.Round(color.r, 3);
+				RoundedColors[i].g = (float)Math.Round(color.g, 3);
+				RoundedColors[i].b = (float)Math.Round(color.b, 3);
+				RoundedColors[i].a = (float)Math.Round(color.a, 3);
+				ColorValues[i] = v;
+				//Log.Message("Color added: (" + color.r + ", " + color.g + ", " + color.b + ")");
+			}
 		}
 
-		public static float GetSkinValue(Color color)
+		public static float GetRelativeLerpValue(float value)
 		{
-			int leftIndex = GetColorLeftIndex(color);
-			if (leftIndex == Colors.Length - 1) {
-				return 1.0f;
-			}
-
-			int rightIndex = leftIndex + 1;
-			float t = (color.b - Colors[leftIndex].b) / (Colors[rightIndex].b - Colors[leftIndex].b);
-
-			float value = Mathf.Lerp(ColorValues[leftIndex], ColorValues[rightIndex], t);
-			return value;
-		}
-
-		public static float GetSkinLerpValue(Color color)
-		{
-			int leftIndex = GetColorLeftIndex(color);
+			int leftIndex = GetLeftIndexForValue(value);
 			if (leftIndex == Colors.Length - 1) {
 				return 0.0f;
 			}
 
 			int rightIndex = leftIndex + 1;
-			float t = (color.b - Colors[leftIndex].b) / (Colors[rightIndex].b - Colors[leftIndex].b);
-
+			float t = Mathf.InverseLerp(ColorValues[leftIndex], ColorValues[rightIndex], value);
 			return t;
 		}
 
-		public static int GetColorLeftIndex(float value)
+		public static float GetValueFromRelativeLerp(int leftIndex, float lerp)
+		{
+			if (leftIndex >= Colors.Length - 1) {
+				return 1.0f;
+			}
+			else if (leftIndex < 0) {
+				return 0.0f;
+			}
+
+			int rightIndex = leftIndex + 1;
+			float result = Mathf.Lerp(ColorValues[leftIndex], ColorValues[rightIndex], lerp);
+
+			return result;
+		}
+
+		public static int GetLeftIndexForValue(float value)
 		{
 			int result = 0;
 			for (int i = 0; i < Colors.Length; i++) {
@@ -72,31 +112,91 @@ namespace EdB.PrepareCarefully
 			return result;
 		}
 
-		public static int GetColorLeftIndex(Color color)
+		private static bool Between(Color color, Color a, Color b)
 		{
-			int result = Colors.Length - 1;
-			for (int i = 0; i < Colors.Length - 1; i++) {
-				Color color1 = Colors[i];
-				Color color2 = Colors[i + 1];
-				if (color.r >= color1.r && color.r <= color2.r
-				    && color.g >= color1.g && color.g <= color2.g
-				    && color.b >= color1.b && color.b <= color2.b)
-				{
-					result = i;
-					break;
+			if (color.r >= a.r && color.r <= b.r || color.r <= a.r && color.r >= b.r) {
+				if (color.g >= a.g && color.g <= b.g || color.g <= a.g && color.g >= b.g) {
+					if (color.b >= a.b && color.b <= b.b || color.b <= a.b && color.b >= b.b) {
+						return true;
+					}
 				}
 			}
-			if (result == Colors.Length - 1) {
-				result = Colors.Length - 2;
-			}
-			return result;
+			return false;
 		}
 
-		public static Color FindColor(int colorIndex, float lerpValue)
+		public static float FindMelaninValueFromColor(Color color)
 		{
-			Color color1 = Colors[colorIndex];
-			Color color2 = Colors[colorIndex + 1];
-			return Color.Lerp(color1, color2, lerpValue);
+			//Log.Message("Find melanin value: (" + color.r + ", " + color.g + ", " + color.b + ")");
+			int colorCount = Colors.Length;
+			for (int i = 0; i < colorCount - 1; i++) {
+				Color a = RoundedColors[i];
+				Color b = RoundedColors[i + 1];
+				bool between = Between(color, a, b);
+				//Log.Message("Between (" + a.r + ", " + a.g + ", " + a.b + ") and (" + b.r + ", " + b.g + ", " + b.b + ")? " + between);
+				if (!between) {
+					continue;
+				}
+				Color c = a;
+				Color d = b;
+				bool ignorer = false;
+				bool ignoreg = false;
+				bool ignoreb = false;
+				if (c.r == d.r) {
+					ignorer = true;
+				}
+				if (c.g == d.g) {
+					ignoreg = true;
+				}
+				if (c.b == d.b) {
+					ignoreb = true;
+				}
+				float tr = (color.r - c.r) / (d.r - c.r);
+				float tg = (color.g - c.g) / (d.g - c.g);
+				float tb = (color.b - c.b) / (d.b - c.b);
+				//Log.Message("Lerp values: " + tr + ", " + tg + ", " + tb);
+				bool invalid = false;
+				float count = 0.0f;
+				float total = 0.0f;
+				if (!ignorer) {
+					if (tr < 0.0f && tr > 1.0f) {
+						invalid = true;
+					}
+					else {
+						count += 1.0f;
+						total += tr;
+					}
+				}
+				if (!ignoreg) {
+					if (tg < 0.0f && tg > 1.0f) {
+						invalid = true;
+					}
+					else {
+						count += 1.0f;
+						total += tg;
+					}
+				}
+				if (!ignoreb) {
+					if (tb < 0.0f && tb > 1.0f) {
+						invalid = true;
+					}
+					else {
+						count += 1.0f;
+						total += tb;
+					}
+				}
+				if (invalid) {
+					//Log.Message("Not in range");
+					continue;
+				}
+				float t = count > 0 ? total / count : 0;
+				//Log.Message("t = " + t);
+				float result = GetValueFromRelativeLerp(i, t);
+				//Log.Message("Result = " + result);
+
+				return result;
+			}
+			Log.Warning("Prepare Carefully could not find a valid matching value for the saved Color");
+			return 0.5f;
 		}
 	}
 }
