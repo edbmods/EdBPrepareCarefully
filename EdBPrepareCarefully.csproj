@@ -108,6 +108,7 @@
     <Compile Include="Source\GenStep_ScenParts.cs" />
     <Compile Include="Source\Dialog_Confirm.cs" />
     <Compile Include="Source\ThingCache.cs" />
+    <Compile Include="Source\BodyPartDictionary.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup />

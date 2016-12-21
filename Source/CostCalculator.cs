@@ -186,7 +186,7 @@ namespace EdB.PrepareCarefully
 			foreach (Implant option in pawn.Implants) {
 
 				// Check if there are any ancestor parts that override the selection.
-				if (PrepareCarefully.Instance.HealthManager.ImplantManager.AncestorIsImplant(option.BodyPartRecord, pawn)) {
+				if (PrepareCarefully.Instance.HealthManager.ImplantManager.AncestorIsImplant(pawn, option.BodyPartRecord)) {
 					continue;
 				}
 

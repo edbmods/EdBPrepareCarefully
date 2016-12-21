@@ -9,6 +9,7 @@ namespace EdB.PrepareCarefully
 {
 	public class SaveRecordPawnV3 : IExposable
 	{
+		public string thingDef;
 		public Gender gender;
 		public string adulthood;
 		public string childhood;
@@ -53,6 +54,7 @@ namespace EdB.PrepareCarefully
 			else {
 				this.adulthood = pawn.LastSelectedAdulthood.identifier;
 			}
+			this.thingDef = pawn.Pawn.def.defName;
 			this.childhood = pawn.Childhood.identifier;
 			this.skinColor = pawn.Pawn.story.SkinColor;
 			this.melanin = pawn.Pawn.story.melanin;
@@ -100,6 +102,7 @@ namespace EdB.PrepareCarefully
 
 		public void ExposeData()
 		{
+			Scribe_Values.LookValue<string>(ref this.thingDef, "thingDef", ThingDefOf.Human.defName, false);
 			Scribe_Values.LookValue<Gender>(ref this.gender, "gender", Gender.Male, false);
 			Scribe_Values.LookValue<string>(ref this.childhood, "childhood", null, false);
 			Scribe_Values.LookValue<string>(ref this.adulthood, "adulthood", null, false);
