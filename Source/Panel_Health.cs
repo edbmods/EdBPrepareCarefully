@@ -21,7 +21,6 @@ namespace EdB.PrepareCarefully
 		protected Vector2 ContentPadding;
 		protected ScrollView scrollView = new ScrollView();
 
-		public IEnumerable<RecipeDef> implantRecipes;
 		public List<CustomBodyPart> partRemovalList = new List<CustomBodyPart>();
 		protected HashSet<BodyPartRecord> disabledBodyParts = new HashSet<BodyPartRecord>();
 		protected HashSet<InjuryOption> disabledInjuryOptions = new HashSet<InjuryOption>();
@@ -88,8 +87,6 @@ namespace EdB.PrepareCarefully
 			ContentPadding = new Vector2(4, 4);
 			SizeElement = new Vector2(RectScroll.width - (ContentPadding.x * 2), 70);
 
-			implantRecipes = PrepareCarefully.Instance.HealthManager.ImplantManager.Recipes;
-
 			oldInjurySeverities.Add(new InjurySeverity(2));
 			oldInjurySeverities.Add(new InjurySeverity(3));
 			oldInjurySeverities.Add(new InjurySeverity(4));
@@ -148,7 +145,7 @@ namespace EdB.PrepareCarefully
 					else {
 						if (selectedInjury.ValidParts.Count > 0) {
 							foreach (var p in selectedInjury.ValidParts) {
-								BodyPartRecord record = PrepareCarefully.Instance.HealthManager.FirstBodyPartRecord(p);
+								BodyPartRecord record = PrepareCarefully.Instance.HealthManager.FirstBodyPartRecord(customPawn, p);
 								if (record != null) {
 									AddInjuryToPawn(customPawn, selectedInjury, selectedSeverity, record);
 								}
@@ -268,7 +265,7 @@ namespace EdB.PrepareCarefully
 					CloseAction = () => {
 						ResetSeverityOptions(selectedInjury);
 						if (bodyPartSelectionRequired) {
-							bodyPartDialog.Options = PrepareCarefully.Instance.HealthManager.AllSkinCoveredBodyParts;
+							bodyPartDialog.Options = PrepareCarefully.Instance.HealthManager.AllSkinCoveredBodyParts(customPawn);
 							ResetBodyPartEnabledState(bodyPartDialog.Options, customPawn);
 							Find.WindowStack.Add(bodyPartDialog);
 						}
@@ -327,7 +324,7 @@ namespace EdB.PrepareCarefully
 				};
 
 
-				Dialog_Options<RecipeDef> implantRecipeDialog = new Dialog_Options<RecipeDef>(implantRecipes) {
+				Dialog_Options<RecipeDef> implantRecipeDialog = new Dialog_Options<RecipeDef>(PrepareCarefully.Instance.HealthManager.ImplantManager.RecipesForPawn(customPawn)) {
 					ConfirmButtonLabel = "EdB.PrepareCarefully.Next",
 					CancelButtonLabel = "EdB.PrepareCarefully.Cancel",
 					HeaderLabel = "EdB.PrepareCarefully.SelectImplant",
@@ -339,7 +336,7 @@ namespace EdB.PrepareCarefully
 					},
 					SelectAction = (RecipeDef recipe) => {
 						selectedRecipe = recipe;
-						IEnumerable<BodyPartRecord> bodyParts = PrepareCarefully.Instance.HealthManager.ImplantManager.PartsForRecipe(recipe);
+						IEnumerable<BodyPartRecord> bodyParts = PrepareCarefully.Instance.HealthManager.ImplantManager.PartsForRecipe(customPawn.Pawn, recipe);
 						int bodyPartCount = bodyParts.Count();
 						if (bodyParts != null && bodyPartCount > 0) {
 							if (bodyPartCount > 1) {
@@ -418,7 +415,7 @@ namespace EdB.PrepareCarefully
 			disabledBodyParts.Clear();
 			ImplantManager implantManager = PrepareCarefully.Instance.HealthManager.ImplantManager;
 			foreach (var part in parts) {
-				if (pawn.IsImplantedPart(part) || implantManager.AncestorIsImplant(part, pawn)) {
+				if (pawn.IsImplantedPart(part) || implantManager.AncestorIsImplant(pawn, part)) {
 					disabledBodyParts.Add(part);
 				}
 			}

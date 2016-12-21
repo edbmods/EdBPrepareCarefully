@@ -11,19 +11,12 @@ namespace EdB.PrepareCarefully
 	{
 		protected ImplantManager implantManager;
 		protected InjuryManager injuryManager;
-		protected List<ThingDef> implantParts;
-		protected Dictionary<RecipeDef, ThingDef> implantsForRecipes = new Dictionary<RecipeDef, ThingDef>();
-		protected List<RecipeDef> implantRecipes;
-		protected Dictionary<RecipeDef, List<BodyPartDef>> partsForRecipe = new Dictionary<RecipeDef, List<BodyPartDef>>();
-		protected List<BodyPartRecord> allBodyParts = new List<BodyPartRecord>();
-		protected List<BodyPartRecord> allOutsideBodyParts = new List<BodyPartRecord>();
-		protected List<BodyPartRecord> allSkinCoveredBodyParts = new List<BodyPartRecord>();
+		protected Dictionary<ThingDef, BodyPartDictionary> bodyPartDictionaries = new Dictionary<ThingDef, BodyPartDictionary>();
 
 		public HealthManager()
 		{
 			implantManager = new ImplantManager();
 			injuryManager = new InjuryManager();
-			InitializeBodyParts();
 		}
 
 		public ImplantManager ImplantManager {
@@ -34,49 +27,38 @@ namespace EdB.PrepareCarefully
 			get { return injuryManager; }
 		}
 
-		public IEnumerable<RecipeDef> ImplantRecipes {
-			get { return implantManager.Recipes; }
-		}
-
-		public IEnumerable<BodyPartRecord> AllBodyParts {
-			get { return allBodyParts; }
-		}
-
-		public IEnumerable<BodyPartRecord> AllOutsideBodyParts {
-			get { return allOutsideBodyParts; }
-		}
-
-		public IEnumerable<BodyPartRecord> AllSkinCoveredBodyParts {
-			get { return allSkinCoveredBodyParts; }
-		}
-
-		public BodyPartRecord FirstBodyPartRecord(string bodyPartDefName) {
-			foreach (BodyPartRecord record in BodyDefOf.Human.AllParts) {
-				if (record.def.defName == bodyPartDefName) {
-					return record;
-				}
-			}
-			return null;
-		}
-
-		public BodyPartRecord FirstBodyPartRecord(BodyPartDef def) {
-			return FirstBodyPartRecord(def.defName);
-		}
-
-		protected void InitializeBodyParts()
+		public BodyPartDictionary GetBodyPartDictionary(ThingDef pawnThingDef)
 		{
-			BodyDef bodyDef = BodyDefOf.Human;
-			foreach (BodyPartRecord record in bodyDef.AllParts) {
-				allBodyParts.Add(record);
-				if (record.depth == BodyPartDepth.Outside) {
-					allOutsideBodyParts.Add(record);
-				}
-				FieldInfo skinCoveredField = typeof(BodyPartDef).GetField("skinCovered", BindingFlags.Instance | BindingFlags.NonPublic);
-				Boolean value = (Boolean)skinCoveredField.GetValue(record.def);
-				if (value == true) {
-					allSkinCoveredBodyParts.Add(record);
-				}
+			BodyPartDictionary dictionary;
+			if (!bodyPartDictionaries.TryGetValue(pawnThingDef, out dictionary)) {
+				dictionary = new BodyPartDictionary(pawnThingDef);
+				bodyPartDictionaries.Add(pawnThingDef, dictionary);
 			}
+			return dictionary;
+		}
+
+		public IEnumerable<BodyPartRecord> AllBodyParts(CustomPawn pawn) {
+			BodyPartDictionary dictionary = GetBodyPartDictionary(pawn.Pawn.def);
+			return dictionary.AllBodyParts;
+		}
+
+		public IEnumerable<BodyPartRecord> AllOutsideBodyParts(CustomPawn pawn) {
+			BodyPartDictionary dictionary = GetBodyPartDictionary(pawn.Pawn.def);
+			return dictionary.AllOutsideBodyParts;
+		}
+
+		public IEnumerable<BodyPartRecord> AllSkinCoveredBodyParts(CustomPawn pawn) {
+			BodyPartDictionary dictionary = GetBodyPartDictionary(pawn.Pawn.def);
+			return dictionary.AllSkinCoveredBodyParts;
+		}
+
+		public BodyPartRecord FirstBodyPartRecord(CustomPawn pawn, string bodyPartDefName) {
+			BodyPartDictionary dictionary = GetBodyPartDictionary(pawn.Pawn.def);
+			return dictionary.FirstBodyPartRecord(bodyPartDefName);
+		}
+
+		public BodyPartRecord FirstBodyPartRecord(CustomPawn pawn, BodyPartDef def) {
+			return FirstBodyPartRecord(pawn, def.defName);
 		}
 
 	}
