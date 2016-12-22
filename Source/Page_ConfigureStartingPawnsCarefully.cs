@@ -478,6 +478,8 @@ namespace EdB.PrepareCarefully
 					}, true, null, true));
 				}
 			);
+			
+			CurrentPawn.UpdatePortrait();
 		}
 
 		public TabRecord DrawTabs(Rect baseRect, IEnumerable<TabRecord> tabsEnum)
@@ -840,7 +842,6 @@ namespace EdB.PrepareCarefully
 				}
 				Find.WindowStack.Add(new FloatMenu(list, null, false));
 			}
-
 			Rect portraitRect = new Rect(28, 60, 192, 192);
 			GUI.DrawTexture(portraitRect, Textures.TexturePortraitBackground);
 
@@ -1142,13 +1143,29 @@ namespace EdB.PrepareCarefully
 			GUI.DrawTexture(rect.ContractedBy(1), BaseContent.WhiteTex);
 
 			GUI.color = Color.red;
+			float originalR = currentColor.r;
+			float originalG = currentColor.g;
+			float originalB = currentColor.b;
 			float r = GUI.HorizontalSlider(new Rect(rect.x + 56, rect.y - 1, 136, 16), currentColor.r, 0, 1);
 			GUI.color = Color.green;
 			float g = GUI.HorizontalSlider(new Rect(rect.x + 56, rect.y + 19, 136, 16), currentColor.g, 0, 1);
 			GUI.color = Color.blue;
 			float b = GUI.HorizontalSlider(new Rect(rect.x + 56, rect.y + 39, 136, 16), currentColor.b, 0, 1);
-			SetColor(new Color(r, g, b));
+			if (!CloseEnough(r, originalR) || !CloseEnough(g, originalG) || !CloseEnough(b, originalB)) {
+				SetColor(new Color(r, g, b));
+			}
+
 			GUI.color = Color.white;
+		}
+
+		protected bool CloseEnough(float a, float b)
+		{
+			if (a > b - 0.0001f && a < b + 0.0001f) {
+				return true;
+			}
+			else {
+				return false;
+			}
 		}
 
 		protected void SetColor(Color color)
@@ -2143,10 +2160,6 @@ namespace EdB.PrepareCarefully
 		{
 			get {
 				CustomPawn customPawn = CurrentPawn;
-				//if (pawnLayerLabelIndex == selectedPawnLayer && pawnLayerLabelModel == customPawn && pawnLayerLabel != null) {
-				//	return pawnLayerLabel;
-				//}
-
 				string label = "EdB.None".Translate();
 				if (selectedPawnLayer == PawnLayers.BodyType) {
 					label = bodyTypeLabels[customPawn.BodyType];

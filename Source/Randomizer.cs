@@ -12,15 +12,33 @@ namespace EdB.PrepareCarefully
 		public Pawn GenerateColonist()
 		{
 			PawnKindDef kindDef = Faction.OfPlayer.def.basicMemberKind;
-			Pawn pawn = PawnGenerator.GeneratePawn(new PawnGenerationRequest(kindDef, Faction.OfPlayer,
+			Pawn result = PawnGenerator.GeneratePawn(new PawnGenerationRequest(kindDef, Faction.OfPlayer,
 					PawnGenerationContext.PlayerStarter, null, true, false, false, false, false, false, 0f, false, true,
 			        false, null, null, null, null, null, null));
-			return pawn;
+			return result;
+		}
+
+		public Pawn GenerateKindOfColonist(PawnKindDef kindDef)
+		{
+			Pawn result = PawnGenerator.GeneratePawn(new PawnGenerationRequest(kindDef, Faction.OfPlayer,
+					PawnGenerationContext.PlayerStarter, null, true, false, false, false, false, false, 0f, false, true,
+					false, null, null, null, null, null, null));
+			return result;
+		}
+
+		public Pawn GenerateSameKindOfColonist(CustomPawn pawn)
+		{
+			return GenerateKindOfColonist(pawn.Pawn.kindDef);
+		}
+
+		public Pawn GenerateSameKindOfColonist(Pawn pawn)
+		{
+			return GenerateKindOfColonist(pawn.kindDef);
 		}
 
 		public void RandomizeAll(CustomPawn customPawn)
 		{
-			Pawn pawn = GenerateColonist();
+			Pawn pawn = GenerateSameKindOfColonist(customPawn);
 			customPawn.InitializeWithPawn(pawn);
 		}
 
@@ -46,7 +64,7 @@ namespace EdB.PrepareCarefully
 
 		public void RandomizeTraits(CustomPawn customPawn)
 		{
-			Pawn pawn = GenerateColonist();
+			Pawn pawn = GenerateSameKindOfColonist(customPawn);
 			List<Trait> traits = pawn.story.traits.allTraits;
 			if (traits.Count > 0) {
 				customPawn.SetTrait(0, traits[0]);
@@ -73,7 +91,7 @@ namespace EdB.PrepareCarefully
 			Pawn pawn;
 			int tries = 0;
 			do {
-				pawn = GenerateColonist();
+				pawn = GenerateSameKindOfColonist(customPawn);
 				tries++;
 			}
 			while (pawn.gender != customPawn.Gender && tries < 1000);
@@ -100,9 +118,8 @@ namespace EdB.PrepareCarefully
 
 		public void RandomizeName(CustomPawn customPawn)
 		{
-			Pawn pawn = GenerateColonist();
+			Pawn pawn = GenerateSameKindOfColonist(customPawn);
 			pawn.gender = customPawn.Gender;
-			//Name name = NameGenerator.GeneratePawnName(pawn, NameStyle.Full, null);
 			Name name = PawnBioAndNameGenerator.GeneratePawnName(pawn, NameStyle.Full, null);
 			NameTriple nameTriple = name as NameTriple;
 			customPawn.Name = nameTriple;

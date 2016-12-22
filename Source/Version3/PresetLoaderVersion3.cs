@@ -184,9 +184,29 @@ namespace EdB.PrepareCarefully
 
 		public CustomPawn LoadPawn(SaveRecordPawnV3 record)
 		{
-			Pawn source = new Randomizer().GenerateColonist();
+			PawnKindDef pawnKindDef = null;
+			if (record.pawnKindDef != null) {
+				pawnKindDef = DefDatabase<PawnKindDef>.GetNamedSilentFail(record.pawnKindDef);
+			}
+
+			ThingDef pawnThingDef = ThingDefOf.Human;
+			if (record.thingDef != null) {
+				ThingDef thingDef = DefDatabase<ThingDef>.GetNamedSilentFail(record.thingDef);
+				if (thingDef != null) {
+					pawnThingDef = thingDef;
+				}
+			}
+
+			Pawn source;
+			if (pawnKindDef != null) {
+				source = new Randomizer().GenerateKindOfColonist(pawnKindDef);
+			}
+			else {
+				source = new Randomizer().GenerateColonist();
+			}
 
 			CustomPawn pawn = new CustomPawn(source);
+
 			pawn.Gender = record.gender;
 			if (record.age > 0) {
 				pawn.ChronologicalAge = record.age;
@@ -337,7 +357,7 @@ namespace EdB.PrepareCarefully
 
 			for (int i = 0; i < record.implants.Count; i++) {
 				SaveRecordImplantV3 implantRecord = record.implants[i];
-				BodyPartRecord bodyPart = PrepareCarefully.Instance.HealthManager.ImplantManager.FindReplaceableBodyPartByName(implantRecord.bodyPart);
+				BodyPartRecord bodyPart = PrepareCarefully.Instance.HealthManager.ImplantManager.FindReplaceableBodyPartByName(pawn.Pawn, implantRecord.bodyPart);
 				if (bodyPart == null) {
 					Log.Warning("Could not find replaceable body part definition \"" + implantRecord.bodyPart + "\"");
 					Failed = true;
@@ -385,7 +405,7 @@ namespace EdB.PrepareCarefully
 				}
 				BodyPartRecord bodyPart = null;
 				if (injuryRecord.bodyPart != null) {
-					bodyPart = PrepareCarefully.Instance.HealthManager.FirstBodyPartRecord(injuryRecord.bodyPart);
+					bodyPart = PrepareCarefully.Instance.HealthManager.FirstBodyPartRecord(pawn, injuryRecord.bodyPart);
 					if (bodyPart == null) {
 						Log.Warning("Could not find body part \"" + injuryRecord.bodyPart + "\"");
 						Failed = true;

@@ -59,6 +59,7 @@ namespace EdB.PrepareCarefully
 		protected List<Injury> injuries = new List<Injury>();
 		public List<CustomBodyPart> bodyParts = new List<CustomBodyPart>();
 		protected ThingCache thingCache = new ThingCache();
+		protected bool portraitDirty = true;
 
 		public CustomPawn()
 		{
@@ -105,10 +106,22 @@ namespace EdB.PrepareCarefully
 			}
 		}
 
+		public void UpdatePortrait()
+		{
+			if (portraitDirty) {
+				portraitDirty = false;
+				ClearCachedPortrait();
+			}
+		}
+
+		protected void MarkPortraitAsDirty()
+		{
+			portraitDirty = true;
+		}
+
 		public void InitializeWithPawn(Pawn pawn)
 		{
 			this.pawn = this.CopyPawn(pawn);
-
 			this.birthTicks = this.pawn.ageTracker.BirthAbsTicks % 3600000L;
 
 			// Set the traits.
@@ -171,6 +184,8 @@ namespace EdB.PrepareCarefully
 			if (adulthood == null) {
 				this.adulthood = Randomizer.RandomAdulthood(this);
 			}
+
+			MarkPortraitAsDirty();
 		}
 
 		public void InitializeSkillLevelsAndPassions()
@@ -625,7 +640,7 @@ namespace EdB.PrepareCarefully
 		private void ResetApparel()
 		{
 			CopyApparelToPawn(this.pawn);
-			ClearCachedPortrait();
+			MarkPortraitAsDirty();
 		}
 
 		public ThingDef GetSelectedApparel(int layer) {
@@ -851,7 +866,7 @@ namespace EdB.PrepareCarefully
 				// Need to use reflection to set the private field.
 				typeof(Pawn_StoryTracker).GetField("headGraphicPath", BindingFlags.Instance | BindingFlags.NonPublic).SetValue(pawn.story, value);
 				ResetHead();
-				ClearCachedPortrait();
+				MarkPortraitAsDirty();
 			}
 		}
 
@@ -924,7 +939,7 @@ namespace EdB.PrepareCarefully
 			set {
 				pawn.story.bodyType = value;
 				ResetBodyType();
-				ClearCachedPortrait();
+				MarkPortraitAsDirty();
 			}
 		}
 
@@ -936,7 +951,7 @@ namespace EdB.PrepareCarefully
 				if (pawn.gender != value) {
 					pawn.gender = value;
 					ResetGender();
-					ClearCachedPortrait();
+					MarkPortraitAsDirty();
 				}
 			}
 		}
@@ -954,7 +969,7 @@ namespace EdB.PrepareCarefully
 			set {
 				pawn.story.melanin = value;
 				this.colors[PawnLayers.BodyType] = this.colors[PawnLayers.HeadType] = pawn.story.SkinColor;
-				ClearCachedPortrait();
+				MarkPortraitAsDirty();
 			}
 		}
 
@@ -964,7 +979,7 @@ namespace EdB.PrepareCarefully
 			}
 			set {
 				pawn.story.hairDef = value;
-				ClearCachedPortrait();
+				MarkPortraitAsDirty();
 			}
 		}
 
@@ -1037,8 +1052,6 @@ namespace EdB.PrepareCarefully
 		protected void ResetBodyType()
 		{
 			BodyType bodyType = pawn.story.bodyType;
-			Graphic bodyTypeGraphic = GraphicGetter_NakedHumanlike.GetNakedBodyGraphic(bodyType, ShaderDatabase.Cutout,
-					pawn.story.SkinColor);
 		}
 
 		public string ResetIncapableOf()
@@ -1068,7 +1081,7 @@ namespace EdB.PrepareCarefully
 		// the result, but doing a true deep copy would be tougher maintain.
 		protected Pawn CopyPawn(Pawn source)
 		{
-			Pawn result = new Randomizer().GenerateColonist();
+			Pawn result = new Randomizer().GenerateSameKindOfColonist(source);
 
 			// Reset health to remove any old injuries.
 			result.health = new Pawn_HealthTracker(result);
@@ -1119,7 +1132,7 @@ namespace EdB.PrepareCarefully
 			// Copy relationships
 			result.relations = source.relations;
 
-			ClearCachedDisabledWorkTypes(result.story);
+			ClearPawnCaches(result);
 
 			return result;
 		}
@@ -1146,7 +1159,7 @@ namespace EdB.PrepareCarefully
 
 		// Uses the customized settings within the CustomPawn to create a new Pawn.
 		public Pawn ConvertToPawn(bool resolveGraphics) {
-			Pawn result = new Randomizer().GenerateColonist();
+			Pawn result = new Randomizer().GenerateSameKindOfColonist(this.pawn);
 
 			result.gender = this.pawn.gender;
 			result.story.adulthood = Adulthood;
@@ -1198,7 +1211,8 @@ namespace EdB.PrepareCarefully
 			}
 
 			result.relations.ClearAllRelations();
-			ClearCachedDisabledWorkTypes(result.story);
+
+			ClearPawnCaches(result);
 
 			return result;
 		}
@@ -1293,6 +1307,26 @@ namespace EdB.PrepareCarefully
 			return implants.FirstOrDefault((Implant i) => {
 				return i.BodyPartRecord == record;
 			});
+		}
+
+		static public void ClearPawnCaches(Pawn pawn)
+		{
+			pawn.health.capacities.Clear();
+			FieldInfo field = typeof(Pawn_AgeTracker).GetField("cachedLifeStageIndex", BindingFlags.NonPublic | BindingFlags.Instance);
+			field.SetValue(pawn.ageTracker, -1);
+			ClearCachedDisabledWorkTypes(pawn.story);
+			ClearCachedDisabledSkillRecords(pawn);
+			pawn.Drawer.renderer.graphics.ResolveAllGraphics();
+			PortraitsCache.SetDirty(pawn);
+		}
+
+		public void ClearPawnCaches()
+		{
+			ClearCachedAbilities();
+			ClearCachedLifeStage();
+			ClearCachedDisabledWorkTypes(this.pawn.story);
+			ClearCachedDisabledSkillRecords(this.pawn);
+			MarkPortraitAsDirty();
 		}
 
 		public void ClearCachedAbilities() {
