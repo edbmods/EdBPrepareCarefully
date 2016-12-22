@@ -9,6 +9,7 @@ namespace EdB.PrepareCarefully
 {
 	public class SaveRecordPawnV3 : IExposable
 	{
+		public string pawnKindDef;
 		public string thingDef;
 		public Gender gender;
 		public string adulthood;
@@ -47,6 +48,8 @@ namespace EdB.PrepareCarefully
 
 		public SaveRecordPawnV3(CustomPawn pawn)
 		{
+			this.thingDef = pawn.Pawn.def.defName;
+			this.pawnKindDef = pawn.Pawn.kindDef.defName;
 			this.gender = pawn.Gender;
 			if (pawn.Adulthood != null) {
 				this.adulthood = pawn.Adulthood.identifier;
@@ -54,7 +57,6 @@ namespace EdB.PrepareCarefully
 			else {
 				this.adulthood = pawn.LastSelectedAdulthood.identifier;
 			}
-			this.thingDef = pawn.Pawn.def.defName;
 			this.childhood = pawn.Childhood.identifier;
 			this.skinColor = pawn.Pawn.story.SkinColor;
 			this.melanin = pawn.Pawn.story.melanin;
@@ -81,13 +83,13 @@ namespace EdB.PrepareCarefully
 				this.originalPassions.Add(pawn.originalPassions[skill.def]);
 			}
 			for (int layer = 0; layer < PawnLayers.Count; layer++) {
-				ThingDef thingDef = pawn.GetAcceptedApparel(layer);
-				ThingDef stuffDef = pawn.GetSelectedStuff(layer);
+				ThingDef apparelThingDef = pawn.GetAcceptedApparel(layer);
+				ThingDef apparelStuffDef = pawn.GetSelectedStuff(layer);
 				Color color = pawn.GetColor(layer);
-				if (thingDef != null) {
+				if (apparelThingDef != null) {
 					this.apparelLayers.Add(layer);
-					this.apparel.Add(thingDef.defName);
-					this.apparelStuff.Add(stuffDef != null ? stuffDef.defName : "");
+					this.apparel.Add(apparelThingDef.defName);
+					this.apparelStuff.Add(apparelStuffDef != null ? apparelStuffDef.defName : "");
 					this.apparelColors.Add(color);
 				}
 			}
@@ -102,6 +104,7 @@ namespace EdB.PrepareCarefully
 
 		public void ExposeData()
 		{
+			Scribe_Values.LookValue<string>(ref this.pawnKindDef, "pawnKindDef", null, false);
 			Scribe_Values.LookValue<string>(ref this.thingDef, "thingDef", ThingDefOf.Human.defName, false);
 			Scribe_Values.LookValue<Gender>(ref this.gender, "gender", Gender.Male, false);
 			Scribe_Values.LookValue<string>(ref this.childhood, "childhood", null, false);
