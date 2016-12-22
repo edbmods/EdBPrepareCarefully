@@ -184,9 +184,10 @@ namespace EdB.PrepareCarefully
 
 		public CustomPawn LoadPawn(SaveRecordPawnV3 record)
 		{
-			Pawn source = new Randomizer().GenerateColonist();
-
-			CustomPawn pawn = new CustomPawn(source);
+			PawnKindDef pawnKindDef = null;
+			if (record.pawnKindDef != null) {
+				pawnKindDef = DefDatabase<PawnKindDef>.GetNamedSilentFail(record.pawnKindDef);
+			}
 
 			ThingDef pawnThingDef = ThingDefOf.Human;
 			if (record.thingDef != null) {
@@ -195,6 +196,16 @@ namespace EdB.PrepareCarefully
 					pawnThingDef = thingDef;
 				}
 			}
+
+			Pawn source;
+			if (pawnKindDef != null) {
+				source = new Randomizer().GenerateKindOfColonist(pawnKindDef);
+			}
+			else {
+				source = new Randomizer().GenerateColonist();
+			}
+
+			CustomPawn pawn = new CustomPawn(source);
 
 			pawn.Gender = record.gender;
 			if (record.age > 0) {
