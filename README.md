@@ -1,5 +1,11 @@
 # EdB Prepare Carefully
 
+## Contributing Translations
+
+The more translations, the better--they are a great contribution to the mod community.  However, while it is appreciated that people take the time to translate the mod to other languages, it's difficult to keep up with those contributions.  Every addition or change to a translation requires a new release of the mod, and it's difficult to commit to taking on that additional effort.
+
+Therefore, translation pull requests will not be merged into the project.  Please consider creating a standalone translation mod for your language like [this one](http://steamcommunity.com/sharedfiles/filedetails/?id=737171991).  These mods don't include any code--they simply include the translation resources for a given language.  With this approach, you can make changes and additions at your own pace, and you can take on the responsibility of releases for the translation.
+
 ## Building Prepare Carefully
 
 The solution file was created using Xamarin Studio/MonoDevelop, but it should also work in Visual Studio.  Note that the project targets the older 3.5 version of the .NET framework used by the Unity engine on top of which RimWorld is built.
