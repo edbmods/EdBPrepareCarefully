@@ -7,10 +7,9 @@
     <OutputType>Library</OutputType>
     <RootNamespace>EdB.PrepareCarefully</RootNamespace>
     <AssemblyName>EdBPrepareCarefully</AssemblyName>
-    <ReleaseVersion>0.16.1.2</ReleaseVersion>
+    <ReleaseVersion>0.16.1.3</ReleaseVersion>
     <UseMSBuildEngine>False</UseMSBuildEngine>
     <TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
-    <ApplicationManifest>Dialog_Confirm.cs.manifest</ApplicationManifest>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
