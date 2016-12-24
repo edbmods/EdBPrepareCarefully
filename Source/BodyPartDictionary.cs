@@ -64,8 +64,9 @@ namespace EdB.PrepareCarefully
 			}
 
 			// Find all recipes that replace a body part.
-			recipes.AddRange(pawnThingDef.recipes.Where((RecipeDef def) => {
-				if (def.addsHediff != null && def.appliedOnFixedBodyParts != null && def.appliedOnFixedBodyParts.Count > 0) {
+			recipes.AddRange(DefDatabase<RecipeDef>.AllDefs.Where((RecipeDef def) => {
+				if (def.addsHediff != null && def.appliedOnFixedBodyParts != null && def.appliedOnFixedBodyParts.Count > 0
+						&& (def.recipeUsers.NullOrEmpty() || def.recipeUsers.Contains(pawnThingDef))) {
 					return true;
 				}
 				else {
@@ -99,6 +100,23 @@ namespace EdB.PrepareCarefully
 						}
 					}
 				}
+			}
+
+			// Remove any recipe that has no relevant body parts.
+			List<RecipeDef> recipesToRemove = new List<RecipeDef>();
+			foreach (var r in recipes) {
+				List<BodyPartRecord> bodyPartRecords;
+				if (recipeBodyParts.TryGetValue(r, out bodyPartRecords)) {
+					if (bodyPartRecords.Count == 0) {
+						recipesToRemove.Add(r);
+					}
+				}
+				else {
+					recipesToRemove.Add(r);
+				}
+			}
+			foreach (var r in recipesToRemove) {
+				recipes.Remove(r);
 			}
 
 			// Sort the recipes.
