@@ -1226,13 +1226,17 @@ namespace EdB.PrepareCarefully
 		{
 			if (acceptedApparel[layer] != null) {
 				Apparel a;
-				if (selectedApparel[layer].MadeFromStuff) {
+				Color color = Color.white;
+				if (acceptedApparel[layer].MadeFromStuff) {
 					a = (Apparel)thingCache.Get(selectedApparel[layer], selectedStuff[layer]);
-					a.DrawColor = colors[layer] * GetStuffColor(layer);
+					color = colors[layer] * GetStuffColor(layer);
 				}
 				else {
 					a = (Apparel)thingCache.Get(selectedApparel[layer]);
-					a.DrawColor = colors[layer];
+					color = colors[layer];
+				}
+				if (acceptedApparel[layer].HasComp(typeof(CompColorable))) {
+					a.DrawColor = color;
 				}
 
 				PawnGenerator.PostProcessGeneratedGear(a, targetPawn);

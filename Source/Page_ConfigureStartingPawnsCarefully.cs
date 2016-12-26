@@ -958,7 +958,7 @@ namespace EdB.PrepareCarefully
 			// Draw Color Selector
 			if (PawnLayers.IsApparelLayer(selectedPawnLayer)) {
 				ThingDef def = customPawn.GetSelectedApparel(selectedPawnLayer);
-				if (def != null) {
+				if (def != null && def.HasComp(typeof(CompColorable))) {
 					if (def.MadeFromStuff) {
 						DrawColorSelector(cursorY, null);
 					}
