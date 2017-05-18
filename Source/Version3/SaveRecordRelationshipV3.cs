@@ -20,16 +20,16 @@ namespace EdB.PrepareCarefully
 
 		public SaveRecordRelationshipV3(CustomRelationship relationship)
 		{
-			this.source = relationship.source.Name.ToStringFull;
-			this.target = relationship.target.Name.ToStringFull;
+			this.source = relationship.source.Id;
+			this.target = relationship.target.Id;
 			this.relation = relationship.def.defName;
 		}
 
 		public void ExposeData()
 		{
-			Scribe_Values.LookValue<string>(ref this.source, "source", null, true);
-			Scribe_Values.LookValue<string>(ref this.target, "target", null, true);
-			Scribe_Values.LookValue<string>(ref this.relation, "relation", null, true);
+			Scribe_Values.Look<string>(ref this.source, "source", null, true);
+			Scribe_Values.Look<string>(ref this.target, "target", null, true);
+			Scribe_Values.Look<string>(ref this.relation, "relation", null, true);
 		}
 	}
 }
