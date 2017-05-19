@@ -106,6 +106,7 @@ namespace EdB.PrepareCarefully {
         }
         public void ClearSkills() {
             state.CurrentPawn.ClearSkills();
+            state.CurrentPawn.ClearPassions();
         }
         public void UpdateSkillLevel(SkillDef skill, int level) {
 

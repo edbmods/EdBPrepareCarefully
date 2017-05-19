@@ -89,30 +89,22 @@ namespace EdB.PrepareCarefully {
             CustomPawn customPawn = state.CurrentPawn;
 
             // Clear button
-            if (RectButtonClearSkills.Contains(Event.current.mousePosition)) {
-                GUI.color = Style.ColorButtonHighlight;
-            }
-            else {
-                GUI.color = Style.ColorButton;
-            }
+            Style.SetGUIColorForButton(RectButtonClearSkills);
             GUI.DrawTexture(RectButtonClearSkills, Textures.TextureButtonClearSkills);
             if (Widgets.ButtonInvisible(RectButtonClearSkills, false)) {
                 SoundDefOf.TickLow.PlayOneShotOnCamera();
                 SkillsCleared();
             }
+            TooltipHandler.TipRegion(RectButtonClearSkills, "EdB.PC.Panel.Skills.ClearTip".Translate());
 
             // Reset button
-            if (RectButtonResetSkills.Contains(Event.current.mousePosition)) {
-                GUI.color = Style.ColorButtonHighlight;
-            }
-            else {
-                GUI.color = Style.ColorButton;
-            }
+            Style.SetGUIColorForButton(RectButtonResetSkills);
             GUI.DrawTexture(RectButtonResetSkills, Textures.TextureButtonReset);
             if (Widgets.ButtonInvisible(RectButtonResetSkills, false)) {
                 SoundDefOf.TickLow.PlayOneShotOnCamera();
                 SkillsReset();
             }
+            TooltipHandler.TipRegion(RectButtonResetSkills, "EdB.PC.Panel.Skills.ResetTip".Translate());
 
             int skillCount = customPawn.Pawn.skills.skills.Count;
             float rowHeight = 26;
@@ -245,8 +237,19 @@ namespace EdB.PrepareCarefully {
 
                 if (Widgets.ButtonInvisible(rect, false)) {
                     Vector2 pos = Event.current.mousePosition;
-                    float x = pos.x - rect.x - 2;
-                    int value = (int)Math.Ceiling((x / rect.width) * 20);
+                    float x = pos.x - rect.x;
+                    int value = 0;
+                    if (Mathf.Floor(x / rect.width * 20f) == 0) {
+                        if (x <= 1) {
+                            value = 0;
+                        }
+                        else {
+                            value = 1;
+                        }
+                    }
+                    else {
+                        value = Mathf.CeilToInt(x / rect.width * 20f);
+                    }
                     SoundDefOf.TickTiny.PlayOneShotOnCamera();
                     SetSkillLevel(customPawn, skill, value);
                 }

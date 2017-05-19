@@ -244,7 +244,7 @@ namespace EdB.PrepareCarefully {
             foreach (var record in pawn.skills.skills) {
                 currentSkillLevels[record.def] = originalSkillLevels[record.def];
             }
-            CopySkillLevelsToPawn();
+            CopySkillsAndPassionsToPawn();
         }
 
         public void UpdateSkillLevelsForNewBackstoryOrTrait() {
@@ -259,7 +259,7 @@ namespace EdB.PrepareCarefully {
             foreach (var record in pawn.skills.skills) {
                 skillLevelModifiers[record.def] = ComputeSkillModifier(record.def);
             }
-            CopySkillLevelsToPawn();
+            CopySkillsAndPassionsToPawn();
         }
 
         protected int ComputeSkillModifier(SkillDef def) {
@@ -340,11 +340,11 @@ namespace EdB.PrepareCarefully {
             else {
                 currentSkillLevels[def] = value - modifier;
             }
-            CopySkillLevelsToPawn();
+            CopySkillsAndPassionsToPawn();
         }
 
         // Any time a skill changes, update the underlying pawn with the new values.
-        public void CopySkillLevelsToPawn() {
+        public void CopySkillsAndPassionsToPawn() {
             foreach (var record in pawn.skills.skills) {
                 record.Level = GetSkillLevel(record.def);
                 record.passion = currentPassions[record.def];
@@ -356,7 +356,14 @@ namespace EdB.PrepareCarefully {
             foreach (var record in pawn.skills.skills) {
                 currentSkillLevels[record.def] = 0;
             }
-            CopySkillLevelsToPawn();
+            CopySkillsAndPassionsToPawn();
+        }
+
+        public void ClearPassions() {
+            foreach (var record in pawn.skills.skills) {
+                currentPassions[record.def] = Passion.None; ;
+            }
+            CopySkillsAndPassionsToPawn();
         }
 
         public bool IsSkillDisabled(SkillDef def) {
@@ -373,7 +380,7 @@ namespace EdB.PrepareCarefully {
 
         public void SetUnmodifiedSkillLevel(SkillDef def, int value) {
             currentSkillLevels[def] = value;
-            CopySkillLevelsToPawn();
+            CopySkillsAndPassionsToPawn();
         }
 
         public int GetOriginalSkillLevel(SkillDef def) {
@@ -532,7 +539,7 @@ namespace EdB.PrepareCarefully {
                 currentPassions[def] = Passion.None;
             }
             pawn.skills.GetSkill(def).passion = currentPassions[def];
-            CopySkillLevelsToPawn();
+            CopySkillsAndPassionsToPawn();
         }
 
         public void DecreasePassion(SkillDef def) {
@@ -549,7 +556,7 @@ namespace EdB.PrepareCarefully {
                 currentPassions[def] = Passion.Minor;
             }
             pawn.skills.GetSkill(def).passion = currentPassions[def];
-            CopySkillLevelsToPawn();
+            CopySkillsAndPassionsToPawn();
         }
 
         public List<ThingDef> AllAcceptedApparel {

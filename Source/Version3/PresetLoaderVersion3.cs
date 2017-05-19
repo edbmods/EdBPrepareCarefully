@@ -463,7 +463,7 @@ namespace EdB.PrepareCarefully {
             }
 
             pawn.RandomInjuries = record.randomInjuries;
-            pawn.CopySkillLevelsToPawn();
+            pawn.CopySkillsAndPassionsToPawn();
             pawn.ClearPawnCaches();
 
             return pawn;

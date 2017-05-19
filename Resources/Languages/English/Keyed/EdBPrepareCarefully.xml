@@ -173,6 +173,8 @@ Your colonist customizations will be ignored.</EdB.PC.Dialog.ModConfigProblem.De
   <EdB.PC.Panel.LoadSave.Save>Save Character</EdB.PC.Panel.LoadSave.Save>
 
   <EdB.PC.Panel.Skills.Title>Skills</EdB.PC.Panel.Skills.Title>
+  <EdB.PC.Panel.Skills.ResetTip>Reset all skills and passions to their original values</EdB.PC.Panel.Skills.ResetTip>
+  <EdB.PC.Panel.Skills.ClearTip>Clear all skills and passions by setting them to their lowest possible levels</EdB.PC.Panel.Skills.ClearTip>
   
   <EdB.PC.Panel.Traits.None>No traits</EdB.PC.Panel.Traits.None>
   <EdB.PC.Panel.Traits.Title>Traits</EdB.PC.Panel.Traits.Title>
