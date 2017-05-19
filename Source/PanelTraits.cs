@@ -191,7 +191,7 @@ namespace EdB.PrepareCarefully {
             // Add trait button.
             Rect addRect = new Rect(randomizeRect.x - 24, 12, 16, 16);
             Style.SetGUIColorForButton(addRect);
-            bool addButtonEnabled = (state.CurrentPawn != null && state.CurrentPawn.Traits.Count < 4);
+            bool addButtonEnabled = (state.CurrentPawn != null && state.CurrentPawn.Traits.Count() < 4);
             if (!addButtonEnabled) {
                 GUI.color = Style.ColorButtonDisabled;
             }

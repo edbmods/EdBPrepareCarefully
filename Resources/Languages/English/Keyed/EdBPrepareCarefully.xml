@@ -59,6 +59,7 @@ Your colonist customizations will be ignored.</EdB.PC.Dialog.ModConfigProblem.De
   <EdB.PC.Dialog.Preset.DeleteTooltip>Delete this Preset</EdB.PC.Dialog.Preset.DeleteTooltip>
   <EdB.PC.Dialog.Preset.Error.Failed>Failed to load colonists from the preset.  Check that all required mods are enabled.</EdB.PC.Dialog.Preset.Error.Failed>
   <EdB.PC.Dialog.Preset.Error.PreAlpha13NotSupported>Pre-alpha 13 versions of presets are not supported.</EdB.PC.Dialog.Preset.Error.PreAlpha13NotSupported>
+  <EdB.PC.Dialog.Preset.Error.RelationshipFailed>Could not load a custom relationship from the preset</EdB.PC.Dialog.Preset.Error.RelationshipFailed>
   <EdB.PC.Dialog.Preset.Error.ThingDefFailed>Could not fully load preset.  Check that all required mods are enabled.</EdB.PC.Dialog.Preset.Error.ThingDefFailed>
   <EdB.PC.Dialog.Preset.Loaded>Loaded preset {0}</EdB.PC.Dialog.Preset.Loaded>
 

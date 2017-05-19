@@ -40,7 +40,6 @@ namespace EdB.PrepareCarefully {
         protected Dictionary<EquipmentKey, Color> colorCache = new Dictionary<EquipmentKey, Color>();
         protected string apparelConflictText = null;
         protected List<ApparelConflict> apparelConflicts = new List<ApparelConflict>();
-        protected bool randomInjuries = false;
 
         // Keep track of the most recently selected adulthood option so that if the user updates the pawn's
         // age in a way that switches them back and forth from adult to child (which nulls out the adulthood
@@ -249,9 +248,8 @@ namespace EdB.PrepareCarefully {
 
         public void UpdateSkillLevelsForNewBackstoryOrTrait() {
             ComputeSkillLevelModifiers();
-            // Clear caches.
             ResetCachedIncapableOf();
-            pawn.health.capacities.Clear();
+            ClearPawnCaches();
         }
 
         // Computes the skill level modifiers that the pawn gets from the selected backstories and traits.
@@ -485,16 +483,7 @@ namespace EdB.PrepareCarefully {
                 return pawn.LabelShort;
             }
         }
-
-        public bool RandomInjuries {
-            get {
-                return randomInjuries;
-            }
-            set {
-                randomInjuries = value;
-            }
-        }
-
+        
         public IEnumerable<Implant> Implants {
             get {
                 return implants;
@@ -930,13 +919,14 @@ namespace EdB.PrepareCarefully {
             ResetTraits();
         }
         
-        public List<Trait> Traits {
+        public IEnumerable<Trait> Traits {
             get {
                 return this.Pawn.story.traits.allTraits;
             }
         }
 
         protected void ResetTraits() {
+            SyncBodyParts();
             UpdateSkillLevelsForNewBackstoryOrTrait();
         }
 
@@ -1158,6 +1148,7 @@ namespace EdB.PrepareCarefully {
             foreach (var implant in implants) {
                 implant.AddToPawn(this, pawn);
             }
+            ClearPawnCaches();
         }
 
         public void RemoveCustomBodyParts(CustomBodyPart part) {
@@ -1216,4 +1207,3 @@ namespace EdB.PrepareCarefully {
         }
     }
 }
-

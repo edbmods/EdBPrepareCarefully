@@ -117,18 +117,6 @@ namespace EdB.PrepareCarefully {
             cost.marketValue = pawn.Pawn.MarketValue;
             cost.marketValue += 300;
 
-            // Reduce cost if random injuries have been chosen.
-            if (pawn.RandomInjuries) {
-                float ageMultiplier = pawn.BiologicalAge;
-                if (ageMultiplier > 100) {
-                    ageMultiplier = 100;
-                }
-                float injuryValue = Mathf.Pow(ageMultiplier, 1.177455f);
-                injuryValue = injuryValue / 10f;
-                injuryValue = Mathf.Floor(injuryValue) * 10f;
-                cost.marketValue -= injuryValue;
-            }
-
             // Calculate passion cost.  Each passion above 8 makes all passions
             // cost more.  Minor passion counts as one passion.  Major passion
             // counts as 3.
@@ -157,8 +145,8 @@ namespace EdB.PrepareCarefully {
             cost.marketValue += levelCost * passionLevelCount;
 
             // Calculate trait cost.
-            if (pawn.Traits.Count > 3) {
-                double extraTraitCount = (double)(pawn.Traits.Count - 3);
+            if (pawn.Traits.Count() > 3) {
+                double extraTraitCount = (double)(pawn.Traits.Count() - 3);
                 cost.marketValue += extraTraitCount * 75.0;
             }
 

@@ -91,7 +91,6 @@ namespace EdB.PrepareCarefully {
                     this.apparelColors.Add(color);
                 }
             }
-            this.randomInjuries = pawn.RandomInjuries;
             foreach (Implant implant in pawn.Implants) {
                 this.implants.Add(new SaveRecordImplantV3(implant));
             }
@@ -130,7 +129,6 @@ namespace EdB.PrepareCarefully {
             Scribe_Collections.Look<int>(ref this.apparelLayers, "apparelLayers", LookMode.Value, null);
             Scribe_Collections.Look<string>(ref this.apparelStuff, "apparelStuff", LookMode.Value, null);
             Scribe_Collections.Look<Color>(ref this.apparelColors, "apparelColors", LookMode.Value, null);
-            Scribe_Values.Look<bool>(ref this.randomInjuries, "randomInjuries", false, true);
 
             if (Scribe.mode == LoadSaveMode.Saving) {
                 Scribe_Collections.Look<SaveRecordImplantV3>(ref this.implants, "implants", LookMode.Deep, null);

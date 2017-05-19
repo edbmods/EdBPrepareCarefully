@@ -33,9 +33,13 @@ namespace EdB.PrepareCarefully {
                 throw e;
             }
             finally {
-                Scribe.mode = LoadSaveMode.Inactive;
+                // I don't fully understand how these cross-references and saveables are resolved, but
+                // if we don't clear them out, we get null pointer exceptions.
                 HashSet<IExposable> saveables = (HashSet<IExposable>)(typeof(PostLoadIniter).GetField("saveablesToPostLoad", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(Scribe.loader.initer));
                 saveables.Clear();
+                List<IExposable> crossReferencingExposables = (List<IExposable>)(typeof(CrossRefHandler).GetField("crossReferencingExposables", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(Scribe.loader.crossRefs));
+                crossReferencingExposables.Clear();
+                Scribe.loader.FinalizeLoading();
             }
 
             if (pawnRecord == null) {

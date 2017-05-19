@@ -9,8 +9,10 @@ namespace EdB.PrepareCarefully {
     public class PresetLoaderVersion3 {
         public bool Failed = false;
         public string ModString = "";
+        public Dictionary<string, string> thingDefReplacements = new Dictionary<string, string>();
 
         public PresetLoaderVersion3() {
+            thingDefReplacements.Add("Gun_SurvivalRifle", "Gun_BoltActionRifle");
         }
 
         public bool Load(PrepareCarefully loadout, string presetName) {
@@ -66,6 +68,11 @@ namespace EdB.PrepareCarefully {
                 List<EquipmentSelection> equipment = new List<EquipmentSelection>(tempEquipment.Count);
                 foreach (var e in tempEquipment) {
                     ThingDef thingDef = DefDatabase<ThingDef>.GetNamedSilentFail(e.def);
+                    if (thingDef == null) {
+                        if (thingDefReplacements.TryGetValue(e.def, out e.def)) {
+                            thingDef = DefDatabase<ThingDef>.GetNamedSilentFail(e.def);
+                        }
+                    }
                     ThingDef stuffDef = null;
                     Gender gender = Gender.None;
                     if (!string.IsNullOrEmpty(e.stuffDef)) {
@@ -125,13 +132,6 @@ namespace EdB.PrepareCarefully {
                     loadout.Equipment.Add(e);
                 }
 
-                // After loading items using the Scribe methods, the saveables that were loaded get
-                // put into this saveablesToPostLoad map.  This post-load initialization is only
-                // applicable for when we load a save game.  We need to clear our saveables out of
-                // there so that they don't cause errors later.
-                HashSet<IExposable> saveables = (HashSet<IExposable>)(typeof(PostLoadIniter).GetField("saveablesToPostLoad", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(Scribe.loader.initer));
-                saveables.Clear();
-
                 //PrepareCarefully.Instance.Config.pointsEnabled = usePoints;
             }
             catch (Exception e) {
@@ -139,7 +139,14 @@ namespace EdB.PrepareCarefully {
                 throw e;
             }
             finally {
-                Scribe.mode = LoadSaveMode.Inactive;
+                // I don't fully understand how these cross-references and saveables are resolved, but
+                // if we don't clear them out, we get null pointer exceptions.
+                HashSet<IExposable> saveables = (HashSet<IExposable>)(typeof(PostLoadIniter).GetField("saveablesToPostLoad", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(Scribe.loader.initer));
+                saveables.Clear();
+                List<IExposable> crossReferencingExposables = (List<IExposable>)(typeof(CrossRefHandler).GetField("crossReferencingExposables", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(Scribe.loader.crossRefs));
+                crossReferencingExposables.Clear();
+
+                Scribe.loader.FinalizeLoading();
             }
 
             List<CustomPawn> allPawns = new List<CustomPawn>();
@@ -162,10 +169,12 @@ namespace EdB.PrepareCarefully {
 
             List<CustomPawn> hiddenCustomPawns = new List<CustomPawn>();
             try {
-                foreach (SaveRecordPawnV3 p in hiddenPawns) {
-                    CustomPawn pawn = LoadPawn(p);
-                    allPawns.Add(pawn);
-                    hiddenCustomPawns.Add(pawn);
+                if (hiddenPawns != null) {
+                    foreach (SaveRecordPawnV3 p in hiddenPawns) {
+                        CustomPawn pawn = LoadPawn(p);
+                        allPawns.Add(pawn);
+                        hiddenCustomPawns.Add(pawn);
+                    }
                 }
             }
             catch (Exception e) {
@@ -183,7 +192,7 @@ namespace EdB.PrepareCarefully {
                     CustomRelationship relationship = LoadRelationship(r, allPawns);
                     if (relationship == null) {
                         Messages.Message(ModString, MessageSound.Silent);
-                        Messages.Message("EdB.PresetRelationshipLoadFailed".Translate(), MessageSound.SeriousAlert);
+                        Messages.Message("EdB.PC.Dialog.Preset.Error.RelationshipFailed".Translate(), MessageSound.SeriousAlert);
                         Log.Warning("Failed to load relationship: " + r.relation);
                         Log.Warning("Preset was created with the following mods: " + ModString);
                     }
@@ -231,7 +240,7 @@ namespace EdB.PrepareCarefully {
             if (record.pawnKindDef != null) {
                 pawnKindDef = DefDatabase<PawnKindDef>.GetNamedSilentFail(record.pawnKindDef);
             }
-
+            
             ThingDef pawnThingDef = ThingDefOf.Human;
             if (record.thingDef != null) {
                 ThingDef thingDef = DefDatabase<ThingDef>.GetNamedSilentFail(record.thingDef);
@@ -239,7 +248,7 @@ namespace EdB.PrepareCarefully {
                     pawnThingDef = thingDef;
                 }
             }
-
+            
             Pawn source;
             if (pawnKindDef != null) {
                 source = new Randomizer().GenerateKindOfColonist(pawnKindDef);
@@ -247,10 +256,10 @@ namespace EdB.PrepareCarefully {
             else {
                 source = new Randomizer().GenerateColonist();
             }
-
+            
             CustomPawn pawn = new CustomPawn(source);
             pawn.Id = record.id;
-
+            
             pawn.Gender = record.gender;
             if (record.age > 0) {
                 pawn.ChronologicalAge = record.age;
@@ -262,11 +271,11 @@ namespace EdB.PrepareCarefully {
             if (record.biologicalAge > 0) {
                 pawn.BiologicalAge = record.biologicalAge;
             }
-
+            
             pawn.FirstName = record.firstName;
             pawn.NickName = record.nickName;
             pawn.LastName = record.lastName;
-
+            
             HairDef h = FindHairDef(record.hairDef);
             if (h != null) {
                 pawn.HairDef = h;
@@ -275,17 +284,17 @@ namespace EdB.PrepareCarefully {
                 Log.Warning("Could not load hair definition \"" + record.hairDef + "\"");
                 Failed = true;
             }
-
+            
             pawn.HeadGraphicPath = record.headGraphicPath;
             pawn.SetColor(PawnLayers.Hair, record.hairColor);
-
+            
             if (record.melanin >= 0.0f) {
                 pawn.MelaninLevel = record.melanin;
             }
             else {
                 pawn.MelaninLevel = PawnColorUtils.FindMelaninValueFromColor(record.skinColor);
             }
-
+            
             Backstory backstory = FindBackstory(record.childhood);
             if (backstory != null) {
                 pawn.Childhood = backstory;
@@ -304,7 +313,7 @@ namespace EdB.PrepareCarefully {
                     Failed = true;
                 }
             }
-
+            
             // Get the body type from the save record.  If there's no value in the save, then assign the 
             // default body type from the pawn's backstories.
             BodyType? bodyType = null;
@@ -312,7 +321,6 @@ namespace EdB.PrepareCarefully {
                 bodyType = (BodyType)Enum.Parse(typeof(BodyType), record.bodyType);
             }
             catch (Exception) {
-                Log.Warning("Invalid body type value \"" + record.bodyType + "\"");
             }
             if (!bodyType.HasValue) {
                 if (pawn.Adulthood != null) {
@@ -325,7 +333,7 @@ namespace EdB.PrepareCarefully {
             if (bodyType.HasValue) {
                 pawn.BodyType = bodyType.Value;
             }
-
+            
             pawn.ClearTraits();
             for (int i = 0; i < record.traitNames.Count; i++) {
                 string traitName = record.traitNames[i];
@@ -338,7 +346,7 @@ namespace EdB.PrepareCarefully {
                     Failed = true;
                 }
             }
-
+            
             for (int i = 0; i < record.skillNames.Count; i++) {
                 string name = record.skillNames[i];
                 if (name == "Research") {
@@ -367,7 +375,7 @@ namespace EdB.PrepareCarefully {
                     //pawn.originalPassions[def] = record.originalPassions[i];
                 }
             }
-
+            
             for (int i = 0; i < PawnLayers.Count; i++) {
                 if (PawnLayers.IsApparelLayer(i)) {
                     pawn.SetSelectedApparel(i, null);
@@ -395,7 +403,7 @@ namespace EdB.PrepareCarefully {
                 pawn.SetSelectedStuff(layer, stuffDef);
                 pawn.SetColor(layer, record.apparelColors[i]);
             }
-
+            
             for (int i = 0; i < record.implants.Count; i++) {
                 SaveRecordImplantV3 implantRecord = record.implants[i];
                 BodyPartRecord bodyPart = PrepareCarefully.Instance.HealthManager.ImplantManager.FindReplaceableBodyPartByName(pawn.Pawn, implantRecord.bodyPart);
@@ -430,7 +438,7 @@ namespace EdB.PrepareCarefully {
                     pawn.AddImplant(implant);
                 }
             }
-
+            
             foreach (var injuryRecord in record.injuries) {
                 HediffDef def = DefDatabase<HediffDef>.GetNamedSilentFail(injuryRecord.hediffDef);
                 if (def == null) {
@@ -461,8 +469,7 @@ namespace EdB.PrepareCarefully {
                 }
                 pawn.AddInjury(injury);
             }
-
-            pawn.RandomInjuries = record.randomInjuries;
+            
             pawn.CopySkillsAndPassionsToPawn();
             pawn.ClearPawnCaches();
 
