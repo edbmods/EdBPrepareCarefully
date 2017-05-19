@@ -146,7 +146,7 @@ Your colonist customizations will be ignored.</EdB.PC.Dialog.ModConfigProblem.De
   <EdB.PC.Panel.Backstory.Adulthood>Adulthood</EdB.PC.Panel.Backstory.Adulthood>
 
   <EdB.PC.Panel.PawnList.Delete.Confirm>Are you sure that you want to remove this character?</EdB.PC.Panel.PawnList.Delete.Confirm>
-  <EdB.PC.Panel.PawnList.ErrorMustSelectFaction>Must select a faction</EdB.PC.Panel.PawnList.ErrorMustSelectFaction>
+  <EdB.PC.Panel.PawnList.Error.MustSelectFaction>Must select a faction</EdB.PC.Panel.PawnList.Error.MustSelectFaction>
   <EdB.PC.Panel.PawnList.SelectFaction>Select a Faction</EdB.PC.Panel.PawnList.SelectFaction>
 
   <EdB.PC.Panel.RelationshipsParentChild.Title>Parent/Child Relationships</EdB.PC.Panel.RelationshipsParentChild.Title>
@@ -156,7 +156,7 @@ Your colonist customizations will be ignored.</EdB.PC.Dialog.ModConfigProblem.De
   <EdB.PC.Panel.Health.Error.MustSelectBodyPart>You must select a location</EdB.PC.Panel.Health.Error.MustSelectBodyPart>
   <EdB.PC.Panel.Health.Error.MustSelectImplant>You must select an implant procedure</EdB.PC.Panel.Health.Error.MustSelectImplant>
   <EdB.PC.Panel.Health.Error.MustSelectOption>You must select an option</EdB.PC.Panel.Health.Error.MustSelectOption>
-  <EdB.PC.Panel.Health.Error.MustSelectSelectSeverity>You must select a severity level</EdB.PC.Panel.Health.Error.MustSelectSelectSeverity>
+  <EdB.PC.Panel.Health.Error.MustSelectSeverity>You must select a severity level</EdB.PC.Panel.Health.Error.MustSelectSeverity>
   <EdB.PC.Panel.Health.HediffTypeInjury>Add an injury or health condition</EdB.PC.Panel.Health.HediffTypeInjury>
   <EdB.PC.Panel.Health.HediffTypeImplant>Add an implant</EdB.PC.Panel.Health.HediffTypeImplant>
   <EdB.PC.Panel.Health.InjuryLabel.Stage>{0}, {1}</EdB.PC.Panel.Health.InjuryLabel.Stage>

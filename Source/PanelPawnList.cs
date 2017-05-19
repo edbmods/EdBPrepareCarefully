@@ -242,7 +242,7 @@ namespace EdB.PrepareCarefully {
                 },
                 ConfirmValidation = () => {
                     if (selectedFaction == null) {
-                        return "EdB.PC.Panel.PawnList.ErrorMustSelectFaction";
+                        return "EdB.PC.Panel.PawnList.Error.MustSelectFaction";
                     }
                     else {
                         return null;
