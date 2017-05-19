@@ -74,16 +74,25 @@ namespace EdB.PrepareCarefully {
         }
 
         public void LoadPreset(string name) {
+            if (string.IsNullOrEmpty(name)) {
+                Log.Warning("Trying to load a preset without a name");
+                return;
+            }
             bool result = PresetLoader.LoadFromFile(PrepareCarefully.Instance, name);
             if (result) {
                 state.AddMessage("EdB.PC.Dialog.Preset.Loaded".Translate(new object[] {
                     name
                 }));
+                state.CurrentPawnIndex = 0;
             }
         }
 
         public void SavePreset(string name) {
             PrepareCarefully.Instance.Filename = name;
+            if (string.IsNullOrEmpty(name)) {
+                Log.Warning("Trying to save a preset without a name");
+                return;
+            }
             PresetSaver.SaveToFile(PrepareCarefully.Instance, PrepareCarefully.Instance.Filename);
             state.AddMessage("SavedAs".Translate(new object[] {
                 PrepareCarefully.Instance.Filename

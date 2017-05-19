@@ -21,11 +21,9 @@ namespace EdB.PrepareCarefully {
         }
 
         protected override void DoMapEntryInteraction(string colonistName) {
-            Filename = colonistName;
-            ColonistSaver.SaveToFile(PrepareCarefully.Instance.State.CurrentPawn, Filename);
-            Messages.Message("SavedAs".Translate(new object[] {
-                Filename
-            }), MessageSound.Standard);
+            if (action != null) {
+                action(Filename);
+            }
             Close(true);
         }
 
@@ -51,7 +49,9 @@ namespace EdB.PrepareCarefully {
                     Messages.Message("NeedAName".Translate(), MessageSound.RejectInput);
                 }
                 else {
-                    action(Filename);
+                    if (action != null) {
+                        action(Filename);
+                    }
                     Close(true);
                 }
             }

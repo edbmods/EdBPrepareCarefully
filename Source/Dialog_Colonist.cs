@@ -32,6 +32,12 @@ namespace EdB.PrepareCarefully {
             this.forcePause = true;
         }
 
+        public override Vector2 InitialSize {
+            get {
+                return new Vector2(600, 700);
+            }
+        }
+
         protected abstract void DoMapEntryInteraction(string mapName);
 
         protected virtual void DoSpecialSaveLoadGUI(Rect inRect) {

@@ -1,5 +1,20 @@
  _____________________________________________________________________________
  
+   Version 0.17.0.1
+ _____________________________________________________________________________
+
+ - Added support for Alpha 17
+ - New tabbed interface.  The character list moves from being a list of tabs
+   across the top to being a scrolling list on the left.  The tabs across
+   the top are now used to navigate between the mod pages.
+ - Re-arranged interface for the character customization page.
+ - New relationships page with a new interface for creating parent/child and
+   other relationships in a more predictable way.
+ - Added support for a fourth trait.
+ - Added support for more than 10 colonists.
+
+ _____________________________________________________________________________
+ 
    Version 0.16.1.4
  _____________________________________________________________________________
      

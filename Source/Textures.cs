@@ -45,6 +45,7 @@ namespace EdB.PrepareCarefully {
         public static Texture2D TextureGenderFemaleLarge;
         public static Texture2D TextureGenderMaleLarge;
         public static Texture2D TextureGenderlessLarge;
+        public static Texture2D TextureButtonInfo;
 
         static Textures() {
             LoadTextures();
@@ -101,8 +102,9 @@ namespace EdB.PrepareCarefully {
             TextureButtonBGAtlas = ContentFinder<Texture2D>.Get("UI/Widgets/ButtonBG", true);
             TextureButtonBGAtlasMouseover = ContentFinder<Texture2D>.Get("UI/Widgets/ButtonBGMouseover", true);
             TextureButtonBGAtlasClick = ContentFinder<Texture2D>.Get("UI/Widgets/ButtonBGClick", true);
+            TextureButtonInfo = ContentFinder<Texture2D>.Get("UI/Buttons/InfoButton", true);
 
-            TextureAlternateRow = SolidColorMaterials.NewSolidColorTexture(new Color(1, 1, 1, 0.05f));
+        TextureAlternateRow = SolidColorMaterials.NewSolidColorTexture(new Color(1, 1, 1, 0.05f));
             TextureSkillBarFill = SolidColorMaterials.NewSolidColorTexture(new Color(1f, 1f, 1f, 0.1f));
 
             loaded = true;

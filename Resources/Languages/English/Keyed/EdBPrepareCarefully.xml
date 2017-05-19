@@ -52,7 +52,6 @@ Your colonist customizations will be ignored.</EdB.PC.Dialog.ModConfigProblem.De
   <EdB.PC.Dialog.PawnPreset.Loaded>Loaded colonist {0}</EdB.PC.Dialog.PawnPreset.Loaded>
   <EdB.PC.Dialog.PawnPreset.Error.Failed>Failed to load colonist.  Check that all required mods are enabled.</EdB.PC.Dialog.PawnPreset.Error.Failed>
   <EdB.PC.Dialog.PawnPreset.Error.PreAlpha13NotSupported>Pre-alpha 13 versions of saved colonists are not supported.</EdB.PC.Dialog.PawnPreset.Error.PreAlpha13NotSupported>
-  <EdB.PC.Dialog.PawnPreset.Error.Failed>Could not fully load colonist.  Check that all required mods are enabled.</EdB.PC.Dialog.PawnPreset.Error.Failed>
 
   <EdB.PC.Dialog.Preset.Button.Load>Load Preset</EdB.PC.Dialog.Preset.Button.Load>
   <EdB.PC.Dialog.Preset.Button.Save>Save Preset</EdB.PC.Dialog.Preset.Button.Save>

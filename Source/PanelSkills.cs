@@ -344,7 +344,7 @@ namespace EdB.PrepareCarefully {
         }
         
         public void ScrollToTop() {
-            scrollView.ScrollTo(0);
+            scrollView.ScrollToTop();
         }
     }
 }

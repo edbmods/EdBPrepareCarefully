@@ -34,6 +34,8 @@ namespace EdB.PrepareCarefully {
             }
             finally {
                 Scribe.mode = LoadSaveMode.Inactive;
+                HashSet<IExposable> saveables = (HashSet<IExposable>)(typeof(PostLoadIniter).GetField("saveablesToPostLoad", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(Scribe.loader.initer));
+                saveables.Clear();
             }
 
             if (pawnRecord == null) {

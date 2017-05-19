@@ -52,10 +52,10 @@ namespace EdB.PrepareCarefully {
         }
 
         public void ScrollToTop() {
-            scrollView.ScrollTo(0);
+            scrollView.ScrollToTop();
         }
         public void ScrollToBottom() {
-            scrollView.ScrollTo(scrollView.ContentHeight - scrollView.ViewHeight);
+            scrollView.ScrollToBottom();
         }
 
         public override void Resize(Rect rect) {

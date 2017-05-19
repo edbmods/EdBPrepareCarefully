@@ -135,6 +135,10 @@ namespace EdB.PrepareCarefully {
             PrepareCarefully.Instance.RelationshipManager.DeletePawn(pawn);
         }
         public void LoadCharacter(string name) {
+            if (string.IsNullOrEmpty(name)) {
+                Log.Warning("Trying to load a character without a name");
+                return;
+            }
             CustomPawn pawn = ColonistLoader.LoadFromFile(PrepareCarefully.Instance, name);
             if (pawn != null) {
                 state.AddMessage("EdB.PC.Dialog.PawnPreset.Loaded".Translate(new object[] { name }));
@@ -144,6 +148,10 @@ namespace EdB.PrepareCarefully {
             PawnAdded(pawn);
         }
         public void SaveCharacter(CustomPawn pawn, string filename) {
+            if (string.IsNullOrEmpty(filename)) {
+                Log.Warning("Trying to save a character without a name");
+                return;
+            }
             ColonistSaver.SaveToFile(pawn, filename);
             state.AddMessage("SavedAs".Translate(new object[] {
                 filename

@@ -80,12 +80,18 @@ namespace EdB.PrepareCarefully {
 
             if (def.CountAsResource) {
                 if (def.IsDrug || def.IsMedicine) {
+                    if (def.ingestible != null) {
+                        int foodTypes = (int) def.ingestible.foodType;
+                        bool isLiquor = (foodTypes & (int)FoodTypeFlags.Liquor) > 0;
+                        if (isLiquor) {
+                            return TypeFood;
+                        }
+                    }
                     return TypeMedical;
                 }
                 if (def.ingestible != null) {
                     return TypeFood;
                 }
-
                 if ("AIPersonaCore".Equals(def.defName)) {
                     return TypeUncategorized;
                 }

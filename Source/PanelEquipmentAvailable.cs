@@ -16,6 +16,7 @@ namespace EdB.PrepareCarefully {
             public WidgetTable<EquipmentRecord> Table;
             public List<EquipmentRecord> List;
         }
+        public static readonly string ColumnNameInfo = "Info";
         public static readonly string ColumnNameIcon = "Icon";
         public static readonly string ColumnNameName = "Name";
         public static readonly string ColumnNameCost = "Cost";
@@ -25,6 +26,7 @@ namespace EdB.PrepareCarefully {
         protected Rect RectDropdownQuality;
         protected Rect RectListHeader;
         protected Rect RectListBody;
+        protected Rect RectInfoButton;
         protected Rect RectColumnHeaderName;
         protected Rect RectColumnHeaderCost;
         protected Rect RectScrollFrame;
@@ -49,10 +51,11 @@ namespace EdB.PrepareCarefully {
             base.Resize(rect);
 
             Vector2 padding = new Vector2(12, 12);
-
+            
             RectDropdownTypes = new Rect(padding.x, padding.y, 140, 28);
             RectDropdownMaterials = new Rect(RectDropdownTypes.xMax + 8, RectDropdownTypes.yMin, 160, 28);
 
+            Vector2 sizeInfoButton = new Vector2(24, 24);
             Vector2 sizeAddButton = new Vector2(160, 34);
             RectAddButton = new Rect(PanelRect.HalfWidth() - sizeAddButton.HalfX(),
                 PanelRect.height - padding.y - sizeAddButton.y, sizeAddButton.x, sizeAddButton.y);
@@ -77,9 +80,11 @@ namespace EdB.PrepareCarefully {
             RectRow = new Rect(0, 0, RectScrollView.width, 42);
             RectItem = new Rect(10, 2, 38, 38);
 
-            float columnWidthIcon = 64;
+            Vector2 nameOffset = new Vector2(10, 0);
+            float columnWidthInfo = 36;
+            float columnWidthIcon = 42;
             float columnWidthCost = 100;
-            float columnWidthName = RectRow.width - columnWidthIcon - columnWidthCost - 10;
+            float columnWidthName = RectRow.width - columnWidthInfo - columnWidthIcon - columnWidthCost - 10;
 
             foreach (var type in providerEquipment.Types) {
                 if (!equipmentViews.ContainsKey(type)) {
@@ -101,6 +106,24 @@ namespace EdB.PrepareCarefully {
                         EquipmentAdded(entry);
                     };
                     table.AddColumn(new WidgetTable<EquipmentRecord>.Column() {
+                        Width = columnWidthInfo,
+                        Name = ColumnNameInfo,
+                        DrawAction = (EquipmentRecord entry, Rect columnRect) => {
+                            Rect infoRect = new Rect(columnRect.MiddleX() - sizeInfoButton.HalfX(), columnRect.MiddleY() - sizeInfoButton.HalfY(), sizeInfoButton.x, sizeInfoButton.y);
+                            Style.SetGUIColorForButton(infoRect);
+                            GUI.DrawTexture(infoRect, Textures.TextureButtonInfo);
+                            if (Widgets.ButtonInvisible(infoRect)) {
+                                if (entry.stuffDef != null) {
+                                    Find.WindowStack.Add((Window)new Dialog_InfoCard(entry.def, entry.stuffDef));
+                                }
+                                else {
+                                    Find.WindowStack.Add((Window)new Dialog_InfoCard(entry.def));
+                                }
+                            }
+                            GUI.color = Color.white;
+                        }
+                    });
+                    table.AddColumn(new WidgetTable<EquipmentRecord>.Column() {
                         Width = columnWidthIcon,
                         Name = ColumnNameIcon,
                         DrawAction = (EquipmentRecord entry, Rect columnRect) => {
@@ -114,6 +137,7 @@ namespace EdB.PrepareCarefully {
                         AdjustForScrollbars = true,
                         AllowSorting = true,
                         DrawAction = (EquipmentRecord entry, Rect columnRect) => {
+                            columnRect = columnRect.InsetBy(nameOffset.x, 0, 0, 0);
                             GUI.color = Style.ColorText;
                             Text.Font = GameFont.Small;
                             Text.Anchor = TextAnchor.MiddleLeft;

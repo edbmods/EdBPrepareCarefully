@@ -19,9 +19,7 @@ namespace EdB.PrepareCarefully {
             Draw(rect, animal.Thing, Color.white);
         }
         public static void Draw(Rect rect, ThingDef thingDef, Color color) {
-            rect.x = rect.x + 10;
-            rect.y = rect.y + 2;
-            rect = new Rect(rect.x, rect.y, 38, 38);
+            rect = new Rect(rect.MiddleX() - 17, rect.MiddleY() - 17, 34, 34);
             GUI.color = color;
             // EdB: Inline copy of static Widgets.ThingIcon(Rect, ThingDef) with the selected
             // color based on the stuff.
@@ -45,11 +43,8 @@ namespace EdB.PrepareCarefully {
         }
 
         public static void Draw(Rect rect, Thing thing, Color color) {
-            rect.x = rect.x + 10;
-            rect.y = rect.y + 2;
-            rect = new Rect(rect.x, rect.y, 38, 38);
+            rect = new Rect(rect.center.x - 17, rect.center.y - 17, 38, 38);
             GUI.color = color;
-
             // EdB: Inline copy of static Widgets.ThingIcon(Rect, Thing) with graphics switched to show a side view
             // instead of a front view.
             GUI.color = thing.DrawColor;

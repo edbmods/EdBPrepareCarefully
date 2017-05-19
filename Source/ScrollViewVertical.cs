@@ -81,6 +81,14 @@ namespace EdB.PrepareCarefully {
             }
         }
 
+        public void ScrollToTop() {
+            scrollTo = new Vector2(0, 0);
+        }
+
+        public void ScrollToBottom() {
+            scrollTo = new Vector2(0, float.MaxValue);
+        }
+
         public void ScrollTo(float y) {
             if (y < 0) {
                 y = 0;

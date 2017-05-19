@@ -52,11 +52,11 @@ namespace EdB.PrepareCarefully {
 
             //RectButtonAdvancedAdd = new Rect(panelPadding.x + width - 26, panelPadding.y, 26, buttonHeight);
             //RectButtonAdd = new Rect(panelPadding.x, panelPadding.y, width - RectButtonAdvancedAdd.width - 2, buttonHeight);
-            //RectButtonAdd = new Rect(panelPadding.x, panelPadding.y, width, buttonHeight);
-            RectButtonAdd = new Rect(panelPadding.x, panelPadding.y + height - buttonHeight, width, buttonHeight);
+            RectButtonAdd = new Rect(panelPadding.x, panelPadding.y, width, buttonHeight);
+            //RectButtonAdd = new Rect(panelPadding.x, panelPadding.y + height - buttonHeight, width, buttonHeight);
 
-            RectScrollFrame = new Rect(panelPadding.x, panelPadding.y,
-                width, height - panelPadding.y - buttonHeight);
+            //RectScrollFrame = new Rect(panelPadding.x, panelPadding.y, width, height - panelPadding.y - buttonHeight);
+            RectScrollFrame = new Rect(panelPadding.x, RectButtonAdd.yMax + panelPadding.y, width, height - panelPadding.y - buttonHeight);
             RectScrollView = new Rect(0, 0, RectScrollFrame.width, RectScrollFrame.height);
 
             float widthMinusPadding = width - entryPadding.x * 2;
@@ -257,7 +257,7 @@ namespace EdB.PrepareCarefully {
         }
 
         public void ScrollToBottom() {
-            scrollView.ScrollTo(scrollView.ContentHeight - scrollView.ViewHeight);
+            scrollView.ScrollToBottom();
         }
     }
 }

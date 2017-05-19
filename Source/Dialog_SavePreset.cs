@@ -13,6 +13,7 @@ namespace EdB.PrepareCarefully {
         private bool focusedPresetNameArea;
 
         public Dialog_SavePreset(Action<string> action) {
+            this.action = action;
             this.interactButLabel = "OverwriteButton".Translate();
             this.bottomAreaHeight = 85;
             if ("".Equals(PrepareCarefully.Instance.Filename)) {
@@ -22,7 +23,7 @@ namespace EdB.PrepareCarefully {
 
         protected override void DoMapEntryInteraction(string mapName) {
             if (action != null) {
-                action(mapName);
+                action(PrepareCarefully.Instance.Filename);
             }
             Close(true);
         }
@@ -49,10 +50,9 @@ namespace EdB.PrepareCarefully {
                     Messages.Message("NeedAName".Translate(), MessageSound.RejectInput);
                 }
                 else {
-                    PresetSaver.SaveToFile(PrepareCarefully.Instance, PrepareCarefully.Instance.Filename);
-                    Messages.Message("SavedAs".Translate(new object[] {
-                        PrepareCarefully.Instance.Filename
-                    }), MessageSound.Standard);
+                    if (action != null) {
+                        action(PrepareCarefully.Instance.Filename);
+                    }
                     Close(true);
                 }
             }

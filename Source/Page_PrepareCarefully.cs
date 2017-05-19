@@ -13,7 +13,7 @@ namespace EdB.PrepareCarefully {
         public event PresetHandler PresetLoaded;
         public event PresetHandler PresetSaved;
 
-        private TabViewPawns tabViewCharacters = new TabViewPawns();
+        private TabViewPawns tabViewPawns = new TabViewPawns();
         private TabViewEquipment tabViewEquipment = new TabViewEquipment();
         private TabViewRelationships tabViewRelationships = new TabViewRelationships();
         private List<ITabView> tabViews = new List<ITabView>();
@@ -23,7 +23,7 @@ namespace EdB.PrepareCarefully {
         public Page_PrepareCarefully() {
             this.closeOnEscapeKey = true;
             // Add the tab views to the tab view list.
-            tabViews.Add(tabViewCharacters);
+            tabViews.Add(tabViewPawns);
             tabViews.Add(tabViewRelationships);
             tabViews.Add(tabViewEquipment);
 
@@ -217,53 +217,53 @@ namespace EdB.PrepareCarefully {
             PresetSaved += controller.SavePreset;
 
             // Instrument the characters tab view.
-            ControllerPawns characters = controller.SubcontrollerCharacters;
+            ControllerPawns pawns = controller.SubcontrollerCharacters;
 
-            tabViewCharacters.PanelAge.BiologicalAgeUpdated += characters.UpdateBiologicalAge;
-            tabViewCharacters.PanelAge.ChronologicalAgeUpdated += characters.UpdateChronologicalAge;
+            tabViewPawns.PanelAge.BiologicalAgeUpdated += pawns.UpdateBiologicalAge;
+            tabViewPawns.PanelAge.ChronologicalAgeUpdated += pawns.UpdateChronologicalAge;
 
-            tabViewCharacters.PanelAppearance.RandomizeAppearance += characters.RandomizeAppearance;
-            tabViewCharacters.PanelAppearance.GenderUpdated += characters.UpdateGender;
+            tabViewPawns.PanelAppearance.RandomizeAppearance += pawns.RandomizeAppearance;
+            tabViewPawns.PanelAppearance.GenderUpdated += pawns.UpdateGender;
 
-            tabViewCharacters.PanelBackstory.BackstoryUpdated += characters.UpdateBackstory;
-            tabViewCharacters.PanelBackstory.BackstoriesRandomized += characters.RandomizeBackstories;
+            tabViewPawns.PanelBackstory.BackstoryUpdated += pawns.UpdateBackstory;
+            tabViewPawns.PanelBackstory.BackstoriesRandomized += pawns.RandomizeBackstories;
 
-            tabViewCharacters.PanelPawnList.PawnSelected += characters.SelectPawn;
-            tabViewCharacters.PanelPawnList.PawnSelected += (CustomPawn pawn) => { tabViewCharacters.PanelName.ClearSelection(); };
-            tabViewCharacters.PanelPawnList.PawnSelected += (CustomPawn pawn) => { tabViewCharacters.PanelTraits.ScrollToTop(); };
-            tabViewCharacters.PanelPawnList.PawnSelected += (CustomPawn pawn) => { tabViewCharacters.PanelSkills.ScrollToTop(); };
-            tabViewCharacters.PanelPawnList.PawnSelected += (CustomPawn pawn) => { tabViewCharacters.PanelHealth.ScrollToTop(); };
-            tabViewCharacters.PanelPawnList.AddingPawn += characters.AddingPawn;
-            tabViewCharacters.PanelPawnList.AddingFactionPawn += characters.AddFactionPawn;
-            tabViewCharacters.PanelPawnList.PawnDeleted += characters.DeletePawn;
-            characters.PawnAdded += (CustomPawn pawn) => { tabViewCharacters.PanelPawnList.ScrollToBottom(); tabViewCharacters.PanelPawnList.SelectPawn(pawn); };
+            tabViewPawns.PanelPawnList.PawnSelected += pawns.SelectPawn;
+            tabViewPawns.PanelPawnList.PawnSelected += (CustomPawn pawn) => { tabViewPawns.PanelName.ClearSelection(); };
+            tabViewPawns.PanelPawnList.PawnSelected += (CustomPawn pawn) => { tabViewPawns.PanelTraits.ScrollToTop(); };
+            tabViewPawns.PanelPawnList.PawnSelected += (CustomPawn pawn) => { tabViewPawns.PanelSkills.ScrollToTop(); };
+            tabViewPawns.PanelPawnList.PawnSelected += (CustomPawn pawn) => { tabViewPawns.PanelHealth.ScrollToTop(); };
+            tabViewPawns.PanelPawnList.AddingPawn += pawns.AddingPawn;
+            tabViewPawns.PanelPawnList.AddingFactionPawn += pawns.AddFactionPawn;
+            tabViewPawns.PanelPawnList.PawnDeleted += pawns.DeletePawn;
+            pawns.PawnAdded += (CustomPawn pawn) => { tabViewPawns.PanelPawnList.ScrollToBottom(); tabViewPawns.PanelPawnList.SelectPawn(pawn); };
 
-            tabViewCharacters.PanelHealth.InjuryAdded += characters.AddInjury;
-            tabViewCharacters.PanelHealth.InjuryAdded += (Injury i) => { tabViewCharacters.PanelHealth.ScrollToBottom(); };
-            tabViewCharacters.PanelHealth.ImplantAdded += characters.AddImplant;
-            tabViewCharacters.PanelHealth.ImplantAdded += (Implant i) => { tabViewCharacters.PanelHealth.ScrollToBottom(); };
+            tabViewPawns.PanelHealth.InjuryAdded += pawns.AddInjury;
+            tabViewPawns.PanelHealth.InjuryAdded += (Injury i) => { tabViewPawns.PanelHealth.ScrollToBottom(); };
+            tabViewPawns.PanelHealth.ImplantAdded += pawns.AddImplant;
+            tabViewPawns.PanelHealth.ImplantAdded += (Implant i) => { tabViewPawns.PanelHealth.ScrollToBottom(); };
 
-            tabViewCharacters.PanelName.FirstNameUpdated += characters.UpdateFirstName;
-            tabViewCharacters.PanelName.NickNameUpdated += characters.UpdateNickName;
-            tabViewCharacters.PanelName.LastNameUpdated += characters.UpdateLastName;
-            tabViewCharacters.PanelName.NameRandomized += characters.RandomizeName;
+            tabViewPawns.PanelName.FirstNameUpdated += pawns.UpdateFirstName;
+            tabViewPawns.PanelName.NickNameUpdated += pawns.UpdateNickName;
+            tabViewPawns.PanelName.LastNameUpdated += pawns.UpdateLastName;
+            tabViewPawns.PanelName.NameRandomized += pawns.RandomizeName;
 
-            tabViewCharacters.PanelRandomize.RandomizeAllClicked += characters.RandomizeAll;
+            tabViewPawns.PanelRandomize.RandomizeAllClicked += pawns.RandomizeAll;
 
-            tabViewCharacters.PanelSaveLoad.CharacterLoaded += characters.LoadCharacter;
-            tabViewCharacters.PanelSaveLoad.CharacterSaved += characters.SaveCharacter;
+            tabViewPawns.PanelSaveLoad.CharacterLoaded += pawns.LoadCharacter;
+            tabViewPawns.PanelSaveLoad.CharacterSaved += pawns.SaveCharacter;
 
-            tabViewCharacters.PanelSkills.SkillLevelUpdated += characters.UpdateSkillLevel;
-            tabViewCharacters.PanelSkills.SkillPassionUpdated += characters.UpdateSkillPassion;
-            tabViewCharacters.PanelSkills.SkillsReset += characters.ResetSkills;
-            tabViewCharacters.PanelSkills.SkillsCleared += characters.ClearSkills;
+            tabViewPawns.PanelSkills.SkillLevelUpdated += pawns.UpdateSkillLevel;
+            tabViewPawns.PanelSkills.SkillPassionUpdated += pawns.UpdateSkillPassion;
+            tabViewPawns.PanelSkills.SkillsReset += pawns.ResetSkills;
+            tabViewPawns.PanelSkills.SkillsCleared += pawns.ClearSkills;
 
-            tabViewCharacters.PanelTraits.TraitAdded += characters.AddTrait;
-            tabViewCharacters.PanelTraits.TraitAdded += (Trait t) => { tabViewCharacters.PanelTraits.ScrollToBottom(); };
-            tabViewCharacters.PanelTraits.TraitUpdated += characters.UpdateTrait;
-            tabViewCharacters.PanelTraits.TraitRemoved += characters.RemoveTrait;
-            tabViewCharacters.PanelTraits.TraitsRandomized += characters.RandomizeTraits;
-            tabViewCharacters.PanelTraits.TraitsRandomized += () => { tabViewCharacters.PanelTraits.ScrollToTop(); };
+            tabViewPawns.PanelTraits.TraitAdded += pawns.AddTrait;
+            tabViewPawns.PanelTraits.TraitAdded += (Trait t) => { tabViewPawns.PanelTraits.ScrollToBottom(); };
+            tabViewPawns.PanelTraits.TraitUpdated += pawns.UpdateTrait;
+            tabViewPawns.PanelTraits.TraitRemoved += pawns.RemoveTrait;
+            tabViewPawns.PanelTraits.TraitsRandomized += pawns.RandomizeTraits;
+            tabViewPawns.PanelTraits.TraitsRandomized += () => { tabViewPawns.PanelTraits.ScrollToTop(); };
 
             // Instrument the equipment tab view.
             ControllerEquipment equipment = controller.SubcontrollerEquipment;
@@ -284,8 +284,8 @@ namespace EdB.PrepareCarefully {
             tabViewRelationships.PanelRelationshipsParentChild.ParentRemovedFromGroup += relationships.RemoveParentFromParentChildGroup;
             tabViewRelationships.PanelRelationshipsParentChild.ChildRemovedFromGroup += relationships.RemoveChildFromParentChildGroup;
             tabViewRelationships.PanelRelationshipsParentChild.GroupAdded += relationships.AddParentChildGroup;
-            tabViewCharacters.PanelPawnList.PawnDeleted += relationships.DeleteAllPawnRelationships;
-            characters.PawnAdded += relationships.AddPawn;
+            tabViewPawns.PanelPawnList.PawnDeleted += relationships.DeleteAllPawnRelationships;
+            pawns.PawnAdded += relationships.AddPawn;
         }
     }
 }

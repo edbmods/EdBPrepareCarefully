@@ -27,6 +27,7 @@ namespace EdB.PrepareCarefully {
 
             Vector2 padding = new Vector2(12, 12);
 
+            Vector2 sizeInfoButton = new Vector2(24, 24);
             Vector2 sizeButton = new Vector2(160, 34);
             RectRemoveButton = new Rect(PanelRect.HalfWidth() - sizeButton.HalfX(),
                 PanelRect.height - padding.y - sizeButton.y, sizeButton.x, sizeButton.y);
@@ -40,9 +41,11 @@ namespace EdB.PrepareCarefully {
             Rect rectTable = new Rect(padding.x, padding.y, listSize.x, listSize.y);
             RectRow = new Rect(0, 0, rectTable.width, 42);
 
-            float columnWidthIcon = 64;
+            Vector2 nameOffset = new Vector2(10, 0);
+            float columnWidthInfo = 36;
+            float columnWidthIcon = 42;
             float columnWidthCount = 112;
-            float columnWidthName = RectRow.width - columnWidthIcon - columnWidthCount;
+            float columnWidthName = RectRow.width - columnWidthInfo - columnWidthIcon - columnWidthCount;
 
             table = new WidgetTable<EquipmentSelection>();
             table.Rect = rectTable;
@@ -65,21 +68,40 @@ namespace EdB.PrepareCarefully {
                 }
             };
             table.AddColumn(new WidgetTable<EquipmentSelection>.Column() {
+                Width = columnWidthInfo,
+                Name = "Info",
+                DrawAction = (EquipmentSelection entry, Rect columnRect) => {
+                    Rect infoRect = new Rect(columnRect.MiddleX() - sizeInfoButton.HalfX(), columnRect.MiddleY() - sizeInfoButton.HalfY(), sizeInfoButton.x, sizeInfoButton.y);
+                    Style.SetGUIColorForButton(infoRect);
+                    GUI.DrawTexture(infoRect, Textures.TextureButtonInfo);
+                    if (Widgets.ButtonInvisible(infoRect)) {
+                        if (entry.StuffDef != null) {
+                            Find.WindowStack.Add((Window)new Dialog_InfoCard(entry.ThingDef, entry.StuffDef));
+                        }
+                        else {
+                            Find.WindowStack.Add((Window)new Dialog_InfoCard(entry.ThingDef));
+                        }
+                    }
+                    GUI.color = Color.white;
+                }
+            });
+            table.AddColumn(new WidgetTable<EquipmentSelection>.Column() {
                 Width = columnWidthIcon,
                 Name = "Icon",
-                DrawAction = (EquipmentSelection entry, Rect rowRect) => {
-                    WidgetEquipmentIcon.Draw(rowRect, entry.Record);
+                DrawAction = (EquipmentSelection entry, Rect columnRect) => {
+                    WidgetEquipmentIcon.Draw(columnRect, entry.Record);
                 }
             });
             table.AddColumn(new WidgetTable<EquipmentSelection>.Column() {
                 Width = columnWidthName,
                 Name = "Name",
                 Label = "Name",
-                DrawAction = (EquipmentSelection entry, Rect rowRect) => {
+                DrawAction = (EquipmentSelection entry, Rect columnRect) => {
+                    columnRect = columnRect.InsetBy(nameOffset.x, 0, 0, 0);
                     GUI.color = Style.ColorText;
                     Text.Font = GameFont.Small;
                     Text.Anchor = TextAnchor.MiddleLeft;
-                    Widgets.Label(rowRect, entry.Record.Label);
+                    Widgets.Label(columnRect, entry.Record.Label);
                     GUI.color = Color.white;
                     Text.Anchor = TextAnchor.UpperLeft;
                 }
@@ -89,11 +111,11 @@ namespace EdB.PrepareCarefully {
                 Name = "Count",
                 Label = "Count",
                 AdjustForScrollbars = true,
-                DrawAction = (EquipmentSelection entry, Rect rowRect) => {
+                DrawAction = (EquipmentSelection entry, Rect columnRect) => {
                     GUI.color = Style.ColorText;
                     Text.Font = GameFont.Small;
 
-                    Rect fieldRect = new Rect(rowRect.x + 17, rowRect.y + 7, 60, 28);
+                    Rect fieldRect = new Rect(columnRect.x + 17, columnRect.y + 7, 60, 28);
                     Widgets.DrawAtlas(fieldRect, Textures.TextureFieldAtlas);
 
                     Slider.OnGUI(fieldRect, entry.Count, (int value) => {
