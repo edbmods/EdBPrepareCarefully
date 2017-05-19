@@ -35,7 +35,7 @@ namespace EdB.PrepareCarefully {
                 }
 
                 SpawnColonistsWithEquipment(map, arriveMethodPart);
-                ApplyColonistHealthCustomizations();
+                //ApplyColonistHealthCustomizations();
                 PrepForMapGen();
                 SpawnStartingResources(map);
             }
@@ -324,28 +324,6 @@ namespace EdB.PrepareCarefully {
             // Used to do this in Alpha 13.  Still necessary?
             foreach (Pawn current in Find.GameInitData.startingPawns) {
                 PawnComponentsUtility.AddAndRemoveDynamicComponents(current, false);
-            }
-        }
-
-        // Add health customizations.
-        public void ApplyColonistHealthCustomizations() {
-            int index = 0;
-            foreach (Pawn pawn in Find.GameInitData.startingPawns) {
-                pawn.health = new Pawn_HealthTracker(pawn);
-                CustomPawn customPawn = PrepareCarefully.Instance.Pawns[index++];
-                if (customPawn.RandomInjuries) {
-                    AgeInjuryUtility.GenerateRandomOldAgeInjuries(pawn, true);
-                }
-            }
-            for (int i = 0; i < PrepareCarefully.Instance.Pawns.Count; i++) {
-                CustomPawn customPawn = PrepareCarefully.Instance.Pawns[i];
-                Pawn pawn = Find.GameInitData.startingPawns[i];
-                foreach (Injury injury in customPawn.Injuries) {
-                    injury.AddToPawn(customPawn, pawn);
-                }
-                foreach (Implant implant in customPawn.Implants) {
-                    implant.AddToPawn(customPawn, pawn);
-                }
             }
         }
 
