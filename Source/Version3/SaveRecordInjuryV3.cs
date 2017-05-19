@@ -27,9 +27,9 @@ namespace EdB.PrepareCarefully
 
 		public void ExposeData()
 		{
-			Scribe_Values.LookValue<string>(ref this.hediffDef, "hediffDef", null, false);
-			Scribe_Values.LookValue<string>(ref this.bodyPart, "bodyPart", null, false);
-			Scribe_Values.LookValue<string>(ref this.severity, "severity", null, false);
+			Scribe_Values.Look<string>(ref this.hediffDef, "hediffDef", null, false);
+			Scribe_Values.Look<string>(ref this.bodyPart, "bodyPart", null, false);
+			Scribe_Values.Look<string>(ref this.severity, "severity", null, false);
 		}
 
 		public float Severity {
