@@ -21,6 +21,10 @@ namespace EdB.PrepareCarefully {
         }
 
         protected override void DoMapEntryInteraction(string colonistName) {
+            if (string.IsNullOrEmpty(colonistName)) {
+                return;
+            }
+            Filename = colonistName;
             if (action != null) {
                 action(Filename);
             }
