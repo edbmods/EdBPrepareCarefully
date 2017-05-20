@@ -67,6 +67,7 @@
     <Compile Include="Source\EquipmentRecord.cs" />
     <Compile Include="Source\ExtensionsPawn.cs" />
     <Compile Include="Source\ExtensionsThing.cs" />
+    <Compile Include="Source\GenStep_CustomScatterThings.cs" />
     <Compile Include="Source\HeadType.cs" />
     <Compile Include="Source\IRelationshipWorker.cs" />
     <Compile Include="Source\Page_ConfigureStartingPawns.cs" />
@@ -84,6 +85,8 @@
     <Compile Include="Source\RelatedPawn.cs" />
     <Compile Include="Source\RelationshipBuilder.cs" />
     <Compile Include="Source\RelationshipGroup.cs" />
+    <Compile Include="Source\ScenPart_CustomAnimal.cs" />
+    <Compile Include="Source\ScenPart_CustomScatterThingsNearPlayerStart.cs" />
     <Compile Include="Source\ScrollViewHorizontal.cs" />
     <Compile Include="Source\SelectedAnimal.cs" />
     <Compile Include="Source\EquipmentSelection.cs" />
@@ -120,7 +123,6 @@
     <Compile Include="Source\InjuryManager.cs" />
     <Compile Include="Source\CustomPawn.cs" />
     <Compile Include="Source\PawnColorUtils.cs" />
-    <Compile Include="Source\GenStep_ScenParts.cs" />
     <Compile Include="Source\Dialog_Confirm.cs" />
     <Compile Include="Source\ThingCache.cs" />
     <Compile Include="Source\BodyPartDictionary.cs" />

@@ -89,10 +89,6 @@ namespace EdB.PrepareCarefully {
                 Page_PrepareCarefully page = new Page_PrepareCarefully();
                 PrepareCarefully.Instance.State.Page = page;
                 Find.WindowStack.Add(page);
-                if (!PrepareCarefully.Instance.FindScenPart()) {
-                    Find.WindowStack.Add(new Dialog_Confirm("EdB.PC.Dialog.ModConfigProblem.Description".Translate(),
-                        delegate { }, true, "EdB.PC.Dialog.ModConfigProblem.Title".Translate(), false));
-                }
             };
             base.DoBottomButtons(rect, "Start".Translate(), "EdB.PC.Page.Button.PrepareCarefully".Translate(), prepareCarefullyAction, true);
         }

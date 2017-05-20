@@ -9,5 +9,5 @@
     <pageClass>EdB.PrepareCarefully.Page_ConfigureStartingPawns</pageClass>
     <summaryPriority>500</summaryPriority>
   </ScenPartDef>
-
+  
 </Defs>

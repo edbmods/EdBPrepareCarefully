@@ -48,16 +48,9 @@ namespace EdB.PrepareCarefully {
         protected RelationshipManager relationshipManager;
         protected HealthManager healthManager = new HealthManager();
         protected Randomizer randomizer = new Randomizer();
-
-        public Page_ConfigureStartingPawns OriginalPage = null;
-
-        public void NextPage() {
-            if (OriginalPage != null) {
-                typeof(Page_ConfigureStartingPawns).GetMethod("DoNext", BindingFlags.NonPublic | BindingFlags.Instance).Invoke(OriginalPage, null);
-            }
-        }
-
         protected Configuration config = new Configuration();
+        protected State state = new State();
+
         public Configuration Config {
             get {
                 return config;
@@ -67,7 +60,6 @@ namespace EdB.PrepareCarefully {
             }
         }
 
-        protected State state = new State();
         public State State {
             get {
                 return state;
@@ -94,6 +86,7 @@ namespace EdB.PrepareCarefully {
         public SortOrder NameSortOrder { get; set; }
         public SortOrder CostSortOrder { get; set; }
         public int StartingPoints { get; set; }
+        public Page_ConfigureStartingPawns OriginalPage { get; set; }
 
         public int PointsRemaining {
             get {
@@ -108,39 +101,9 @@ namespace EdB.PrepareCarefully {
             SortField = SortField.Name;
         }
 
-        public void Configure(object o) {
-            config = new Configuration();
-            if (o == null) {
-                return;
-            }
-            CopyConfiguration("minColonists", o, 0);
-            CopyConfiguration("maxColonists", o, 0);
-            CopyConfiguration("points", o, -1);
-        }
-
-
-        protected void CopyConfiguration(string fieldName, object o, object ignoreValue) {
-            FieldInfo sourceField = o.GetType().GetField(fieldName, BindingFlags.Public | BindingFlags.Instance);
-            if (sourceField == null) {
-                return;
-            }
-            FieldInfo destField = typeof(Configuration).GetField(fieldName, BindingFlags.Public | BindingFlags.Instance);
-            if (destField == null) {
-                Log.Warning("Invalid Prepare Carefully configuration: " + fieldName);
-                return;
-            }
-            try {
-                object value = sourceField.GetValue(o);
-                if (object.Equals(value, ignoreValue)) {
-                    return;
-                }
-                else {
-                    destField.SetValue(this.config, value);
-                }
-            }
-            catch (Exception e) {
-                Log.Warning("Failed to set configuration in Prepare Carefully for " + fieldName);
-                Log.Warning(e.ToString());
+        public void NextPage() {
+            if (OriginalPage != null) {
+                typeof(Page_ConfigureStartingPawns).GetMethod("DoNext", BindingFlags.NonPublic | BindingFlags.Instance).Invoke(OriginalPage, null);
             }
         }
 
@@ -167,9 +130,7 @@ namespace EdB.PrepareCarefully {
             InitializePawns();
             InitializeRelationshipManager(this.pawns);
             InitializeDefaultEquipment();
-
             this.StartingPoints = (int)this.Cost.total;
-
             this.state = new State();
         }
 
@@ -560,24 +521,6 @@ namespace EdB.PrepareCarefully {
             relationshipManager = new RelationshipManager(Verse.Find.GameInitData.startingPawns, customPawns);
         }
 
-        public bool FindScenPart() {
-            if (DefDatabase<MapGeneratorDef>.AllDefs.Count() == 1) {
-                MapGeneratorDef def = DefDatabase<MapGeneratorDef>.AllDefs.First();
-                if (def != null) {
-                    foreach (var g in def.GenSteps) {
-                        if (g.genStep != null && g.genStep.GetType().FullName.Equals(typeof(EdB.PrepareCarefully.GenStep_ScenParts).FullName)) {
-                            return true;
-                        }
-                    }
-                    return false;
-                }
-            }
-            // TODO: We can't figure this out in every situation.  If there's more than one
-            // map generator, the game is going to pick one at random, and we can't know at this
-            // point which one it's going to pick.  In that case, we'll assume that everything is
-            // good.
-            return true;
-        }
     }
 }
 

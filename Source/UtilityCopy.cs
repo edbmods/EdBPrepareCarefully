@@ -28,6 +28,20 @@ namespace EdB.PrepareCarefully {
             return result;
         }
 
+        // Serializes and then deserializes an instance of an IExposable class.  The class must be constructable
+        // with no arguments.
+        public static T CopyExposable<T>(T type) where T : IExposable {
+        string xml = "<doc>" + Scribe.saver.DebugOutputFor(type) + "</doc>";
+            //Log.Warning(xml);
+            InitLoadFromString(xml);
+            T result = default(T);
+            Scribe_Deep.Look(ref result, "saveable", null);
+            Scribe.loader.FinalizeLoading();
+            HashSet<IExposable> saveables = (HashSet<IExposable>)(typeof(PostLoadIniter).GetField("saveablesToPostLoad", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(Scribe.loader.initer));
+            saveables.Clear();
+            return result;
+        }
+
         // Performs the setup needed to begin a scribe loading operation, similar to ScribeLoader.InitLoad(), but
         // uses a StringReader instead of reading from a file.
         private static void InitLoadFromString(String value) {
