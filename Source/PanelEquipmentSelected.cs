@@ -148,7 +148,7 @@ namespace EdB.PrepareCarefully {
                 ScrollToEntry = null;
             }
 
-            if (Widgets.ButtonText(RectRemoveButton, "Remove All", true, false, table.Selected != null)) {
+            if (Widgets.ButtonText(RectRemoveButton, "EdB.PC.Panel.SelectedEquipment.Remove".Translate(), true, false, table.Selected != null)) {
                 SoundDefOf.TickHigh.PlayOneShotOnCamera();
                 EquipmentRemoved(table.Selected);
                 table.Selected = null;

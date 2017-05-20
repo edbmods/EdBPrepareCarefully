@@ -87,21 +87,23 @@ namespace EdB.PrepareCarefully {
             bool dragging = false;
             string currentControl = GUI.GetNameOfFocusedControl();
             if (currentControl != focusedControl) {
-                focusedControl = currentControl;
-                if (id != focusedControl) {
+                if (focusedControl == id && currentControl != id) {
                     if (newValue != null) {
-                        SoundDefOf.TickTiny.PlayOneShotOnCamera();
                         if (newValue == value) {
+                            SoundDefOf.TickTiny.PlayOneShotOnCamera();
                         }
                         else if (newValue >= minValue && newValue <= maxValue) {
+                            SoundDefOf.TickHigh.PlayOneShotOnCamera();
                             Update(newValue.Value);
                         }
                         else {
+                            SoundDefOf.TickLow.PlayOneShotOnCamera();
                             Update(newValue.Value);
                         }
                     }
                     showTextField = false;
                 }
+                focusedControl = currentControl;
             }
             if (showTextField) {
                 if (textFieldStyle == null) {
@@ -161,34 +163,48 @@ namespace EdB.PrepareCarefully {
 
             // Draw the decrement button.
             Rect buttonRect = new Rect(rect.x - 17, rect.y + 6, 16, 16);
-            if (!dragging) {
-                Style.SetGUIColorForButton(buttonRect);
+            if (value == minValue) {
+                GUI.color = Style.ColorButtonDisabled;
             }
             else {
-                GUI.color = Style.ColorButton;
+                if (!dragging && !showTextField) {
+                    Style.SetGUIColorForButton(buttonRect);
+                }
+                else {
+                    GUI.color = Style.ColorButton;
+                }
             }
             GUI.DrawTexture(buttonRect, Textures.TextureButtonPrevious);
-            if (Widgets.ButtonInvisible(buttonRect, false)) {
-                SoundDefOf.TickTiny.PlayOneShotOnCamera();
-                int amount = Event.current.shift ? 10 : 1;
-                int newValue = value - amount;
-                Update(newValue);
+            if (value != minValue) {
+                if (Widgets.ButtonInvisible(buttonRect, false)) {
+                    SoundDefOf.TickTiny.PlayOneShotOnCamera();
+                    int amount = Event.current.shift ? 10 : 1;
+                    int newValue = value - amount;
+                    Update(newValue);
+                }
             }
 
             // Draw the increment button.
             buttonRect = new Rect(rect.x + rect.width + 1, rect.y + 6, 16, 16);
-            if (!dragging) {
-                Style.SetGUIColorForButton(buttonRect);
+            if (value == maxValue) {
+                GUI.color = Style.ColorButtonDisabled;
             }
             else {
-                GUI.color = Style.ColorButton;
+                if (!dragging && !showTextField) {
+                    Style.SetGUIColorForButton(buttonRect);
+                }
+                else {
+                    GUI.color = Style.ColorButton;
+                }
             }
-            GUI.DrawTexture(buttonRect, Textures.TextureButtonNext);
-            if (Widgets.ButtonInvisible(buttonRect, false)) {
-                SoundDefOf.TickTiny.PlayOneShotOnCamera();
-                int amount = Event.current.shift ? 10 : 1;
-                int newValue = value + amount;
-                Update(newValue);
+            if (value != maxValue) {
+                GUI.DrawTexture(buttonRect, Textures.TextureButtonNext);
+                if (Widgets.ButtonInvisible(buttonRect, false)) {
+                    SoundDefOf.TickTiny.PlayOneShotOnCamera();
+                    int amount = Event.current.shift ? 10 : 1;
+                    int newValue = value + amount;
+                    Update(newValue);
+                }
             }
 
             GUI.color = Color.white;

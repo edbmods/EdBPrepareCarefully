@@ -156,9 +156,9 @@ namespace EdB.PrepareCarefully {
             string label = value.ToString();
             GUI.color = Color.white;
             Text.Anchor = TextAnchor.MiddleCenter;
-            rect.y += 2;
+            rect.y += 1;
             Widgets.Label(rect, label);
-            rect.y -= 2;
+            rect.y -= 1;
             Text.Anchor = TextAnchor.UpperLeft;
             GUI.color = Color.white;
         }

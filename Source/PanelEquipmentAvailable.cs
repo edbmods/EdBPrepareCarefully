@@ -185,7 +185,7 @@ namespace EdB.PrepareCarefully {
             DrawFilters(view);
             DrawEquipmentList(view);
 
-            if (Widgets.ButtonText(RectAddButton, "Add Equipment", true, false, view.Table.Selected != null)) {
+            if (Widgets.ButtonText(RectAddButton, "EdB.PC.Panel.AvailableEquipment.Add".Translate(), true, false, view.Table.Selected != null)) {
                 SoundDefOf.TickHigh.PlayOneShotOnCamera();
                 EquipmentAdded(view.Table.Selected);
             }
@@ -221,20 +221,20 @@ namespace EdB.PrepareCarefully {
             if (StuffFilterVisible) {
                 string stuffLabel = null;
                 if (!filterMadeFromStuff) {
-                    stuffLabel = "No Materials";
+                    stuffLabel = "EdB.PC.Panel.AvailableEquipment.Materials.None".Translate();
                 }
                 else if (filterStuff == null) {
-                    stuffLabel = "All Materials";
+                    stuffLabel = "EdB.PC.Panel.AvailableEquipment.Materials.All".Translate();
                 }
                 else {
                     stuffLabel = filterStuff.LabelCap;
                 }
                 if (WidgetDropdown.Button(RectDropdownMaterials, stuffLabel, true, false, true)) {
                     List<FloatMenuOption> stuffFilterOptions = new List<FloatMenuOption>();
-                    stuffFilterOptions.Add(new FloatMenuOption("All Materials", () => {
+                    stuffFilterOptions.Add(new FloatMenuOption("EdB.PC.Panel.AvailableEquipment.Materials.All".Translate(), () => {
                         UpdateStuffFilter(true, null);
                     }, MenuOptionPriority.Default, null, null, 0, null, null));
-                    stuffFilterOptions.Add(new FloatMenuOption("No Materials", () => {
+                    stuffFilterOptions.Add(new FloatMenuOption("EdB.PC.Panel.AvailableEquipment.Materials.None".Translate(), () => {
                         UpdateStuffFilter(false, null);
                     }, MenuOptionPriority.Default, null, null, 0, null, null));
                     foreach (var item in stuffFilterSet.OrderBy((ThingDef def) => { return def.LabelCap; })) {
