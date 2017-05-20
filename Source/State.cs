@@ -1,6 +1,8 @@
-﻿using System;
+﻿using RimWorld;
+using System;
 using System.Collections.Generic;
 using System.Linq;
+using Verse;
 
 namespace EdB.PrepareCarefully {
     public class State {
@@ -8,6 +10,7 @@ namespace EdB.PrepareCarefully {
         
         protected List<string> errors = new List<string>();
         protected List<string> messages = new List<string>();
+        private List<string> missingWorkTypes = null;
 
         public Page_PrepareCarefully Page {
             get;
@@ -48,6 +51,15 @@ namespace EdB.PrepareCarefully {
 
         public void AddError(string error) {
             this.errors.Add(error);
+        }
+
+        public List<string> MissingWorkTypes {
+            get {
+                return missingWorkTypes;
+            }
+            set {
+                missingWorkTypes = value;
+            }
         }
 
         public void ClearErrors() {

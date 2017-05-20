@@ -226,7 +226,9 @@ namespace EdB.PrepareCarefully {
             tabViewPawns.PanelAppearance.GenderUpdated += pawns.UpdateGender;
 
             tabViewPawns.PanelBackstory.BackstoryUpdated += pawns.UpdateBackstory;
+            tabViewPawns.PanelBackstory.BackstoryUpdated += (BackstorySlot slot, Backstory backstory) => { controller.CheckPawnCapabilities(); };
             tabViewPawns.PanelBackstory.BackstoriesRandomized += pawns.RandomizeBackstories;
+            tabViewPawns.PanelBackstory.BackstoriesRandomized += () => { controller.CheckPawnCapabilities(); };
 
             tabViewPawns.PanelPawnList.PawnSelected += pawns.SelectPawn;
             tabViewPawns.PanelPawnList.PawnSelected += (CustomPawn pawn) => { tabViewPawns.PanelName.ClearSelection(); };
@@ -236,7 +238,9 @@ namespace EdB.PrepareCarefully {
             tabViewPawns.PanelPawnList.AddingPawn += pawns.AddingPawn;
             tabViewPawns.PanelPawnList.AddingFactionPawn += pawns.AddFactionPawn;
             tabViewPawns.PanelPawnList.PawnDeleted += pawns.DeletePawn;
+            tabViewPawns.PanelPawnList.PawnDeleted += (CustomPawn pawn) => { controller.CheckPawnCapabilities(); };
             pawns.PawnAdded += (CustomPawn pawn) => { tabViewPawns.PanelPawnList.ScrollToBottom(); tabViewPawns.PanelPawnList.SelectPawn(pawn); };
+            pawns.PawnAdded += (CustomPawn pawn) => { controller.CheckPawnCapabilities(); };
 
             tabViewPawns.PanelHealth.InjuryAdded += pawns.AddInjury;
             tabViewPawns.PanelHealth.InjuryAdded += (Injury i) => { tabViewPawns.PanelHealth.ScrollToBottom(); };
@@ -249,8 +253,10 @@ namespace EdB.PrepareCarefully {
             tabViewPawns.PanelName.NameRandomized += pawns.RandomizeName;
 
             tabViewPawns.PanelRandomize.RandomizeAllClicked += pawns.RandomizeAll;
+            tabViewPawns.PanelRandomize.RandomizeAllClicked += () => { controller.CheckPawnCapabilities(); };
 
             tabViewPawns.PanelSaveLoad.CharacterLoaded += pawns.LoadCharacter;
+            tabViewPawns.PanelSaveLoad.CharacterLoaded += (string filename) => { controller.CheckPawnCapabilities(); };
             tabViewPawns.PanelSaveLoad.CharacterSaved += pawns.SaveCharacter;
 
             tabViewPawns.PanelSkills.SkillLevelUpdated += pawns.UpdateSkillLevel;
