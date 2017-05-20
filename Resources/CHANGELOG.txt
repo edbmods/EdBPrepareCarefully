@@ -1,6 +1,6 @@
  _____________________________________________________________________________
  
-   Version 0.17.0.1
+   Version 0.17.1.1
  _____________________________________________________________________________
 
  - Added support for Alpha 17
@@ -12,6 +12,11 @@
    other relationships in a more predictable way.
  - Added support for a fourth trait.
  - Added support for more than 10 colonists.
+ - Directly type values into numeric fields for age and equipment counts.
+ - Reworked how the mod integrates with scenarios and map generation.  No
+   longer overwrites the vanilla Genstep_ScenParts class.-
+ - Added wanrings for when no colonists are capable of work types that are
+   considered required.
 
  _____________________________________________________________________________
  
