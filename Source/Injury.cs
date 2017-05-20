@@ -31,6 +31,8 @@ namespace EdB.PrepareCarefully {
 
         protected string stageLabel = null;
 
+        protected float? painFactor = null;
+
         public float Severity {
             get {
                 return severity;
@@ -39,6 +41,15 @@ namespace EdB.PrepareCarefully {
                 tooltip = null;
                 severity = value;
                 stageLabel = ComputeStageLabel();
+            }
+        }
+
+        public float? PainFactor {
+            get {
+                return painFactor;
+            }
+            set {
+                painFactor = value;
             }
         }
 
@@ -93,8 +104,7 @@ namespace EdB.PrepareCarefully {
                 HediffComp_GetsOld getsOld = hediff.TryGetComp<HediffComp_GetsOld>();
                 if (getsOld != null) {
                     hediff.TryGetComp<HediffComp_GetsOld>().IsOld = true;
-                    // TODO: Pain factor should not be hard-coded.
-                    hediff.TryGetComp<HediffComp_GetsOld>().painFactor = 4;
+                    hediff.TryGetComp<HediffComp_GetsOld>().painFactor = painFactor == null ? OldInjuryUtility.GetRandomPainFactor() : painFactor.Value;
                 }
 
                 pawn.health.AddHediff(hediff, BodyPartRecord, null);

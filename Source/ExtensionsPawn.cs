@@ -20,51 +20,6 @@ namespace EdB.PrepareCarefully {
             PawnComponentsUtility.CreateInitialComponents(result);
             result.gender = source.gender;
 
-            /*
-                pawn.needs.SetInitialLevels();
-                PawnGenerator.GenerateInitialHediffs(pawn, request);
-                if (pawn.workSettings != null && request.Faction.IsPlayer) {
-                    pawn.workSettings.EnableAndInitialize();
-                }
-                if (request.Faction != null && pawn.RaceProps.Animal) {
-                    pawn.GenerateNecessaryName();
-                }
-                if (!request.AllowDead && (pawn.Dead || pawn.Destroyed)) {
-                    PawnGenerator.DiscardGeneratedPawn(pawn);
-                    error = "Generated dead pawn.";
-                    result = null;
-                }
-                else if (!request.AllowDowned && pawn.Downed) {
-                    PawnGenerator.DiscardGeneratedPawn(pawn);
-                    error = "Generated downed pawn.";
-                    result = null;
-                }
-                else if (request.MustBeCapableOfViolence && ((pawn.story != null && pawn.story.WorkTagIsDisabled(WorkTags.Violent)) || !pawn.health.capacities.CapableOf(PawnCapacityDefOf.Manipulation))) {
-                    PawnGenerator.DiscardGeneratedPawn(pawn);
-                    error = "Generated pawn incapable of violence.";
-                    result = null;
-                }
-                else if (!ignoreScenarioRequirements && request.Context == PawnGenerationContext.PlayerStarter && !Find.Scenario.AllowPlayerStartingPawn(pawn)) {
-                    PawnGenerator.DiscardGeneratedPawn(pawn);
-                    error = "Generated pawn doesn't meet scenario requirements.";
-                    result = null;
-                }
-                else if (request.Validator != null && !request.Validator(pawn)) {
-                    PawnGenerator.DiscardGeneratedPawn(pawn);
-                    error = "Generated pawn didn't pass validator check.";
-                    result = null;
-                }
-                else {
-                    for (int i = 0; i < PawnGenerator.pawnsBeingGenerated.Count - 1; i++) {
-                        if (PawnGenerator.pawnsBeingGenerated[i].PawnsGeneratedInTheMeantime == null) {
-                            PawnGenerator.pawnsBeingGenerated[i] = new PawnGenerator.PawnGenerationStatus(PawnGenerator.pawnsBeingGenerated[i].Pawn, new List<Pawn>());
-                        }
-                        PawnGenerator.pawnsBeingGenerated[i].PawnsGeneratedInTheMeantime.Add(pawn);
-                    }
-                    result = pawn;
-                }
-            */
-
             // Copy gender.
             result.gender = source.gender;
 
@@ -83,31 +38,7 @@ namespace EdB.PrepareCarefully {
             result.story = UtilityCopy.CopyTrackerForPawn(source.story, result);
             result.skills = UtilityCopy.CopyTrackerForPawn(source.skills, result);
             result.health = UtilityCopy.CopyTrackerForPawn(source.health, result);
-            
-            // Copy apparel.
-            foreach (var a in source.apparel.WornApparel) {
-                var thingCopy = ThingMaker.MakeThing(a.def, a.Stuff);
-                Apparel apparelCopy = thingCopy as Apparel;
-                if (apparelCopy == null) {
-                    continue;
-                }
-                apparelCopy.HitPoints = a.HitPoints;
-                apparelCopy.SetColor(a.GetColor());
-                apparelCopy.SetQuality(a.GetQuality());
-                result.apparel.Wear(apparelCopy);
-            }
-
-            // Copy skills.
-            /*
-            result.skills.skills.Clear();
-            foreach (var s in source.skills.skills) {
-                SkillRecord record = new SkillRecord(result, s.def);
-                record.Level = s.Level;
-                record.passion = s.passion;
-                record.xpSinceLastLevel = s.xpSinceLastLevel;
-                result.skills.skills.Add(record);
-            }
-            */
+            result.apparel = UtilityCopy.CopyTrackerForPawn(source.apparel, result);
 
             // Verify the pawn health state.
             if (result.health.State != savedHealthState) {

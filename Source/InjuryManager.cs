@@ -25,6 +25,10 @@ namespace EdB.PrepareCarefully {
                     injury.BodyPartRecord = x.Part;
                     injury.Option = option;
                     injury.Severity = x.Severity;
+                    HediffComp_GetsOld getsOld = x.TryGetComp<HediffComp_GetsOld>();
+                    if (getsOld != null) {
+                        injury.PainFactor = getsOld.painFactor;
+                    }
                     customPawn.AddInjury(injury);
                 }
                 else {
