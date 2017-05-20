@@ -5,6 +5,7 @@ using UnityEngine;
 using Verse;
 
 namespace EdB.PrepareCarefully {
+    // Duplicate of GenStep_ScatterThings with a radius field to allow for a large spawn area.
     public class GenStep_CustomScatterThings : GenStep_Scatterer {
         //
         // Static Fields

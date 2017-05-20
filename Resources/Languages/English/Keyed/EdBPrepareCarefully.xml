@@ -158,6 +158,12 @@
 
   <EdB.PC.Panel.Incapable.None>None</EdB.PC.Panel.Incapable.None>
   <EdB.PC.Panel.Incapable.Title>Incapable of</EdB.PC.Panel.Incapable.Title>
+  <EdB.PC.Panel.Incapable.Warning>None of your pawns are capable of the following work types that are considered to be required by the vanilla game.
+
+{0}
+
+You can play the game with your colonists as they are, but you may see an error message when you start the scenario.</EdB.PC.Panel.Incapable.Warning>
+  <EdB.PC.Panel.Incapable.WarningItem> - {0}</EdB.PC.Panel.Incapable.WarningItem>
 
   <EdB.PC.Panel.LoadSave.Load>Load Character</EdB.PC.Panel.LoadSave.Load>
   <EdB.PC.Panel.LoadSave.Save>Save Character</EdB.PC.Panel.LoadSave.Save>
