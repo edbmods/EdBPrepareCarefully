@@ -130,7 +130,7 @@ namespace EdB.PrepareCarefully {
             };
             table.AddColumn(new WidgetTable<CustomPawn>.Column() {
                 Name = "Portrait",
-                DrawAction = (CustomPawn pawn, Rect rect) => {
+                DrawAction = (CustomPawn pawn, Rect rect, WidgetTable<CustomPawn>.Metadata metadata) => {
                     GUI.color = Color.white;
                     var texture = pawn.GetPortrait(new Vector2(portraitSize.x, portraitSize.y + portraitOverflow * 2));
                     GUI.DrawTexture(new Rect(rect.position.x, rect.position.y - portraitOverflow, portraitSize.x, portraitSize.y + portraitOverflow * 2), texture as Texture);
@@ -141,7 +141,7 @@ namespace EdB.PrepareCarefully {
                 Name = "Description",
                 Width = nameSize.x,
                 AdjustForScrollbars = true,
-                DrawAction = (CustomPawn pawn, Rect rect) => {
+                DrawAction = (CustomPawn pawn, Rect rect, WidgetTable<CustomPawn>.Metadata metadata) => {
                     Text.Anchor = TextAnchor.LowerLeft;
                     Text.Font = GameFont.Small;
                     Widgets.Label(new Rect(rect.x, rect.y + nameOffset, rect.width, nameSize.y), pawn.Pawn.LabelShort);
@@ -160,7 +160,7 @@ namespace EdB.PrepareCarefully {
             table.AddColumn(new WidgetTable<CustomPawn>.Column() {
                 Name = "RadioButton",
                 Width = radioWidth,
-                DrawAction = (CustomPawn pawn, Rect rect) => {
+                DrawAction = (CustomPawn pawn, Rect rect, WidgetTable<CustomPawn>.Metadata metadata) => {
                     if (DisabledPawns != null && DisabledPawns.Contains(pawn)) {
                         GUI.color = Style.ColorControlDisabled;
                         GUI.color = new Color(1, 1, 1, 0.28f);

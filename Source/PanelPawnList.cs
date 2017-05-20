@@ -86,83 +86,74 @@ namespace EdB.PrepareCarefully {
                     Rect rect = RectEntry;
                     rect.y = rect.y + cursor;
                     rect.width = rect.width - (scrollView.ScrollbarsVisible ? 16 : 0);
-                    bool mouseover = rect.Contains(Event.current.mousePosition);
-
-                    if (selected || mouseover) {
+                    
+                    if (selected || rect.Contains(Event.current.mousePosition)) {
                         GUI.color = Style.ColorPanelBackground;
                         GUI.DrawTexture(rect, BaseContent.WhiteTex);
                         if (selected) {
                             GUI.color = new Color(66f / 255f, 66f / 255f, 66f / 255f);
                             Widgets.DrawBox(rect, 1);
                         }
-                    }
-
-                    GUI.BeginGroup(rect);
-                    try {
-                        Rect pawnRect = RectPortrait;
-                        pawnRect.width = pawnRect.width - (scrollView.ScrollbarsVisible ? 16 : 0);
-                        float pawnHeight = Mathf.Floor(pawnRect.height * 1.25f);
-                        float pawnWidth = pawnRect.width;
-                        pawnRect.x = pawnRect.x + pawnRect.width * 0.5f - pawnWidth * 0.5f;
-                        pawnRect.y = 8 + pawnRect.height * 0.5f - pawnHeight * 0.5f;
-                        pawnRect.width = pawnWidth;
-                        pawnRect.height = pawnHeight;
                         GUI.color = Color.white;
-                        RenderTexture pawnTexture = pawn.GetPortrait(pawnRect.size);
-                        GUI.DrawTexture(pawnRect, (Texture)pawnTexture);
-
-                        GUI.color = new Color(238f / 255f, 238f / 255f, 238f / 255f);
-                        Text.Font = GameFont.Small;
-                        Text.Anchor = TextAnchor.LowerCenter;
-                        Rect nameRect = RectName;
-                        nameRect.width = nameRect.width - (scrollView.ScrollbarsVisible ? 16 : 0);
-                        Vector2 nameSize = Text.CalcSize(pawn.Pawn.LabelShort);
-                        string name = pawn.Pawn.LabelShort;
-                        if (nameSize.x > nameRect.width) {
-                            name = GetShorterName(name, nameRect);
-                        }
-                        Widgets.Label(nameRect, name);
-
-                        Text.Font = GameFont.Tiny;
-                        Text.Anchor = TextAnchor.UpperCenter;
-                        GUI.color = new Color(184f / 255f, 184f / 255f, 184f / 255f);
-                        Rect professionRect = RectProfession;
-                        professionRect.width = professionRect.width - (scrollView.ScrollbarsVisible ? 16 : 0);
-                        if (pawn.IsAdult) {
-                            if (pawn.Adulthood != null) {
-                                Widgets.Label(professionRect, pawn.Adulthood.TitleShort);
-                            }
-                        }
-                        else {
-                            Widgets.Label(professionRect, pawn.Childhood.TitleShort);
-                        }
-
-                        Rect deleteRect = RectButtonDelete;
+                        Rect deleteRect = RectButtonDelete.OffsetBy(rect.position);
                         deleteRect.x = deleteRect.x - (scrollView.ScrollbarsVisible ? 16 : 0);
                         if (colonistCount > 1) {
-                            if (deleteRect.Contains(Event.current.mousePosition)) {
-                                GUI.color = Style.ColorButtonHighlight;
+                            Style.SetGUIColorForButton(deleteRect);
+                            GUI.DrawTexture(deleteRect, Textures.TextureButtonDelete);
+                            // For some reason, this GUI.Button call is causing weirdness with text field focus (select
+                            // text in one of the name fields and hover over the pawns in the pawn list to see what I mean).
+                            // Replacing it with a mousedown event check fixes it for some reason.
+                            //if (GUI.Button(deleteRect, string.Empty, Widgets.EmptyStyle)) {
+                            if (Event.current.type == EventType.MouseDown && deleteRect.Contains(Event.current.mousePosition)) {
+                                CustomPawn localPawn = pawn;
+                                Find.WindowStack.Add(
+                                    new Dialog_Confirm("EdB.PC.Panel.PawnList.Delete.Confirm".Translate(),
+                                    delegate {
+                                        PawnDeleted(localPawn);
+                                    },
+                                    true, null, true)
+                                );
                             }
-                            else {
-                                GUI.color = Style.ColorButton;
-                            }
-                            if (selected || mouseover) {
-                                GUI.DrawTexture(deleteRect, Textures.TextureButtonDelete);
-                                if (Widgets.ButtonInvisible(deleteRect, false)) {
-                                    CustomPawn localPawn = pawn;
-                                    Find.WindowStack.Add(
-                                        new Dialog_Confirm("EdB.PC.Panel.PawnList.Delete.Confirm".Translate(),
-                                        delegate {
-                                            PawnDeleted(localPawn);
-                                        },
-                                        true, null, true)
-                                    );
-                                }
-                            }
+                            GUI.color = Color.white;
                         }
                     }
-                    finally {
-                        GUI.EndGroup();
+                    
+                    Rect pawnRect = RectPortrait.OffsetBy(rect.position);
+                    pawnRect.width = pawnRect.width - (scrollView.ScrollbarsVisible ? 16 : 0);
+                    float pawnHeight = Mathf.Floor(pawnRect.height * 1.25f);
+                    float pawnWidth = pawnRect.width;
+                    pawnRect.x = pawnRect.x + pawnRect.width * 0.5f - pawnWidth * 0.5f;
+                    pawnRect.y = pawnRect.y + 8 + pawnRect.height * 0.5f - pawnHeight * 0.5f;
+                    pawnRect.width = pawnWidth;
+                    pawnRect.height = pawnHeight;
+                    GUI.color = Color.white;
+                    RenderTexture pawnTexture = pawn.GetPortrait(pawnRect.size);
+                    GUI.DrawTexture(pawnRect, (Texture)pawnTexture);
+
+                    GUI.color = new Color(238f / 255f, 238f / 255f, 238f / 255f);
+                    Text.Font = GameFont.Small;
+                    Text.Anchor = TextAnchor.LowerCenter;
+                    Rect nameRect = RectName.OffsetBy(rect.position);
+                    nameRect.width = nameRect.width - (scrollView.ScrollbarsVisible ? 16 : 0);
+                    Vector2 nameSize = Text.CalcSize(pawn.Pawn.LabelShort);
+                    string name = pawn.Pawn.LabelShort;
+                    if (nameSize.x > nameRect.width) {
+                        name = GetShorterName(name, nameRect);
+                    }
+                    Widgets.Label(nameRect, name);
+
+                    Text.Font = GameFont.Tiny;
+                    Text.Anchor = TextAnchor.UpperCenter;
+                    GUI.color = new Color(184f / 255f, 184f / 255f, 184f / 255f);
+                    Rect professionRect = RectProfession.OffsetBy(rect.position);
+                    professionRect.width = professionRect.width - (scrollView.ScrollbarsVisible ? 16 : 0);
+                    if (pawn.IsAdult) {
+                        if (pawn.Adulthood != null) {
+                            Widgets.Label(professionRect, pawn.Adulthood.TitleShort);
+                        }
+                    }
+                    else {
+                        Widgets.Label(professionRect, pawn.Childhood.TitleShort);
                     }
 
                     if (pawn != state.CurrentPawn && Widgets.ButtonInvisible(rect, false)) {
@@ -242,7 +233,7 @@ namespace EdB.PrepareCarefully {
                 },
                 ConfirmValidation = () => {
                     if (selectedFaction == null) {
-                        return "EdB.PC.Panel.PawnList.ErrorMustSelectFaction";
+                        return "EdB.PC.Panel.PawnList.Error.MustSelectFaction";
                     }
                     else {
                         return null;

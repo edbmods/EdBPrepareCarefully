@@ -21,7 +21,11 @@ namespace EdB.PrepareCarefully {
             }
         }
 
-        protected override void DoMapEntryInteraction(string mapName) {
+        protected override void DoMapEntryInteraction(string presetName) {
+            if (string.IsNullOrEmpty(presetName)) {
+                return;
+            }
+            PrepareCarefully.Instance.Filename = presetName;
             if (action != null) {
                 action(PrepareCarefully.Instance.Filename);
             }

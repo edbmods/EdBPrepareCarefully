@@ -141,22 +141,18 @@ Your colonist customizations will be ignored.</EdB.PC.Dialog.ModConfigProblem.De
   <EdB.PC.Panel.Appearance.ApparelConflict.LineItem> - {0}</EdB.PC.Panel.Appearance.ApparelConflict.LineItem>
   <EdB.PC.Panel.Appearance.NoneSelected>None</EdB.PC.Panel.Appearance.NoneSelected>
 
+  <EdB.PC.Panel.AvailableEquipment.Add>Add Equipment</EdB.PC.Panel.AvailableEquipment.Add>
+  <EdB.PC.Panel.AvailableEquipment.Materials.All>All Materials</EdB.PC.Panel.AvailableEquipment.Materials.All>
+  <EdB.PC.Panel.AvailableEquipment.Materials.None>No Materials</EdB.PC.Panel.AvailableEquipment.Materials.None>
+  
   <EdB.PC.Panel.Backstory.Title>Backstory</EdB.PC.Panel.Backstory.Title>
   <EdB.PC.Panel.Backstory.Childhood>Childhood</EdB.PC.Panel.Backstory.Childhood>
   <EdB.PC.Panel.Backstory.Adulthood>Adulthood</EdB.PC.Panel.Backstory.Adulthood>
 
-  <EdB.PC.Panel.PawnList.Delete.Confirm>Are you sure that you want to remove this character?</EdB.PC.Panel.PawnList.Delete.Confirm>
-  <EdB.PC.Panel.PawnList.ErrorMustSelectFaction>Must select a faction</EdB.PC.Panel.PawnList.ErrorMustSelectFaction>
-  <EdB.PC.Panel.PawnList.SelectFaction>Select a Faction</EdB.PC.Panel.PawnList.SelectFaction>
-
-  <EdB.PC.Panel.RelationshipsParentChild.Title>Parent/Child Relationships</EdB.PC.Panel.RelationshipsParentChild.Title>
-  
-  <EdB.PC.Panel.RelationshipsOther.Title>Other Relationships</EdB.PC.Panel.RelationshipsOther.Title>
-
   <EdB.PC.Panel.Health.Error.MustSelectBodyPart>You must select a location</EdB.PC.Panel.Health.Error.MustSelectBodyPart>
   <EdB.PC.Panel.Health.Error.MustSelectImplant>You must select an implant procedure</EdB.PC.Panel.Health.Error.MustSelectImplant>
   <EdB.PC.Panel.Health.Error.MustSelectOption>You must select an option</EdB.PC.Panel.Health.Error.MustSelectOption>
-  <EdB.PC.Panel.Health.Error.MustSelectSelectSeverity>You must select a severity level</EdB.PC.Panel.Health.Error.MustSelectSelectSeverity>
+  <EdB.PC.Panel.Health.Error.MustSelectSeverity>You must select a severity level</EdB.PC.Panel.Health.Error.MustSelectSeverity>
   <EdB.PC.Panel.Health.HediffTypeInjury>Add an injury or health condition</EdB.PC.Panel.Health.HediffTypeInjury>
   <EdB.PC.Panel.Health.HediffTypeImplant>Add an implant</EdB.PC.Panel.Health.HediffTypeImplant>
   <EdB.PC.Panel.Health.InjuryLabel.Stage>{0}, {1}</EdB.PC.Panel.Health.InjuryLabel.Stage>
@@ -173,6 +169,16 @@ Your colonist customizations will be ignored.</EdB.PC.Dialog.ModConfigProblem.De
   <EdB.PC.Panel.LoadSave.Load>Load Character</EdB.PC.Panel.LoadSave.Load>
   <EdB.PC.Panel.LoadSave.Save>Save Character</EdB.PC.Panel.LoadSave.Save>
 
+  <EdB.PC.Panel.PawnList.Delete.Confirm>Are you sure that you want to remove this character?</EdB.PC.Panel.PawnList.Delete.Confirm>
+  <EdB.PC.Panel.PawnList.Error.MustSelectFaction>Must select a faction</EdB.PC.Panel.PawnList.Error.MustSelectFaction>
+  <EdB.PC.Panel.PawnList.SelectFaction>Select a Faction</EdB.PC.Panel.PawnList.SelectFaction>
+
+  <EdB.PC.Panel.RelationshipsOther.Title>Other Relationships</EdB.PC.Panel.RelationshipsOther.Title>
+
+  <EdB.PC.Panel.RelationshipsParentChild.Title>Parent/Child Relationships</EdB.PC.Panel.RelationshipsParentChild.Title>
+
+  <EdB.PC.Panel.SelectedEquipment.Remove>Remove Equipment</EdB.PC.Panel.SelectedEquipment.Remove>
+
   <EdB.PC.Panel.Skills.Title>Skills</EdB.PC.Panel.Skills.Title>
   <EdB.PC.Panel.Skills.ResetTip>Reset all skills and passions to their original values</EdB.PC.Panel.Skills.ResetTip>
   <EdB.PC.Panel.Skills.ClearTip>Clear all skills and passions by setting them to their lowest possible levels</EdB.PC.Panel.Skills.ClearTip>
@@ -184,5 +190,6 @@ Your colonist customizations will be ignored.</EdB.PC.Dialog.ModConfigProblem.De
   <EdB.PC.TabView.Equipment.Title>Equipment</EdB.PC.TabView.Equipment.Title>
   <EdB.PC.TabView.Pawns.Title>Characters</EdB.PC.TabView.Pawns.Title>
   <EdB.PC.TabView.Relationships.Title>Relationships</EdB.PC.TabView.Relationships.Title>
+
 
 </LanguageData>

@@ -5,7 +5,7 @@ using System.Linq;
 namespace EdB.PrepareCarefully {
     public class State {
         protected int currentPawnIndex;
-
+        
         protected List<string> errors = new List<string>();
         protected List<string> messages = new List<string>();
 

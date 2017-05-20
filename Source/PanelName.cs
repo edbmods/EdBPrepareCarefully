@@ -88,12 +88,7 @@ namespace EdB.PrepareCarefully {
             TooltipHandler.TipRegion(RectLastName, "LastNameDesc".Translate());
 
             // Random button
-            if (RectRandomize.Contains(Event.current.mousePosition)) {
-                GUI.color = Style.ColorButtonHighlight;
-            }
-            else {
-                GUI.color = Style.ColorButton;
-            }
+            Style.SetGUIColorForButton(RectRandomize);
             GUI.DrawTexture(RectRandomize, Textures.TextureButtonRandom);
             if (Widgets.ButtonInvisible(RectRandomize, false)) {
                 SoundDefOf.TickLow.PlayOneShotOnCamera();

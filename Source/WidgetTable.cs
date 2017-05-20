@@ -25,13 +25,23 @@ namespace EdB.PrepareCarefully {
                 this.Rows = rows;
             }
         }
+        public struct Metadata {
+            public int groupIndex;
+            public int rowIndex;
+            public int columnIndex;
+            public Metadata(int groupIndex, int rowIndex, int columnIndex) {
+                this.groupIndex = groupIndex;
+                this.rowIndex = rowIndex;
+                this.columnIndex = columnIndex;
+            }
+        }
         public class Column {
             public float Width;
             public string Name;
             public string Label;
             public TextAnchor Alignment = TextAnchor.LowerLeft;
             public bool AdjustForScrollbars = false;
-            public Action<T, Rect> DrawAction = (T, Rect) => { };
+            public Action<T, Rect, Metadata> DrawAction = (T, Rect, Metadata) => { };
             public bool AllowSorting = false;
         }
         protected List<Column> columns = new List<Column>();
@@ -247,15 +257,17 @@ namespace EdB.PrepareCarefully {
                 GUI.color = Color.white;
 
                 float columnCursor = 0;
+                int columnIndex = 0;
                 foreach (var column in columns) {
                     Rect columnRect = new Rect(columnCursor, rowRect.y, column.Width, rowRect.height);
                     if (column.AdjustForScrollbars && scrollView.ScrollbarsVisible) {
                         columnRect.width = columnRect.width - 16;
                     }
                     if (column.DrawAction != null) {
-                        column.DrawAction(row, columnRect);
+                        column.DrawAction(row, columnRect, new Metadata(0, index, columnIndex));
                     }
                     columnCursor += columnRect.width;
+                    columnIndex++;
                 }
 
                 if (SupportSelection) {

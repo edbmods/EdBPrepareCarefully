@@ -236,7 +236,7 @@ namespace EdB.PrepareCarefully {
                     },
                     ConfirmValidation = () => {
                         if (selectedSeverity == null) {
-                            return "EdB.PC.ErrorMustSelectSeverity";
+                            return "EdB.PC.Error.MustSelectSeverity";
                         }
                         else {
                             return null;
@@ -401,7 +401,7 @@ namespace EdB.PrepareCarefully {
                     },
                     ConfirmValidation = () => {
                         if (selectedHediffType == null) {
-                            return "EdB.PC.Panel.Health.ErrorMustSelectOption";
+                            return "EdB.PC.Panel.Health.Error.MustSelectOption";
                         }
                         else {
                             return null;
