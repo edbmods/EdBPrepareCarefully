@@ -169,5 +169,9 @@ namespace EdB.PrepareCarefully {
             }
             return (bool)draggingField.GetValue(null);
         }
+
+        public void ForceStop() {
+            DragSliderManager.ForceStop();
+        }
     }
 }

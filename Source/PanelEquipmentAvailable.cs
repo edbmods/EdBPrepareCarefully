@@ -108,7 +108,7 @@ namespace EdB.PrepareCarefully {
                     table.AddColumn(new WidgetTable<EquipmentRecord>.Column() {
                         Width = columnWidthInfo,
                         Name = ColumnNameInfo,
-                        DrawAction = (EquipmentRecord entry, Rect columnRect) => {
+                        DrawAction = (EquipmentRecord entry, Rect columnRect, WidgetTable<EquipmentRecord>.Metadata metadata) => {
                             Rect infoRect = new Rect(columnRect.MiddleX() - sizeInfoButton.HalfX(), columnRect.MiddleY() - sizeInfoButton.HalfY(), sizeInfoButton.x, sizeInfoButton.y);
                             Style.SetGUIColorForButton(infoRect);
                             GUI.DrawTexture(infoRect, Textures.TextureButtonInfo);
@@ -126,7 +126,7 @@ namespace EdB.PrepareCarefully {
                     table.AddColumn(new WidgetTable<EquipmentRecord>.Column() {
                         Width = columnWidthIcon,
                         Name = ColumnNameIcon,
-                        DrawAction = (EquipmentRecord entry, Rect columnRect) => {
+                        DrawAction = (EquipmentRecord entry, Rect columnRect, WidgetTable<EquipmentRecord>.Metadata metadata) => {
                             WidgetEquipmentIcon.Draw(columnRect, entry);
                         }
                     });
@@ -136,7 +136,7 @@ namespace EdB.PrepareCarefully {
                         Label = "Name",
                         AdjustForScrollbars = true,
                         AllowSorting = true,
-                        DrawAction = (EquipmentRecord entry, Rect columnRect) => {
+                        DrawAction = (EquipmentRecord entry, Rect columnRect, WidgetTable<EquipmentRecord>.Metadata metadata) => {
                             columnRect = columnRect.InsetBy(nameOffset.x, 0, 0, 0);
                             GUI.color = Style.ColorText;
                             Text.Font = GameFont.Small;
@@ -152,7 +152,7 @@ namespace EdB.PrepareCarefully {
                         Label = "Cost",
                         AdjustForScrollbars = false,
                         AllowSorting = true,
-                        DrawAction = (EquipmentRecord entry, Rect columnRect) => {
+                        DrawAction = (EquipmentRecord entry, Rect columnRect, WidgetTable<EquipmentRecord>.Metadata metadata) => {
                             GUI.color = Style.ColorText;
                             Text.Font = GameFont.Small;
                             Text.Anchor = TextAnchor.MiddleRight;

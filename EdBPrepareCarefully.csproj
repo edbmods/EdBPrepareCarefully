@@ -155,6 +155,7 @@
     <Compile Include="Source\ProviderEquipment.cs" />
     <Compile Include="Source\EquipmentType.cs" />
     <Compile Include="Source\WidgetEquipmentIcon.cs" />
+    <Compile Include="Source\WidgetNumberField.cs" />
     <Compile Include="Source\WidgetTable.cs" />
     <Compile Include="Source\ControllerEquipment.cs" />
     <Compile Include="Source\PanelEquipmentBase.cs" />

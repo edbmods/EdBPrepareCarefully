@@ -20,6 +20,8 @@ namespace EdB.PrepareCarefully {
         private DragSlider Slider = new DragSlider(0.3f, 12, 400);
         private EquipmentRecord ScrollToEntry = null;
 
+        private List<WidgetNumberField> numberFields = new List<WidgetNumberField>();
+
         public PanelEquipmentSelected() {
         }
         public override void Resize(Rect rect) {
@@ -70,7 +72,7 @@ namespace EdB.PrepareCarefully {
             table.AddColumn(new WidgetTable<EquipmentSelection>.Column() {
                 Width = columnWidthInfo,
                 Name = "Info",
-                DrawAction = (EquipmentSelection entry, Rect columnRect) => {
+                DrawAction = (EquipmentSelection entry, Rect columnRect, WidgetTable<EquipmentSelection>.Metadata metadata) => {
                     Rect infoRect = new Rect(columnRect.MiddleX() - sizeInfoButton.HalfX(), columnRect.MiddleY() - sizeInfoButton.HalfY(), sizeInfoButton.x, sizeInfoButton.y);
                     Style.SetGUIColorForButton(infoRect);
                     GUI.DrawTexture(infoRect, Textures.TextureButtonInfo);
@@ -88,7 +90,7 @@ namespace EdB.PrepareCarefully {
             table.AddColumn(new WidgetTable<EquipmentSelection>.Column() {
                 Width = columnWidthIcon,
                 Name = "Icon",
-                DrawAction = (EquipmentSelection entry, Rect columnRect) => {
+                DrawAction = (EquipmentSelection entry, Rect columnRect, WidgetTable<EquipmentSelection>.Metadata metadata) => {
                     WidgetEquipmentIcon.Draw(columnRect, entry.Record);
                 }
             });
@@ -96,7 +98,7 @@ namespace EdB.PrepareCarefully {
                 Width = columnWidthName,
                 Name = "Name",
                 Label = "Name",
-                DrawAction = (EquipmentSelection entry, Rect columnRect) => {
+                DrawAction = (EquipmentSelection entry, Rect columnRect, WidgetTable<EquipmentSelection>.Metadata metadata) => {
                     columnRect = columnRect.InsetBy(nameOffset.x, 0, 0, 0);
                     GUI.color = Style.ColorText;
                     Text.Font = GameFont.Small;
@@ -111,40 +113,20 @@ namespace EdB.PrepareCarefully {
                 Name = "Count",
                 Label = "Count",
                 AdjustForScrollbars = true,
-                DrawAction = (EquipmentSelection entry, Rect columnRect) => {
-                    GUI.color = Style.ColorText;
-                    Text.Font = GameFont.Small;
-
+                DrawAction = (EquipmentSelection entry, Rect columnRect, WidgetTable<EquipmentSelection>.Metadata metadata) => {
                     Rect fieldRect = new Rect(columnRect.x + 17, columnRect.y + 7, 60, 28);
                     Widgets.DrawAtlas(fieldRect, Textures.TextureFieldAtlas);
 
-                    Slider.OnGUI(fieldRect, entry.Count, (int value) => {
-                        EquipmentCountUpdated(entry, value);
-                    });
-                    bool dragging = DragSlider.IsDragging();
-
-                    Rect decrementRect = new Rect(fieldRect.x - 17, fieldRect.y + 6, 16, 16);
-                    Style.SetGUIColorForButton(decrementRect);
-                    GUI.DrawTexture(decrementRect, Textures.TextureButtonPrevious);
-                    if (Widgets.ButtonInvisible(decrementRect, false)) {
-                        SoundDefOf.TickHigh.PlayOneShotOnCamera();
-                        int amount = Event.current.shift ? 10 : 1;
-                        int value = entry.Count - amount;
-                        EquipmentCountUpdated(entry, value);
+                    if (metadata.rowIndex <= numberFields.Count) {
+                        numberFields.Add(new WidgetNumberField() {
+                            MaxValue = 100000
+                        });
                     }
-
-                    Rect incrementRect = new Rect(fieldRect.xMax + 1, fieldRect.y + 6, 16, 16);
-                    Style.SetGUIColorForButton(incrementRect);
-                    GUI.DrawTexture(incrementRect, Textures.TextureButtonNext);
-                    if (Widgets.ButtonInvisible(incrementRect, false)) {
-                        SoundDefOf.TickHigh.PlayOneShotOnCamera();
-                        int amount = Event.current.shift ? 10 : 1;
-                        int value = entry.Count + amount;
+                    WidgetNumberField field = numberFields[metadata.rowIndex];
+                    field.UpdateAction = (int value) => {
                         EquipmentCountUpdated(entry, value);
-                    }
-
-                    GUI.color = Color.white;
-                    Text.Anchor = TextAnchor.UpperLeft;
+                    };
+                    field.Draw(fieldRect, entry.Count);
                 }
             });
         }
