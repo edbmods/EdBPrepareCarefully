@@ -467,6 +467,9 @@ namespace EdB.PrepareCarefully {
                 if (injuryRecord.severity != null) {
                     injury.Severity = injuryRecord.Severity;
                 }
+                if (injuryRecord.painFactor != null) {
+                    injury.PainFactor = injuryRecord.PainFactor;
+                }
                 pawn.AddInjury(injury);
             }
             
