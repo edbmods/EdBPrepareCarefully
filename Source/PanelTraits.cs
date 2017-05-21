@@ -21,6 +21,7 @@ namespace EdB.PrepareCarefully {
         protected ScrollViewVertical scrollView = new ScrollViewVertical();
         protected List<Field> fields = new List<Field>();
         protected List<Trait> traitsToRemove = new List<Trait>();
+        protected HashSet<TraitDef> disallowedTraitDefs = new HashSet<TraitDef>();
 
         protected Vector2 SizeField;
         protected Vector2 SizeTrait;
@@ -106,6 +107,7 @@ namespace EdB.PrepareCarefully {
                     field.ClickAction = () => {
                         Trait originalTrait = localTrait;
                         Trait selectedTrait = originalTrait;
+                        ComputeDisallowedTraits(currentPawn, originalTrait);
                         Dialog_Options<Trait> dialog = new Dialog_Options<Trait>(providerTraits.Traits) {
                             NameFunc = (Trait t) => {
                                 return t.LabelCap;
@@ -123,15 +125,7 @@ namespace EdB.PrepareCarefully {
                                 selectedTrait = t;
                             },
                             EnabledFunc = (Trait t) => {
-                                if (t == null) {
-                                    return originalTrait != null;
-                                }
-                                else if ((originalTrait == null || !originalTrait.Label.Equals(t.Label)) && currentPawn.HasTrait(t)) {
-                                    return false;
-                                }
-                                else {
-                                    return true;
-                                }
+                                return !disallowedTraitDefs.Contains(t.def);
                             },
                             CloseAction = () => {
                                 TraitUpdated(localIndex, selectedTrait);
@@ -204,6 +198,7 @@ namespace EdB.PrepareCarefully {
             }
             GUI.DrawTexture(addRect, Textures.TextureButtonAdd);
             if (addButtonEnabled && Widgets.ButtonInvisible(addRect, false)) {
+                ComputeDisallowedTraits(currentPawn, null);
                 SoundDefOf.TickLow.PlayOneShotOnCamera();
                 Trait selectedTrait = null;
                 Dialog_Options<Trait> dialog = new Dialog_Options<Trait>(providerTraits.Traits) {
@@ -220,12 +215,7 @@ namespace EdB.PrepareCarefully {
                         selectedTrait = t;
                     },
                     EnabledFunc = (Trait t) => {
-                        if (currentPawn.HasTrait(t)) {
-                            return false;
-                        }
-                        else {
-                            return true;
-                        }
+                        return !disallowedTraitDefs.Contains(t.def);
                     },
                     CloseAction = () => {
                         if (selectedTrait != null) {
@@ -241,6 +231,21 @@ namespace EdB.PrepareCarefully {
                     TraitRemoved(trait);
                 }
                 traitsToRemove.Clear();
+            }
+        }
+
+        protected void ComputeDisallowedTraits(CustomPawn customPawn, Trait traitToReplace) {
+            disallowedTraitDefs.Clear();
+            foreach (Trait t in customPawn.Traits) {
+                if (t == traitToReplace) {
+                    continue;
+                }
+                disallowedTraitDefs.Add(t.def);
+                if (t.def.conflictingTraits != null) {
+                    foreach (var c in t.def.conflictingTraits) {
+                        disallowedTraitDefs.Add(c);
+                    }
+                }
             }
         }
 
