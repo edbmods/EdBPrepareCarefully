@@ -23,6 +23,9 @@ namespace EdB.PrepareCarefully {
         protected EquipmentType TypeAnimals = new EquipmentType("Animals", "EdB.PC.Equipment.Type.Animals");
         protected EquipmentType TypeUncategorized = new EquipmentType("Uncategorized", "");
 
+        protected ThingCategoryDef thingCategorySweetMeals = null;
+        protected ThingCategoryDef thingCategoryMeatRaw = null;
+
         public EquipmentDatabase() {
             types.Add(TypeResources);
             types.Add(TypeFood);
@@ -57,6 +60,10 @@ namespace EdB.PrepareCarefully {
         }
 
         public void BuildEquipmentLists() {
+
+            thingCategorySweetMeals = DefDatabase<ThingCategoryDef>.GetNamedSilentFail("SweetMeals");
+            thingCategoryMeatRaw = DefDatabase<ThingCategoryDef>.GetNamedSilentFail("MeatRaw");
+
             foreach (var def in DefDatabase<ThingDef>.AllDefs) {
                 EquipmentType type = ClassifyThingDef(def);
                 if (type != null) {
@@ -81,15 +88,29 @@ namespace EdB.PrepareCarefully {
             if (def.CountAsResource) {
                 if (def.IsDrug || def.IsMedicine) {
                     if (def.ingestible != null) {
+                        if (def.thingCategories != null) {
+                            if (thingCategorySweetMeals != null && def.thingCategories.Contains(thingCategorySweetMeals)) {
+                                return TypeFood;
+                            }
+                        }
                         int foodTypes = (int) def.ingestible.foodType;
-                        bool isLiquor = (foodTypes & (int)FoodTypeFlags.Liquor) > 0;
-                        if (isLiquor) {
+                        bool isFood = ((foodTypes & (int)FoodTypeFlags.Liquor) > 0) | ((foodTypes & (int)FoodTypeFlags.Meal) > 0);
+                        if (isFood) {
                             return TypeFood;
                         }
                     }
                     return TypeMedical;
                 }
                 if (def.ingestible != null) {
+                    if (thingCategoryMeatRaw != null && def.thingCategories.Contains(thingCategoryMeatRaw)) {
+                        return TypeFood;
+                    }
+                    if (def.ingestible.drugCategory == DrugCategory.Medical) {
+                        return TypeMedical;
+                    }
+                    if (def.ingestible.preferability == FoodPreferability.DesperateOnly || def.ingestible.preferability == FoodPreferability.NeverForNutrition) {
+                        return TypeResources;
+                    }
                     return TypeFood;
                 }
                 if ("AIPersonaCore".Equals(def.defName)) {
