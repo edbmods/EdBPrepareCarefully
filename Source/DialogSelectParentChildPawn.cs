@@ -177,8 +177,8 @@ namespace EdB.PrepareCarefully {
                             "EdB.PC.Pawn.AgeWithChronological".Translate(new object[] { pawn.BiologicalAge, pawn.ChronologicalAge }) :
                             "EdB.PC.Pawn.AgeWithoutChronological".Translate(new object[] { pawn.BiologicalAge });
                         description = pawn.Gender != Gender.None ?
-                            "EdB.PC.Pawn.PawnDescriptionWithGender".Translate(new object[] { pawn.ProfessionLabel, pawn.Gender.GetLabel(), age }) :
-                            "EdB.PC.Pawn.PawnDescriptionNoGender".Translate(new object[] { pawn.ProfessionLabel, age });
+                            "EdB.PC.Pawn.PawnDescriptionWithGender".Translate(new object[] { pawn.ProfessionLabelShort, pawn.Gender.GetLabel(), age }) :
+                            "EdB.PC.Pawn.PawnDescriptionNoGender".Translate(new object[] { pawn.ProfessionLabelShort, age });
                     }
                     else {
                         string profession = "EdB.PC.Pawn.HiddenPawnProfession".Translate();

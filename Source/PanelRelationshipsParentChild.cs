@@ -475,13 +475,13 @@ namespace EdB.PrepareCarefully {
         }
         private string GetProfessionLabel(CustomParentChildPawn pawn) {
             if (!pawn.Hidden) {
-                return pawn.Pawn.ProfessionLabel;
+                return pawn.Pawn.ProfessionLabelShort;
             }
             if (pawn.Pawn.IsAdult && visibleBackstories.Contains(pawn.Pawn.Adulthood)) {
-                return pawn.Pawn.ProfessionLabel;
+                return pawn.Pawn.ProfessionLabelShort;
             }
             else if (!pawn.Pawn.IsAdult && visibleBackstories.Contains(pawn.Pawn.Childhood)) {
-                return pawn.Pawn.ProfessionLabel;
+                return pawn.Pawn.ProfessionLabelShort;
             }
             else {
                 return "Unknown";
