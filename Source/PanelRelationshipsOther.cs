@@ -112,7 +112,7 @@ namespace EdB.PrepareCarefully {
             Text.Font = GameFont.Tiny;
             Text.Anchor = TextAnchor.LowerCenter;
             GUI.color = Style.ColorText;
-            Widgets.Label(sourceProfessionName, relationship.source.ProfessionLabel);
+            Widgets.Label(sourceProfessionName, relationship.source.ProfessionLabelShort);
             GUI.color = Color.white;
 
             Rect sourcePortraitRect = sourcePawnRect.InsetBy(6);
@@ -146,7 +146,7 @@ namespace EdB.PrepareCarefully {
             Text.Font = GameFont.Tiny;
             Text.Anchor = TextAnchor.LowerCenter;
             GUI.color = Style.ColorText;
-            Widgets.Label(targetProfessionName, relationship.target.ProfessionLabel);
+            Widgets.Label(targetProfessionName, relationship.target.ProfessionLabelShort);
             GUI.color = Color.white;
             
             Rect targetPortraitRect = targetPawnRect.InsetBy(6);

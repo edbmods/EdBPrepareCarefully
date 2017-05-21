@@ -688,6 +688,17 @@ namespace EdB.PrepareCarefully {
         public string ProfessionLabel {
             get {
                 if (IsAdult) {
+                    return Adulthood.Title;
+                }
+                else {
+                    return Childhood.Title;
+                }
+            }
+        }
+
+        public string ProfessionLabelShort {
+            get {
+                if (IsAdult) {
                     return Adulthood.TitleShort;
                 }
                 else {
