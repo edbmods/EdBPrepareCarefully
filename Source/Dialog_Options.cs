@@ -36,7 +36,7 @@ namespace EdB.PrepareCarefully {
                 ComputeSizes();
             }
         }
-        public string ConfirmButtonLabel = "EdB.PC.Common.Close";
+        public string ConfirmButtonLabel = "EdB.PC.Common.Close".Translate();
 
         public string CancelButtonLabel = null;
 
@@ -123,7 +123,7 @@ namespace EdB.PrepareCarefully {
             GUI.color = Color.white;
             if (HeaderLabel != null) {
                 Text.Font = GameFont.Medium;
-                Widgets.Label(HeaderRect, HeaderLabel.Translate());
+                Widgets.Label(HeaderRect, HeaderLabel);
             }
 
             Text.Font = GameFont.Small;
@@ -195,12 +195,12 @@ namespace EdB.PrepareCarefully {
             GUI.BeginGroup(FooterRect);
             Rect buttonRect = SingleButtonRect;
             if (CancelButtonLabel != null) {
-                if (Widgets.ButtonText(CancelButtonRect, CancelButtonLabel.Translate(), true, true, true)) {
+                if (Widgets.ButtonText(CancelButtonRect, CancelButtonLabel, true, true, true)) {
                     this.Close(true);
                 }
                 buttonRect = ConfirmButtonRect;
             }
-            if (Widgets.ButtonText(buttonRect, ConfirmButtonLabel.Translate(), true, true, true)) {
+            if (Widgets.ButtonText(buttonRect, ConfirmButtonLabel, true, true, true)) {
                 string validationMessage = ConfirmValidation();
                 if (validationMessage != null) {
                     Messages.Message(validationMessage.Translate(), MessageSound.RejectInput);

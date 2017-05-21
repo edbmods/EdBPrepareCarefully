@@ -202,6 +202,7 @@ namespace EdB.PrepareCarefully {
                 SoundDefOf.TickLow.PlayOneShotOnCamera();
                 Trait selectedTrait = null;
                 Dialog_Options<Trait> dialog = new Dialog_Options<Trait>(providerTraits.Traits) {
+                    ConfirmButtonLabel = "EdB.PC.Common.Add".Translate(),
                     NameFunc = (Trait t) => {
                         return t.LabelCap;
                     },

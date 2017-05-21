@@ -216,8 +216,8 @@ namespace EdB.PrepareCarefully {
         protected void OpenAddPawnDialog() {
             FactionDef selectedFaction = Faction.OfPlayer.def;
             var dialog = new Dialog_Options<FactionDef>(providerFactions.Factions) {
-                ConfirmButtonLabel = "EdB.PC.Common.Add",
-                CancelButtonLabel = "EdB.PC.Common.Cancel",
+                ConfirmButtonLabel = "EdB.PC.Common.Add".Translate(),
+                CancelButtonLabel = "EdB.PC.Common.Cancel".Translate(),
                 HeaderLabel = "EdB.PC.Panel.PawnList.SelectFaction".Translate(),
                 NameFunc = (FactionDef def) => {
                     return def.LabelCap;

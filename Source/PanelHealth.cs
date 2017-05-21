@@ -217,9 +217,9 @@ namespace EdB.PrepareCarefully {
                 };
 
                 severityDialog = new Dialog_Options<InjurySeverity>(severityOptions) {
-                    ConfirmButtonLabel = "EdB.PC.Common.Add",
-                    CancelButtonLabel = "EdB.PC.Common.Cancel",
-                    HeaderLabel = "EdB.PC.Panel.Health.SelectSeverity",
+                    ConfirmButtonLabel = "EdB.PC.Common.Add".Translate(),
+                    CancelButtonLabel = "EdB.PC.Common.Cancel".Translate(),
+                    HeaderLabel = "EdB.PC.Panel.Health.SelectSeverity".Translate(),
                     NameFunc = (InjurySeverity option) => {
                         if (!string.IsNullOrEmpty(option.Label)) {
                             return option.Label;
@@ -248,9 +248,9 @@ namespace EdB.PrepareCarefully {
                 };
 
                 bodyPartDialog = new Dialog_Options<BodyPartRecord>(null) {
-                    ConfirmButtonLabel = "EdB.PC.Common.Add",
-                    CancelButtonLabel = "EdB.PC.Common.Cancel",
-                    HeaderLabel = "EdB.PC.Dialog.BodyPart.Header",
+                    ConfirmButtonLabel = "EdB.PC.Common.Add".Translate(),
+                    CancelButtonLabel = "EdB.PC.Common.Cancel".Translate(),
+                    HeaderLabel = "EdB.PC.Dialog.BodyPart.Header".Translate(),
                     NameFunc = (BodyPartRecord option) => {
                         return option.def.LabelCap;
                     },
@@ -290,9 +290,9 @@ namespace EdB.PrepareCarefully {
                 };
 
                 injuryOptionDialog = new Dialog_Options<InjuryOption>(PrepareCarefully.Instance.HealthManager.InjuryManager.Options) {
-                    ConfirmButtonLabel = "EdB.PC.Common.Next",
-                    CancelButtonLabel = "EdB.PC.Common.Cancel",
-                    HeaderLabel = "EdB.PC.Dialog.Injury.Header",
+                    ConfirmButtonLabel = "EdB.PC.Common.Next".Translate(),
+                    CancelButtonLabel = "EdB.PC.Common.Cancel".Translate(),
+                    HeaderLabel = "EdB.PC.Dialog.Injury.Header".Translate(),
                     NameFunc = (InjuryOption option) => {
                         return option.Label;
                     },
@@ -339,9 +339,9 @@ namespace EdB.PrepareCarefully {
                 };
 
                 implantRecipeDialog = new Dialog_Options<RecipeDef>(PrepareCarefully.Instance.HealthManager.ImplantManager.RecipesForPawn(customPawn)) {
-                    ConfirmButtonLabel = "EdB.PC.Common.Next",
-                    CancelButtonLabel = "EdB.PC.Common.Cancel",
-                    HeaderLabel = "EdB.PC.Dialog.Implant.Header",
+                    ConfirmButtonLabel = "EdB.PC.Common.Next".Translate(),
+                    CancelButtonLabel = "EdB.PC.Common.Cancel".Translate(),
+                    HeaderLabel = "EdB.PC.Dialog.Implant.Header".Translate(),
                     NameFunc = (RecipeDef recipe) => {
                         return recipe.LabelCap;
                     },
@@ -388,8 +388,8 @@ namespace EdB.PrepareCarefully {
                 };
 
                 hediffTypeDialog = new Dialog_Options<string>(new string[] { HediffTypeInjury, HediffTypeImplant }) {
-                    ConfirmButtonLabel = "EdB.PC.Common.Next",
-                    CancelButtonLabel = "EdB.PC.Common.Cancel",
+                    ConfirmButtonLabel = "EdB.PC.Common.Next".Translate(),
+                    CancelButtonLabel = "EdB.PC.Common.Cancel".Translate(),
                     NameFunc = (string type) => {
                         return ("EdB.PC.Panel.Health." + type).Translate();
                     },
