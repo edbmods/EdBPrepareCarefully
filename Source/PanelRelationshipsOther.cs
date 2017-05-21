@@ -231,9 +231,9 @@ namespace EdB.PrepareCarefully {
 
             Dialog_Options<PawnRelationDef> relationshipDialog =
                 new Dialog_Options<PawnRelationDef>(null) {
-                    ConfirmButtonLabel = "EdB.PC.Common.Next",
-                    CancelButtonLabel = "EdB.PC.Common.Cancel",
-                    HeaderLabel = "EdB.PC.AddRelationship.Header.Relationship",
+                    ConfirmButtonLabel = "EdB.PC.Common.Next".Translate(),
+                    CancelButtonLabel = "EdB.PC.Common.Cancel".Translate(),
+                    HeaderLabel = "EdB.PC.AddRelationship.Header.Relationship".Translate(),
                     NameFunc = (PawnRelationDef def) => {
                         return def.GetGenderSpecificLabelCap(sourcePawn.Pawn);
                     },
