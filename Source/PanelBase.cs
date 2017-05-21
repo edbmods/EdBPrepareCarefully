@@ -21,6 +21,10 @@ namespace EdB.PrepareCarefully {
                 return null;
             }
         }
+        public string Warning {
+            get;
+            set;
+        }
         public PanelBase() {
         }
 
@@ -52,12 +56,19 @@ namespace EdB.PrepareCarefully {
             if (PanelHeader == null) {
                 return;
             }
+            Rect labelRect = new Rect(15 + PanelRect.xMin, 5 + PanelRect.yMin, PanelRect.width - 30, 40);
+            if (!string.IsNullOrEmpty(Warning)) {
+                Rect alertRect = new Rect(8 + PanelRect.xMin, 9 + PanelRect.yMin, 20, 20);
+                GUI.DrawTexture(alertRect, Textures.TextureAlertSmall);
+                TooltipHandler.TipRegion(alertRect, Warning);
+                labelRect = labelRect.InsetBy(17, 0, 0, 0);
+            }
             var fontValue = Text.Font;
             var anchorValue = Text.Anchor;
             var colorValue = GUI.color;
             Text.Font = GameFont.Medium;
             Text.Anchor = TextAnchor.UpperLeft;
-            Widgets.Label(new Rect(15 + PanelRect.xMin, 5 + PanelRect.yMin, PanelRect.width - 30, 40), PanelHeader);
+            Widgets.Label(labelRect, PanelHeader);
             Text.Font = fontValue;
             Text.Anchor = anchorValue;
             GUI.color = colorValue;

@@ -24,6 +24,21 @@ namespace EdB.PrepareCarefully {
             RectText = new Rect(panelPadding.x, BodyRect.y, textWidth, textHeight);
         }
         protected override void DrawPanelContent(State state) {
+            if (state.MissingWorkTypes != null) {
+                if (cachedMissingWorkTypes != state.MissingWorkTypes) {
+                    cachedMissingWorkTypes = state.MissingWorkTypes;
+                    missingWorkTypeString = "";
+                    foreach (var type in state.MissingWorkTypes) {
+                        missingWorkTypeString += "EdB.PC.Panel.Incapable.WarningItem".Translate(new object[] { type }) + "\n";
+                    }
+                    missingWorkTypeString = missingWorkTypeString.TrimEndNewlines();
+                }
+                Warning = "EdB.PC.Panel.Incapable.Warning".Translate(new object[] { missingWorkTypeString });
+            }
+            else {
+                Warning = null;
+            }
+
             base.DrawPanelContent(state);
 
             GUI.color = Style.ColorText;
@@ -38,20 +53,6 @@ namespace EdB.PrepareCarefully {
             Text.Font = GameFont.Small;
             Widgets.Label(RectText, incapable);
 
-            if (state.MissingWorkTypes != null) {
-                GUI.color = Color.white;
-                Rect alertRect = new Rect(PanelRect.width - SizeAlert.x - 12, 10, SizeAlert.x, SizeAlert.y);
-                GUI.DrawTexture(alertRect, Textures.TextureAlertSmall);
-                if (cachedMissingWorkTypes != state.MissingWorkTypes) {
-                    cachedMissingWorkTypes = state.MissingWorkTypes;
-                    missingWorkTypeString = "";
-                    foreach (var type in state.MissingWorkTypes) {
-                        missingWorkTypeString += "EdB.PC.Panel.Incapable.WarningItem".Translate(new object[] { type }) + "\n";
-                    }
-                    missingWorkTypeString = missingWorkTypeString.TrimEndNewlines();
-                }
-                TooltipHandler.TipRegion(alertRect, "EdB.PC.Panel.Incapable.Warning".Translate(new object[] { missingWorkTypeString }));
-            }
         }
     }
 }

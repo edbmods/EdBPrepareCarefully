@@ -126,7 +126,7 @@
     Disable point limits to prepare your starting colonists with no limitations.
   </EdB.PC.Page.Points.UsePoints.Tip>
   <EdB.PC.Page.Title>Prepare Carefully</EdB.PC.Page.Title>
-
+  
   <EdB.PC.Panel.Age.Biological>Biological Age</EdB.PC.Panel.Age.Biological>
   <EdB.PC.Panel.Age.Chronological>Chronological Age</EdB.PC.Panel.Age.Chronological>
 
@@ -184,6 +184,7 @@ You can play the game with your colonists as they are, but you may see an error 
   
   <EdB.PC.Panel.Traits.None>No traits</EdB.PC.Panel.Traits.None>
   <EdB.PC.Panel.Traits.Title>Traits</EdB.PC.Panel.Traits.Title>
+  <EdB.PC.Panel.Traits.Warning.TooManyTraits>Normally, only a maximum of three traits are allowed per character.  You can add more here, but those traits may not be displayed properly in all of the character info screens in the game.</EdB.PC.Panel.Traits.Warning.TooManyTraits>
 
   <EdB.PC.TabView.Animals.Title>Animals</EdB.PC.TabView.Animals.Title>
   <EdB.PC.TabView.Equipment.Title>Equipment</EdB.PC.TabView.Equipment.Title>
