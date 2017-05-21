@@ -461,6 +461,11 @@ namespace EdB.PrepareCarefully {
                 parentChildGroups.Remove(group);
             }
             parentChildPawns.RemoveAll((CustomParentChildPawn p) => { return p.Pawn == pawn; });
+            
+            foreach (var r in deletionList) {
+                relationships.Remove(r);
+            }
+
             dirty = true;
         }
         
