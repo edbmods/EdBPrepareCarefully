@@ -145,9 +145,13 @@ namespace EdB.PrepareCarefully {
             cost.marketValue += levelCost * passionLevelCount;
 
             // Calculate trait cost.
-            if (pawn.Traits.Count() > 3) {
-                double extraTraitCount = (double)(pawn.Traits.Count() - 3);
-                cost.marketValue += extraTraitCount * 75.0;
+            if (pawn.TraitCount > Constraints.MaxVanillaTraits) {
+                int extraTraitCount = pawn.TraitCount - Constraints.MaxVanillaTraits;
+                double extraTraitCost = 100;
+                for (int i=0; i< extraTraitCount; i++) {
+                    cost.marketValue += extraTraitCost;
+                    extraTraitCost = Math.Ceiling(extraTraitCost * 2.5);
+                }
             }
 
             // Calculate cost of worn apparel.

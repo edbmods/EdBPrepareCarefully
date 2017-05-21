@@ -51,14 +51,20 @@ namespace EdB.PrepareCarefully {
         }
 
         protected override void DrawPanelContent(State state) {
+            CustomPawn currentPawn = state.CurrentPawn;
+            if (currentPawn.TraitCount > Constraints.MaxVanillaTraits) {
+                Warning = "EdB.PC.Panel.Traits.Warning.TooManyTraits".Translate();
+            }
+            else {
+                Warning = null;
+            }
             base.DrawPanelContent(state);
-            CustomPawn customPawn = state.CurrentPawn;
 
             float cursor = 0;
             GUI.color = Color.white;
             GUI.BeginGroup(RectScrollFrame);
             try {
-                if (customPawn.Traits.Count() == 0) {
+                if (currentPawn.Traits.Count() == 0) {
                     GUI.color = Style.ColorText;
                     Widgets.Label(RectScrollView.InsetBy(6, 0, 0, 0), "EdB.PC.Panel.Traits.None".Translate());
                 }
@@ -67,7 +73,7 @@ namespace EdB.PrepareCarefully {
                 scrollView.Begin(RectScrollView);
 
                 int index = 0;
-                foreach (Trait trait in customPawn.Traits) {
+                foreach (Trait trait in currentPawn.Traits) {
                     if (index >= fields.Count) {
                         fields.Add(new Field());
                     }
@@ -89,7 +95,7 @@ namespace EdB.PrepareCarefully {
 
                     if (trait != null) {
                         field.Label = trait.LabelCap;
-                        field.Tip = trait.TipString(customPawn.Pawn);
+                        field.Tip = trait.TipString(currentPawn.Pawn);
                     }
                     else {
                         field.Label = null;
@@ -105,7 +111,7 @@ namespace EdB.PrepareCarefully {
                                 return t.LabelCap;
                             },
                             DescriptionFunc = (Trait t) => {
-                                return t.TipString(customPawn.Pawn);
+                                return t.TipString(currentPawn.Pawn);
                             },
                             SelectedFunc = (Trait t) => {
                                 if ((selectedTrait == null || t == null) && selectedTrait != t) {
@@ -120,7 +126,7 @@ namespace EdB.PrepareCarefully {
                                 if (t == null) {
                                     return originalTrait != null;
                                 }
-                                else if ((originalTrait == null || !originalTrait.Label.Equals(t.Label)) && customPawn.HasTrait(t)) {
+                                else if ((originalTrait == null || !originalTrait.Label.Equals(t.Label)) && currentPawn.HasTrait(t)) {
                                     return false;
                                 }
                                 else {
@@ -140,10 +146,10 @@ namespace EdB.PrepareCarefully {
                         Find.WindowStack.Add(dialog);
                     };
                     field.PreviousAction = () => {
-                        SelectPreviousTrait(customPawn, index);
+                        SelectPreviousTrait(currentPawn, index);
                     };
                     field.NextAction = () => {
-                        SelectNextTrait(customPawn, index);
+                        SelectNextTrait(currentPawn, index);
                     };
                     field.Draw();
 
@@ -191,7 +197,8 @@ namespace EdB.PrepareCarefully {
             // Add trait button.
             Rect addRect = new Rect(randomizeRect.x - 24, 12, 16, 16);
             Style.SetGUIColorForButton(addRect);
-            bool addButtonEnabled = (state.CurrentPawn != null && state.CurrentPawn.Traits.Count() < 4);
+            int traitCount = state.CurrentPawn.Traits.Count();
+            bool addButtonEnabled = (state.CurrentPawn != null && traitCount < Constraints.MaxTraits);
             if (!addButtonEnabled) {
                 GUI.color = Style.ColorButtonDisabled;
             }
@@ -204,7 +211,7 @@ namespace EdB.PrepareCarefully {
                         return t.LabelCap;
                     },
                     DescriptionFunc = (Trait t) => {
-                        return t.TipString(customPawn.Pawn);
+                        return t.TipString(currentPawn.Pawn);
                     },
                     SelectedFunc = (Trait t) => {
                         return selectedTrait == t;
@@ -213,7 +220,7 @@ namespace EdB.PrepareCarefully {
                         selectedTrait = t;
                     },
                     EnabledFunc = (Trait t) => {
-                        if (customPawn.HasTrait(t)) {
+                        if (currentPawn.HasTrait(t)) {
                             return false;
                         }
                         else {

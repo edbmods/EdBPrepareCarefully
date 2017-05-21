@@ -936,6 +936,12 @@ namespace EdB.PrepareCarefully {
             }
         }
 
+        public int TraitCount {
+            get {
+                return this.Pawn.story.traits.allTraits.Count;
+            }
+        }
+
         protected void ResetTraits() {
             SyncBodyParts();
             UpdateSkillLevelsForNewBackstoryOrTrait();
