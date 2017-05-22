@@ -171,8 +171,21 @@ namespace EdB.PrepareCarefully {
             else if (def.basicMemberKind != null) {
                 kindDef = def.basicMemberKind;
             }
+            Faction faction = Faction.OfPlayer;
+            if (def != Faction.OfPlayer.def) {
+                faction = new Faction() {
+                    def = def
+                };
+                FactionRelation rel = new FactionRelation();
+                rel.other = Faction.OfPlayer;
+                rel.goodwill = 50;
+                rel.hostile = false;
+                (typeof(Faction).GetField("relations", BindingFlags.Instance | BindingFlags.NonPublic)
+                    .GetValue(faction) as List<FactionRelation>).Add(rel);
+                
+            }
             CustomPawn pawn = new CustomPawn(randomizer.GeneratePawn(new PawnGenerationRequestWrapper() {
-                Faction = def == Faction.OfPlayer.def ? Faction.OfPlayer : new Faction() { def = def },
+                Faction = faction,
                 KindDef = kindDef,
                 Context = PawnGenerationContext.NonPlayer
             }.Request));

@@ -30,6 +30,7 @@ namespace EdB.PrepareCarefully {
         protected float SizeEntrySpacing = 4;
         protected ScrollViewVertical scrollView = new ScrollViewVertical();
         protected ProviderFactions providerFactions = new ProviderFactions();
+        protected FactionDef previousFaction = null;
 
         protected float shorterNameWidth = 0;
         protected Dictionary<string, string> shorterNameLookup = new Dictionary<string, string>();
@@ -50,9 +51,9 @@ namespace EdB.PrepareCarefully {
             float width = PanelRect.width - panelPadding.x * 2;
             float height = PanelRect.height - panelPadding.y * 2;
 
-            //RectButtonAdvancedAdd = new Rect(panelPadding.x + width - 26, panelPadding.y, 26, buttonHeight);
-            //RectButtonAdd = new Rect(panelPadding.x, panelPadding.y, width - RectButtonAdvancedAdd.width - 2, buttonHeight);
-            RectButtonAdd = new Rect(panelPadding.x, panelPadding.y, width, buttonHeight);
+            RectButtonAdvancedAdd = new Rect(panelPadding.x + width - 26, panelPadding.y, 26, buttonHeight);
+            RectButtonAdd = new Rect(panelPadding.x, panelPadding.y, width - RectButtonAdvancedAdd.width - 2, buttonHeight);
+            //RectButtonAdd = new Rect(panelPadding.x, panelPadding.y, width, buttonHeight);
             //RectButtonAdd = new Rect(panelPadding.x, panelPadding.y + height - buttonHeight, width, buttonHeight);
 
             //RectScrollFrame = new Rect(panelPadding.x, panelPadding.y, width, height - panelPadding.y - buttonHeight);
@@ -176,9 +177,9 @@ namespace EdB.PrepareCarefully {
                 SoundDefOf.SelectDesignator.PlayOneShotOnCamera();
                 AddingPawn();
             }
-            //if (Widgets.ButtonText(RectButtonAdvancedAdd, "...", true, false, true)) {
-            //    OpenAddPawnDialog();
-            //}
+            if (Widgets.ButtonText(RectButtonAdvancedAdd, "...", true, false, true)) {
+                OpenAddPawnDialog();
+            }
             Text.Font = GameFont.Small;
             Text.Anchor = TextAnchor.UpperLeft;
 
@@ -214,7 +215,7 @@ namespace EdB.PrepareCarefully {
         }
 
         protected void OpenAddPawnDialog() {
-            FactionDef selectedFaction = Faction.OfPlayer.def;
+            FactionDef selectedFaction = previousFaction != null ? previousFaction : providerFactions.Factions.First();
             var dialog = new Dialog_Options<FactionDef>(providerFactions.Factions) {
                 ConfirmButtonLabel = "EdB.PC.Common.Add".Translate(),
                 CancelButtonLabel = "EdB.PC.Common.Cancel".Translate(),
@@ -241,6 +242,7 @@ namespace EdB.PrepareCarefully {
                 },
                 CloseAction = () => {
                     SoundDefOf.SelectDesignator.PlayOneShotOnCamera();
+                    previousFaction = selectedFaction;
                     AddingFactionPawn(selectedFaction);
                 }
             };
