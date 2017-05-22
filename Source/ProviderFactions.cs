@@ -12,7 +12,7 @@ namespace EdB.PrepareCarefully {
                 if (!def.humanlikeFaction) {
                     continue;
                 }
-                if (def.isPlayer && def != Faction.OfPlayer.def) {
+                if (def.isPlayer || def == Faction.OfPlayer.def) {
                     continue;
                 }
                 if (!labels.Contains(def.label)) {
@@ -20,6 +20,9 @@ namespace EdB.PrepareCarefully {
                     factions.Add(def);
                 }
             }
+            factions.Sort((FactionDef a, FactionDef b) => {
+                return a.defName.CompareTo(b.defName);
+            });
         }
         public List<FactionDef> Factions {
             get {

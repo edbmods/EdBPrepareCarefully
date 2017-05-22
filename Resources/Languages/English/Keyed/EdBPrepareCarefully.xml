@@ -170,7 +170,7 @@ You can play the game with your colonists as they are, but you may see an error 
 
   <EdB.PC.Panel.PawnList.Delete.Confirm>Are you sure that you want to remove this character?</EdB.PC.Panel.PawnList.Delete.Confirm>
   <EdB.PC.Panel.PawnList.Error.MustSelectFaction>Must select a faction</EdB.PC.Panel.PawnList.Error.MustSelectFaction>
-  <EdB.PC.Panel.PawnList.SelectFaction>Select a Faction</EdB.PC.Panel.PawnList.SelectFaction>
+  <EdB.PC.Panel.PawnList.SelectFaction>Select from a Different Faction</EdB.PC.Panel.PawnList.SelectFaction>
 
   <EdB.PC.Panel.RelationshipsOther.Title>Other Relationships</EdB.PC.Panel.RelationshipsOther.Title>
 
