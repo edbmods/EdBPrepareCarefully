@@ -12,11 +12,14 @@
    other relationships in a more predictable way.
  - Added support for a fourth trait.
  - Added support for more than 10 colonists.
- - Directly type values into numeric fields for age and equipment counts.
- - Reworked how the mod integrates with scenarios and map generation.  No
-   longer overwrites the vanilla Genstep_ScenParts class.-
- - Added wanrings for when no colonists are capable of work types that are
+ - You can now directly type values into numeric fields for age and equipment
+   counts.
+ - Reworked how the mod integrates with scenarios and map generation (it no
+   longer overwrites the vanilla Genstep_ScenParts class).
+ - Added warnings for when no colonists are capable of work types that are
    considered required.
+ - Added the ability to add pawns from other factions to your list of
+   starting colonists.
 
  _____________________________________________________________________________
  
