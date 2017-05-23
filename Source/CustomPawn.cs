@@ -175,8 +175,46 @@ namespace EdB.PrepareCarefully {
                 this.lastSelectedAdulthoodValue = Randomizer.RandomAdulthood(this);
             }
 
+            // Evaluate all hediffs.
+            InitializePawnHediffs(pawn);
+
             // Clear all of the pawn caches.
             ClearPawnCaches();
+        }
+
+        protected void InitializePawnHediffs(Pawn pawn) {
+            InjuryManager injuryManager = PrepareCarefully.Instance.HealthManager.InjuryManager;
+            List<Injury> injuries = new List<Injury>();
+            List<Implant> implants = new List<Implant>();
+            foreach (var hediff in pawn.health.hediffSet.hediffs) {
+                InjuryOption option = injuryManager.FindOptionByHediffDef(hediff.def);
+                if (option != null) {
+                    Injury injury = new Injury();
+                    injury.BodyPartRecord = hediff.Part;
+                    injury.Option = option;
+                    injury.Severity = hediff.Severity;
+                    HediffComp_GetsOld getsOld = hediff.TryGetComp<HediffComp_GetsOld>();
+                    if (getsOld != null) {
+                        injury.PainFactor = getsOld.painFactor;
+                    }
+                    injuries.Add(injury);
+                }
+                else {
+                    RecipeDef implantRecipe = DefDatabase<RecipeDef>.AllDefs.Where((RecipeDef def) => {
+                        return (def.addsHediff != null && def.addsHediff == hediff.def);
+                    }).RandomElementWithFallback(null);
+                    if (implantRecipe != null) {
+                        Implant implant = new Implant();
+                        implant.recipe = implantRecipe;
+                        implant.BodyPartRecord = hediff.Part;
+                        implants.Add(implant);
+                    }
+                    else {
+                        Log.Warning("Could not add hediff to pawn: " + hediff.def.defName + ", " + (hediff.Part != null ? hediff.Part.def.defName : "no part"));
+                    }
+                }
+            }
+            SetInjuriesAndImplants(injuries, implants);
         }
 
         public void InitializeSkillLevelsAndPassions() {
@@ -250,6 +288,7 @@ namespace EdB.PrepareCarefully {
             ComputeSkillLevelModifiers();
             ResetCachedIncapableOf();
             ClearPawnCaches();
+            CopySkillsAndPassionsToPawn();
         }
 
         // Computes the skill level modifiers that the pawn gets from the selected backstories and traits.
@@ -345,7 +384,12 @@ namespace EdB.PrepareCarefully {
         public void CopySkillsAndPassionsToPawn() {
             foreach (var record in pawn.skills.skills) {
                 record.Level = GetSkillLevel(record.def);
-                record.passion = currentPassions[record.def];
+                if (!record.TotallyDisabled) {
+                    record.passion = currentPassions[record.def];
+                }
+                else {
+                    record.passion = Passion.None;
+                }
             }
         }
 
@@ -1156,9 +1200,23 @@ namespace EdB.PrepareCarefully {
             bodyParts.Add(injury);
             SyncBodyParts();
         }
+        
+        public void SetInjuriesAndImplants(IEnumerable<Injury> injuries, IEnumerable<Implant> implants) {
+            this.injuries.Clear();
+            this.implants.Clear();
+            foreach (var injury in injuries) {
+                this.injuries.Add(injury);
+                this.bodyParts.Add(injury);
+            }
+            foreach (var implant in implants) {
+                this.implants.Add(implant);
+                this.bodyParts.Add(implant);
+            }
+            SyncBodyParts();
+        }
 
         protected void SyncBodyParts() {
-            this.pawn.health = new Pawn_HealthTracker(pawn);
+            this.pawn.health.Reset();
             foreach (var injury in injuries) {
                 injury.AddToPawn(this, pawn);
             }
@@ -1193,10 +1251,14 @@ namespace EdB.PrepareCarefully {
 
         public void AddImplant(Implant implant) {
             if (implant != null && implant.BodyPartRecord != null) {
+                Log.Message("Added implant to CustomPawn: " + implant.recipe.defName + ", " + implant.BodyPartRecord.def.defName);
                 RemoveCustomBodyParts(implant.BodyPartRecord);
                 implants.Add(implant);
                 bodyParts.Add(implant);
                 SyncBodyParts();
+            }
+            else {
+                Log.Warning("Discarding implant because of missing body part: " + implant.BodyPartRecord.def.defName);
             }
         }
 

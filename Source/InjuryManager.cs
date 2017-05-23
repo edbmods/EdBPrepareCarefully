@@ -17,26 +17,6 @@ namespace EdB.PrepareCarefully {
             }
         }
 
-        public void InitializePawnInjuries(Pawn pawn, CustomPawn customPawn) {
-            foreach (var x in pawn.health.hediffSet.hediffs) {
-                InjuryOption option = FindOptionByHediffDef(x.def);
-                if (option != null) {
-                    Injury injury = new Injury();
-                    injury.BodyPartRecord = x.Part;
-                    injury.Option = option;
-                    injury.Severity = x.Severity;
-                    HediffComp_GetsOld getsOld = x.TryGetComp<HediffComp_GetsOld>();
-                    if (getsOld != null) {
-                        injury.PainFactor = getsOld.painFactor;
-                    }
-                    customPawn.AddInjury(injury);
-                }
-                else {
-                    Log.Warning("Could not find injury option for hediff: " + x.def);
-                }
-            }
-        }
-
         public InjuryOption FindOptionByHediffDef(HediffDef def) {
             foreach (InjuryOption o in Options) {
                 if (o.HediffDef == def) {
