@@ -121,7 +121,7 @@ namespace EdB.PrepareCarefully {
                 return a.LabelCap.CompareTo(b.LabelCap);
             });
 
-            // Classify body parts into all, outside and skin-covered lists.
+            // Classify body parts into three separate lists: all, outside and skin-covered.
             foreach (BodyPartRecord record in bodyDef.AllParts) {
                 allBodyParts.Add(record);
                 if (record.depth == BodyPartDepth.Outside) {

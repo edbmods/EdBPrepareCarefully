@@ -509,7 +509,6 @@ namespace EdB.PrepareCarefully {
                 customPawnToOriginalPawnMap.Add(customPawn, originalPawn);
                 originalPawnToCustomPawnMap.Add(originalPawn, customPawn);
                 this.pawns.Add(customPawn);
-                healthManager.InjuryManager.InitializePawnInjuries(originalPawn, customPawn);
             }
         }
 

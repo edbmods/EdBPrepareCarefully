@@ -160,17 +160,9 @@ namespace EdB.PrepareCarefully {
         }
         public void AddFactionPawn(FactionDef def) {
             var kinds = DefDatabase<PawnKindDef>.AllDefs.Where((PawnKindDef arg) => {
-                return (arg.defaultFactionType == def);
+                return (arg.defaultFactionType != null && arg.defaultFactionType.LabelCap == def.LabelCap);
             });
-            PawnKindDef kindDef = null;
-            int count = kinds.Count();
-            if (count > 0) {
-                int index = randomizer.Random.Next(count);
-                kindDef = kinds.ElementAt(index);
-            }
-            else if (def.basicMemberKind != null) {
-                kindDef = def.basicMemberKind;
-            }
+            PawnKindDef kindDef = kinds.RandomElementWithFallback(def.basicMemberKind);
             Faction faction = Faction.OfPlayer;
             if (def != Faction.OfPlayer.def) {
                 faction = new Faction() {
@@ -182,18 +174,18 @@ namespace EdB.PrepareCarefully {
                 rel.hostile = false;
                 (typeof(Faction).GetField("relations", BindingFlags.Instance | BindingFlags.NonPublic)
                     .GetValue(faction) as List<FactionRelation>).Add(rel);
-                
             }
-            CustomPawn pawn = new CustomPawn(randomizer.GeneratePawn(new PawnGenerationRequestWrapper() {
+            Pawn pawn = randomizer.GeneratePawn(new PawnGenerationRequestWrapper() {
                 Faction = faction,
                 KindDef = kindDef,
                 Context = PawnGenerationContext.NonPlayer
-            }.Request));
-            
-            pawn.Pawn.SetFactionDirect(Faction.OfPlayer);
-            PrepareCarefully.Instance.AddPawn(pawn);
+            }.Request);
+            CustomPawn customPawn = new CustomPawn(pawn);
+
+            customPawn.Pawn.SetFactionDirect(Faction.OfPlayer);
+            PrepareCarefully.Instance.AddPawn(customPawn);
             state.CurrentPawnIndex = PrepareCarefully.Instance.Pawns.Count - 1;
-            PawnAdded(pawn);
+            PawnAdded(customPawn);
         }
 
         // Gender-related actions.
