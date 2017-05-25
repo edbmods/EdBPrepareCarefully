@@ -5,359 +5,413 @@ using System.Linq;
 using UnityEngine;
 using Verse;
 
-namespace EdB.PrepareCarefully
-{
-	public class EquipmentDatabase
-	{
-		protected Dictionary<EquipmentKey, EquipmentDatabaseEntry> entries = new Dictionary<EquipmentKey, EquipmentDatabaseEntry>();
+namespace EdB.PrepareCarefully {
+    public class EquipmentDatabase {
+        protected Dictionary<EquipmentKey, EquipmentRecord> entries = new Dictionary<EquipmentKey, EquipmentRecord>();
 
-		protected List<EquipmentDatabaseEntry> resources = new List<EquipmentDatabaseEntry>();
-		protected List<ThingDef> stuff = new List<ThingDef>();
-		protected CostCalculator costs = new CostCalculator();
+        protected List<EquipmentRecord> resources = new List<EquipmentRecord>();
+        protected List<ThingDef> stuff = new List<ThingDef>();
+        protected CostCalculator costs = new CostCalculator();
+        protected List<EquipmentType> types = new List<EquipmentType>();
 
-		public EquipmentDatabase()
-		{
-			foreach (ThingDef def in DefDatabase<ThingDef>.AllDefs) {
-				if (def.IsStuff && def.stuffProps != null) {
-					stuff.Add(def);
-				}
-			}
-			BuildEquipmentLists();
-		}
+        protected EquipmentType TypeResources = new EquipmentType("Resources", "EdB.PC.Equipment.Type.Resources");
+        protected EquipmentType TypeFood = new EquipmentType("Food", "EdB.PC.Equipment.Type.Food");
+        protected EquipmentType TypeWeapons = new EquipmentType("Weapons", "EdB.PC.Equipment.Type.Weapons");
+        protected EquipmentType TypeApparel = new EquipmentType("Apparel", "EdB.PC.Equipment.Type.Apparel");
+        protected EquipmentType TypeMedical = new EquipmentType("Medical", "EdB.PC.Equipment.Type.Medical");
+        protected EquipmentType TypeBuildings = new EquipmentType("Buildings", "EdB.PC.Equipment.Type.Buildings");
+        protected EquipmentType TypeAnimals = new EquipmentType("Animals", "EdB.PC.Equipment.Type.Animals");
+        protected EquipmentType TypeUncategorized = new EquipmentType("Uncategorized", "");
 
-		public void BuildEquipmentLists()
-		{
-			foreach (var def in DefDatabase<ThingDef>.AllDefs) {
+        protected ThingCategoryDef thingCategorySweetMeals = null;
+        protected ThingCategoryDef thingCategoryMeatRaw = null;
 
-				int type = ClassifyThingDef(def);
-				if (type != -1) {
-					AddThingDef(def, type);
-				}
-			}
-		}
+        public EquipmentDatabase() {
+            types.Add(TypeResources);
+            types.Add(TypeFood);
+            types.Add(TypeWeapons);
+            types.Add(TypeApparel);
+            types.Add(TypeMedical);
+            types.Add(TypeBuildings);
+            types.Add(TypeAnimals);
 
-		public int ClassifyThingDef(ThingDef def)
-		{
-			if (def.weaponTags != null && def.weaponTags.Count > 0) {
-				if (def.equipmentType != EquipmentType.None && !def.destroyOnDrop && def.canBeSpawningInventory) {
-					return EquipmentDatabaseEntry.TypeWeapon;
-				}
-			}
+            foreach (ThingDef def in DefDatabase<ThingDef>.AllDefs) {
+                if (def.IsStuff && def.stuffProps != null) {
+                    stuff.Add(def);
+                }
+            }
+            BuildEquipmentLists();
+        }
 
-			if (def.IsApparel) {
-				if (!def.destroyOnDrop) {
-					return EquipmentDatabaseEntry.TypeApparel;
-				}
-			}
+        public EquipmentRecord Find(EquipmentKey key) {
+            EquipmentRecord result;
+            if (entries.TryGetValue(key, out result)) {
+                return result;
+            }
+            else {
+                return null;
+            }
+        }
 
-			if (def.CountAsResource) {
-				if (def.IsDrug || def.IsMedicine) {
-					return EquipmentDatabaseEntry.TypeMedical;
-				}
-				if (def.ingestible != null) {
-					return EquipmentDatabaseEntry.TypeFood;
-				}
+        public IEnumerable<EquipmentType> EquipmentTypes {
+            get {
+                return types;
+            }
+        }
 
-				if ("AIPersonaCore".Equals(def.defName)) {
-					return EquipmentDatabaseEntry.TypeUncategorized;
-				}
-				if ("Neurotrainer".Equals(def.defName)) {
-					return -1;
-				}
+        public void BuildEquipmentLists() {
 
-				return EquipmentDatabaseEntry.TypeResource;
-			}
+            thingCategorySweetMeals = DefDatabase<ThingCategoryDef>.GetNamedSilentFail("SweetMeals");
+            thingCategoryMeatRaw = DefDatabase<ThingCategoryDef>.GetNamedSilentFail("MeatRaw");
 
-			if (def.building != null) {
-				if (def.Minifiable) {
-					return EquipmentDatabaseEntry.TypeBuilding;
-				}
-			}
+            foreach (var def in DefDatabase<ThingDef>.AllDefs) {
+                EquipmentType type = ClassifyThingDef(def);
+                if (type != null) {
+                    AddThingDef(def, type);
+                }
+            }
+        }
 
-			if (def.isBodyPartOrImplant) {
-				return EquipmentDatabaseEntry.TypeMedical;
-			}
+        public EquipmentType ClassifyThingDef(ThingDef def) {
+            if (def.weaponTags != null && def.weaponTags.Count > 0) {
+                if (def.equipmentType != Verse.EquipmentType.None && !def.destroyOnDrop && def.canBeSpawningInventory) {
+                    return TypeWeapons;
+                }
+            }
 
-			if (def.race != null && def.race.Animal == true) {
-				return EquipmentDatabaseEntry.TypeAnimal;
-			}
+            if (def.IsApparel) {
+                if (!def.destroyOnDrop) {
+                    return TypeApparel;
+                }
+            }
 
-			return -1;
-		}
+            if (def.CountAsResource) {
+                if (def.IsDrug || def.IsMedicine) {
+                    if (def.ingestible != null) {
+                        if (def.thingCategories != null) {
+                            if (thingCategorySweetMeals != null && def.thingCategories.Contains(thingCategorySweetMeals)) {
+                                return TypeFood;
+                            }
+                        }
+                        int foodTypes = (int) def.ingestible.foodType;
+                        bool isFood = ((foodTypes & (int)FoodTypeFlags.Liquor) > 0) | ((foodTypes & (int)FoodTypeFlags.Meal) > 0);
+                        if (isFood) {
+                            return TypeFood;
+                        }
+                    }
+                    return TypeMedical;
+                }
+                if (def.ingestible != null) {
+                    if (thingCategoryMeatRaw != null && def.thingCategories.Contains(thingCategoryMeatRaw)) {
+                        return TypeFood;
+                    }
+                    if (def.ingestible.drugCategory == DrugCategory.Medical) {
+                        return TypeMedical;
+                    }
+                    if (def.ingestible.preferability == FoodPreferability.DesperateOnly || def.ingestible.preferability == FoodPreferability.NeverForNutrition) {
+                        return TypeResources;
+                    }
+                    return TypeFood;
+                }
+                if ("AIPersonaCore".Equals(def.defName)) {
+                    return TypeUncategorized;
+                }
+                if ("Neurotrainer".Equals(def.defName)) {
+                    return null;
+                }
 
-		public List<EquipmentDatabaseEntry> Resources {
-			get {
-				List<EquipmentDatabaseEntry> result = entries.Values.ToList().FindAll((EquipmentDatabaseEntry e) => {
-					return e.type == EquipmentDatabaseEntry.TypeResource;
-				});
-				result.Sort((EquipmentDatabaseEntry a, EquipmentDatabaseEntry b) => {
-					return a.Label.CompareTo(b.Label);
-				});
-				return result;
-			}
-		}
+                return TypeResources;
+            }
 
-		public List<EquipmentDatabaseEntry> Food {
-			get {
-				List<EquipmentDatabaseEntry> result = entries.Values.ToList().FindAll((EquipmentDatabaseEntry e) => {
-					return e.type == EquipmentDatabaseEntry.TypeFood;
-				});
-				result.Sort((EquipmentDatabaseEntry a, EquipmentDatabaseEntry b) => {
-					return a.Label.CompareTo(b.Label);
-				});
-				return result;
-			}
-		}
+            if (def.building != null) {
+                if (def.Minifiable) {
+                    return TypeBuildings;
+                }
+            }
 
-		public List<EquipmentDatabaseEntry> Weapons {
-			get {
-				List<EquipmentDatabaseEntry> result = entries.Values.ToList().FindAll((EquipmentDatabaseEntry e) => {
-					return e.type == EquipmentDatabaseEntry.TypeWeapon;
-				});
-				result.Sort((EquipmentDatabaseEntry a, EquipmentDatabaseEntry b) => {
-					return a.Label.CompareTo(b.Label);
-				});
-				return result;
-			}
-		}
+            if (def.isBodyPartOrImplant) {
+                return TypeMedical;
+            }
 
-		public List<EquipmentDatabaseEntry> Apparel {
-			get {
-				List<EquipmentDatabaseEntry> result = entries.Values.ToList().FindAll((EquipmentDatabaseEntry e) => {
-					return e.type == EquipmentDatabaseEntry.TypeApparel;
-				});
-				result.Sort((EquipmentDatabaseEntry a, EquipmentDatabaseEntry b) => {
-					return a.Label.CompareTo(b.Label);
-				});
-				return result;
-			}
-		}
+            if (def.race != null && def.race.Animal == true) {
+                return TypeAnimals;
+            }
 
-		public List<EquipmentDatabaseEntry> Animals {
-			get {
-				List<EquipmentDatabaseEntry> result = entries.Values.ToList().FindAll((EquipmentDatabaseEntry e) => {
-					return e.type == EquipmentDatabaseEntry.TypeAnimal;
-				});
-				result.Sort((EquipmentDatabaseEntry a, EquipmentDatabaseEntry b) => {
-					return a.Label.CompareTo(b.Label);
-				});
-				return result;
-			}
-		}
+            return null;
+        }
 
-		public List<EquipmentDatabaseEntry> Implants {
-			get {
-				List<EquipmentDatabaseEntry> result = entries.Values.ToList().FindAll((EquipmentDatabaseEntry e) => {
-					return e.type == EquipmentDatabaseEntry.TypeMedical;
-				});
-				result.Sort((EquipmentDatabaseEntry a, EquipmentDatabaseEntry b) => {
-					return a.Label.CompareTo(b.Label);
-				});
-				return result;
-			}
-		}
+        public IEnumerable<EquipmentRecord> AllEquipmentOfType(EquipmentType type) {
+            return entries.Values.Where((EquipmentRecord e) => {
+                return e.type == type;
+            });
+        }
 
-		public List<EquipmentDatabaseEntry> Buildings {
-			get {
-				List<EquipmentDatabaseEntry> result = entries.Values.ToList().FindAll((EquipmentDatabaseEntry e) => {
-					return e.type == EquipmentDatabaseEntry.TypeBuilding;
-				});
-				result.Sort((EquipmentDatabaseEntry a, EquipmentDatabaseEntry b) => {
-					return a.Label.CompareTo(b.Label);
-				});
-				return result;
-			}
-		}
+        public List<EquipmentRecord> Resources {
+            get {
+                List<EquipmentRecord> result = entries.Values.ToList().FindAll((EquipmentRecord e) => {
+                    return e.type == TypeResources;
+                });
+                result.Sort((EquipmentRecord a, EquipmentRecord b) => {
+                    return a.Label.CompareTo(b.Label);
+                });
+                return result;
+            }
+        }
 
-		public List<EquipmentDatabaseEntry> Other {
-			get {
-				List<EquipmentDatabaseEntry> result = entries.Values.ToList().FindAll((EquipmentDatabaseEntry e) => {
-					return e.type == EquipmentDatabaseEntry.TypeUncategorized;
-				});
-				result.Sort((EquipmentDatabaseEntry a, EquipmentDatabaseEntry b) => {
-					return a.Label.CompareTo(b.Label);
-				});
-				return result;
-			}
-		}
+        public List<EquipmentRecord> Food {
+            get {
+                List<EquipmentRecord> result = entries.Values.ToList().FindAll((EquipmentRecord e) => {
+                    return e.type == TypeFood;
+                });
+                result.Sort((EquipmentRecord a, EquipmentRecord b) => {
+                    return a.Label.CompareTo(b.Label);
+                });
+                return result;
+            }
+        }
 
-		public EquipmentDatabaseEntry this[EquipmentKey key] {
-			get {
-				EquipmentDatabaseEntry result;
-				if (entries.TryGetValue(key, out result)) {
-					return result;
-				}
-				else {
-					return null;
-				}
-			}
-		}
+        public List<EquipmentRecord> Weapons {
+            get {
+                List<EquipmentRecord> result = entries.Values.ToList().FindAll((EquipmentRecord e) => {
+                    return e.type == TypeWeapons;
+                });
+                result.Sort((EquipmentRecord a, EquipmentRecord b) => {
+                    return a.Label.CompareTo(b.Label);
+                });
+                return result;
+            }
+        }
 
-		public EquipmentDatabaseEntry AddThingDefWithStuff(ThingDef def, ThingDef stuff, int type)
-		{
-			if (type == -1) {
-				Log.Warning("Prepare Carefully could not add unclassified equipment: " + def);
-				return null;
-			}
-			EquipmentKey key = new EquipmentKey(def, stuff);
-			EquipmentDatabaseEntry entry = CreateEquipmentEntry(def, stuff, type);
-			if (entry != null) {
-				entries[key] = entry;
-			}
-			return entry;
-		}
+        public List<EquipmentRecord> Apparel {
+            get {
+                List<EquipmentRecord> result = entries.Values.ToList().FindAll((EquipmentRecord e) => {
+                    return e.type == TypeApparel;
+                });
+                result.Sort((EquipmentRecord a, EquipmentRecord b) => {
+                    return a.Label.CompareTo(b.Label);
+                });
+                return result;
+            }
+        }
 
-		protected void AddThingDef(ThingDef def, int type) {
+        public List<EquipmentRecord> Animals {
+            get {
+                List<EquipmentRecord> result = entries.Values.ToList().FindAll((EquipmentRecord e) => {
+                    return e.type == TypeAnimals;
+                });
+                result.Sort((EquipmentRecord a, EquipmentRecord b) => {
+                    return a.Label.CompareTo(b.Label);
+                });
+                return result;
+            }
+        }
 
-			if (def.MadeFromStuff) {
-				foreach (var s in stuff) {
-					if (s.stuffProps.CanMake(def)) {
-						EquipmentKey key = new EquipmentKey(def, s);
-						EquipmentDatabaseEntry entry = CreateEquipmentEntry(def, s, type);
-						if (entry != null) {
-							entries[key] = entry;
-						}
-					}
-				}
-			}
-			else if (def.race != null && def.race.Animal) {
-				if (def.race.hasGenders) {
-					EquipmentDatabaseEntry femaleEntry = CreateEquipmentEntry(def, Gender.Female, type);
-					if (femaleEntry != null) {
-						entries[new EquipmentKey(def, Gender.Female)] = femaleEntry;
-					}
-					EquipmentDatabaseEntry maleEntry = CreateEquipmentEntry(def, Gender.Male, type);
-					if (maleEntry != null) {
-						entries[new EquipmentKey(def, Gender.Male)] = maleEntry;
-					}
+        public List<EquipmentRecord> Implants {
+            get {
+                List<EquipmentRecord> result = entries.Values.ToList().FindAll((EquipmentRecord e) => {
+                    return e.type == TypeMedical;
+                });
+                result.Sort((EquipmentRecord a, EquipmentRecord b) => {
+                    return a.Label.CompareTo(b.Label);
+                });
+                return result;
+            }
+        }
 
-				}
-				else {
-					EquipmentKey key = new EquipmentKey(def, Gender.None);
-					EquipmentDatabaseEntry entry = CreateEquipmentEntry(def, Gender.None, type);
-					if (entry != null) {
-						entries[key] = entry;
-					}
-				}
-			}
-			else {
-				EquipmentKey key = new EquipmentKey(def, null);
-				EquipmentDatabaseEntry entry = CreateEquipmentEntry(def, null, Gender.None, type);
-				if (entry != null) {
-					entries[key] = entry;
-				}
-			}
-		}
+        public List<EquipmentRecord> Buildings {
+            get {
+                List<EquipmentRecord> result = entries.Values.ToList().FindAll((EquipmentRecord e) => {
+                    return e.type == TypeBuildings;
+                });
+                result.Sort((EquipmentRecord a, EquipmentRecord b) => {
+                    return a.Label.CompareTo(b.Label);
+                });
+                return result;
+            }
+        }
 
-		protected EquipmentDatabaseEntry CreateEquipmentEntry(ThingDef def, ThingDef stuffDef, int type)
-		{
-			return CreateEquipmentEntry(def, stuffDef, Gender.None, type);
-		}
+        public List<EquipmentRecord> Other {
+            get {
+                List<EquipmentRecord> result = entries.Values.ToList().FindAll((EquipmentRecord e) => {
+                    return e.type == TypeUncategorized;
+                });
+                result.Sort((EquipmentRecord a, EquipmentRecord b) => {
+                    return a.Label.CompareTo(b.Label);
+                });
+                return result;
+            }
+        }
 
-		protected EquipmentDatabaseEntry CreateEquipmentEntry(ThingDef def, Gender gender, int type)
-		{
-			return CreateEquipmentEntry(def, null, gender, type);
-		}
+        public EquipmentRecord this[EquipmentKey key] {
+            get {
+                EquipmentRecord result;
+                if (entries.TryGetValue(key, out result)) {
+                    return result;
+                }
+                else {
+                    return null;
+                }
+            }
+        }
 
-		protected EquipmentDatabaseEntry CreateEquipmentEntry(ThingDef def, ThingDef stuffDef, Gender gender, int type)
-		{
-			double baseCost = costs.GetBaseThingCost(def, stuffDef);
-			if (baseCost == 0) {
-				return null;
-			}
-			int stackSize = CalculateStackCount(def, baseCost);
+        public EquipmentRecord AddThingDefWithStuff(ThingDef def, ThingDef stuff, EquipmentType type) {
+            if (type == null) {
+                Log.Warning("Prepare Carefully could not add unclassified equipment: " + def);
+                return null;
+            }
+            EquipmentKey key = new EquipmentKey(def, stuff);
+            EquipmentRecord entry = CreateEquipmentEntry(def, stuff, type);
+            if (entry != null) {
+                entries[key] = entry;
+            }
+            return entry;
+        }
 
-			EquipmentDatabaseEntry result = new EquipmentDatabaseEntry();
-			result.type = type;
-			result.def = def;
-			result.stuffDef = stuffDef;
-			result.stackSize = stackSize;
-			result.cost = costs.CalculateStackCost(def, stuffDef, baseCost);
-			result.stacks = true;
-			result.gear = false;
-			result.animal = false;
-			if (def.MadeFromStuff && stuffDef != null) {
-				if (stuffDef.stuffProps.allowColorGenerators && (def.colorGenerator != null || def.colorGeneratorInTraderStock != null)) {
-					if (def.colorGenerator != null) {
-						result.color = def.colorGenerator.NewRandomizedColor();
-					}
-					else if (def.colorGeneratorInTraderStock != null) {
-						result.color = def.colorGeneratorInTraderStock.NewRandomizedColor();
-					}
-				}
-				else {
-					result.color = stuffDef.stuffProps.color;
-				}
-			}
-			else {
-				if (def.graphicData != null) {
-					result.color = def.graphicData.color;
-				}
-				else {
-					result.color = Color.white;
-				}
-			}
-			if (def.apparel != null) {
-				result.stacks = false;
-				result.gear = true;
-			}
-			if (def.weaponTags != null && def.weaponTags.Count > 0) {
-				result.stacks = false;
-				result.gear = true;
-			}
+        protected void AddThingDef(ThingDef def, EquipmentType type) {
 
-			if (def.thingCategories != null) {
-				if (def.thingCategories.SingleOrDefault((ThingCategoryDef d) => {
-					return (d.defName == "FoodMeals");
-				}) != null) {
-					result.gear = true;
-				}
-				if (def.thingCategories.SingleOrDefault((ThingCategoryDef d) => {
-					return (d.defName == "Medicine");
-				}) != null) {
-					result.gear = true;
-				}
-			}
+            if (def.MadeFromStuff) {
+                foreach (var s in stuff) {
+                    if (s.stuffProps.CanMake(def)) {
+                        EquipmentKey key = new EquipmentKey(def, s);
+                        EquipmentRecord entry = CreateEquipmentEntry(def, s, type);
+                        if (entry != null) {
+                            entries[key] = entry;
+                        }
+                    }
+                }
+            }
+            else if (def.race != null && def.race.Animal) {
+                if (def.race.hasGenders) {
+                    EquipmentRecord femaleEntry = CreateEquipmentEntry(def, Gender.Female, type);
+                    if (femaleEntry != null) {
+                        entries[new EquipmentKey(def, Gender.Female)] = femaleEntry;
+                    }
+                    EquipmentRecord maleEntry = CreateEquipmentEntry(def, Gender.Male, type);
+                    if (maleEntry != null) {
+                        entries[new EquipmentKey(def, Gender.Male)] = maleEntry;
+                    }
+                }
+                else {
+                    EquipmentKey key = new EquipmentKey(def, Gender.None);
+                    EquipmentRecord entry = CreateEquipmentEntry(def, Gender.None, type);
+                    if (entry != null) {
+                        entries[key] = entry;
+                    }
+                }
+            }
+            else {
+                EquipmentKey key = new EquipmentKey(def, null);
+                EquipmentRecord entry = CreateEquipmentEntry(def, null, Gender.None, type);
+                if (entry != null) {
+                    entries[key] = entry;
+                }
+            }
+        }
 
-			if (def.defName == "Apparel_PersonalShield") {
-				result.hideFromPortrait = true;
-			}
+        protected EquipmentRecord CreateEquipmentEntry(ThingDef def, ThingDef stuffDef, EquipmentType type) {
+            return CreateEquipmentEntry(def, stuffDef, Gender.None, type);
+        }
 
-			if (def.race != null && def.race.Animal) {
-				result.animal = true;
-				result.gender = gender;
-				Pawn pawn = CreatePawn(def, stuffDef, gender);
-				if (pawn == null) {
-					return null;
-				}
-				else {
-					result.thing = pawn;
-				}
-			}
+        protected EquipmentRecord CreateEquipmentEntry(ThingDef def, Gender gender, EquipmentType type) {
+            return CreateEquipmentEntry(def, null, gender, type);
+        }
 
-			return result;
-		}
+        protected EquipmentRecord CreateEquipmentEntry(ThingDef def, ThingDef stuffDef, Gender gender, EquipmentType type) {
+            double baseCost = costs.GetBaseThingCost(def, stuffDef);
+            if (baseCost == 0) {
+                return null;
+            }
+            int stackSize = CalculateStackCount(def, baseCost);
 
-		
-		public int CalculateStackCount(ThingDef def, double basePrice)
-		{
-			return 1;
-		}
+            EquipmentRecord result = new EquipmentRecord();
+            result.type = type;
+            result.def = def;
+            result.stuffDef = stuffDef;
+            result.stackSize = stackSize;
+            result.cost = costs.CalculateStackCost(def, stuffDef, baseCost);
+            result.stacks = true;
+            result.gear = false;
+            result.animal = false;
+            if (def.MadeFromStuff && stuffDef != null) {
+                if (stuffDef.stuffProps.allowColorGenerators && (def.colorGenerator != null || def.colorGeneratorInTraderStock != null)) {
+                    if (def.colorGenerator != null) {
+                        result.color = def.colorGenerator.NewRandomizedColor();
+                    }
+                    else if (def.colorGeneratorInTraderStock != null) {
+                        result.color = def.colorGeneratorInTraderStock.NewRandomizedColor();
+                    }
+                }
+                else {
+                    result.color = stuffDef.stuffProps.color;
+                }
+            }
+            else {
+                if (def.graphicData != null) {
+                    result.color = def.graphicData.color;
+                }
+                else {
+                    result.color = Color.white;
+                }
+            }
+            if (def.apparel != null) {
+                result.stacks = false;
+                result.gear = true;
+            }
+            if (def.weaponTags != null && def.weaponTags.Count > 0) {
+                result.stacks = false;
+                result.gear = true;
+            }
 
-		public Pawn CreatePawn(ThingDef def, ThingDef stuffDef, Gender gender)
-		{
-			PawnKindDef kindDef = (from td in DefDatabase<PawnKindDef>.AllDefs
-				where td.race == def
-				select td).FirstOrDefault();
-			if (kindDef != null) {
-				Pawn pawn = PawnGenerator.GeneratePawn(kindDef, null);
-				pawn.gender = gender;
-				pawn.Drawer.renderer.graphics.ResolveAllGraphics();
-				return pawn;
-			}
-			else {
-				return null;
-			}
-		}
-	}
+            if (def.thingCategories != null) {
+                if (def.thingCategories.SingleOrDefault((ThingCategoryDef d) => {
+                    return (d.defName == "FoodMeals");
+                }) != null) {
+                    result.gear = true;
+                }
+                if (def.thingCategories.SingleOrDefault((ThingCategoryDef d) => {
+                    return (d.defName == "Medicine");
+                }) != null) {
+                    result.gear = true;
+                }
+            }
+
+            if (def.defName == "Apparel_PersonalShield") {
+                result.hideFromPortrait = true;
+            }
+
+            if (def.race != null && def.race.Animal) {
+                result.animal = true;
+                result.gender = gender;
+                Pawn pawn = CreatePawn(def, stuffDef, gender);
+                if (pawn == null) {
+                    return null;
+                }
+                else {
+                    result.thing = pawn;
+                }
+            }
+
+            return result;
+        }
+
+
+        public int CalculateStackCount(ThingDef def, double basePrice) {
+            return 1;
+        }
+
+        public Pawn CreatePawn(ThingDef def, ThingDef stuffDef, Gender gender) {
+            PawnKindDef kindDef = (from td in DefDatabase<PawnKindDef>.AllDefs
+                                   where td.race == def
+                                   select td).FirstOrDefault();
+            if (kindDef != null) {
+                Pawn pawn = PawnGenerator.GeneratePawn(kindDef, null);
+                pawn.gender = gender;
+                pawn.Drawer.renderer.graphics.ResolveAllGraphics();
+                return pawn;
+            }
+            else {
+                return null;
+            }
+        }
+    }
 }

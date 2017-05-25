@@ -3,36 +3,20 @@ using System;
 using UnityEngine;
 using Verse;
 
-namespace EdB.PrepareCarefully
-{
-	public class Dialog_LoadPreset : Dialog_Preset
-	{
-		public Dialog_LoadPreset()
-		{
-			this.interactButLabel = "EdB.LoadPresetButton".Translate();
-		}
+namespace EdB.PrepareCarefully {
+    public class Dialog_LoadPreset : Dialog_Preset {
+        private Action<string> action;
+        public Dialog_LoadPreset(Action<string> action) {
+            this.action = action;
+            this.interactButLabel = "EdB.PC.Dialog.Preset.Button.Load".Translate();
+        }
 
-		protected override void DoMapEntryInteraction(string presetName)
-		{
-			bool result = PresetLoader.LoadFromFile(PrepareCarefully.Instance, presetName);
-			if (result) {
-				Messages.Message("EdB.LoadedPreset".Translate(new object[] {
-					presetName
-				}), MessageSound.Standard);
-			}
-			RemovePageFromStack();
-			Close(true);
-		}
-
-		protected void RemovePageFromStack() {
-			Window page = Find.WindowStack.WindowOfType<Page_ConfigureStartingPawnsCarefully>();
-			if (page == null) {
-				page = Find.WindowStack.WindowOfType<Page_Equipment>();
-			}
-			if (page != null) {
-				Find.WindowStack.TryRemove(page, true);
-			}
-		}
-	}
+        protected override void DoMapEntryInteraction(string mapName) {
+            if (action != null) {
+                action(mapName);
+            }
+            Close(true);
+        }
+    }
 }
 

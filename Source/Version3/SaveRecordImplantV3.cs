@@ -23,8 +23,8 @@ namespace EdB.PrepareCarefully
 
 		public void ExposeData()
 		{
-			Scribe_Values.LookValue<string>(ref this.bodyPart, "bodyPart", null, false);
-			Scribe_Values.LookValue<string>(ref recipe, "recipe", null, false);
+			Scribe_Values.Look<string>(ref this.bodyPart, "bodyPart", null, false);
+			Scribe_Values.Look<string>(ref recipe, "recipe", null, false);
 		}
 	}
 }

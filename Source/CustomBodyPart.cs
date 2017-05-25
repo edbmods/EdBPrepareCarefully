@@ -4,43 +4,41 @@ using System.Collections.Generic;
 using UnityEngine;
 using Verse;
 
-namespace EdB.PrepareCarefully
-{
-	public abstract class CustomBodyPart
-	{
-		public abstract BodyPartRecord BodyPartRecord {
-			get;
-			set;
-		}
+namespace EdB.PrepareCarefully {
+    public abstract class CustomBodyPart {
+        public abstract BodyPartRecord BodyPartRecord {
+            get;
+            set;
+        }
 
-		public virtual string PartName {
-			get {
-				return BodyPartRecord != null ? BodyPartRecord.def.LabelCap : "EdB.PrepareCarefully.WholeBody".Translate(); 
-			}
-		}
+        public virtual string PartName {
+            get {
+                return BodyPartRecord != null ? BodyPartRecord.def.LabelCap : "EdB.PC.BodyParts.WholeBody".Translate();
+            }
+        }
 
-		abstract public string ChangeName {
-			get;
-		}
+        abstract public string ChangeName {
+            get;
+        }
 
-		abstract public Color LabelColor {
-			get;
-		}
+        abstract public Color LabelColor {
+            get;
+        }
 
-		abstract public void AddToPawn(CustomPawn customPawn, Pawn pawn);
+        abstract public void AddToPawn(CustomPawn customPawn, Pawn pawn);
 
-		public virtual bool HasTooltip {
-			get {
-				return false;
-			}
-		}
+        public virtual bool HasTooltip {
+            get {
+                return false;
+            }
+        }
 
-		public virtual string Tooltip {
-			get {
-				return "";
-			}
-		}
+        public virtual string Tooltip {
+            get {
+                return "";
+            }
+        }
 
-	}
+    }
 }
 
