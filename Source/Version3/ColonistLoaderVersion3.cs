@@ -6,50 +6,69 @@ using System.Reflection;
 using Verse;
 
 
-namespace EdB.PrepareCarefully
-{
-	public class ColonistLoaderVersion3
-	{
-		public bool Load(PrepareCarefully loadout, Page_ConfigureStartingPawnsCarefully charMakerPage, string colonistName)
-		{
-			SaveRecordPawnV3 pawnRecord = new SaveRecordPawnV3();
-			string modString = "";
-			string version = "";
-			try {
-				Scribe.InitLoading(ColonistFiles.FilePathForSavedColonist(colonistName));
-				Scribe_Values.LookValue<string>(ref version, "version", "unknown", false);
-				Scribe_Values.LookValue<string>(ref modString, "mods", "", false);
+namespace EdB.PrepareCarefully {
+    public class ColonistLoaderVersion3 {
+        public CustomPawn Load(PrepareCarefully loadout, string name) {
+            SaveRecordPawnV3 pawnRecord = new SaveRecordPawnV3();
+            string modString = "";
+            string version = "";
+            try {
+                Scribe.loader.InitLoading(ColonistFiles.FilePathForSavedColonist(name));
+                Scribe_Values.Look<string>(ref version, "version", "unknown", false);
+                Scribe_Values.Look<string>(ref modString, "mods", "", false);
 
-				try {
-					Scribe_Deep.LookDeep<SaveRecordPawnV3>(ref pawnRecord, "colonist", null);
-				}
-				catch (Exception e) {
-					Messages.Message(modString, MessageSound.Silent);
-					Messages.Message("EdB.ColonistLoadFailed".Translate(), MessageSound.RejectInput);
-					Log.Warning(e.ToString());
-					Log.Warning("Colonist was created with the following mods: " + modString);
-					return false;
-				}
-			}
-			catch (Exception e) {
-				Log.Error("Failed to load preset file");
-				throw e;
-			}
-			finally {
-				Scribe.mode = LoadSaveMode.Inactive;
-			}
+                try {
+                    Scribe_Deep.Look<SaveRecordPawnV3>(ref pawnRecord, "colonist", null);
+                }
+                catch (Exception e) {
+                    Messages.Message(modString, MessageSound.Silent);
+                    Messages.Message("EdB.PC.Dialog.PawnPreset.Error.Failed".Translate(), MessageSound.RejectInput);
+                    Log.Warning(e.ToString());
+                    Log.Warning("Colonist was created with the following mods: " + modString);
+                    return null;
+                }
+            }
+            catch (Exception e) {
+                Log.Error("Failed to load preset file");
+                throw e;
+            }
+            finally {
+                // I don't fully understand how these cross-references and saveables are resolved, but
+                // if we don't clear them out, we get null pointer exceptions.
+                HashSet<IExposable> saveables = (HashSet<IExposable>)(typeof(PostLoadIniter).GetField("saveablesToPostLoad", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(Scribe.loader.initer));
+                saveables.Clear();
+                List<IExposable> crossReferencingExposables = (List<IExposable>)(typeof(CrossRefHandler).GetField("crossReferencingExposables", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(Scribe.loader.crossRefs));
+                crossReferencingExposables.Clear();
+                Scribe.loader.FinalizeLoading();
+            }
 
-			PresetLoaderVersion3 loader = new PresetLoaderVersion3();
-			charMakerPage.AddColonist(loader.LoadPawn(pawnRecord));
-			if (loader.Failed) {
-				Messages.Message(loader.ModString, MessageSound.Silent);
-				Messages.Message("EdB.ColonistThingDefFailed".Translate(), MessageSound.SeriousAlert);
-				Log.Warning("Preset was created with the following mods: " + modString);
-				return false;
-			}
+            if (pawnRecord == null) {
+                Messages.Message(modString, MessageSound.Silent);
+                Messages.Message("EdB.PC.Dialog.PawnPreset.Error.Failed".Translate(), MessageSound.RejectInput);
+                Log.Warning("Colonist was created with the following mods: " + modString);
+                return null;
+            }
 
-			return true;
-		}
-	}
+            PresetLoaderVersion3 loader = new PresetLoaderVersion3();
+            CustomPawn loadedPawn = loader.LoadPawn(pawnRecord);
+            if (loadedPawn != null) {
+                CustomPawn idConflictPawn = PrepareCarefully.Instance.Pawns.FirstOrDefault((CustomPawn p) => {
+                    return p.Id == loadedPawn.Id;
+                });
+                if (idConflictPawn != null) {
+                    loadedPawn.Id = Guid.NewGuid().ToString();
+                }
+                return loadedPawn;
+            }
+            if (loader.Failed) {
+                loadout.State.AddError(loader.ModString);
+                loadout.State.AddError("EdB.PC.Dialog.PawnPreset.Error.Failed".Translate());
+                Log.Warning("Preset was created with the following mods: " + modString);
+                return null;
+            }
+
+            return null;
+        }
+    }
 }
 

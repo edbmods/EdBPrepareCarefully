@@ -1,5 +1,28 @@
  _____________________________________________________________________________
  
+   Version 0.17.1.1
+ _____________________________________________________________________________
+
+ - Added support for Alpha 17
+ - New tabbed interface.  The character list moves from being a list of tabs
+   across the top to being a scrolling list on the left.  The tabs across
+   the top are now used to navigate between the mod pages.
+ - Re-arranged interface for the character customization page.
+ - New relationships page with a new interface for creating parent/child and
+   other relationships in a more predictable way.
+ - Added support for a fourth trait.
+ - Added support for more than 10 colonists.
+ - You can now directly type values into numeric fields for age and equipment
+   counts.
+ - Reworked how the mod integrates with scenarios and map generation (it no
+   longer overwrites the vanilla Genstep_ScenParts class).
+ - Added warnings for when no colonists are capable of work types that are
+   considered required.
+ - Added the ability to add pawns from other factions to your list of
+   starting colonists.
+
+ _____________________________________________________________________________
+ 
    Version 0.16.1.4
  _____________________________________________________________________________
      
