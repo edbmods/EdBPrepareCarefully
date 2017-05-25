@@ -151,6 +151,11 @@ namespace EdB.PrepareCarefully {
                 }
             }
 
+            // Get material definitions so that we can use them for sorting later.
+            ThingDef synthreadDef = DefDatabase<ThingDef>.GetNamedSilentFail("Synthread");
+            ThingDef devilstrandDef = DefDatabase<ThingDef>.GetNamedSilentFail("DevilstrandCloth");
+            ThingDef hyperweaveDef = DefDatabase<ThingDef>.GetNamedSilentFail("Hyperweave");
+
             // For each apparel def, get the list of all materials that can be used to make it.
             foreach (ThingDef thingDef in DefDatabase<ThingDef>.AllDefs) {
                 if (thingDef.apparel != null && thingDef.MadeFromStuff) {
@@ -164,6 +169,40 @@ namespace EdB.PrepareCarefully {
                                 }
                             }
                         }
+                        stuffList.Sort((ThingDef a, ThingDef b) => {
+                            if (a != b) {
+                                if (a == synthreadDef) {
+                                    return -1;
+                                }
+                                else if (b == synthreadDef) {
+                                    return 1;
+                                }
+                                else if (a == ThingDefOf.Cloth) {
+                                    return -1;
+                                }
+                                else if (b == ThingDefOf.Cloth) {
+                                    return 1;
+                                }
+                                else if (a == devilstrandDef) {
+                                    return -1;
+                                }
+                                else if (b == devilstrandDef) {
+                                    return 1;
+                                }
+                                else if (a == hyperweaveDef) {
+                                    return -1;
+                                }
+                                else if (b == hyperweaveDef) {
+                                    return 1;
+                                }
+                                else {
+                                    return a.LabelCap.CompareTo(b.LabelCap);
+                                }
+                            }
+                            else {
+                                return 0;
+                            }
+                        });
                         apparelStuffLookup[thingDef] = stuffList;
                     }
                 }
@@ -241,6 +280,10 @@ namespace EdB.PrepareCarefully {
                                 continue;
                             }
                         }
+                    }
+                    // Disable head type selection when no valid head type could be found for the pawn (i.e. headType is null).
+                    if (pawnLayer == PawnLayers.HeadType && customPawn.HeadType == null) {
+                        continue;
                     }
                     label = PawnLayers.Label(pawnLayers[i]);
                     list.Add(new FloatMenuOption(label, this.pawnLayerActions[i], MenuOptionPriority.Default, null, null, 0, null, null));
@@ -705,7 +748,7 @@ namespace EdB.PrepareCarefully {
         }
 
         protected void SelectNextHead(CustomPawn customPawn, int direction) {
-            List<HeadType> heads = PrepareCarefully.Instance.Providers.HeadType.GetHeadTypes(customPawn.Gender);
+            List<HeadType> heads = PrepareCarefully.Instance.Providers.HeadType.GetHeadTypes(customPawn.Pawn.def, customPawn.Gender);
             int index = heads.IndexOf(customPawn.HeadType);
             if (index == -1) {
                 return;
@@ -789,7 +832,7 @@ namespace EdB.PrepareCarefully {
         }
 
         protected void ShowHeadDialog(CustomPawn customPawn) {
-            List<HeadType> headTypes = PrepareCarefully.Instance.Providers.HeadType.GetHeadTypes(customPawn.Gender);
+            List<HeadType> headTypes = PrepareCarefully.Instance.Providers.HeadType.GetHeadTypes(customPawn.Pawn.def, customPawn.Gender);
             Dialog_Options<HeadType> dialog = new Dialog_Options<HeadType>(headTypes) {
                 NameFunc = (HeadType headType) => {
                     return headType.Label;

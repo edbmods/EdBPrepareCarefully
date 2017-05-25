@@ -17,88 +17,32 @@ namespace EdB.PrepareCarefully {
         protected List<HeadType> femaleHeadTypes = new List<HeadType>();
         protected List<HeadType> noGenderHeaderTypes = new List<HeadType>();
         public Dictionary<string, HeadType> pathDictionary = new Dictionary<string, HeadType>();
+        protected Dictionary<ThingDef, RaceHeadTypes> headTypeLookup = new Dictionary<ThingDef, RaceHeadTypes>();
 
         public ProviderHeadType() {
-            Initialize();
         }
-        public List<HeadType> GetHeadTypes(Gender gender) {
-            if (gender == Gender.Male) {
-                return maleHeadTypes;
-            }
-            else if (gender == Gender.Female) {
-                return femaleHeadTypes;
-            }
-            else {
-                return noGenderHeaderTypes;
-            }
+        public List<HeadType> GetHeadTypes(ThingDef race, Gender gender) {
+            RaceHeadTypes headTypes = GetHeadTypesForRace(race);
+            return headTypes.GetHeadTypes(gender);
         }
-        
-        protected void Initialize() {
-            MethodInfo headGraphicsMethod = typeof(GraphicDatabaseHeadRecords).GetMethod("BuildDatabaseIfNecessary", BindingFlags.Static | BindingFlags.NonPublic);
-            headGraphicsMethod.Invoke(null, null);
-
-            string[] headsFolderPaths = new string[] {
-                "Things/Pawn/Humanlike/Heads/Male",
-                "Things/Pawn/Humanlike/Heads/Female"
-            };
-            for (int i = 0; i < headsFolderPaths.Length; i++) {
-                string text = headsFolderPaths[i];
-                foreach (string current in GraphicDatabaseUtility.GraphicNamesInFolder(text)) {
-                    string fullPath = text + "/" + current;
-                    HeadType headType = CreateHeadTypeFromGraphicPath(fullPath);
-                    if (headType.Gender == Gender.Male) {
-                        maleHeadTypes.Add(headType);
-                    }
-                    else if (headType.Gender == Gender.Female) {
-                        femaleHeadTypes.Add(headType);
-                    }
-                    else {
-                        noGenderHeaderTypes.Add(headType);
-                    }
-                    pathDictionary.Add(fullPath, headType);
-                }
-            }
+        public HeadType FindHeadType(ThingDef race, string graphicsPath) {
+            RaceHeadTypes headTypes = GetHeadTypesForRace(race);
+            return headTypes.FindHeadType(graphicsPath);
         }
-
-        public HeadType CreateHeadTypeFromGraphicPath(string graphicPath) {
-            HeadType result = new HeadType();
-            result.GraphicPath = graphicPath;
-            string[] strArray = Path.GetFileNameWithoutExtension(graphicPath).Split('_');
-            try {
-                result.CrownType = (CrownType)ParseHelper.FromString(strArray[strArray.Length - 2], typeof(CrownType));
-                result.Gender = (Gender)ParseHelper.FromString(strArray[strArray.Length - 3], typeof(Gender));
-            }
-            catch (Exception ex) {
-                Log.Warning("Parse error with head graphic at " + graphicPath + ": " + ex.Message);
-                result.CrownType = CrownType.Undefined;
-                result.Gender = Gender.None;
-            }
-            return result;
+        public HeadType FindHeadTypeForGender(ThingDef race, HeadType headType, Gender gender) {
+            RaceHeadTypes headTypes = GetHeadTypesForRace(race);
+            return headTypes.FindHeadTypeForGender(headType, gender);
         }
-
-        public HeadType FindHeadType(string graphicsPath) {
-            HeadType result;
-            if (pathDictionary.TryGetValue(graphicsPath, out result)) {
-                return result;
+        protected RaceHeadTypes GetHeadTypesForRace(ThingDef race) {
+            RaceHeadTypes headTypes = null;
+            if (!headTypeLookup.TryGetValue(race, out headTypes)) {
+                headTypes = new RaceHeadTypes(race);
+                headTypeLookup.Add(race, headTypes);
             }
-            else {
-                return null;
+            if (headTypes == null && race != ThingDefOf.Human) {
+                return GetHeadTypesForRace(ThingDefOf.Human);
             }
-        }
-
-        public HeadType FindHeadTypeForGender(HeadType headType, Gender gender) {
-            if (headType.Gender == gender) {
-                return headType;
-            }
-            string graphicsPath = headType.GraphicPath;
-            if (gender == Gender.Male) {
-                graphicsPath = graphicsPath.Replace("Female", "Male");
-            }
-            else {
-                graphicsPath = graphicsPath.Replace("Male", "Female");
-            }
-            HeadType result = FindHeadType(graphicsPath);
-            return result != null ? result : headType;
+            return headTypes;
         }
     }
 }

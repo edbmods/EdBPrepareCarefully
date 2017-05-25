@@ -7,7 +7,7 @@
     <OutputType>Library</OutputType>
     <RootNamespace>EdB.PrepareCarefully</RootNamespace>
     <AssemblyName>EdBPrepareCarefully</AssemblyName>
-    <ReleaseVersion>0.17.0.4</ReleaseVersion>
+    <ReleaseVersion>0.17.1.1</ReleaseVersion>
     <UseMSBuildEngine>False</UseMSBuildEngine>
     <TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
   </PropertyGroup>
@@ -81,6 +81,7 @@
     <Compile Include="Source\PresetSaver.cs" />
     <Compile Include="Source\ProviderHeadType.cs" />
     <Compile Include="Source\Providers.cs" />
+    <Compile Include="Source\RaceHeadTypes.cs" />
     <Compile Include="Source\Randomizer.cs" />
     <Compile Include="Source\RelatedPawn.cs" />
     <Compile Include="Source\RelationshipBuilder.cs" />
@@ -172,7 +173,9 @@
   <ItemGroup />
   <ItemGroup>
     <None Include="Resources\CHANGELOG.txt" />
-    <None Include="Resources\About\About.xml" />
+    <None Include="Resources\About\About.xml">
+      <SubType>Designer</SubType>
+    </None>
     <None Include="Resources\Languages\English\Keyed\EdBPrepareCarefully.xml" />
     <None Include="Resources\Textures\EdB\PrepareCarefully\ButtonDelete.png" />
     <None Include="Resources\Textures\EdB\PrepareCarefully\ButtonNext.png" />

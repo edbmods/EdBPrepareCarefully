@@ -52,6 +52,12 @@ namespace EdB.PrepareCarefully {
             PresetLoaderVersion3 loader = new PresetLoaderVersion3();
             CustomPawn loadedPawn = loader.LoadPawn(pawnRecord);
             if (loadedPawn != null) {
+                CustomPawn idConflictPawn = PrepareCarefully.Instance.Pawns.FirstOrDefault((CustomPawn p) => {
+                    return p.Id == loadedPawn.Id;
+                });
+                if (idConflictPawn != null) {
+                    loadedPawn.Id = Guid.NewGuid().ToString();
+                }
                 return loadedPawn;
             }
             if (loader.Failed) {
