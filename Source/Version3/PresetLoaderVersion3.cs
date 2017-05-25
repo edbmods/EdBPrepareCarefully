@@ -256,6 +256,7 @@ namespace EdB.PrepareCarefully {
             else {
                 source = new Randomizer().GenerateColonist();
             }
+            source.health.Reset();
             
             CustomPawn pawn = new CustomPawn(source);
             pawn.Id = record.id;

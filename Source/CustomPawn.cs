@@ -1211,6 +1211,7 @@ namespace EdB.PrepareCarefully {
         public void SetInjuriesAndImplants(IEnumerable<Injury> injuries, IEnumerable<Implant> implants) {
             this.injuries.Clear();
             this.implants.Clear();
+            this.bodyParts.Clear();
             foreach (var injury in injuries) {
                 this.injuries.Add(injury);
                 this.bodyParts.Add(injury);

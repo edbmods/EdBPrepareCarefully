@@ -22,6 +22,10 @@ namespace EdB.PrepareCarefully {
         public void AddPawn(CustomPawn pawn) {
             PrepareCarefully.Instance.RelationshipManager.AddVisibleParentChildPawn(pawn);
         }
+        public void ReplacePawn(CustomPawn pawn) {
+            PrepareCarefully.Instance.RelationshipManager.DeletePawn(pawn);
+            PrepareCarefully.Instance.RelationshipManager.AddVisibleParentChildPawn(pawn);
+        }
         public void AddParentToParentChildGroup(CustomParentChildGroup group, CustomParentChildPawn pawn) {
             if (!group.Parents.Contains(pawn) && !group.Children.Contains(pawn)) {
                 group.Parents.Add(pawn);

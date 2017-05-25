@@ -8,7 +8,9 @@ using Verse;
 namespace EdB.PrepareCarefully {
     public class ControllerPawns {
         public delegate void PawnAddedHandler(CustomPawn pawn);
+        public delegate void PawnReplacedHandler(CustomPawn pawn);
         public event PawnAddedHandler PawnAdded;
+        public event PawnReplacedHandler PawnReplaced;
 
         private State state;
         private Randomizer randomizer = new Randomizer();
@@ -20,7 +22,10 @@ namespace EdB.PrepareCarefully {
         }
 
         public void RandomizeAll() {
-            randomizer.RandomizeAll(state.CurrentPawn);
+            Pawn pawn = randomizer.GenerateSameKindOfColonist(state.CurrentPawn);
+            state.CurrentPawn.InitializeWithPawn(pawn);
+            state.CurrentPawn.Id = Guid.NewGuid().ToString();
+            PawnReplaced(state.CurrentPawn);
         }
 
         // Name-related actions.

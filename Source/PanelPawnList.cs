@@ -215,8 +215,8 @@ namespace EdB.PrepareCarefully {
         }
 
         protected void OpenAddPawnDialog() {
-            FactionDef selectedFaction = previousFaction != null ? previousFaction : providerFactions.Factions.First();
-            var dialog = new Dialog_Options<FactionDef>(providerFactions.Factions) {
+            FactionDef selectedFaction = previousFaction != null ? previousFaction : providerFactions.NonPlayerHumanlikeFactionDefs.First();
+            var dialog = new Dialog_Options<FactionDef>(providerFactions.NonPlayerHumanlikeFactionDefs) {
                 ConfirmButtonLabel = "EdB.PC.Common.Add".Translate(),
                 CancelButtonLabel = "EdB.PC.Common.Cancel".Translate(),
                 HeaderLabel = "EdB.PC.Panel.PawnList.SelectFaction".Translate(),
