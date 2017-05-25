@@ -180,6 +180,8 @@ namespace EdB.PrepareCarefully {
                 KindDef = kindDef,
                 Context = PawnGenerationContext.NonPlayer
             }.Request);
+            pawn.equipment.DestroyAllEquipment(DestroyMode.Vanish);
+            pawn.inventory.DestroyAll(DestroyMode.Vanish);
             CustomPawn customPawn = new CustomPawn(pawn);
 
             customPawn.Pawn.SetFactionDirect(Faction.OfPlayer);

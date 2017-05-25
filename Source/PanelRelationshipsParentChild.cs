@@ -314,7 +314,7 @@ namespace EdB.PrepareCarefully {
                     "EdB.PC.Pawn.HiddenPawnDescriptionWithGender".Translate(new object[] { profession, pawn.Gender.GetLabel() }) :
                     "EdB.PC.Pawn.HiddenPawnDescriptionNoGender".Translate(new object[] { profession });
             }
-            return pawn.Pawn.Name.ToStringFull + "\n" + description;
+            return parentChildPawn.FullName + "\n" + description;
         }
         protected List<WidgetTable<CustomParentChildPawn>.RowGroup> rowGroups = new List<WidgetTable<CustomParentChildPawn>.RowGroup>();
         protected void ShowParentDialogForGroup(CustomParentChildGroup group, CustomParentChildPawn selected, Action<CustomParentChildPawn> action) {

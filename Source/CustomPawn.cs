@@ -155,13 +155,14 @@ namespace EdB.PrepareCarefully {
             }
 
             // Initialize head type.
-            HeadType headType = PrepareCarefully.Instance.Providers.HeadType.FindHeadType(pawn.story.HeadGraphicPath);
+            HeadType headType = PrepareCarefully.Instance.Providers.HeadType.FindHeadType(pawn.def, pawn.story.HeadGraphicPath);
             if (headType != null) {
                 this.headType = headType;
             }
             else {
-                Log.Warning("Head type not found for graphic path: " + pawn.story.HeadGraphicPath);
-                this.headType = PrepareCarefully.Instance.Providers.HeadType.GetHeadTypes(pawn.gender).First();
+                Log.Warning("Prepare Carefully could not find a head type the graphic path: "
+                    + pawn.story.HeadGraphicPath + ". Head type selection disabled for this pawn");
+                this.headType = null;
             }
 
             // Reset CustomPawn cached values.
@@ -931,12 +932,15 @@ namespace EdB.PrepareCarefully {
                 return pawn.story.HeadGraphicPath;
             }
             set {
-                HeadType headType = PrepareCarefully.Instance.Providers.HeadType.FindHeadType(value);
+                HeadType headType = PrepareCarefully.Instance.Providers.HeadType.FindHeadType(pawn.def, value);
                 if (headType != null) {
                     HeadType = headType;
                 }
                 else {
-                    Log.Warning("Could not set head type from graphics path: " + value);
+                    // Set the graphic path on the pawn directly if no head type was found.
+                    pawn.story.GetType().GetField("headGraphicPath", BindingFlags.Instance | BindingFlags.NonPublic).SetValue(pawn.story, value);
+                    Log.Warning("Prepare Carefully could not find a head type the graphic path: "
+                        + value + ". Head type selection disabled for this pawn");
                 }
             }
         }
@@ -1099,11 +1103,13 @@ namespace EdB.PrepareCarefully {
         }
 
         protected void ResetCachedHead() {
-            // Get the matching head type for the pawn's current gender.  We do this in case the user switches the
-            // gender, swapping to the correct head type if necessary.
-            HeadType filteredHeadType = PrepareCarefully.Instance.Providers.HeadType.FindHeadTypeForGender(headType, Gender);
-            // Need to use reflection to set the private field.
-            typeof(Pawn_StoryTracker).GetField("headGraphicPath", BindingFlags.Instance | BindingFlags.NonPublic).SetValue(pawn.story, filteredHeadType.GraphicPath);
+            if (headType != null) {
+                // Get the matching head type for the pawn's current gender.  We do this in case the user switches the
+                // gender, swapping to the correct head type if necessary.
+                HeadType filteredHeadType = PrepareCarefully.Instance.Providers.HeadType.FindHeadTypeForGender(pawn.def, headType, Gender);
+                // Need to use reflection to set the private field.
+                typeof(Pawn_StoryTracker).GetField("headGraphicPath", BindingFlags.Instance | BindingFlags.NonPublic).SetValue(pawn.story, filteredHeadType.GraphicPath);
+            }
         }
 
         protected void ResetGender() {

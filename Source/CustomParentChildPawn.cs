@@ -71,6 +71,16 @@ namespace EdB.PrepareCarefully {
                 name = value;
             }
         }
+        public string FullName {
+            get {
+                if (hidden) {
+                    return Name;
+                }
+                else {
+                    return pawn.Pawn.Name.ToStringFull;
+                }
+            }
+        }
         public CustomParentChildPawn() {
             this.pawn = null;
             this.hidden = false;
