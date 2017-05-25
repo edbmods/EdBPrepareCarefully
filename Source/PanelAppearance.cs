@@ -292,6 +292,7 @@ namespace EdB.PrepareCarefully {
             }
             GUI.DrawTexture(RectPortrait, Textures.TexturePortraitBackground);
 
+            customPawn.UpdatePortrait();
             DrawPawn(customPawn, RectPortrait);
 
             GUI.color = ColorPortraitBorder;
