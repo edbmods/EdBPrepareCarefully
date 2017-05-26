@@ -220,6 +220,11 @@ namespace EdB.PrepareCarefully {
         }
 
         public void InitializeSkillLevelsAndPassions() {
+
+            if (pawn.skills == null) {
+                Log.Warning("Prepare Carefully could not initialize skills for the pawn.  No pawn skill tracker for " + pawn.def.defName + ", " + pawn.kindDef.defName);
+            }
+
             // Save the original passions and set the current values to the same.
             foreach (SkillRecord record in pawn.skills.skills) {
                 originalPassions[record.def] = record.passion;
