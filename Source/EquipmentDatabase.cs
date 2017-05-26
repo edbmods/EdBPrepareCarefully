@@ -65,9 +65,15 @@ namespace EdB.PrepareCarefully {
             thingCategoryMeatRaw = DefDatabase<ThingCategoryDef>.GetNamedSilentFail("MeatRaw");
 
             foreach (var def in DefDatabase<ThingDef>.AllDefs) {
-                EquipmentType type = ClassifyThingDef(def);
-                if (type != null) {
-                    AddThingDef(def, type);
+                try {
+                    EquipmentType type = ClassifyThingDef(def);
+                    if (type != null) {
+                        AddThingDef(def, type);
+                    }
+                }
+                catch (Exception e) {
+                    Log.Warning("Prepare Carefully failed to classify thing definition while building equipment lists: " + def.defName);
+                    Log.Message("  Exception: " + e.Message);
                 }
             }
         }
@@ -382,12 +388,19 @@ namespace EdB.PrepareCarefully {
             if (def.race != null && def.race.Animal) {
                 result.animal = true;
                 result.gender = gender;
-                Pawn pawn = CreatePawn(def, stuffDef, gender);
-                if (pawn == null) {
-                    return null;
+                try {
+                    Pawn pawn = CreatePawn(def, stuffDef, gender);
+                    if (pawn == null) {
+                        return null;
+                    }
+                    else {
+                        result.thing = pawn;
+                    }
                 }
-                else {
-                    result.thing = pawn;
+                catch (Exception e) {
+                    Log.Warning("Prepare Carefully failed to create a pawn for animal equipment entry: " + def.defName);
+                    Log.Message("  Exception message: " + e);
+                    return null;
                 }
             }
 

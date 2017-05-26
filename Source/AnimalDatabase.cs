@@ -71,12 +71,19 @@ namespace EdB.PrepareCarefully {
             result.ThingDef = def;
             result.Gender = gender;
             result.Cost = baseCost;
-            Pawn pawn = CreatePawn(def, gender);
-            if (pawn == null) {
-                return null;
+            try {
+                Pawn pawn = CreatePawn(def, gender);
+                if (pawn == null) {
+                    return null;
+                }
+                else {
+                    result.Thing = pawn;
+                }
             }
-            else {
-                result.Thing = pawn;
+            catch (Exception e) {
+                Log.Warning("Prepare Carefully failed to create a pawn for animal database record: " + def.defName);
+                Log.Message("  Exception message: " + e);
+                return null;
             }
             return result;
         }
