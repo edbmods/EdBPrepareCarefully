@@ -42,8 +42,8 @@
   <EdB.PC.Dialog.PawnPreset.Button.Save>Save</EdB.PC.Dialog.PawnPreset.Button.Save>
   <EdB.PC.Dialog.PawnPreset.DeleteTooltip>Delete this Colonist</EdB.PC.Dialog.PawnPreset.DeleteTooltip>
   <EdB.PC.Dialog.PawnPreset.ConfirmDelete>Are you sure that you want to delete this colonist?</EdB.PC.Dialog.PawnPreset.ConfirmDelete>
-  <EdB.PC.Dialog.PawnPreset.Loaded>Loaded colonist {0}</EdB.PC.Dialog.PawnPreset.Loaded>
-  <EdB.PC.Dialog.PawnPreset.Error.Failed>Failed to load colonist.  Check that all required mods are enabled.</EdB.PC.Dialog.PawnPreset.Error.Failed>
+  <EdB.PC.Dialog.PawnPreset.Loaded>Loaded character {0}</EdB.PC.Dialog.PawnPreset.Loaded>
+  <EdB.PC.Dialog.PawnPreset.Error.Failed>Failed to load character.  Check that all required mods are enabled.</EdB.PC.Dialog.PawnPreset.Error.Failed>
   <EdB.PC.Dialog.PawnPreset.Error.PreAlpha13NotSupported>Pre-alpha 13 versions of saved colonists are not supported.</EdB.PC.Dialog.PawnPreset.Error.PreAlpha13NotSupported>
 
   <EdB.PC.Dialog.Preset.Button.Load>Load Preset</EdB.PC.Dialog.Preset.Button.Load>

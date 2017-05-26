@@ -241,6 +241,7 @@ namespace EdB.PrepareCarefully {
             tabViewPawns.PanelPawnList.PawnDeleted += (CustomPawn pawn) => { controller.CheckPawnCapabilities(); };
             pawns.PawnAdded += (CustomPawn pawn) => { tabViewPawns.PanelPawnList.ScrollToBottom(); tabViewPawns.PanelPawnList.SelectPawn(pawn); };
             pawns.PawnAdded += (CustomPawn pawn) => { controller.CheckPawnCapabilities(); };
+            pawns.PawnReplaced += (CustomPawn pawn) => { controller.CheckPawnCapabilities(); };
 
             tabViewPawns.PanelHealth.InjuryAdded += pawns.AddInjury;
             tabViewPawns.PanelHealth.InjuryAdded += (Injury i) => { tabViewPawns.PanelHealth.ScrollToBottom(); };
@@ -292,6 +293,7 @@ namespace EdB.PrepareCarefully {
             tabViewRelationships.PanelRelationshipsParentChild.GroupAdded += relationships.AddParentChildGroup;
             tabViewPawns.PanelPawnList.PawnDeleted += relationships.DeleteAllPawnRelationships;
             pawns.PawnAdded += relationships.AddPawn;
+            pawns.PawnReplaced += relationships.ReplacePawn;
         }
     }
 }
