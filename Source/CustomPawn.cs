@@ -58,12 +58,12 @@ namespace EdB.PrepareCarefully {
         protected bool portraitDirty = true;
 
         public CustomPawn() {
-            this.id = Guid.NewGuid().ToStringSafe();
+            GenerateId();
             this.lastSelectedAdulthoodValue = Randomizer.RandomAdulthood(this);
         }
 
         public CustomPawn(Pawn pawn) {
-            this.id = Guid.NewGuid().ToStringSafe();
+            GenerateId();
             InitializeWithPawn(pawn);
         }
 
@@ -91,6 +91,10 @@ namespace EdB.PrepareCarefully {
             get {
                 return bodyParts;
             }
+        }
+
+        public void GenerateId() {
+            this.id = Guid.NewGuid().ToStringSafe();
         }
 
         // We use a dirty flag for the portrait to avoid calling ClearCachedPortrait() every frame.

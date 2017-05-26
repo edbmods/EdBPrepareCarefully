@@ -143,7 +143,7 @@ namespace EdB.PrepareCarefully {
                 Scribe_Collections.Look<SaveRecordInjuryV3>(ref this.injuries, "injuries", LookMode.Deep, null);
             }
             else {
-                if (Scribe.loader.curXmlParent["implants"] != null) {
+                if (Scribe.loader.curXmlParent["injuries"] != null) {
                     Scribe_Collections.Look<SaveRecordInjuryV3>(ref this.injuries, "injuries", LookMode.Deep, null);
                 }
             }
