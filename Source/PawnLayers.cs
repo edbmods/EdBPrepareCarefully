@@ -60,25 +60,31 @@ namespace EdB.PrepareCarefully {
 
         public static int ToPawnLayerIndex(ApparelProperties apparelProperties) {
             ApparelLayer layer = apparelProperties.LastLayer;
-            if (layer == ApparelLayer.OnSkin && apparelProperties.bodyPartGroups.Count == 1 && apparelProperties.bodyPartGroups[0].Equals(BodyPartGroupDefOf.Legs)) {
-                return Pants;
+            if (layer == ApparelLayer.OnSkin && apparelProperties.bodyPartGroups.Count == 1) {
+                if (apparelProperties.bodyPartGroups[0].Equals(BodyPartGroupDefOf.Legs)) {
+                    return Pants;
+                }
+                else if (apparelProperties.bodyPartGroups[0].defName == "Hands") {
+                    return -1;
+                }
+                else if (apparelProperties.bodyPartGroups[0].defName == "Feet") {
+                    return -1;
+                }
             }
-            else {
-                switch (layer) {
-                    case ApparelLayer.OnSkin:
-                        return BottomClothingLayer;
-                    case ApparelLayer.Middle:
-                        return MiddleClothingLayer;
-                    case ApparelLayer.Shell:
-                        return TopClothingLayer;
-                    case ApparelLayer.Belt:
-                        return Accessory;
-                    case ApparelLayer.Overhead:
-                        return Hat;
-                    default: {
-                            Log.Warning("Cannot find matching layer for apparel.  Last layer: " + apparelProperties.LastLayer);
-                            return -1;
-                        }
+            switch (layer) {
+                case ApparelLayer.OnSkin:
+                    return BottomClothingLayer;
+                case ApparelLayer.Middle:
+                    return MiddleClothingLayer;
+                case ApparelLayer.Shell:
+                    return TopClothingLayer;
+                case ApparelLayer.Belt:
+                    return Accessory;
+                case ApparelLayer.Overhead:
+                    return Hat;
+                default: {
+                    Log.Warning("Cannot find matching layer for apparel.  Last layer: " + apparelProperties.LastLayer);
+                    return -1;
                 }
             }
         }

@@ -94,9 +94,7 @@ namespace EdB.PrepareCarefully {
         }
 
         // We use a dirty flag for the portrait to avoid calling ClearCachedPortrait() every frame.
-        // TODO: Instead of calling this, why don't we just call ClearCachedPortrait() directly?  Are
-        // we trying to avoid calling it more than once per frame?
-        public void CheckPortraitCache() {
+        protected void CheckPortraitCache() {
             if (portraitDirty) {
                 portraitDirty = false;
                 pawn.ClearCachedPortraits();
@@ -107,8 +105,11 @@ namespace EdB.PrepareCarefully {
             portraitDirty = true;
         }
 
-        public RenderTexture GetPortrait(Vector2 size) {
+        public void UpdatePortrait() {
             CheckPortraitCache();
+        }
+
+        public RenderTexture GetPortrait(Vector2 size) {
             return PortraitsCache.Get(Pawn, size, new Vector3(0, 0, 0), 1.0f);
         }
 
@@ -219,6 +220,11 @@ namespace EdB.PrepareCarefully {
         }
 
         public void InitializeSkillLevelsAndPassions() {
+
+            if (pawn.skills == null) {
+                Log.Warning("Prepare Carefully could not initialize skills for the pawn.  No pawn skill tracker for " + pawn.def.defName + ", " + pawn.kindDef.defName);
+            }
+
             // Save the original passions and set the current values to the same.
             foreach (SkillRecord record in pawn.skills.skills) {
                 originalPassions[record.def] = record.passion;
@@ -1210,6 +1216,7 @@ namespace EdB.PrepareCarefully {
         public void SetInjuriesAndImplants(IEnumerable<Injury> injuries, IEnumerable<Implant> implants) {
             this.injuries.Clear();
             this.implants.Clear();
+            this.bodyParts.Clear();
             foreach (var injury in injuries) {
                 this.injuries.Add(injury);
                 this.bodyParts.Add(injury);
@@ -1257,7 +1264,6 @@ namespace EdB.PrepareCarefully {
 
         public void AddImplant(Implant implant) {
             if (implant != null && implant.BodyPartRecord != null) {
-                Log.Message("Added implant to CustomPawn: " + implant.recipe.defName + ", " + implant.BodyPartRecord.def.defName);
                 RemoveCustomBodyParts(implant.BodyPartRecord);
                 implants.Add(implant);
                 bodyParts.Add(implant);

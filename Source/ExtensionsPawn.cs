@@ -57,7 +57,6 @@ namespace EdB.PrepareCarefully {
             pawn.ClearCachedLifeStage();
             pawn.ClearCachedDisabledWorkTypes();
             pawn.ClearCachedDisabledSkillRecords();
-            pawn.ClearCachedPortraits();
         }
 
         public static void ClearCachedDisabledWorkTypes(this Pawn pawn) {

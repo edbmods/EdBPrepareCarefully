@@ -5,7 +5,7 @@ using System.Linq;
 using Verse;
 namespace EdB.PrepareCarefully {
     public class ProviderFactions {
-        private List<FactionDef> factions = new List<FactionDef>();
+        private List<FactionDef> nonPlayerHumanlikeFactionDefs = new List<FactionDef>();
         public ProviderFactions() {
             HashSet<string> labels = new HashSet<string>();
             foreach (var def in DefDatabase<FactionDef>.AllDefs) {
@@ -17,16 +17,16 @@ namespace EdB.PrepareCarefully {
                 }
                 if (!labels.Contains(def.label)) {
                     labels.Add(def.label);
-                    factions.Add(def);
+                    nonPlayerHumanlikeFactionDefs.Add(def);
                 }
             }
-            factions.Sort((FactionDef a, FactionDef b) => {
+            nonPlayerHumanlikeFactionDefs.Sort((FactionDef a, FactionDef b) => {
                 return a.defName.CompareTo(b.defName);
             });
         }
-        public List<FactionDef> Factions {
+        public List<FactionDef> NonPlayerHumanlikeFactionDefs {
             get {
-                return factions;
+                return nonPlayerHumanlikeFactionDefs;
             }
         }
     }
