@@ -103,9 +103,11 @@ namespace EdB.PrepareCarefully {
             foreach (var e in equipment) {
                 cost.equipment += CalculateEquipmentCost(e);
             }
+            /*
             foreach (var a in animals) {
                 cost.animals += CalculateAnimalCost(a);
             }
+            */
             cost.ComputeTotal();
         }
 
@@ -242,6 +244,7 @@ namespace EdB.PrepareCarefully {
             }
         }
 
+        /*
         public double CalculateAnimalCost(SelectedAnimal animal) {
             AnimalRecord record = PrepareCarefully.Instance.AnimalDatabase.FindAnimal(animal.Key);
             if (record != null) {
@@ -251,6 +254,7 @@ namespace EdB.PrepareCarefully {
                 return 0;
             }
         }
+        */
 
         public double GetBaseThingCost(ThingDef def, ThingDef stuffDef) {
             if (def == null) {

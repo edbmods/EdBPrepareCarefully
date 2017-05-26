@@ -314,6 +314,7 @@ namespace EdB.PrepareCarefully {
                 return equipmentDatabase;
             }
         }
+        /*
         public AnimalDatabase AnimalDatabase {
             get {
                 if (animalDatabase == null) {
@@ -322,6 +323,7 @@ namespace EdB.PrepareCarefully {
                 return animalDatabase;
             }
         }
+        */
 
         protected List<Pawn> colonists = new List<Pawn>();
 

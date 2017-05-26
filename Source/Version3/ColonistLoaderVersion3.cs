@@ -56,7 +56,7 @@ namespace EdB.PrepareCarefully {
                     return p.Id == loadedPawn.Id;
                 });
                 if (idConflictPawn != null) {
-                    loadedPawn.Id = Guid.NewGuid().ToString();
+                    loadedPawn.GenerateId();
                 }
                 return loadedPawn;
             }

@@ -24,7 +24,7 @@ namespace EdB.PrepareCarefully {
         public void RandomizeAll() {
             Pawn pawn = randomizer.GenerateSameKindOfColonist(state.CurrentPawn);
             state.CurrentPawn.InitializeWithPawn(pawn);
-            state.CurrentPawn.Id = Guid.NewGuid().ToString();
+            state.CurrentPawn.GenerateId();
             PawnReplaced(state.CurrentPawn);
         }
 
