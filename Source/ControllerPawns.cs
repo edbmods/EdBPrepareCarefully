@@ -22,7 +22,7 @@ namespace EdB.PrepareCarefully {
         }
 
         public void RandomizeAll() {
-            Pawn pawn = randomizer.GenerateSameKindOfColonist(state.CurrentPawn);
+            Pawn pawn = randomizer.GenerateSameKindOfPawn(state.CurrentPawn);
             state.CurrentPawn.InitializeWithPawn(pawn);
             state.CurrentPawn.GenerateId();
             PawnReplaced(state.CurrentPawn);
@@ -45,7 +45,10 @@ namespace EdB.PrepareCarefully {
             }
         }
         public void RandomizeName() {
-            randomizer.RandomizeName(state.CurrentPawn);
+            Pawn sourcePawn = randomizer.GenerateSameKindAndGenderOfPawn(state.CurrentPawn);
+            Name name = PawnBioAndNameGenerator.GeneratePawnName(sourcePawn, NameStyle.Full, null);
+            NameTriple nameTriple = name as NameTriple;
+            state.CurrentPawn.Name = nameTriple;
         }
 
         // Backstory-related actions.
@@ -57,22 +60,43 @@ namespace EdB.PrepareCarefully {
                 state.CurrentPawn.Adulthood = backstory;
             }
         }
+
         public void RandomizeBackstories() {
-            randomizer.RandomizeBackstory(state.CurrentPawn);
+            CustomPawn currentPawn = state.CurrentPawn;
+            PawnKindDef kindDef = currentPawn.Pawn.kindDef;
+            FactionDef factionDef = kindDef.defaultFactionType;
+            if (factionDef == null) {
+                factionDef = Faction.OfPlayer.def;
+            }
+            MethodInfo method = typeof(PawnBioAndNameGenerator).GetMethod("SetBackstoryInSlot", BindingFlags.Static | BindingFlags.NonPublic);
+            object[] arguments = new object[] { currentPawn.Pawn, BackstorySlot.Childhood, null, factionDef };
+            method.Invoke(null, arguments);
+            currentPawn.Childhood = arguments[2] as Backstory;
+            arguments = new object[] { currentPawn.Pawn, BackstorySlot.Adulthood, null, factionDef };
+            method.Invoke(null, arguments);
+            currentPawn.Adulthood = arguments[2] as Backstory;
         }
 
         // Trait-related actions.
         public void AddTrait(Trait trait) {
             state.CurrentPawn.AddTrait(trait);
         }
+
         public void UpdateTrait(int index, Trait trait) {
             state.CurrentPawn.SetTrait(index, trait);
         }
+
         public void RemoveTrait(Trait trait) {
             state.CurrentPawn.RemoveTrait(trait);
         }
+
         public void RandomizeTraits() {
-            randomizer.RandomizeTraits(state.CurrentPawn);
+            Pawn pawn = randomizer.GenerateSameKindOfPawn(state.CurrentPawn);
+            List<Trait> traits = pawn.story.traits.allTraits;
+            state.CurrentPawn.ClearTraits();
+            foreach (var trait in traits) {
+                state.CurrentPawn.AddTrait(trait);
+            }
         }
 
         // Age-related actions.
@@ -102,9 +126,11 @@ namespace EdB.PrepareCarefully {
 
         // Appearance-related actions.
         public void RandomizeAppearance() {
-            randomizer.RandomizeAppearance(state.CurrentPawn);
+            CustomPawn currentPawn = state.CurrentPawn;
+            Pawn pawn = randomizer.GenerateSameKindAndGenderOfPawn(currentPawn);
+            currentPawn.CopyAppearance(pawn);
         }
-
+        
         // Skill-related actions.
         public void ResetSkills() {
             state.CurrentPawn.RestoreSkillLevelsAndPassions();
