@@ -168,18 +168,7 @@ namespace EdB.PrepareCarefully {
                 return (arg.defaultFactionType != null && arg.defaultFactionType.LabelCap == def.LabelCap);
             });
             PawnKindDef kindDef = kinds.RandomElementWithFallback(def.basicMemberKind);
-            Faction faction = Faction.OfPlayer;
-            if (def != Faction.OfPlayer.def) {
-                faction = new Faction() {
-                    def = def
-                };
-                FactionRelation rel = new FactionRelation();
-                rel.other = Faction.OfPlayer;
-                rel.goodwill = 50;
-                rel.hostile = false;
-                (typeof(Faction).GetField("relations", BindingFlags.Instance | BindingFlags.NonPublic)
-                    .GetValue(faction) as List<FactionRelation>).Add(rel);
-            }
+            Faction faction = PrepareCarefully.Instance.Providers.Factions.GetFaction(def);
             Pawn pawn = randomizer.GeneratePawn(new PawnGenerationRequestWrapper() {
                 Faction = faction,
                 KindDef = kindDef,
