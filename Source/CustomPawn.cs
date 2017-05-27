@@ -44,7 +44,7 @@ namespace EdB.PrepareCarefully {
         // Keep track of the most recently selected adulthood option so that if the user updates the pawn's
         // age in a way that switches them back and forth from adult to child (which nulls out the adulthood
         // value in the Pawn), we can remember what the value was and restore it.
-        protected Backstory lastSelectedAdulthoodValue = null;
+        protected Backstory lastSelectedAdulthoodBackstory = null;
 
         // A GUID provides a unique identifier for the CustomPawn.
         protected string id;
@@ -59,7 +59,6 @@ namespace EdB.PrepareCarefully {
 
         public CustomPawn() {
             GenerateId();
-            this.lastSelectedAdulthoodValue = Randomizer.RandomAdulthood(this);
         }
 
         public CustomPawn(Pawn pawn) {
@@ -90,6 +89,15 @@ namespace EdB.PrepareCarefully {
         public List<CustomBodyPart> BodyParts {
             get {
                 return bodyParts;
+            }
+        }
+
+        public Faction Faction {
+            get {
+                return pawn.Faction;
+            }
+            set {
+                pawn.SetFactionDirect(value);
             }
         }
 
@@ -176,10 +184,7 @@ namespace EdB.PrepareCarefully {
             ResetCachedHead();
 
             // Copy the adulthood backstory or set a random one if it's null.
-            this.lastSelectedAdulthoodValue = pawn.story.adulthood;
-            if (lastSelectedAdulthoodValue == null) {
-                this.lastSelectedAdulthoodValue = Randomizer.RandomAdulthood(this);
-            }
+            this.LastSelectedAdulthoodBackstory = pawn.story.adulthood;
 
             // Evaluate all hediffs.
             InitializePawnHediffs(pawn);
@@ -223,7 +228,7 @@ namespace EdB.PrepareCarefully {
             SetInjuriesAndImplants(injuries, implants);
         }
 
-        public void InitializeSkillLevelsAndPassions() {
+        protected void InitializeSkillLevelsAndPassions() {
 
             if (pawn.skills == null) {
                 Log.Warning("Prepare Carefully could not initialize skills for the pawn.  No pawn skill tracker for " + pawn.def.defName + ", " + pawn.kindDef.defName);
@@ -274,6 +279,40 @@ namespace EdB.PrepareCarefully {
             // Set the current values to the original values.
             foreach (SkillRecord record in pawn.skills.skills) {
                 currentSkillLevels[record.def] = originalSkillLevels[record.def];
+            }
+        }
+
+        public Backstory LastSelectedAdulthoodBackstory {
+            get {
+                if (lastSelectedAdulthoodBackstory != null) {
+                    return lastSelectedAdulthoodBackstory;
+                }
+                else {
+                    return Randomizer.RandomAdulthood(this);
+                }
+            }
+            set {
+                lastSelectedAdulthoodBackstory = value;
+            }
+        }
+
+        public void CopyAppearance(Pawn pawn) {
+            this.HairDef = pawn.story.hairDef;
+            this.SetColor(PawnLayers.Hair, pawn.story.hairColor);
+            this.HeadGraphicPath = pawn.story.HeadGraphicPath;
+            this.MelaninLevel = pawn.story.melanin;
+            for (int i = 0; i < PawnLayers.Count; i++) {
+                if (PawnLayers.IsApparelLayer(i)) {
+                    this.SetSelectedStuff(i, null);
+                    this.SetSelectedApparel(i, null);
+                }
+            }
+            foreach (Apparel current in pawn.apparel.WornApparel) {
+                int layer = PawnLayers.ToPawnLayerIndex(current.def.apparel);
+                if (layer != -1) {
+                    this.SetSelectedStuff(layer, current.Stuff);
+                    this.SetSelectedApparel(layer, current.def);
+                }
             }
         }
 
@@ -900,7 +939,7 @@ namespace EdB.PrepareCarefully {
             }
             set {
                 if (value != null) {
-                    lastSelectedAdulthoodValue = value;
+                    LastSelectedAdulthoodBackstory = value;
                 }
                 if (IsAdult) {
                     pawn.story.adulthood = value;
@@ -909,15 +948,6 @@ namespace EdB.PrepareCarefully {
                     pawn.story.adulthood = null;
                 }
                 ResetBackstories();
-            }
-        }
-
-        public Backstory LastSelectedAdulthood {
-            get {
-                return lastSelectedAdulthoodValue;
-            }
-            set {
-                this.lastSelectedAdulthoodValue = value;
             }
         }
 
@@ -1100,7 +1130,7 @@ namespace EdB.PrepareCarefully {
                 long diff = value - years;
                 pawn.ageTracker.AgeBiologicalTicks += diff * 3600000L;
                 if (IsAdult && pawn.story.adulthood == null) {
-                    pawn.story.adulthood = lastSelectedAdulthoodValue;
+                    pawn.story.adulthood = LastSelectedAdulthoodBackstory;
                     ResetBackstories();
                 }
                 else if (!IsAdult && pawn.story.adulthood != null) {

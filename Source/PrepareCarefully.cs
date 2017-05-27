@@ -136,6 +136,7 @@ namespace EdB.PrepareCarefully {
 
         protected void InitializeProviders() {
             Providers.HeadType = new ProviderHeadType();
+            Providers.Factions = new ProviderFactions();
         }
 
         // TODO: Alpha 14

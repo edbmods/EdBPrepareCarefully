@@ -8,5 +8,8 @@ namespace EdB.PrepareCarefully {
         public ProviderHeadType HeadType {
             get; set;
         }
+        public ProviderFactions Factions {
+            get; set;
+        }
     }
 }

@@ -53,7 +53,7 @@ namespace EdB.PrepareCarefully {
                 this.adulthood = pawn.Adulthood.identifier;
             }
             else {
-                this.adulthood = pawn.LastSelectedAdulthood.identifier;
+                this.adulthood = pawn.LastSelectedAdulthoodBackstory.identifier;
             }
             this.childhood = pawn.Childhood.identifier;
             this.skinColor = pawn.Pawn.story.SkinColor;
