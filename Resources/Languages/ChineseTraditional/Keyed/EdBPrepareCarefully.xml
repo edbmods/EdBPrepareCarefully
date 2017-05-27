@@ -1,0 +1,195 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<LanguageData>
+  <EdB.PC.AddParentChild.Header.AddParent>添加一個父親或母親</EdB.PC.AddParentChild.Header.AddParent>
+  <EdB.PC.AddParentChild.Error.ParentRequired>你必須選擇一個親屬。</EdB.PC.AddParentChild.Error.ParentRequired>
+  <EdB.PC.AddParentChild.Header.AddChild>添加一個孩子</EdB.PC.AddParentChild.Header.AddChild>
+  <EdB.PC.AddParentChild.Error.ChildRequired>你必須選擇一個孩子。</EdB.PC.AddParentChild.Error.ChildRequired>
+  <EdB.PC.AddParentChild.Header.SelectColonist>選擇一個角色</EdB.PC.AddParentChild.Header.SelectColonist>
+  <EdB.PC.AddParentChild.Header.SelectHidden>選擇其他的角色</EdB.PC.AddParentChild.Header.SelectHidden>
+  <EdB.PC.AddParentChild.AddHiddenPawn>新的隱藏單位</EdB.PC.AddParentChild.AddHiddenPawn>
+  <EdB.PC.AddParentChild.NewHiddenCharacter>新的隱藏角色</EdB.PC.AddParentChild.NewHiddenCharacter>
+
+  <EdB.PC.AddRelationship.Header.Relationship>選擇關係</EdB.PC.AddRelationship.Header.Relationship>
+  <EdB.PC.AddRelationship.Header.Source>選擇一個角色</EdB.PC.AddRelationship.Header.Source>
+  <EdB.PC.AddRelationship.Header.Target>選擇一個目標角色</EdB.PC.AddRelationship.Header.Target>
+  <EdB.PC.AddRelationship.Error.RelationshipRequired>你必須選擇一個關係</EdB.PC.AddRelationship.Error.RelationshipRequired>
+  <EdB.PC.AddRelationship.Error.SourceRequired>你必須選擇一個角色</EdB.PC.AddRelationship.Error.SourceRequired>
+  <EdB.PC.AddRelationship.Error.TargetRequired>你必須選擇一個角色</EdB.PC.AddRelationship.Error.TargetRequired>
+
+  <EdB.PC.Animals.LabelWithGender>{0}，{1}</EdB.PC.Animals.LabelWithGender>
+  <EdB.PC.Animals.LabelWithoutGender>{0}</EdB.PC.Animals.LabelWithoutGender>
+
+  <EdB.PC.BodyParts.WholeBody>全身</EdB.PC.BodyParts.WholeBody>
+
+  <EdB.PC.Common.Add>新增</EdB.PC.Common.Add>
+  <EdB.PC.Common.Next>下一步</EdB.PC.Common.Next>
+  <EdB.PC.Common.NoOptionSelected>無</EdB.PC.Common.NoOptionSelected>
+  <EdB.PC.Common.Cancel>取消</EdB.PC.Common.Cancel>
+  <EdB.PC.Common.Close>關閉</EdB.PC.Common.Close>
+  <EdB.PC.Common.Confirm>確認</EdB.PC.Common.Confirm>
+
+  <EdB.PC.Dialog.BodyPart.Header>選擇位置</EdB.PC.Dialog.BodyPart.Header>
+  <EdB.PC.Dialog.BodyPart.Error.Required>你必須選擇一個位置</EdB.PC.Dialog.BodyPart.Error.Required>
+
+  <EdB.PC.Dialog.Implant.Header>選擇一個植入物</EdB.PC.Dialog.Implant.Header>
+  <EdB.PC.Dialog.Implant.Error.Required>你必須選擇一個植入物</EdB.PC.Dialog.Implant.Error.Required>
+
+  <EdB.PC.Dialog.Injury.Header>選擇一個狀態</EdB.PC.Dialog.Injury.Header>
+  <EdB.PC.Dialog.Injury.Error.Required>你必須選擇一個狀態</EdB.PC.Dialog.Injury.Error.Required>
+  <EdB.PC.Dialog.Injury.OldInjury.Label>{0} ({1})</EdB.PC.Dialog.Injury.OldInjury.Label>
+
+  <EdB.PC.Dialog.PawnPreset.Button.Load>載入</EdB.PC.Dialog.PawnPreset.Button.Load>
+  <EdB.PC.Dialog.PawnPreset.Button.Save>保存</EdB.PC.Dialog.PawnPreset.Button.Save>
+  <EdB.PC.Dialog.PawnPreset.DeleteTooltip>刪除這個角色。</EdB.PC.Dialog.PawnPreset.DeleteTooltip>
+  <EdB.PC.Dialog.PawnPreset.ConfirmDelete>你確定想要刪除這個角色嗎？</EdB.PC.Dialog.PawnPreset.ConfirmDelete>
+  <EdB.PC.Dialog.PawnPreset.Loaded>已載入角色{0}</EdB.PC.Dialog.PawnPreset.Loaded>
+  <EdB.PC.Dialog.PawnPreset.Error.Failed>載入角色失敗，請檢查是否啟用所有需要的mod。</EdB.PC.Dialog.PawnPreset.Error.Failed>
+  <EdB.PC.Dialog.PawnPreset.Error.PreAlpha13NotSupported>不支持在A13版本之前保存的角色。</EdB.PC.Dialog.PawnPreset.Error.PreAlpha13NotSupported>
+
+  <EdB.PC.Dialog.Preset.Button.Load>載入預設</EdB.PC.Dialog.Preset.Button.Load>
+  <EdB.PC.Dialog.Preset.Button.Save>保存預設</EdB.PC.Dialog.Preset.Button.Save>
+  <EdB.PC.Dialog.Preset.ConfirmDelete>你確定想要刪除這個預設嗎？</EdB.PC.Dialog.Preset.ConfirmDelete>
+  <EdB.PC.Dialog.Preset.DeleteTooltip>刪除這個預設</EdB.PC.Dialog.Preset.DeleteTooltip>
+  <EdB.PC.Dialog.Preset.Error.Failed>從預設方案中載入角色失敗。請檢查是否啟用所有需要的mod。</EdB.PC.Dialog.Preset.Error.Failed>
+  <EdB.PC.Dialog.Preset.Error.PreAlpha13NotSupported>不支持在A13版本之前保存的預設。</EdB.PC.Dialog.Preset.Error.PreAlpha13NotSupported>
+  <EdB.PC.Dialog.Preset.Error.RelationshipFailed>無法從預設中加載自定義關係。</EdB.PC.Dialog.Preset.Error.RelationshipFailed>
+  <EdB.PC.Dialog.Preset.Error.ThingDefFailed>無法完全載入預設。請檢查是否啟用所有需要的mod。</EdB.PC.Dialog.Preset.Error.ThingDefFailed>
+  <EdB.PC.Dialog.Preset.Loaded>已載入預設{0}</EdB.PC.Dialog.Preset.Loaded>
+
+  <EdB.PC.Dialog.Severity.Header>選擇一個嚴重等級</EdB.PC.Dialog.Severity.Header>
+  <EdB.PC.Dialog.Severity.Error.Required>你必須選擇一個嚴重等級</EdB.PC.Dialog.Severity.Error.Required>
+  <EdB.PC.Dialog.Severity.OldInjury.Label.2>2點傷害</EdB.PC.Dialog.Severity.OldInjury.Label.2>
+  <EdB.PC.Dialog.Severity.OldInjury.Label.3>3點傷害</EdB.PC.Dialog.Severity.OldInjury.Label.3>
+  <EdB.PC.Dialog.Severity.OldInjury.Label.4>4點傷害</EdB.PC.Dialog.Severity.OldInjury.Label.4>
+  <EdB.PC.Dialog.Severity.OldInjury.Label.5>5點傷害</EdB.PC.Dialog.Severity.OldInjury.Label.5>
+  <EdB.PC.Dialog.Severity.OldInjury.Label.6>6點傷害</EdB.PC.Dialog.Severity.OldInjury.Label.6>
+  <EdB.PC.Dialog.Severity.Stage.Label.>{0} {1}</EdB.PC.Dialog.Severity.Stage.Label.>
+
+  <EdB.PC.Dialog.UnrecoverableError.Header>不可恢復的錯誤</EdB.PC.Dialog.UnrecoverableError.Header>
+  <EdB.PC.Dialog.UnrecoverableError.Message>出現了一個精心準備不可恢復的錯誤，以下錯誤信息可以幫助你識別問題：
+
+"{0}"</EdB.PC.Dialog.UnrecoverableError.Message>
+
+  <EdB.PC.Equipment.Type.Animals>動物</EdB.PC.Equipment.Type.Animals>
+  <EdB.PC.Equipment.Type.Apparel>服裝</EdB.PC.Equipment.Type.Apparel>
+  <EdB.PC.Equipment.Type.Buildings>傢具</EdB.PC.Equipment.Type.Buildings>
+  <EdB.PC.Equipment.Type.Food>食物</EdB.PC.Equipment.Type.Food>
+  <EdB.PC.Equipment.Type.Medical>藥物</EdB.PC.Equipment.Type.Medical>
+  <EdB.PC.Equipment.Type.Resources>資源</EdB.PC.Equipment.Type.Resources>
+  <EdB.PC.Equipment.Type.Weapons>武器</EdB.PC.Equipment.Type.Weapons>
+
+  <EdB.PC.Error.NotEnoughPoints>你消耗了過多的點數。</EdB.PC.Error.NotEnoughPoints>
+  <EdB.PC.Error.NotEnoughColonists1>你必須有至少一個角色。</EdB.PC.Error.NotEnoughColonists1>
+  <EdB.PC.Error.NotEnoughColonists>你必須有至少{0}個角色。</EdB.PC.Error.NotEnoughColonists>
+
+  <EdB.PC.Pawn.AgeWithChronological>{0} ({1})</EdB.PC.Pawn.AgeWithChronological>
+  <EdB.PC.Pawn.AgeWithoutChronological>{0}</EdB.PC.Pawn.AgeWithoutChronological>
+  <EdB.PC.Pawn.BodyType.Average>標準</EdB.PC.Pawn.BodyType.Average>
+  <EdB.PC.Pawn.BodyType.Fat>超重</EdB.PC.Pawn.BodyType.Fat>
+  <EdB.PC.Pawn.BodyType.Hulk>強壯</EdB.PC.Pawn.BodyType.Hulk>
+  <EdB.PC.Pawn.BodyType.Thin>纖瘦</EdB.PC.Pawn.BodyType.Thin>
+  <EdB.PC.Pawn.HiddenPawnDescriptionWithGender>{0}，{1}</EdB.PC.Pawn.HiddenPawnDescriptionWithGender>
+  <EdB.PC.Pawn.HiddenPawnDescriptionNoGender>{0}</EdB.PC.Pawn.HiddenPawnDescriptionNoGender>
+  <EdB.PC.Pawn.HiddenPawnName>隱藏角色{0}</EdB.PC.Pawn.HiddenPawnName>
+  <EdB.PC.Pawn.HiddenPawnProfession>未知</EdB.PC.Pawn.HiddenPawnProfession>
+  <EdB.PC.Pawn.PawnDescriptionWithGender>{0}，{1}，年齡{2}</EdB.PC.Pawn.PawnDescriptionWithGender>
+  <EdB.PC.Pawn.PawnDescriptionNoGender>{0}，年齡{1}</EdB.PC.Pawn.PawnDescriptionNoGender>
+  <EdB.PC.Pawn.PawnLayer.Accessory>附件</EdB.PC.Pawn.PawnLayer.Accessory>
+  <EdB.PC.Pawn.PawnLayer.BodyType>體型</EdB.PC.Pawn.PawnLayer.BodyType>
+  <EdB.PC.Pawn.PawnLayer.BottomClothingLayer>底部著裝層</EdB.PC.Pawn.PawnLayer.BottomClothingLayer>
+  <EdB.PC.Pawn.PawnLayer.Hair>髮型</EdB.PC.Pawn.PawnLayer.Hair>
+  <EdB.PC.Pawn.PawnLayer.Hat>帽子</EdB.PC.Pawn.PawnLayer.Hat>
+  <EdB.PC.Pawn.PawnLayer.HeadType>臉型</EdB.PC.Pawn.PawnLayer.HeadType>
+  <EdB.PC.Pawn.PawnLayer.MiddleClothingLayer>中部著裝層</EdB.PC.Pawn.PawnLayer.MiddleClothingLayer>
+  <EdB.PC.Pawn.PawnLayer.Pants>褲子</EdB.PC.Pawn.PawnLayer.Pants>
+  <EdB.PC.Pawn.PawnLayer.TopClothingLayer>頂部著裝層</EdB.PC.Pawn.PawnLayer.TopClothingLayer>
+
+  <EdB.PC.Page.Button.LoadPreset>載入預設</EdB.PC.Page.Button.LoadPreset>
+  <EdB.PC.Page.Button.PrepareCarefully>精心準備</EdB.PC.Page.Button.PrepareCarefully>
+  <EdB.PC.Page.Button.SavePreset>保存預設</EdB.PC.Page.Button.SavePreset>
+  <EdB.PC.Page.ConfirmExit>你確定不使用精心準備嗎？你所做的所有修改都會丟失。</EdB.PC.Page.ConfirmExit>
+  <EdB.PC.Page.ConfirmStart>你確定已經完成所有自定義了嗎？確認將會開始你的遊戲！</EdB.PC.Page.ConfirmStart>
+  <EdB.PC.Page.Points.CostSummary.Total>總消耗點數：{0}</EdB.PC.Page.Points.CostSummary.Total>
+  <EdB.PC.Page.Points.CostSummary.Equipment>物資：{0}</EdB.PC.Page.Points.CostSummary.Equipment>
+  <EdB.PC.Page.Points.CostSummary.Apparel>服裝：{0}</EdB.PC.Page.Points.CostSummary.Apparel>
+  <EdB.PC.Page.Points.CostSummary.Colonist>{0}：{1}</EdB.PC.Page.Points.CostSummary.Colonist>
+  <EdB.PC.Page.Points.CostSummary.Implants>植入物：{0}</EdB.PC.Page.Points.CostSummary.Implants>
+  <EdB.PC.Page.Points.NotEnoughPoints>你消耗了過多的點數。</EdB.PC.Page.Points.NotEnoughPoints>
+  <EdB.PC.Page.Points.Remaining>剩餘點數：{0}</EdB.PC.Page.Points.Remaining>
+  <EdB.PC.Page.Points.ScenarioPoints>在這個隨機劇本中生成的起始角色和資源總點數為{0}。</EdB.PC.Page.Points.ScenarioPoints>
+  <EdB.PC.Page.Points.Spent>點數消耗：{0}</EdB.PC.Page.Points.Spent>
+  <EdB.PC.Page.Points.Unlimited>無限制</EdB.PC.Page.Points.Unlimited>
+  <EdB.PC.Page.Points.UsePoints>啟用點數限制</EdB.PC.Page.Points.UsePoints>
+  <EdB.PC.Page.Points.UsePoints.Tip>
+    啟用點數限制來維持一個相對平衡的開局，通過消耗有限的點數來獲得技能、新的角色和物資。你的起始點數取決於你選擇的劇本所生成的角色和物資點數總量。
+
+    禁用點數限制來進行無限制的開局準備。
+  </EdB.PC.Page.Points.UsePoints.Tip>
+  <EdB.PC.Page.Title>精心準備</EdB.PC.Page.Title>
+
+  <EdB.PC.Panel.Age.Biological>生理年齡</EdB.PC.Panel.Age.Biological>
+  <EdB.PC.Panel.Age.Chronological>實際年齡</EdB.PC.Panel.Age.Chronological>
+
+  <EdB.PC.Panel.Appearance.ApparelConflict.Description>你所選擇的{0}不能與以下服裝同時穿著：</EdB.PC.Panel.Appearance.ApparelConflict.Description>
+  <EdB.PC.Panel.Appearance.ApparelConflict.LineItem> - {0}</EdB.PC.Panel.Appearance.ApparelConflict.LineItem>
+  <EdB.PC.Panel.Appearance.NoneSelected>無</EdB.PC.Panel.Appearance.NoneSelected>
+
+  <EdB.PC.Panel.AvailableEquipment.Add>添加物資</EdB.PC.Panel.AvailableEquipment.Add>
+  <EdB.PC.Panel.AvailableEquipment.Materials.All>全部金屬</EdB.PC.Panel.AvailableEquipment.Materials.All>
+  <EdB.PC.Panel.AvailableEquipment.Materials.None>無金屬</EdB.PC.Panel.AvailableEquipment.Materials.None>
+
+  <EdB.PC.Panel.Backstory.Title>背景故事</EdB.PC.Panel.Backstory.Title>
+  <EdB.PC.Panel.Backstory.Childhood>童年</EdB.PC.Panel.Backstory.Childhood>
+  <EdB.PC.Panel.Backstory.Adulthood>成年</EdB.PC.Panel.Backstory.Adulthood>
+
+  <EdB.PC.Panel.Health.Error.MustSelectBodyPart>你必須選擇一個位置</EdB.PC.Panel.Health.Error.MustSelectBodyPart>
+  <EdB.PC.Panel.Health.Error.MustSelectImplant>你必須選擇一個植入物</EdB.PC.Panel.Health.Error.MustSelectImplant>
+  <EdB.PC.Panel.Health.Error.MustSelectOption>你必須選擇一個選項</EdB.PC.Panel.Health.Error.MustSelectOption>
+  <EdB.PC.Panel.Health.Error.MustSelectSeverity>你必須選擇一個嚴重等級</EdB.PC.Panel.Health.Error.MustSelectSeverity>
+  <EdB.PC.Panel.Health.HediffTypeInjury>添加一個傷痕或者健康狀態</EdB.PC.Panel.Health.HediffTypeInjury>
+  <EdB.PC.Panel.Health.HediffTypeImplant>添加一個植入物</EdB.PC.Panel.Health.HediffTypeImplant>
+  <EdB.PC.Panel.Health.InjuryLabel.Stage>{0}，{1}</EdB.PC.Panel.Health.InjuryLabel.Stage>
+  <EdB.PC.Panel.Health.InjuryLabel.Severity>{0}</EdB.PC.Panel.Health.InjuryLabel.Severity>
+  <EdB.PC.Panel.Health.None>沒有傷痕，健康狀態或者植入物。</EdB.PC.Panel.Health.None>
+  <EdB.PC.Panel.Health.SelectImplant>選擇一個植入物</EdB.PC.Panel.Health.SelectImplant>
+  <EdB.PC.Panel.Health.SelectBodyPart>選擇一個位置</EdB.PC.Panel.Health.SelectBodyPart>
+  <EdB.PC.Panel.Health.SelectSeverity>選擇一個嚴重等級</EdB.PC.Panel.Health.SelectSeverity>
+  <EdB.PC.Panel.Health.Title>健康</EdB.PC.Panel.Health.Title>
+
+  <EdB.PC.Panel.Incapable.None>無</EdB.PC.Panel.Incapable.None>
+  <EdB.PC.Panel.Incapable.Title>無法從事</EdB.PC.Panel.Incapable.Title>
+  <EdB.PC.Panel.Incapable.Warning>所有的角色都無法從事以下的工作，這些工作在原版遊戲裡是很有必要的。
+
+{0}
+
+你可以和你的角色一起玩這個遊戲，但是當你開始這個存檔時你可能會看到一個錯誤信息。</EdB.PC.Panel.Incapable.Warning>
+  <EdB.PC.Panel.Incapable.WarningItem> - {0}</EdB.PC.Panel.Incapable.WarningItem>
+
+  <EdB.PC.Panel.LoadSave.Load>載入角色</EdB.PC.Panel.LoadSave.Load>
+  <EdB.PC.Panel.LoadSave.Save>保存角色</EdB.PC.Panel.LoadSave.Save>
+
+  <EdB.PC.Panel.PawnList.Delete.Confirm>你確定要刪除這個角色嗎？</EdB.PC.Panel.PawnList.Delete.Confirm>
+  <EdB.PC.Panel.PawnList.Error.MustSelectFaction>必須選擇一個派系</EdB.PC.Panel.PawnList.Error.MustSelectFaction>
+  <EdB.PC.Panel.PawnList.SelectFaction>選擇一個派系</EdB.PC.Panel.PawnList.SelectFaction>
+
+  <EdB.PC.Panel.RelationshipsOther.Title>其他關係</EdB.PC.Panel.RelationshipsOther.Title>
+
+  <EdB.PC.Panel.RelationshipsParentChild.Title>親屬關係</EdB.PC.Panel.RelationshipsParentChild.Title>
+
+  <EdB.PC.Panel.SelectedEquipment.Remove>移除物資</EdB.PC.Panel.SelectedEquipment.Remove>
+
+  <EdB.PC.Panel.Skills.Title>技能</EdB.PC.Panel.Skills.Title>
+  <EdB.PC.Panel.Skills.ResetTip>將所有技能和熱情重置為初始值。</EdB.PC.Panel.Skills.ResetTip>
+  <EdB.PC.Panel.Skills.ClearTip>將所有技能和熱情設置為最低等級。</EdB.PC.Panel.Skills.ClearTip>
+
+  <EdB.PC.Panel.Traits.None>沒有特性</EdB.PC.Panel.Traits.None>
+  <EdB.PC.Panel.Traits.Title>特性</EdB.PC.Panel.Traits.Title>
+  <EdB.PC.Panel.Traits.Warning.TooManyTraits>一般來說，三個特徵是每個角色的最大允許值。您可以在這裡添加更多，但是這些特性可能在遊戲中所有的角色信息面板中沒有正確顯示。</EdB.PC.Panel.Traits.Warning.TooManyTraits>
+
+  <EdB.PC.TabView.Animals.Title>動物</EdB.PC.TabView.Animals.Title>
+  <EdB.PC.TabView.Equipment.Title>物資</EdB.PC.TabView.Equipment.Title>
+  <EdB.PC.TabView.Pawns.Title>角色</EdB.PC.TabView.Pawns.Title>
+  <EdB.PC.TabView.Relationships.Title>關係</EdB.PC.TabView.Relationships.Title>
+
+
+</LanguageData>
