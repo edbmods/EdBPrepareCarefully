@@ -190,18 +190,33 @@ namespace EdB.PrepareCarefully {
             }));
         }
         public void AddFactionPawn(FactionDef def) {
-            var kinds = DefDatabase<PawnKindDef>.AllDefs.Where((PawnKindDef arg) => {
-                return (arg.defaultFactionType != null && arg.defaultFactionType.LabelCap == def.LabelCap);
-            });
+            var kinds = PrepareCarefully.Instance.Providers.Factions.GetPawnKindsForFactionDefLabel(def);
             PawnKindDef kindDef = kinds.RandomElementWithFallback(def.basicMemberKind);
             Faction faction = PrepareCarefully.Instance.Providers.Factions.GetFaction(def);
-            Pawn pawn = randomizer.GeneratePawn(new PawnGenerationRequestWrapper() {
-                Faction = faction,
-                KindDef = kindDef,
-                Context = PawnGenerationContext.NonPlayer
-            }.Request);
-            pawn.equipment.DestroyAllEquipment(DestroyMode.Vanish);
-            pawn.inventory.DestroyAll(DestroyMode.Vanish);
+            // Workaround to force pawn generation to skip adding weapons to the pawn.
+            // Might be a slightly risky hack, but the finally block should guarantee that
+            // the weapons money range always gets set back to its original value.
+            // TODO: Try to remove this at a later date.  It would be nice if the pawn generation
+            // request gave you an option to skip weapon and equipment generation.
+            FloatRange savedWeaponsMoney = kindDef.weaponMoney;
+            kindDef.weaponMoney = new FloatRange(0, 0);
+            Pawn pawn = null;
+            try {
+                pawn = randomizer.GeneratePawn(new PawnGenerationRequestWrapper() {
+                    Faction = faction,
+                    KindDef = kindDef
+                }.Request);
+                pawn.equipment.DestroyAllEquipment(DestroyMode.Vanish);
+                pawn.inventory.DestroyAll(DestroyMode.Vanish);
+            }
+            catch (Exception e) {
+                Log.Warning("Failed to create faction pawn of kind " + kindDef.defName);
+                Log.Message(e.Message);
+                pawn.Destroy();
+            }
+            finally {
+                kindDef.weaponMoney = savedWeaponsMoney;
+            }
             CustomPawn customPawn = new CustomPawn(pawn);
 
             customPawn.Pawn.SetFactionDirect(Faction.OfPlayer);

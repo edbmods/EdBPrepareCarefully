@@ -40,8 +40,7 @@ namespace EdB.PrepareCarefully {
             Faction faction = PrepareCarefully.Instance.Providers.Factions.GetFaction(factionDef);
             PawnGenerationRequest req = new PawnGenerationRequestWrapper() {
                 Faction = faction,
-                KindDef = kindDef,
-                Context = faction == Faction.OfPlayer ? PawnGenerationContext.PlayerStarter : PawnGenerationContext.NonPlayer
+                KindDef = kindDef
             }.Request;
             Pawn result = PawnGenerator.GeneratePawn(req);
             return result;
@@ -56,8 +55,7 @@ namespace EdB.PrepareCarefully {
             PawnGenerationRequest req = new PawnGenerationRequestWrapper() {
                 Faction = faction,
                 KindDef = kindDef,
-                FixedGender = gender,
-                Context = faction == Faction.OfPlayer ? PawnGenerationContext.PlayerStarter : PawnGenerationContext.NonPlayer
+                FixedGender = gender
             }.Request;
             Pawn result = PawnGenerator.GeneratePawn(req);
             return result;
