@@ -288,46 +288,53 @@ namespace EdB.PrepareCarefully {
                 TooltipHandler.TipRegion(alertRect, customPawn.ApparelConflict);
             }
 
-            // Draw apparel selector
+            // Draw selector field.
             Rect fieldRect = new Rect(RectPortrait.x, RectPortrait.y + RectPortrait.height + 5, RectPortrait.width, 28);
-            DrawFieldSelector(fieldRect, PawnLayerLabel.CapitalizeFirst(),
-                () => {
-                    if (this.selectedPawnLayer == PawnLayers.HeadType) {
-                        SoundDefOf.TickTiny.PlayOneShotOnCamera();
-                        SelectNextHead(customPawn, -1);
-                    }
-                    else if (this.selectedPawnLayer == PawnLayers.BodyType) {
+            Action previousSelectionAction = null;
+            Action nextSelectionAction = null;
+            if (this.selectedPawnLayer == PawnLayers.HeadType) {
+                previousSelectionAction = () => {
+                    SoundDefOf.TickTiny.PlayOneShotOnCamera();
+                    SelectNextHead(customPawn, -1);
+                };
+                nextSelectionAction = () => {
+                    SoundDefOf.TickTiny.PlayOneShotOnCamera();
+                    SelectNextHead(customPawn, 1);
+                };
+            }
+            else if (this.selectedPawnLayer == PawnLayers.BodyType) {
+                if (PrepareCarefully.Instance.Providers.BodyTypes.GetBodyTypesForPawn(customPawn.Pawn).Count > 1) {
+                    previousSelectionAction = () => {
                         SoundDefOf.TickTiny.PlayOneShotOnCamera();
                         SelectNextBodyType(customPawn, -1);
-                    }
-                    else if (this.selectedPawnLayer == PawnLayers.Hair) {
-                        SoundDefOf.TickTiny.PlayOneShotOnCamera();
-                        SelectNextHair(customPawn, -1);
-                    }
-                    else {
-                        SoundDefOf.TickTiny.PlayOneShotOnCamera();
-                        SelectNextApparel(customPawn, -1);
-                    }
-                },
-                () => {
-                    if (this.selectedPawnLayer == PawnLayers.HeadType) {
-                        SoundDefOf.TickTiny.PlayOneShotOnCamera();
-                        SelectNextHead(customPawn, 1);
-                    }
-                    else if (this.selectedPawnLayer == PawnLayers.BodyType) {
+                    };
+                    nextSelectionAction = () => {
                         SoundDefOf.TickTiny.PlayOneShotOnCamera();
                         SelectNextBodyType(customPawn, 1);
-                    }
-                    else if (this.selectedPawnLayer == PawnLayers.Hair) {
-                        SoundDefOf.TickTiny.PlayOneShotOnCamera();
-                        SelectNextHair(customPawn, 1);
-                    }
-                    else {
-                        SelectNextApparel(customPawn, 1);
-                        SoundDefOf.TickTiny.PlayOneShotOnCamera();
-                    }
+                    };
                 }
-            );
+            }
+            else if (this.selectedPawnLayer == PawnLayers.Hair) {
+                previousSelectionAction = () => {
+                    SoundDefOf.TickTiny.PlayOneShotOnCamera();
+                    SelectNextHair(customPawn, -1);
+                };
+                nextSelectionAction = () => {
+                    SoundDefOf.TickTiny.PlayOneShotOnCamera();
+                    SelectNextHair(customPawn, 1);
+                };
+            }
+            else {
+                previousSelectionAction = () => {
+                    SoundDefOf.TickTiny.PlayOneShotOnCamera();
+                    SelectNextApparel(customPawn, -1);
+                };
+                nextSelectionAction = () => {
+                    SelectNextApparel(customPawn, 1);
+                    SoundDefOf.TickTiny.PlayOneShotOnCamera();
+                };
+            }
+            DrawFieldSelector(fieldRect, PawnLayerLabel.CapitalizeFirst(), previousSelectionAction, nextSelectionAction);
 
             if (Widgets.ButtonInvisible(fieldRect, false)) {
                 if (this.selectedPawnLayer == PawnLayers.HeadType) {
@@ -665,32 +672,34 @@ namespace EdB.PrepareCarefully {
             Widgets.Label(fieldRect, label);
             GUI.color = Color.white;
 
-            Rect prevButtonRect = new Rect(fieldRect.x - Textures.TextureButtonPrevious.width - 3, fieldRect.y + 4, Textures.TextureButtonPrevious.width, Textures.TextureButtonPrevious.height);
+            // Draw previous and next buttons.  Disable the buttons if no action arguments were passed in.
+            Rect prevButtonRect = new Rect(fieldRect.x - Textures.TextureButtonPrevious.width - 2, fieldRect.y + 4, Textures.TextureButtonPrevious.width, Textures.TextureButtonPrevious.height);
             Rect nextButtonRect = new Rect(fieldRect.x + fieldRect.width + 1, fieldRect.y + 4, Textures.TextureButtonPrevious.width, Textures.TextureButtonPrevious.height);
-
-            if (prevButtonRect.Contains(Event.current.mousePosition)) {
-                GUI.color = Style.ColorButtonHighlight;
+            if (previousAction != null) {
+                Style.SetGUIColorForButton(prevButtonRect);
+                GUI.DrawTexture(prevButtonRect, Textures.TextureButtonPrevious);
+                if (previousAction != null && Widgets.ButtonInvisible(prevButtonRect, false)) {
+                    SoundDefOf.TickTiny.PlayOneShotOnCamera();
+                    previousAction();
+                }
             }
             else {
-                GUI.color = Style.ColorButton;
+                GUI.color = Style.ColorButtonDisabled;
+                GUI.DrawTexture(prevButtonRect, Textures.TextureButtonPrevious);
             }
-            GUI.DrawTexture(prevButtonRect, Textures.TextureButtonPrevious);
-            if (previousAction != null && Widgets.ButtonInvisible(prevButtonRect, false)) {
-                SoundDefOf.TickTiny.PlayOneShotOnCamera();
-                previousAction();
-            }
-
-            if (nextButtonRect.Contains(Event.current.mousePosition)) {
-                GUI.color = Style.ColorButtonHighlight;
+            if (nextAction != null) {
+                Style.SetGUIColorForButton(nextButtonRect);
+                GUI.DrawTexture(nextButtonRect, Textures.TextureButtonNext);
+                if (nextAction != null && Widgets.ButtonInvisible(nextButtonRect, false)) {
+                    SoundDefOf.TickTiny.PlayOneShotOnCamera();
+                    nextAction();
+                }
             }
             else {
-                GUI.color = Style.ColorButton;
+                GUI.color = Style.ColorButtonDisabled;
+                GUI.DrawTexture(nextButtonRect, Textures.TextureButtonNext);
             }
-            GUI.DrawTexture(nextButtonRect, Textures.TextureButtonNext);
-            if (nextAction != null && Widgets.ButtonInvisible(nextButtonRect, false)) {
-                SoundDefOf.TickTiny.PlayOneShotOnCamera();
-                nextAction();
-            }
+
             Text.Anchor = TextAnchor.UpperLeft;
         }
 
