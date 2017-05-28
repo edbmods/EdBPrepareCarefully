@@ -1,5 +1,22 @@
  _____________________________________________________________________________
  
+   Version 0.17.1.4
+ _____________________________________________________________________________
+
+ - Bug fix: Better filtering of invalid factions and pawn kinds to avoid
+   errors when adding a character from a different faction.
+ - Bug fix: The randomize options now take into account a character's faction.
+
+ _____________________________________________________________________________
+ 
+   Version 0.17.1.3
+ _____________________________________________________________________________
+
+ - Bug fix: Presets that include Alpha 16-saved characters that have had
+   relationships added will now save and load properly.
+ - Mod compatibility fixes.
+ _____________________________________________________________________________
+ 
    Version 0.17.1.2
  _____________________________________________________________________________
 
