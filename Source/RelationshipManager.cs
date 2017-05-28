@@ -16,6 +16,7 @@ namespace EdB.PrepareCarefully {
         protected List<CustomParentChildPawn> parentChildPawns = new List<CustomParentChildPawn>();
         protected Dictionary<Pawn, CustomParentChildPawn> parentChildPawnLookup = new Dictionary<Pawn, CustomParentChildPawn>();
         protected Dictionary<CustomPawn, CustomParentChildPawn> parentChildCustomPawnLookup = new Dictionary<CustomPawn, CustomParentChildPawn>();
+        protected List<CustomParentChildGroup> parentChildGroups = new List<CustomParentChildGroup>();
         protected bool dirty = true;
         protected int HiddenParentChildIndex = 1;
 
@@ -79,7 +80,7 @@ namespace EdB.PrepareCarefully {
             }
         }
 
-        public PawnRelationDef ComputeInverseRelationship(PawnRelationDef def) {
+        protected PawnRelationDef ComputeInverseRelationship(PawnRelationDef def) {
             Pawn source = randomizer.GenerateColonist();
             Pawn target = randomizer.GenerateColonist();
             MethodInfo info = def.workerClass.GetMethod("CreateRelation", BindingFlags.Instance | BindingFlags.Public | BindingFlags.DeclaredOnly);
@@ -112,10 +113,19 @@ namespace EdB.PrepareCarefully {
             }
         }
 
-        private List<CustomParentChildGroup> parentChildGroups = new List<CustomParentChildGroup>();
         public List<CustomParentChildGroup> ParentChildGroups {
             get {
                 return parentChildGroups;
+            }
+        }
+
+        public CustomParentChildPawn FindParentChildPawn(CustomPawn customPawn) {
+            CustomParentChildPawn result;
+            if (parentChildCustomPawnLookup.TryGetValue(customPawn, out result)) {
+                return result;
+            }
+            else {
+                return null;
             }
         }
 
@@ -153,8 +163,7 @@ namespace EdB.PrepareCarefully {
             SortAndDedupeParentChildGroups(groupLookup.Values);
         }
 
-        private void InitializeParentChildGroupsForLoadedPawns(List<CustomRelationship> relationships) {
-
+        private void InitializeParentChildGroupRelationships(List<CustomRelationship> relationships) {
             Dictionary<CustomParentChildPawn, CustomParentChildGroup> groupLookup = new Dictionary<CustomParentChildPawn, CustomParentChildGroup>();
             foreach (var relationship in relationships) {
                 CustomParentChildPawn parent = null;
@@ -241,12 +250,18 @@ namespace EdB.PrepareCarefully {
                     //Log.Message(group.ToString());
                 }
             }
+            
+            parentChildGroups = result;
 
             // Assign indices to hidden pawns (indices are used to name pawns, i.e. "Unknown 1" and "Unknown 2").
             // We do this here (and not when we initially created the hidden pawns) so that the initial indices will
             // start at 1 and count up from there as they are displayed from left to right in the UI.
+            ReassignHiddenPawnIndices();
+        }
+
+        public void ReassignHiddenPawnIndices() {
             HiddenParentChildIndex = 1;
-            foreach (var group in result) {
+            foreach (var group in parentChildGroups) {
                 foreach (var parent in group.Parents) {
                     if (parent.Hidden && parent.Index == 0) {
                         parent.Index = HiddenParentChildIndex++;
@@ -258,8 +273,6 @@ namespace EdB.PrepareCarefully {
                     }
                 }
             }
-
-            parentChildGroups = result;
         }
 
         public IEnumerable<CustomParentChildPawn> ParentChildPawns {
@@ -323,7 +336,7 @@ namespace EdB.PrepareCarefully {
             }
         }
 
-        public void CreateParentChildPawnsForLoadedPawns(List<CustomPawn> colonists, List<CustomPawn> hiddenPawns) {
+        public void InitializeWithParentChildPawns(List<CustomPawn> colonists, List<CustomPawn> hiddenPawns) {
             parentChildPawns.Clear();
             parentChildPawnLookup.Clear();
             parentChildCustomPawnLookup.Clear();
@@ -377,12 +390,15 @@ namespace EdB.PrepareCarefully {
             }
         }
 
-        public void InitializeParentChildRelationshipsForLoadedPawns(List<CustomRelationship> relationships, List<CustomPawn> colonists, List<CustomPawn> hiddenPawns) {
-            CreateParentChildPawnsForLoadedPawns(colonists, hiddenPawns);
-            InitializeParentChildGroupsForLoadedPawns(relationships);
+        public void InitializeParentChildRelationshipsForLoadedPawns(List<CustomRelationship> relationships, List<CustomRelationship> siblingRelationships, List<CustomPawn> colonists, List<CustomPawn> hiddenPawns) {
+            InitializeWithParentChildPawns(colonists, hiddenPawns);
+            InitializeParentChildGroupRelationships(relationships);
         }
 
         public void Clear() {
+            this.parentChildPawns.Clear();
+            this.parentChildPawnLookup.Clear();
+            this.parentChildCustomPawnLookup.Clear();
             this.relationships.Clear();
             this.parentChildGroups.Clear();
             Clean();
@@ -417,6 +433,23 @@ namespace EdB.PrepareCarefully {
             }
             this.relationships.Add(new CustomRelationship(def, FindInverseRelationship(def), source, target));
             dirty = true;
+        }
+
+        public void AddRelationships(List<CustomRelationship> relationships) {
+            List<CustomRelationship> parentChildRelationships = new List<CustomRelationship>();
+            List<CustomRelationship> otherRelationships = new List<CustomRelationship>();
+            foreach (var r in relationships) {
+                if (r.def.defName == "Parent" || r.def.defName == "Child") {
+                    parentChildRelationships.Add(r);
+                }
+                else {
+                    otherRelationships.Add(r);
+                }
+            }
+            foreach (var r in otherRelationships) {
+                AddRelationship(r.def, r.source, r.target);
+            }
+            InitializeParentChildGroupRelationships(parentChildRelationships);
         }
 
         public void DeleteRelationship(CustomRelationship relationship) {

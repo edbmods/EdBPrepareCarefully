@@ -113,6 +113,7 @@
     <Compile Include="Source\CarefullyPawnRelationDef.cs" />
     <Compile Include="Source\UtilityCopy.cs" />
     <Compile Include="Source\Version3\PresetLoaderVersion3.cs" />
+    <Compile Include="Source\Version3\SaveRecordParentChildGroupV3.cs" />
     <Compile Include="Source\Version3\SaveRecordPawnV3.cs" />
     <Compile Include="Source\Version3\SaveRecordRelationshipV3.cs" />
     <Compile Include="Source\Version3\SaveRecordImplantV3.cs" />
