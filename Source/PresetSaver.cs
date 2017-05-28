@@ -112,27 +112,42 @@ namespace EdB.PrepareCarefully {
                         }
                     }
                 }
+                Scribe.ExitNode();
+
+                Scribe.EnterNode("parentChildGroups");
                 foreach (var g in data.RelationshipManager.ParentChildGroups) {
-                    foreach (var parent in g.Parents) {
-                        foreach (var child in g.Children) {
-                            SaveRecordRelationshipV3 s = new SaveRecordRelationshipV3();
-                            if (child.Pawn != null && parent.Pawn != null) {
-                                s.source = child.Pawn.Id;
-                                s.target = parent.Pawn.Id;
-                                s.relation = "Parent";
-                                Scribe_Deep.Look<SaveRecordRelationshipV3>(ref s, "relationship");
-                            }
-                            else {
-                                problem = true;
-                                Log.Warning("Prepare Carefully found an invalid parent/child relationship when saving the preset: " + presetName);
-                                if (child.Pawn == null) {
-                                    Log.Warning("  Child pawn was null");
-                                }
-                                if (parent.Pawn == null) {
-                                    Log.Warning("  Parent pawn was null");
-                                }
-                            }
+                    if (g.Children.Count == 0 || (g.Parents.Count == 0 && g.Children.Count == 1)) {
+                        continue;
+                    }
+                    SaveRecordParentChildGroupV3 group = new SaveRecordParentChildGroupV3();
+                    group.parents = new List<string>();
+                    group.children = new List<string>();
+                    foreach (var p in g.Parents) {
+                        if (p.Pawn == null) {
+                            problem = true;
+                            Log.Warning("Prepare Carefully found an invalid parent/child relationship when saving the preset: " + presetName);
+                            continue;
                         }
+                        else {
+                            group.parents.Add(p.Pawn.Id);
+                        }
+                    }
+                    foreach (var p in g.Children) {
+                        if (p.Pawn == null) {
+                            problem = true;
+                            Log.Warning("Prepare Carefully found an invalid parent/child relationship when saving the preset: " + presetName);
+                            continue;
+                        }
+                        else {
+                            group.children.Add(p.Pawn.Id);
+                        }
+                    }
+                    try {
+                        Scribe_Deep.Look<SaveRecordParentChildGroupV3>(ref group, "group");
+                    }
+                    catch (Exception) {
+                        problem = true;
+                        Log.Warning("Prepare Carefully failed to save a parent child group when saving the preset: " + presetName);
                     }
                 }
                 Scribe.ExitNode();

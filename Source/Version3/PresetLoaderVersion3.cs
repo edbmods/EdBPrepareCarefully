@@ -19,6 +19,7 @@ namespace EdB.PrepareCarefully {
             List<SaveRecordPawnV3> pawns = new List<SaveRecordPawnV3>();
             List<SaveRecordPawnV3> hiddenPawns = new List<SaveRecordPawnV3>();
             List<SaveRecordRelationshipV3> savedRelationships = new List<SaveRecordRelationshipV3>();
+            List<SaveRecordParentChildGroupV3> parentChildGroups = new List<SaveRecordParentChildGroupV3>();
             Failed = false;
             int startingPoints = 0;
             bool usePoints = false;
@@ -51,6 +52,16 @@ namespace EdB.PrepareCarefully {
 
                 try {
                     Scribe_Collections.Look<SaveRecordRelationshipV3>(ref savedRelationships, "relationships", LookMode.Deep, null);
+                }
+                catch (Exception e) {
+                    Messages.Message("EdB.PC.Dialog.Preset.Error.Failed".Translate(), MessageSound.SeriousAlert);
+                    Log.Warning(e.ToString());
+                    Log.Warning("Preset was created with the following mods: " + ModString);
+                    return false;
+                }
+
+                try {
+                    Scribe_Collections.Look<SaveRecordParentChildGroupV3>(ref parentChildGroups, "parentChildGroups", LookMode.Deep, null);
                 }
                 catch (Exception e) {
                     Messages.Message("EdB.PC.Dialog.Preset.Error.Failed".Translate(), MessageSound.SeriousAlert);
@@ -173,7 +184,6 @@ namespace EdB.PrepareCarefully {
                 return false;
             }
 
-
             List<CustomPawn> hiddenCustomPawns = new List<CustomPawn>();
             try {
                 if (hiddenPawns != null) {
@@ -191,9 +201,15 @@ namespace EdB.PrepareCarefully {
                 return false;
             }
 
+            loadout.ClearPawns();
+            foreach (CustomPawn p in colonistCustomPawns) {
+                loadout.AddPawn(p);
+            }
+            loadout.RelationshipManager.Clear();
+            loadout.RelationshipManager.InitializeWithParentChildPawns(colonistCustomPawns, hiddenCustomPawns);
+
             bool atLeastOneRelationshipFailed = false;
-            List<CustomRelationship> parentChildRelationships = new List<CustomRelationship>();
-            List<CustomRelationship> otherRelationships = new List<CustomRelationship>();
+            List<CustomRelationship> allRelationships = new List<CustomRelationship>();
             if (savedRelationships != null) {
                 try {
                     foreach (SaveRecordRelationshipV3 r in savedRelationships) {
@@ -208,12 +224,7 @@ namespace EdB.PrepareCarefully {
                             Log.Warning("Prepare Carefully failed to load a custom relationship from the preset: " + r);
                         }
                         else {
-                            if (r.relation == "Parent" || r.relation == "Child") {
-                                parentChildRelationships.Add(relationship);
-                            }
-                            else {
-                                otherRelationships.Add(relationship);
-                            }
+                            allRelationships.Add(relationship);
                         }
                     }
                 }
@@ -227,18 +238,50 @@ namespace EdB.PrepareCarefully {
                     Messages.Message("EdB.PC.Dialog.Preset.Error.RelationshipFailed".Translate(), MessageSound.SeriousAlert);
                 }
             }
+            loadout.RelationshipManager.AddRelationships(allRelationships);
 
-            loadout.ClearPawns();
-            foreach (CustomPawn p in colonistCustomPawns) {
-                loadout.AddPawn(p);
+            if (parentChildGroups != null) {
+                foreach (var groupRecord in parentChildGroups) {
+                    CustomParentChildGroup group = new CustomParentChildGroup();
+                    if (groupRecord.parents != null) {
+                        foreach (var id in groupRecord.parents) {
+                            CustomPawn parent = FindPawnById(id, colonistCustomPawns, hiddenCustomPawns);
+                            if (parent != null) {
+                                var pawn = loadout.RelationshipManager.FindParentChildPawn(parent);
+                                if (pawn != null) {
+                                    group.Parents.Add(pawn);
+                                }
+                                else {
+                                    Log.Warning("Prepare Carefully could not load a custom parent relationship because it could not find a matching pawn in the relationship manager.");
+                                }
+                            }
+                            else {
+                                Log.Warning("Prepare Carefully could not load a custom parent relationship because it could not find a pawn with the saved identifer.");
+                            }
+                        }
+                    }
+                    if (groupRecord.children != null) {
+                        foreach (var id in groupRecord.children) {
+                            CustomPawn child = FindPawnById(id, colonistCustomPawns, hiddenCustomPawns);
+                            if (child != null) {
+                                var pawn = loadout.RelationshipManager.FindParentChildPawn(child);
+                                if (pawn != null) {
+                                    group.Children.Add(pawn);
+                                }
+                                else {
+                                    Log.Warning("Prepare Carefully could not load a custom child relationship because it could not find a matching pawn in the relationship manager.");
+                                }
+                            }
+                            else {
+                                Log.Warning("Prepare Carefully could not load a custom child relationship because it could not find a pawn with the saved identifer.");
+                            }
+                        }
+                    }
+                    loadout.RelationshipManager.ParentChildGroups.Add(group);
+                }
             }
+            loadout.RelationshipManager.ReassignHiddenPawnIndices();
 
-            loadout.RelationshipManager.Clear();
-            foreach (CustomRelationship r in otherRelationships) {
-                loadout.RelationshipManager.AddRelationship(r.def, r.source, r.target);
-            }
-            loadout.RelationshipManager.InitializeParentChildRelationshipsForLoadedPawns(parentChildRelationships, colonistCustomPawns, hiddenCustomPawns);
-            
             if (Failed) {
                 Messages.Message(ModString, MessageSound.Silent);
                 Messages.Message("EdB.PC.Dialog.Preset.Error.ThingDefFailed".Translate(), MessageSound.SeriousAlert);
@@ -497,6 +540,18 @@ namespace EdB.PrepareCarefully {
             pawn.ClearPawnCaches();
 
             return pawn;
+        }
+
+        protected CustomPawn FindPawnById(string id, List<CustomPawn> colonistPawns, List<CustomPawn> hiddenPawns) {
+            CustomPawn result = colonistPawns.FirstOrDefault((CustomPawn c) => {
+                return id == c.Id;
+            });
+            if (result == null) {
+                result = hiddenPawns.FirstOrDefault((CustomPawn c) => {
+                    return id == c.Id;
+                });
+            }
+            return result;
         }
 
         public CustomRelationship LoadRelationship(SaveRecordRelationshipV3 saved, List<CustomPawn> pawns) {

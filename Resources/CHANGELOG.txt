@@ -6,6 +6,8 @@
  - Bug fix: Better filtering of invalid factions and pawn kinds to avoid
    errors when adding a character from a different faction.
  - Bug fix: The randomize options now take into account a character's faction.
+ - Bug fix: Updated preset file format so that sibling-only parent/child
+   groups are no longer lost when saving a preset.
 
  _____________________________________________________________________________
  
@@ -15,6 +17,7 @@
  - Bug fix: Presets that include Alpha 16-saved characters that have had
    relationships added will now save and load properly.
  - Mod compatibility fixes.
+
  _____________________________________________________________________________
  
    Version 0.17.1.2
@@ -24,6 +27,7 @@
    character.
  - Bug fix: Now correctly clearing out health conditions when randomizing a
    character.
+
  _____________________________________________________________________________
  
    Version 0.17.1.1
