@@ -12,12 +12,21 @@ namespace EdB.PrepareCarefully {
     public class ProviderBodyTypes {
         protected Dictionary<ThingDef, RaceBodyTypes> raceBodyTypeLookup = new Dictionary<ThingDef, RaceBodyTypes>();
         protected Dictionary<BodyType, string> bodyTypeLabels = new Dictionary<BodyType, string>();
+        protected ProviderAlienRaces alienRaceProvider;
         public ProviderBodyTypes() {
             bodyTypeLabels.Add(BodyType.Fat, "EdB.PC.Pawn.BodyType.Fat".Translate());
             bodyTypeLabels.Add(BodyType.Hulk, "EdB.PC.Pawn.BodyType.Hulk".Translate());
             bodyTypeLabels.Add(BodyType.Thin, "EdB.PC.Pawn.BodyType.Thin".Translate());
             bodyTypeLabels.Add(BodyType.Male, "EdB.PC.Pawn.BodyType.Average".Translate());
             bodyTypeLabels.Add(BodyType.Female, "EdB.PC.Pawn.BodyType.Average".Translate());
+        }
+        public ProviderAlienRaces AlienRaceProvider {
+            get {
+                return alienRaceProvider;
+            }
+            set {
+                alienRaceProvider = value;
+            }
         }
         public List<BodyType> GetBodyTypesForPawn(CustomPawn pawn) {
             return GetBodyTypesForPawn(pawn.Pawn);
@@ -34,22 +43,16 @@ namespace EdB.PrepareCarefully {
             return bodyTypeLabels[bodyType];
         }
         protected RaceBodyTypes InitializeBodyTypes(ThingDef def) {
-            FieldInfo alienRaceField = def.GetType().GetField("alienRace", BindingFlags.Public | BindingFlags.Instance);
-            if (alienRaceField == null) {
+            if (!ProviderAlienRaces.IsAlienRace(def)) {
                 return InitializeHumanlikeBodyTypes();
             }
             else {
-                object alienRaceObject = alienRaceField.GetValue(def);
-                if (alienRaceObject == null) {
-                    Log.Warning("Prepare Carefully could not initialize body types for alien race, " + def.defName + ", because it could not find alien race properies.  Defaulting to humanlike body types.");
-                    return InitializeHumanlikeBodyTypes();
-                }
-                var result = InitializeAlienRaceBodyTypes(def, alienRaceObject);
+                RaceBodyTypes result = InitializeAlienRaceBodyTypes(def);
                 if (result == null) {
                     Log.Warning("Prepare Carefully could not initialize body types for alien race, " + def.defName + ". Defaulting to humanlike body types.");
                     return InitializeHumanlikeBodyTypes();
                 }
-                else if (result.MaleBodyTypes.Count == 0 || result.FemaleBodyTypes.Count == 0) {
+                if (result.MaleBodyTypes.Count == 0 || result.FemaleBodyTypes.Count == 0) {
                     return InitializeHumanlikeBodyTypes();
                 }
                 else {
@@ -73,62 +76,21 @@ namespace EdB.PrepareCarefully {
             result.NoGenderBodyTypes.Add(BodyType.Hulk);
             return result;
         }
-        protected RaceBodyTypes InitializeAlienRaceBodyTypes(ThingDef def, object alienRaceObject) {
-            Log.Message("InitializeAlienRaceBodyTypes: " + def.defName);
+        protected RaceBodyTypes InitializeAlienRaceBodyTypes(ThingDef def) {
             RaceBodyTypes result = new RaceBodyTypes();
-            if (alienRaceObject == null) {
+            AlienRace alienRace = alienRaceProvider.GetAlienRace(def);
+            if (alienRace == null) {
                 return null;
             }
-
-            FieldInfo generalSettingsField = alienRaceObject.GetType().GetField("generalSettings", BindingFlags.Public | BindingFlags.Instance);
-            if (generalSettingsField == null) {
-                Log.Warning("Prepare Carefully could find alien general settings when trying to initialize body types for " + def.defName + ".");
-                return null;
-            }
-            object generalSettingsObject = generalSettingsField.GetValue(alienRaceObject);
-            if (generalSettingsObject == null) {
-                Log.Warning("Prepare Carefully could find alien general settings when trying to initialize body types for " + def.defName + ".");
-                return null;
-            }
-            FieldInfo alienPartGeneratorField = generalSettingsObject.GetType().GetField("alienPartGenerator", BindingFlags.Public | BindingFlags.Instance);
-            if (alienPartGeneratorField == null) {
-                Log.Warning("Prepare Carefully could find alien part generator information when trying to initialize body types for " + def.defName + ".");
-                return null;
-            }
-            object alienPartGeneratorObject = alienPartGeneratorField.GetValue(generalSettingsObject);
-            if (alienPartGeneratorObject == null) {
-                Log.Warning("Prepare Carefully could find alien part generator information when trying to initialize body types for " + def.defName + ".");
-                return null;
-            }
-            FieldInfo alienBodyTypesField = alienPartGeneratorObject.GetType().GetField("alienbodytypes", BindingFlags.Public | BindingFlags.Instance);
-            if (alienBodyTypesField == null) {
-                Log.Warning("Prepare Carefully could find alien body types information when trying to initialize body types for " + def.defName + ".");
-                return null;
-            }
-            object alienBodyTypesObject = alienBodyTypesField.GetValue(alienPartGeneratorObject);
-            if (alienBodyTypesObject == null) {
-                Log.Warning("Prepare Carefully could find alien body types information when trying to initialize body types for " + def.defName + ".");
-                return null;
-            }
-
-            System.Collections.ICollection alienBodyTypesList = alienBodyTypesObject as System.Collections.ICollection;
-            if (alienBodyTypesList == null) {
-                Log.Warning("Prepare Carefully could find alien body types list when trying to initialize body types for " + def.defName + ".");
-                return null;
-            }
-
-            if (alienBodyTypesList.Count > 0) {
-                foreach (object o in alienBodyTypesList) {
-                    if (o.GetType() == typeof(BodyType)) {
-                        BodyType type = (BodyType)o;
-                        if (type != BodyType.Male) {
-                            result.FemaleBodyTypes.Add(type);
-                        }
-                        if (type != BodyType.Female) {
-                            result.MaleBodyTypes.Add(type);
-                        }
-                        result.NoGenderBodyTypes.Add(type);
+            if (alienRace.BodyTypes.Count > 0) {
+                foreach (BodyType type in alienRace.BodyTypes) {
+                    if (type != BodyType.Male) {
+                        result.FemaleBodyTypes.Add(type);
                     }
+                    if (type != BodyType.Female) {
+                        result.MaleBodyTypes.Add(type);
+                    }
+                    result.NoGenderBodyTypes.Add(type);
                 }
             }
 

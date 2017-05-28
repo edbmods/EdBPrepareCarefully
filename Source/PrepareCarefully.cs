@@ -135,7 +135,15 @@ namespace EdB.PrepareCarefully {
         }
 
         protected void InitializeProviders() {
-            Providers.BodyTypes = new ProviderBodyTypes();
+            // Initialize providers.  Note that the initialize order may matter as some providers depend on others.
+            // TODO: For providers that do depend on other providers, consider adding constructor arguments for those
+            // required providers so that they don't need to go back to this singleton to get the references.
+            // If those dependencies get complicated, we might want to separate out the provider construction from
+            // initialization.
+            Providers.AlienRaces = new ProviderAlienRaces();
+            Providers.BodyTypes = new ProviderBodyTypes() {
+                AlienRaceProvider = Providers.AlienRaces
+            };
             Providers.HeadType = new ProviderHeadType();
             Providers.Factions = new ProviderFactions();
         }

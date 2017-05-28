@@ -5,6 +5,9 @@ using System.Text;
 
 namespace EdB.PrepareCarefully {
     public class Providers {
+        public ProviderAlienRaces AlienRaces {
+            get; set;
+        }
         public ProviderBodyTypes BodyTypes {
             get; set;
         }

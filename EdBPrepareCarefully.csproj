@@ -42,6 +42,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Source\AlienRace.cs" />
     <Compile Include="Source\AnimalDatabase.cs" />
     <Compile Include="Source\AnimalRecord.cs" />
     <Compile Include="Source\AnimalRecordKey.cs" />
@@ -79,6 +80,7 @@
     <Compile Include="Source\PresetFiles.cs" />
     <Compile Include="Source\PresetLoader.cs" />
     <Compile Include="Source\PresetSaver.cs" />
+    <Compile Include="Source\ProviderAlienRaces.cs" />
     <Compile Include="Source\ProviderBodyTypes.cs" />
     <Compile Include="Source\ProviderHeadType.cs" />
     <Compile Include="Source\Providers.cs" />
