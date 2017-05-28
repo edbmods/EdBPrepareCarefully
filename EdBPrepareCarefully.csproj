@@ -68,7 +68,7 @@
     <Compile Include="Source\ExtensionsPawn.cs" />
     <Compile Include="Source\ExtensionsThing.cs" />
     <Compile Include="Source\GenStep_CustomScatterThings.cs" />
-    <Compile Include="Source\HeadType.cs" />
+    <Compile Include="Source\CustomHeadType.cs" />
     <Compile Include="Source\IRelationshipWorker.cs" />
     <Compile Include="Source\Page_ConfigureStartingPawns.cs" />
     <Compile Include="Source\PanelRelationshipsOther.cs" />
@@ -79,8 +79,10 @@
     <Compile Include="Source\PresetFiles.cs" />
     <Compile Include="Source\PresetLoader.cs" />
     <Compile Include="Source\PresetSaver.cs" />
+    <Compile Include="Source\ProviderBodyTypes.cs" />
     <Compile Include="Source\ProviderHeadType.cs" />
     <Compile Include="Source\Providers.cs" />
+    <Compile Include="Source\RaceBodyTypes.cs" />
     <Compile Include="Source\RaceHeadTypes.cs" />
     <Compile Include="Source\Randomizer.cs" />
     <Compile Include="Source\RelatedPawn.cs" />

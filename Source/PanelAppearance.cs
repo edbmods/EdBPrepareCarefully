@@ -28,34 +28,15 @@ namespace EdB.PrepareCarefully {
 
         protected FieldInfo apparelGraphicsField = null;
         protected List<List<ThingDef>> apparelLists = new List<List<ThingDef>>(PawnLayers.Count);
-        protected Dictionary<BodyType, string> bodyTypeLabels = new Dictionary<BodyType, string>();
         protected List<HairDef> maleHairDefs = new List<HairDef>();
         protected List<HairDef> femaleHairDefs = new List<HairDef>();
         protected List<Color> skinColors = new List<Color>();
         protected List<Color> hairColors = new List<Color>();
-        protected List<BodyType> maleBodyTypes = new List<BodyType>();
-        protected List<BodyType> femaleBodyTypes = new List<BodyType>();
         protected Dictionary<ThingDef, List<ThingDef>> apparelStuffLookup = new Dictionary<ThingDef, List<ThingDef>>();
         protected int selectedStuff = 0;
 
 
         public PanelAppearance() {
-            maleBodyTypes.Add(BodyType.Male);
-            maleBodyTypes.Add(BodyType.Thin);
-            maleBodyTypes.Add(BodyType.Fat);
-            maleBodyTypes.Add(BodyType.Hulk);
-
-            femaleBodyTypes.Add(BodyType.Female);
-            femaleBodyTypes.Add(BodyType.Thin);
-            femaleBodyTypes.Add(BodyType.Fat);
-            femaleBodyTypes.Add(BodyType.Hulk);
-
-            bodyTypeLabels.Add(BodyType.Fat, "EdB.PC.Pawn.BodyType.Fat".Translate());
-            bodyTypeLabels.Add(BodyType.Hulk, "EdB.PC.Pawn.BodyType.Hulk".Translate());
-            bodyTypeLabels.Add(BodyType.Thin, "EdB.PC.Pawn.BodyType.Thin".Translate());
-            bodyTypeLabels.Add(BodyType.Male, "EdB.PC.Pawn.BodyType.Average".Translate());
-            bodyTypeLabels.Add(BodyType.Female, "EdB.PC.Pawn.BodyType.Average".Translate());
-
             pawnLayers = new List<int>(new int[] {
                 PawnLayers.BodyType,
                 PawnLayers.HeadType,
@@ -718,7 +699,7 @@ namespace EdB.PrepareCarefully {
                 CustomPawn customPawn = PrepareCarefully.Instance.State.CurrentPawn;
                 string label = "EdB.PC.Panel.Appearance.NoneSelected".Translate();
                 if (selectedPawnLayer == PawnLayers.BodyType) {
-                    label = bodyTypeLabels[customPawn.BodyType];
+                    label = PrepareCarefully.Instance.Providers.BodyTypes.GetBodyTypeLabel(customPawn.BodyType);
                 }
                 else if (selectedPawnLayer == PawnLayers.HeadType) {
                     label = GetHeadLabel(customPawn.HeadGraphicPath);
@@ -749,7 +730,7 @@ namespace EdB.PrepareCarefully {
         }
 
         protected void SelectNextHead(CustomPawn customPawn, int direction) {
-            List<HeadType> heads = PrepareCarefully.Instance.Providers.HeadType.GetHeadTypes(customPawn.Pawn.def, customPawn.Gender);
+            List<CustomHeadType> heads = PrepareCarefully.Instance.Providers.HeadType.GetHeadTypes(customPawn.Pawn.def, customPawn.Gender);
             int index = heads.IndexOf(customPawn.HeadType);
             if (index == -1) {
                 return;
@@ -766,7 +747,8 @@ namespace EdB.PrepareCarefully {
         }
 
         protected void SelectNextBodyType(CustomPawn customPawn, int direction) {
-            List<BodyType> bodyTypes = customPawn.Gender == Gender.Male ? maleBodyTypes : femaleBodyTypes;
+            ProviderBodyTypes provider = PrepareCarefully.Instance.Providers.BodyTypes;
+            List<BodyType> bodyTypes = provider.GetBodyTypesForPawn(customPawn);
             int index = bodyTypes.IndexOf(customPawn.BodyType);
             if (index == -1) {
                 Log.Warning("Could not find the current pawn's body type in list of available options: " + customPawn.BodyType);
@@ -780,7 +762,7 @@ namespace EdB.PrepareCarefully {
                 index = 0;
             }
             customPawn.BodyType = bodyTypes[index];
-            this.pawnLayerLabel = bodyTypeLabels[customPawn.BodyType];
+            this.pawnLayerLabel = provider.GetBodyTypeLabel(customPawn.BodyType);
         }
 
         protected void SelectNextHair(CustomPawn customPawn, int direction) {
@@ -833,15 +815,15 @@ namespace EdB.PrepareCarefully {
         }
 
         protected void ShowHeadDialog(CustomPawn customPawn) {
-            List<HeadType> headTypes = PrepareCarefully.Instance.Providers.HeadType.GetHeadTypes(customPawn.Pawn.def, customPawn.Gender);
-            Dialog_Options<HeadType> dialog = new Dialog_Options<HeadType>(headTypes) {
-                NameFunc = (HeadType headType) => {
+            List<CustomHeadType> headTypes = PrepareCarefully.Instance.Providers.HeadType.GetHeadTypes(customPawn.Pawn.def, customPawn.Gender);
+            Dialog_Options<CustomHeadType> dialog = new Dialog_Options<CustomHeadType>(headTypes) {
+                NameFunc = (CustomHeadType headType) => {
                     return headType.Label;
                 },
-                SelectedFunc = (HeadType headType) => {
+                SelectedFunc = (CustomHeadType headType) => {
                     return customPawn.HeadType.GraphicPath == headType.GraphicPath;
                 },
-                SelectAction = (HeadType headType) => {
+                SelectAction = (CustomHeadType headType) => {
                     customPawn.HeadType = headType;
                     this.pawnLayerLabel = headType.Label;
                 },
@@ -851,17 +833,18 @@ namespace EdB.PrepareCarefully {
         }
 
         protected void ShowBodyTypeDialog(CustomPawn customPawn) {
-            List<BodyType> bodyTypes = customPawn.Gender == Gender.Male ? maleBodyTypes : femaleBodyTypes;
+            ProviderBodyTypes provider = PrepareCarefully.Instance.Providers.BodyTypes;
+            List<BodyType> bodyTypes = provider.GetBodyTypesForPawn(customPawn);
             Dialog_Options<BodyType> dialog = new Dialog_Options<BodyType>(bodyTypes) {
                 NameFunc = (BodyType bodyType) => {
-                    return bodyTypeLabels[bodyType];
+                    return provider.GetBodyTypeLabel(bodyType);
                 },
                 SelectedFunc = (BodyType bodyType) => {
                     return customPawn.BodyType == bodyType;
                 },
                 SelectAction = (BodyType bodyType) => {
                     customPawn.BodyType = bodyType;
-                    this.pawnLayerLabel = bodyTypeLabels[bodyType];
+                    this.pawnLayerLabel = provider.GetBodyTypeLabel(bodyType);
                 },
                 CloseAction = () => { }
             };

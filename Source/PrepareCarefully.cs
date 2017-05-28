@@ -135,6 +135,7 @@ namespace EdB.PrepareCarefully {
         }
 
         protected void InitializeProviders() {
+            Providers.BodyTypes = new ProviderBodyTypes();
             Providers.HeadType = new ProviderHeadType();
             Providers.Factions = new ProviderFactions();
         }

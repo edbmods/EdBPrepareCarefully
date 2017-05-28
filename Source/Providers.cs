@@ -5,6 +5,9 @@ using System.Text;
 
 namespace EdB.PrepareCarefully {
     public class Providers {
+        public ProviderBodyTypes BodyTypes {
+            get; set;
+        }
         public ProviderHeadType HeadType {
             get; set;
         }

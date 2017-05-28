@@ -13,23 +13,23 @@ namespace EdB.PrepareCarefully {
     public class ProviderHeadType {
         protected List<Graphic> heads = new List<Graphic>();
         protected List<string> headPaths = new List<string>();
-        protected List<HeadType> maleHeadTypes = new List<HeadType>();
-        protected List<HeadType> femaleHeadTypes = new List<HeadType>();
-        protected List<HeadType> noGenderHeaderTypes = new List<HeadType>();
-        public Dictionary<string, HeadType> pathDictionary = new Dictionary<string, HeadType>();
+        protected List<CustomHeadType> maleHeadTypes = new List<CustomHeadType>();
+        protected List<CustomHeadType> femaleHeadTypes = new List<CustomHeadType>();
+        protected List<CustomHeadType> noGenderHeaderTypes = new List<CustomHeadType>();
+        public Dictionary<string, CustomHeadType> pathDictionary = new Dictionary<string, CustomHeadType>();
         protected Dictionary<ThingDef, RaceHeadTypes> headTypeLookup = new Dictionary<ThingDef, RaceHeadTypes>();
 
         public ProviderHeadType() {
         }
-        public List<HeadType> GetHeadTypes(ThingDef race, Gender gender) {
+        public List<CustomHeadType> GetHeadTypes(ThingDef race, Gender gender) {
             RaceHeadTypes headTypes = GetHeadTypesForRace(race);
             return headTypes.GetHeadTypes(gender);
         }
-        public HeadType FindHeadType(ThingDef race, string graphicsPath) {
+        public CustomHeadType FindHeadType(ThingDef race, string graphicsPath) {
             RaceHeadTypes headTypes = GetHeadTypesForRace(race);
             return headTypes.FindHeadType(graphicsPath);
         }
-        public HeadType FindHeadTypeForGender(ThingDef race, HeadType headType, Gender gender) {
+        public CustomHeadType FindHeadTypeForGender(ThingDef race, CustomHeadType headType, Gender gender) {
             RaceHeadTypes headTypes = GetHeadTypesForRace(race);
             return headTypes.FindHeadTypeForGender(headType, gender);
         }

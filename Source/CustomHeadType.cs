@@ -8,7 +8,7 @@ using Verse;
 using Verse.Sound;
 
 namespace EdB.PrepareCarefully {
-    public class HeadType {
+    public class CustomHeadType {
         private CrownType crownType;
         private string graphicsPath;
         private string label;
@@ -43,7 +43,7 @@ namespace EdB.PrepareCarefully {
                 return label;
             }
         }
-        public HeadType() {
+        public CustomHeadType() {
 
         }
         protected static string GetHeadLabel(string path) {

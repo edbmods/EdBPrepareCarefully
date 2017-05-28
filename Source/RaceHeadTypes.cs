@@ -15,15 +15,15 @@ namespace EdB.PrepareCarefully {
         protected ThingDef race;
         protected List<Graphic> heads = new List<Graphic>();
         protected List<string> headPaths = new List<string>();
-        protected List<HeadType> maleHeadTypes = new List<HeadType>();
-        protected List<HeadType> femaleHeadTypes = new List<HeadType>();
-        protected List<HeadType> noGenderHeaderTypes = new List<HeadType>();
-        public Dictionary<string, HeadType> pathDictionary = new Dictionary<string, HeadType>();
+        protected List<CustomHeadType> maleHeadTypes = new List<CustomHeadType>();
+        protected List<CustomHeadType> femaleHeadTypes = new List<CustomHeadType>();
+        protected List<CustomHeadType> noGenderHeaderTypes = new List<CustomHeadType>();
+        public Dictionary<string, CustomHeadType> pathDictionary = new Dictionary<string, CustomHeadType>();
         public RaceHeadTypes(ThingDef race) {
             this.race = race;
             Initialize();
         }
-        public List<HeadType> GetHeadTypes(Gender gender) {
+        public List<CustomHeadType> GetHeadTypes(Gender gender) {
             if (gender == Gender.Male) {
                 return maleHeadTypes;
             }
@@ -34,8 +34,8 @@ namespace EdB.PrepareCarefully {
                 return noGenderHeaderTypes;
             }
         }
-        public HeadType FindHeadType(string graphicsPath) {
-            HeadType result;
+        public CustomHeadType FindHeadType(string graphicsPath) {
+            CustomHeadType result;
             if (pathDictionary.TryGetValue(graphicsPath, out result)) {
                 return result;
             }
@@ -43,7 +43,7 @@ namespace EdB.PrepareCarefully {
                 return null;
             }
         }
-        public HeadType FindHeadTypeForGender(HeadType headType, Gender gender) {
+        public CustomHeadType FindHeadTypeForGender(CustomHeadType headType, Gender gender) {
             if (headType.Gender == gender) {
                 return headType;
             }
@@ -54,7 +54,7 @@ namespace EdB.PrepareCarefully {
             else {
                 graphicsPath = graphicsPath.Replace("Male", "Female");
             }
-            HeadType result = FindHeadType(graphicsPath);
+            CustomHeadType result = FindHeadType(graphicsPath);
             return result != null ? result : headType;
         }
         protected void Initialize() {
@@ -72,7 +72,7 @@ namespace EdB.PrepareCarefully {
                 foreach (string current in GraphicDatabaseUtility.GraphicNamesInFolder(text)) {
                     //Log.Message("head in folder: " + current);
                     string fullPath = text + "/" + current;
-                    HeadType headType = CreateHeadTypeFromGraphicPath(fullPath);
+                    CustomHeadType headType = CreateHeadTypeFromGraphicPath(fullPath);
                     if (headType.Gender == Gender.Male) {
                         maleHeadTypes.Add(headType);
                     }
@@ -86,8 +86,8 @@ namespace EdB.PrepareCarefully {
                 }
             }
         }
-        protected HeadType CreateHeadTypeFromGraphicPath(string graphicPath) {
-            HeadType result = new HeadType();
+        protected CustomHeadType CreateHeadTypeFromGraphicPath(string graphicPath) {
+            CustomHeadType result = new CustomHeadType();
             result.GraphicPath = graphicPath;
             string[] strArray = Path.GetFileNameWithoutExtension(graphicPath).Split('_');
             try {
