@@ -1095,6 +1095,29 @@ namespace EdB.PrepareCarefully {
             get {
                 return pawn.story.SkinColor;
             }
+            set {
+                if (alienRace != null) {
+                    ThingComp alienComp = pawn.AllComps.FirstOrDefault((ThingComp comp) => {
+                        return (comp.GetType().Name == "AlienComp");
+                    });
+                    if (alienComp == null) {
+                        return;
+                    }
+                    FieldInfo primaryColorField = alienComp.GetType().GetField("skinColor", BindingFlags.Instance | BindingFlags.Public);
+                    if (primaryColorField == null) {
+                        return;
+                    }
+                    FieldInfo secondaryColorField = alienComp.GetType().GetField("skinColorSecond", BindingFlags.Instance | BindingFlags.Public);
+                    if (secondaryColorField == null) {
+                        return;
+                    }
+                    primaryColorField.SetValue(alienComp, value);
+                    if (!alienRace.HasSecondaryColor) {
+                        secondaryColorField.SetValue(alienComp, value);
+                    }
+                    MarkPortraitAsDirty();
+                }
+            }
         }
 
         public float MelaninLevel {
@@ -1104,6 +1127,9 @@ namespace EdB.PrepareCarefully {
             set {
                 pawn.story.melanin = value;
                 this.colors[PawnLayers.BodyType] = this.colors[PawnLayers.HeadType] = pawn.story.SkinColor;
+                if (alienRace != null) {
+                    SkinColor = PawnSkinColors.GetSkinColor(value);
+                }
                 MarkPortraitAsDirty();
             }
         }

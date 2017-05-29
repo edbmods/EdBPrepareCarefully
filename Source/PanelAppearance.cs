@@ -476,39 +476,6 @@ namespace EdB.PrepareCarefully {
             GUI.color = Color.white;
         }
 
-        public void SetAlienPawnColor(CustomPawn pawn, Color color) {
-            AlienRace alienRace = pawn.AlienRace;
-            if (alienRace == null) {
-                return;
-            }
-            ThingComp alienComp = pawn.Pawn.AllComps.FirstOrDefault((ThingComp comp) => {
-                return (comp.GetType().Name == "AlienComp");
-            });
-            if (alienComp == null) {
-                return;
-            }
-            FieldInfo primaryColorField = alienComp.GetType().GetField("skinColor", BindingFlags.Instance | BindingFlags.Public);
-            if (primaryColorField == null) {
-                return;
-            }
-            FieldInfo secondaryColorField = alienComp.GetType().GetField("skinColorSecond", BindingFlags.Instance | BindingFlags.Public);
-            if (secondaryColorField == null) {
-                return;
-            }
-            primaryColorField.SetValue(alienComp, color);
-            if (!alienRace.HasSecondaryColor) {
-                secondaryColorField.SetValue(alienComp, color);
-            }
-            pawn.MarkPortraitAsDirty();
-        }
-
-        public void SetPawnMelaninLevel(CustomPawn pawn, float value) {
-            pawn.MelaninLevel = value;
-            if (pawn.AlienRace != null) {
-                SetAlienPawnColor(pawn, PawnSkinColors.GetSkinColor(value));
-            }
-        }
-
         protected void DrawAlienPawnColorSelector(CustomPawn customPawn, float cursorY, List<Color> colors, bool allowAnyColor) {
             Color currentColor = customPawn.Pawn.story.SkinColor;
             Color clickedColor = currentColor;
@@ -574,7 +541,7 @@ namespace EdB.PrepareCarefully {
             GUI.color = Color.white;
 
             if (clickedColor != currentColor) {
-                SetAlienPawnColor(customPawn, clickedColor);
+                customPawn.SkinColor = clickedColor;
             }
         }
 
@@ -677,7 +644,7 @@ namespace EdB.PrepareCarefully {
                     currentSwatchIndex = clickedIndex;
                 }
                 float melaninLevel = PawnColorUtils.GetValueFromRelativeLerp(currentSwatchIndex, newValue);
-                SetPawnMelaninLevel(customPawn, melaninLevel);
+                customPawn.MelaninLevel = melaninLevel;
             }
         }
 
