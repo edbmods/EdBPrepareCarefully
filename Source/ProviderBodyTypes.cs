@@ -10,7 +10,7 @@ using Verse.Sound;
 
 namespace EdB.PrepareCarefully {
     public class ProviderBodyTypes {
-        protected Dictionary<ThingDef, RaceBodyTypes> raceBodyTypeLookup = new Dictionary<ThingDef, RaceBodyTypes>();
+        protected Dictionary<ThingDef, OptionsBodyType> raceBodyTypeLookup = new Dictionary<ThingDef, OptionsBodyType>();
         protected Dictionary<BodyType, string> bodyTypeLabels = new Dictionary<BodyType, string>();
         public ProviderBodyTypes() {
             bodyTypeLabels.Add(BodyType.Fat, "EdB.PC.Pawn.BodyType.Fat".Translate());
@@ -26,7 +26,7 @@ namespace EdB.PrepareCarefully {
             return GetBodyTypesForPawn(pawn.Pawn);
         }
         public List<BodyType> GetBodyTypesForPawn(Pawn pawn) {
-            RaceBodyTypes bodyTypes;
+            OptionsBodyType bodyTypes;
             if (!raceBodyTypeLookup.TryGetValue(pawn.def, out bodyTypes)) {
                 bodyTypes = InitializeBodyTypes(pawn.def);
                 raceBodyTypeLookup.Add(pawn.def, bodyTypes);
@@ -36,12 +36,12 @@ namespace EdB.PrepareCarefully {
         public string GetBodyTypeLabel(BodyType bodyType) {
             return bodyTypeLabels[bodyType];
         }
-        protected RaceBodyTypes InitializeBodyTypes(ThingDef def) {
+        protected OptionsBodyType InitializeBodyTypes(ThingDef def) {
             if (!ProviderAlienRaces.IsAlienRace(def)) {
                 return InitializeHumanlikeBodyTypes();
             }
             else {
-                RaceBodyTypes result = InitializeAlienRaceBodyTypes(def);
+                OptionsBodyType result = InitializeAlienRaceBodyTypes(def);
                 if (result == null) {
                     Log.Warning("Prepare Carefully could not initialize body types for alien race, " + def.defName + ". Defaulting to humanlike body types.");
                     return InitializeHumanlikeBodyTypes();
@@ -54,8 +54,8 @@ namespace EdB.PrepareCarefully {
                 }
             }
         }
-        protected RaceBodyTypes InitializeHumanlikeBodyTypes() {
-            RaceBodyTypes result = new RaceBodyTypes();
+        protected OptionsBodyType InitializeHumanlikeBodyTypes() {
+            OptionsBodyType result = new OptionsBodyType();
             result.MaleBodyTypes.Add(BodyType.Male);
             result.MaleBodyTypes.Add(BodyType.Thin);
             result.MaleBodyTypes.Add(BodyType.Fat);
@@ -70,8 +70,8 @@ namespace EdB.PrepareCarefully {
             result.NoGenderBodyTypes.Add(BodyType.Hulk);
             return result;
         }
-        protected RaceBodyTypes InitializeAlienRaceBodyTypes(ThingDef def) {
-            RaceBodyTypes result = new RaceBodyTypes();
+        protected OptionsBodyType InitializeAlienRaceBodyTypes(ThingDef def) {
+            OptionsBodyType result = new OptionsBodyType();
             AlienRace alienRace = AlienRaceProvider.GetAlienRace(def);
             if (alienRace == null) {
                 return null;

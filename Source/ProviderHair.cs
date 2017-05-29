@@ -10,9 +10,9 @@ using Verse.Sound;
 
 namespace EdB.PrepareCarefully {
     public class ProviderHair {
-        protected Dictionary<ThingDef, RaceHairs> hairLookup = new Dictionary<ThingDef, RaceHairs>();
-        protected RaceHairs humanlikeHairs;
-        protected RaceHairs noHair = new RaceHairs();
+        protected Dictionary<ThingDef, OptionsHair> hairLookup = new Dictionary<ThingDef, OptionsHair>();
+        protected OptionsHair humanlikeHairs;
+        protected OptionsHair noHair = new OptionsHair();
         public ProviderHair() {
         }
         public ProviderAlienRaces AlienRaceProvider {
@@ -22,14 +22,14 @@ namespace EdB.PrepareCarefully {
             return GetHairs(pawn.Pawn.def, pawn.Gender);
         }
         public List<HairDef> GetHairs(ThingDef raceDef, Gender gender) {
-            RaceHairs hairs = GetHairsForRace(raceDef);
+            OptionsHair hairs = GetHairsForRace(raceDef);
             return hairs.GetHairs(gender);
         }
-        public RaceHairs GetHairsForRace(CustomPawn pawn) {
+        public OptionsHair GetHairsForRace(CustomPawn pawn) {
             return GetHairsForRace(pawn.Pawn.def);
         }
-        public RaceHairs GetHairsForRace(ThingDef raceDef) {
-            RaceHairs hairs;
+        public OptionsHair GetHairsForRace(ThingDef raceDef) {
+            OptionsHair hairs;
             if (hairLookup.TryGetValue(raceDef, out hairs)) {
                 return hairs;
             }
@@ -47,7 +47,7 @@ namespace EdB.PrepareCarefully {
                 return hairs;
             }
         }
-        protected RaceHairs InitializeHairs(ThingDef raceDef) {
+        protected OptionsHair InitializeHairs(ThingDef raceDef) {
             AlienRace alienRace = AlienRaceProvider.GetAlienRace(raceDef);
             if (alienRace == null) {
                 return HumanlikeHairs;
@@ -65,8 +65,8 @@ namespace EdB.PrepareCarefully {
                 // If there is a custom color generator, then we make a copy of the humanlike hair options--preserving
                 // the HairDef lists--but we replace the color list.
                 else {
-                    RaceHairs humanHairs = HumanlikeHairs;
-                    RaceHairs humanHairsWithColors = new RaceHairs();
+                    OptionsHair humanHairs = HumanlikeHairs;
+                    OptionsHair humanHairsWithColors = new OptionsHair();
                     humanHairsWithColors.MaleHairs = humanHairs.MaleHairs;
                     humanHairsWithColors.FemaleHairs = humanHairs.FemaleHairs;
                     humanHairsWithColors.NoGenderHairs = humanHairs.NoGenderHairs;
@@ -74,7 +74,7 @@ namespace EdB.PrepareCarefully {
                     return humanHairsWithColors;
                 }
             }
-            RaceHairs result = new RaceHairs();
+            OptionsHair result = new OptionsHair();
             foreach (HairDef hairDef in DefDatabase<HairDef>.AllDefs.Where((HairDef def) => {
                 foreach (var tag in def.hairTags) {
                     if (alienRace.HairTags.Contains(tag)) {
@@ -88,7 +88,7 @@ namespace EdB.PrepareCarefully {
             result.Sort();
             return result;
         }
-        protected RaceHairs HumanlikeHairs {
+        protected OptionsHair HumanlikeHairs {
             get {
                 if (humanlikeHairs == null) {
                     humanlikeHairs = InitializeHumanlikeHairs();
@@ -96,7 +96,7 @@ namespace EdB.PrepareCarefully {
                 return humanlikeHairs;
             }
         }
-        protected RaceHairs InitializeHumanlikeHairs() {
+        protected OptionsHair InitializeHumanlikeHairs() {
             HashSet<string> nonHumanHairTags = new HashSet<string>();
             IEnumerable<ThingDef> alienRaces = DefDatabase<ThingDef>.AllDefs.Where((ThingDef def) => {
                 return def.race != null && ProviderAlienRaces.IsAlienRace(def);
@@ -112,7 +112,7 @@ namespace EdB.PrepareCarefully {
                     }
                 }
             }
-            RaceHairs result = new RaceHairs(); foreach (HairDef hairDef in DefDatabase<HairDef>.AllDefs.Where((HairDef def) => {
+            OptionsHair result = new OptionsHair(); foreach (HairDef hairDef in DefDatabase<HairDef>.AllDefs.Where((HairDef def) => {
                 foreach (var tag in def.hairTags) {
                     if (nonHumanHairTags.Contains(tag)) {
                         return false;

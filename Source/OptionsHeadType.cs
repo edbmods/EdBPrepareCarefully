@@ -11,8 +11,7 @@ using Verse;
 using Verse.Sound;
 
 namespace EdB.PrepareCarefully {
-    public class RaceHeadTypes {
-        protected ThingDef race;
+    public class OptionsHeadType {
         protected List<Graphic> heads = new List<Graphic>();
         protected List<string> headPaths = new List<string>();
         protected List<CustomHeadType> maleHeadTypes = new List<CustomHeadType>();
@@ -21,7 +20,7 @@ namespace EdB.PrepareCarefully {
         public Dictionary<string, CustomHeadType> pathDictionary = new Dictionary<string, CustomHeadType>();
         public List<CustomHeadType> headTypes = new List<CustomHeadType>();
         protected int count = 0;
-        public RaceHeadTypes() {
+        public OptionsHeadType() {
         }
         public void AddHeadType(CustomHeadType headType) {
             headTypes.Add(headType);

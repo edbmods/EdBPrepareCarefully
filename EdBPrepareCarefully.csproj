@@ -87,9 +87,9 @@
     <Compile Include="Source\ProviderHair.cs" />
     <Compile Include="Source\ProviderHeadTypes.cs" />
     <Compile Include="Source\Providers.cs" />
-    <Compile Include="Source\RaceBodyTypes.cs" />
-    <Compile Include="Source\RaceHairs.cs" />
-    <Compile Include="Source\RaceHeadTypes.cs" />
+    <Compile Include="Source\OptionsBodyType.cs" />
+    <Compile Include="Source\OptionsHair.cs" />
+    <Compile Include="Source\OptionsHeadType.cs" />
     <Compile Include="Source\Randomizer.cs" />
     <Compile Include="Source\RelatedPawn.cs" />
     <Compile Include="Source\RelationshipBuilder.cs" />

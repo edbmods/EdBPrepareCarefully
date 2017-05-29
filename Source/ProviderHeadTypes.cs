@@ -14,7 +14,7 @@ namespace EdB.PrepareCarefully {
         protected List<Graphic> heads = new List<Graphic>();
         protected List<string> headPaths = new List<string>();
         public Dictionary<string, CustomHeadType> pathDictionary = new Dictionary<string, CustomHeadType>();
-        protected Dictionary<ThingDef, RaceHeadTypes> headTypeLookup = new Dictionary<ThingDef, RaceHeadTypes>();
+        protected Dictionary<ThingDef, OptionsHeadType> headTypeLookup = new Dictionary<ThingDef, OptionsHeadType>();
         public ProviderHeadTypes() {
         }
         public ProviderAlienRaces AlienRaceProvider {
@@ -24,19 +24,19 @@ namespace EdB.PrepareCarefully {
             return GetHeadTypes(pawn.Pawn.def, pawn.Gender);
         }
         public IEnumerable<CustomHeadType> GetHeadTypes(ThingDef race, Gender gender) {
-            RaceHeadTypes headTypes = GetHeadTypesForRace(race);
+            OptionsHeadType headTypes = GetHeadTypesForRace(race);
             return headTypes.GetHeadTypes(gender);
         }
         public CustomHeadType FindHeadType(ThingDef race, string graphicsPath) {
-            RaceHeadTypes headTypes = GetHeadTypesForRace(race);
+            OptionsHeadType headTypes = GetHeadTypesForRace(race);
             return headTypes.FindHeadType(graphicsPath);
         }
         public CustomHeadType FindHeadTypeForGender(ThingDef race, CustomHeadType headType, Gender gender) {
-            RaceHeadTypes headTypes = GetHeadTypesForRace(race);
+            OptionsHeadType headTypes = GetHeadTypesForRace(race);
             return headTypes.FindHeadTypeForGender(headType, gender);
         }
-        protected RaceHeadTypes GetHeadTypesForRace(ThingDef race) {
-            RaceHeadTypes headTypes = null;
+        protected OptionsHeadType GetHeadTypesForRace(ThingDef race) {
+            OptionsHeadType headTypes = null;
             if (!headTypeLookup.TryGetValue(race, out headTypes)) {
                 headTypes = InitializeHeadTypes(race);
                 headTypeLookup.Add(race, headTypes);
@@ -46,7 +46,7 @@ namespace EdB.PrepareCarefully {
             }
             return headTypes;
         }
-        protected RaceHeadTypes InitializeHeadTypes(ThingDef race) {
+        protected OptionsHeadType InitializeHeadTypes(ThingDef race) {
             if (race == ThingDefOf.Human) {
                 return InitializeHumanHeadTypes();
             }
@@ -54,14 +54,14 @@ namespace EdB.PrepareCarefully {
                 return InitializeAlienHeadTypes(race);
             }
         }
-        protected RaceHeadTypes InitializeHumanHeadTypes() {
+        protected OptionsHeadType InitializeHumanHeadTypes() {
             MethodInfo headGraphicsMethod = typeof(GraphicDatabaseHeadRecords).GetMethod("BuildDatabaseIfNecessary", BindingFlags.Static | BindingFlags.NonPublic);
             headGraphicsMethod.Invoke(null, null);
             string[] headsFolderPaths = new string[] {
                 "Things/Pawn/Humanlike/Heads/Male",
                 "Things/Pawn/Humanlike/Heads/Female"
             };
-            RaceHeadTypes result = new RaceHeadTypes();
+            OptionsHeadType result = new OptionsHeadType();
             for (int i = 0; i < headsFolderPaths.Length; i++) {
                 string text = headsFolderPaths[i];
                 IEnumerable<string> graphicsInFolder = GraphicDatabaseUtility.GraphicNamesInFolder(text);
@@ -74,9 +74,9 @@ namespace EdB.PrepareCarefully {
             }
             return result;
         }
-        protected RaceHeadTypes InitializeAlienHeadTypes(ThingDef raceDef) {
+        protected OptionsHeadType InitializeAlienHeadTypes(ThingDef raceDef) {
             AlienRace alienRace = AlienRaceProvider.GetAlienRace(raceDef);
-            RaceHeadTypes result = new RaceHeadTypes();
+            OptionsHeadType result = new OptionsHeadType();
             if (alienRace == null) {
                 Log.Warning("Prepare Carefully could not initialize head types for alien race, " + raceDef);
                 return result;

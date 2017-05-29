@@ -9,7 +9,7 @@ using Verse;
 using Verse.Sound;
 
 namespace EdB.PrepareCarefully {
-    public class RaceHairs {
+    public class OptionsHair {
         protected List<HairDef> maleHairs = new List<HairDef>();
         protected List<HairDef> femaleHairs = new List<HairDef>();
         protected List<HairDef> noGenderHairs = new List<HairDef>();

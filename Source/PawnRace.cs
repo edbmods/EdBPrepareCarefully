@@ -10,7 +10,7 @@ using Verse.Sound;
 
 namespace EdB.PrepareCarefully {
     public class PawnRace {
-        private RaceBodyTypes bodyTypes;
-        private RaceHeadTypes headTypes;
+        private OptionsBodyType bodyTypes;
+        private OptionsHeadType headTypes;
     }
 }

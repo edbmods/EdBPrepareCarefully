@@ -244,7 +244,7 @@ namespace EdB.PrepareCarefully {
             Action nextSelectionAction = null;
             Action clickAction = null;
 
-            RaceHairs hairOptions  = null;
+            OptionsHair hairOptions  = null;
             List<HairDef> hairList = null;
             if (this.selectedPawnLayer == PawnLayers.Hair) {
                 hairOptions = PrepareCarefully.Instance.Providers.Hair.GetHairsForRace(customPawn);

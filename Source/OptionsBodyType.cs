@@ -9,11 +9,11 @@ using Verse;
 using Verse.Sound;
 
 namespace EdB.PrepareCarefully {
-    public class RaceBodyTypes {
+    public class OptionsBodyType {
         protected List<BodyType> maleBodyTypes = new List<BodyType>();
         protected List<BodyType> femaleBodyTypes = new List<BodyType>();
         protected List<BodyType> noGenderBodyTypes = new List<BodyType>();
-        public RaceBodyTypes() {
+        public OptionsBodyType() {
         }
         public List<BodyType> MaleBodyTypes {
             get {
