@@ -42,6 +42,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Source\AlienRace.cs" />
     <Compile Include="Source\AnimalDatabase.cs" />
     <Compile Include="Source\AnimalRecord.cs" />
     <Compile Include="Source\AnimalRecordKey.cs" />
@@ -65,23 +66,32 @@
     <Compile Include="Source\DragSlider.cs" />
     <Compile Include="Source\EquipmentDatabase.cs" />
     <Compile Include="Source\EquipmentRecord.cs" />
+    <Compile Include="Source\ExtensionsColorGenerator.cs" />
     <Compile Include="Source\ExtensionsPawn.cs" />
     <Compile Include="Source\ExtensionsThing.cs" />
     <Compile Include="Source\GenStep_CustomScatterThings.cs" />
-    <Compile Include="Source\HeadType.cs" />
+    <Compile Include="Source\CustomHeadType.cs" />
     <Compile Include="Source\IRelationshipWorker.cs" />
+    <Compile Include="Source\OptionsApparel.cs" />
     <Compile Include="Source\Page_ConfigureStartingPawns.cs" />
     <Compile Include="Source\PanelRelationshipsOther.cs" />
     <Compile Include="Source\PanelRelationshipsParentChild.cs" />
     <Compile Include="Source\PawnGenerationRequestWrapper.cs" />
     <Compile Include="Source\PawnLayers.cs" />
+    <Compile Include="Source\PawnRace.cs" />
     <Compile Include="Source\PrepareCarefully.cs" />
     <Compile Include="Source\PresetFiles.cs" />
     <Compile Include="Source\PresetLoader.cs" />
     <Compile Include="Source\PresetSaver.cs" />
-    <Compile Include="Source\ProviderHeadType.cs" />
+    <Compile Include="Source\ProviderAlienRaces.cs" />
+    <Compile Include="Source\ProviderApparel.cs" />
+    <Compile Include="Source\ProviderBodyTypes.cs" />
+    <Compile Include="Source\ProviderHair.cs" />
+    <Compile Include="Source\ProviderHeadTypes.cs" />
     <Compile Include="Source\Providers.cs" />
-    <Compile Include="Source\RaceHeadTypes.cs" />
+    <Compile Include="Source\OptionsBodyType.cs" />
+    <Compile Include="Source\OptionsHair.cs" />
+    <Compile Include="Source\OptionsHeadType.cs" />
     <Compile Include="Source\Randomizer.cs" />
     <Compile Include="Source\RelatedPawn.cs" />
     <Compile Include="Source\RelationshipBuilder.cs" />

@@ -357,6 +357,10 @@ namespace EdB.PrepareCarefully {
             else {
                 pawn.MelaninLevel = PawnColorUtils.FindMelaninValueFromColor(record.skinColor);
             }
+            // Set the skin color (only for Alien Races).
+            if (pawn.AlienRace != null) {
+                pawn.SkinColor = record.skinColor;
+            }
             
             Backstory backstory = FindBackstory(record.childhood);
             if (backstory != null) {

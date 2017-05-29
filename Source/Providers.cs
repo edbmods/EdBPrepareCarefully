@@ -5,10 +5,22 @@ using System.Text;
 
 namespace EdB.PrepareCarefully {
     public class Providers {
-        public ProviderHeadType HeadType {
+        public ProviderAlienRaces AlienRaces {
+            get; set;
+        }
+        public ProviderApparel Apparel {
+            get; set;
+        }
+        public ProviderBodyTypes BodyTypes {
+            get; set;
+        }
+        public ProviderHeadTypes HeadTypes {
             get; set;
         }
         public ProviderFactions Factions {
+            get; set;
+        }
+        public ProviderHair Hair {
             get; set;
         }
     }

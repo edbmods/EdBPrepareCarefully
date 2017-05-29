@@ -48,14 +48,15 @@ namespace EdB.PrepareCarefully {
 
         // A GUID provides a unique identifier for the CustomPawn.
         protected string id;
-
-        protected HeadType headType;
+        
+        protected CustomHeadType headType;
 
         protected List<Implant> implants = new List<Implant>();
         protected List<Injury> injuries = new List<Injury>();
         public List<CustomBodyPart> bodyParts = new List<CustomBodyPart>();
         protected ThingCache thingCache = new ThingCache();
         protected bool portraitDirty = true;
+        protected AlienRace alienRace = null;
 
         public CustomPawn() {
             GenerateId();
@@ -72,6 +73,22 @@ namespace EdB.PrepareCarefully {
             }
             set {
                 id = value;
+            }
+        }
+
+        public BodyType BodyType {
+            get {
+                return pawn.story.bodyType;
+            }
+            set {
+                this.pawn.story.bodyType = value;
+                MarkPortraitAsDirty();
+            }
+        }
+
+        public AlienRace AlienRace {
+            get {
+                return alienRace;
             }
         }
         
@@ -113,7 +130,7 @@ namespace EdB.PrepareCarefully {
             }
         }
 
-        protected void MarkPortraitAsDirty() {
+        public void MarkPortraitAsDirty() {
             portraitDirty = true;
         }
 
@@ -168,7 +185,7 @@ namespace EdB.PrepareCarefully {
             }
 
             // Initialize head type.
-            HeadType headType = PrepareCarefully.Instance.Providers.HeadType.FindHeadType(pawn.def, pawn.story.HeadGraphicPath);
+            CustomHeadType headType = PrepareCarefully.Instance.Providers.HeadTypes.FindHeadType(pawn.def, pawn.story.HeadGraphicPath);
             if (headType != null) {
                 this.headType = headType;
             }
@@ -188,6 +205,9 @@ namespace EdB.PrepareCarefully {
 
             // Evaluate all hediffs.
             InitializePawnHediffs(pawn);
+            
+            // Set the alien race, if any.
+            alienRace = PrepareCarefully.Instance.Providers.AlienRaces.GetAlienRace(pawn.def);
 
             // Clear all of the pawn caches.
             ClearPawnCaches();
@@ -955,7 +975,7 @@ namespace EdB.PrepareCarefully {
             UpdateSkillLevelsForNewBackstoryOrTrait();
         }
 
-        public HeadType HeadType {
+        public CustomHeadType HeadType {
             get {
                 return headType;
             }
@@ -972,7 +992,7 @@ namespace EdB.PrepareCarefully {
                 return pawn.story.HeadGraphicPath;
             }
             set {
-                HeadType headType = PrepareCarefully.Instance.Providers.HeadType.FindHeadType(pawn.def, value);
+                CustomHeadType headType = PrepareCarefully.Instance.Providers.HeadTypes.FindHeadType(pawn.def, value);
                 if (headType != null) {
                     HeadType = headType;
                 }
@@ -1058,16 +1078,6 @@ namespace EdB.PrepareCarefully {
             }
         }
 
-        public BodyType BodyType {
-            get {
-                return pawn.story.bodyType;
-            }
-            set {
-                pawn.story.bodyType = value;
-                MarkPortraitAsDirty();
-            }
-        }
-
         public Gender Gender {
             get {
                 return pawn.gender;
@@ -1085,6 +1095,29 @@ namespace EdB.PrepareCarefully {
             get {
                 return pawn.story.SkinColor;
             }
+            set {
+                if (alienRace != null) {
+                    ThingComp alienComp = pawn.AllComps.FirstOrDefault((ThingComp comp) => {
+                        return (comp.GetType().Name == "AlienComp");
+                    });
+                    if (alienComp == null) {
+                        return;
+                    }
+                    FieldInfo primaryColorField = alienComp.GetType().GetField("skinColor", BindingFlags.Instance | BindingFlags.Public);
+                    if (primaryColorField == null) {
+                        return;
+                    }
+                    FieldInfo secondaryColorField = alienComp.GetType().GetField("skinColorSecond", BindingFlags.Instance | BindingFlags.Public);
+                    if (secondaryColorField == null) {
+                        return;
+                    }
+                    primaryColorField.SetValue(alienComp, value);
+                    if (!alienRace.HasSecondaryColor) {
+                        secondaryColorField.SetValue(alienComp, value);
+                    }
+                    MarkPortraitAsDirty();
+                }
+            }
         }
 
         public float MelaninLevel {
@@ -1094,6 +1127,9 @@ namespace EdB.PrepareCarefully {
             set {
                 pawn.story.melanin = value;
                 this.colors[PawnLayers.BodyType] = this.colors[PawnLayers.HeadType] = pawn.story.SkinColor;
+                if (alienRace != null) {
+                    SkinColor = PawnSkinColors.GetSkinColor(value);
+                }
                 MarkPortraitAsDirty();
             }
         }
@@ -1146,13 +1182,14 @@ namespace EdB.PrepareCarefully {
             if (headType != null) {
                 // Get the matching head type for the pawn's current gender.  We do this in case the user switches the
                 // gender, swapping to the correct head type if necessary.
-                HeadType filteredHeadType = PrepareCarefully.Instance.Providers.HeadType.FindHeadTypeForGender(pawn.def, headType, Gender);
+                CustomHeadType filteredHeadType = PrepareCarefully.Instance.Providers.HeadTypes.FindHeadTypeForGender(pawn.def, headType, Gender);
                 // Need to use reflection to set the private field.
                 typeof(Pawn_StoryTracker).GetField("headGraphicPath", BindingFlags.Instance | BindingFlags.NonPublic).SetValue(pawn.story, filteredHeadType.GraphicPath);
             }
         }
 
         protected void ResetGender() {
+            List<BodyType> bodyTypes = PrepareCarefully.Instance.Providers.BodyTypes.GetBodyTypesForPawn(this);
             if (pawn.gender == Gender.Female) {
                 if (HairDef.hairGender == HairGender.Male) {
                     HairDef = DefDatabase<HairDef>.AllDefsListForReading.Find((HairDef def) => {
@@ -1160,7 +1197,9 @@ namespace EdB.PrepareCarefully {
                     });
                 }
                 if (BodyType == BodyType.Male) {
-                    BodyType = BodyType.Female;
+                    if (bodyTypes.Contains(BodyType.Female)) {
+                        BodyType = BodyType.Female;
+                    }
                 }
             }
             else {
@@ -1170,7 +1209,9 @@ namespace EdB.PrepareCarefully {
                     });
                 }
                 if (BodyType == BodyType.Female) {
-                    BodyType = BodyType.Male;
+                    if (bodyTypes.Contains(BodyType.Male)) {
+                        BodyType = BodyType.Male;
+                    }
                 }
             }
             ResetCachedHead();
