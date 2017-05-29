@@ -17,5 +17,8 @@ namespace EdB.PrepareCarefully {
         public ProviderFactions Factions {
             get; set;
         }
+        public ProviderHair Hair {
+            get; set;
+        }
     }
 }

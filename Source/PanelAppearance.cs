@@ -28,14 +28,10 @@ namespace EdB.PrepareCarefully {
 
         protected FieldInfo apparelGraphicsField = null;
         protected List<List<ThingDef>> apparelLists = new List<List<ThingDef>>(PawnLayers.Count);
-        protected List<HairDef> maleHairDefs = new List<HairDef>();
-        protected List<HairDef> femaleHairDefs = new List<HairDef>();
         protected List<Color> skinColors = new List<Color>();
-        protected List<Color> hairColors = new List<Color>();
         protected Dictionary<ThingDef, List<ThingDef>> apparelStuffLookup = new Dictionary<ThingDef, List<ThingDef>>();
         protected int selectedStuff = 0;
-
-
+        
         public PanelAppearance() {
             pawnLayers = new List<int>(new int[] {
                 PawnLayers.BodyType,
@@ -58,38 +54,6 @@ namespace EdB.PrepareCarefully {
                 delegate { this.ChangePawnLayer(PawnLayers.TopClothingLayer); },
                 delegate { this.ChangePawnLayer(PawnLayers.Accessory); },
                 delegate { this.ChangePawnLayer(PawnLayers.Hat); }
-            });
-
-            // Initialize and sort hair lists.
-            foreach (HairDef hairDef in DefDatabase<HairDef>.AllDefs) {
-                if (hairDef.hairGender != HairGender.Male) {
-                    femaleHairDefs.Add(hairDef);
-                }
-                if (hairDef.hairGender != HairGender.Female) {
-                    maleHairDefs.Add(hairDef);
-                }
-            }
-            femaleHairDefs.Sort((HairDef x, HairDef y) => {
-                if (x.label == null) {
-                    return -1;
-                }
-                else if (y.label == null) {
-                    return 1;
-                }
-                else {
-                    return x.label.CompareTo(y.label);
-                }
-            });
-            maleHairDefs.Sort((HairDef x, HairDef y) => {
-                if (x.label == null) {
-                    return -1;
-                }
-                else if (y.label == null) {
-                    return 1;
-                }
-                else {
-                    return x.label.CompareTo(y.label);
-                }
             });
 
             for (int i = 0; i < PawnLayers.Count; i++) {
@@ -206,16 +170,6 @@ namespace EdB.PrepareCarefully {
                 }
             }
 
-            // Set up default hair colors
-            hairColors.Add(new Color(0.2f, 0.2f, 0.2f));
-            hairColors.Add(new Color(0.31f, 0.28f, 0.26f));
-            hairColors.Add(new Color(0.25f, 0.2f, 0.15f));
-            hairColors.Add(new Color(0.3f, 0.2f, 0.1f));
-            hairColors.Add(new Color(0.3529412f, 0.227451f, 0.1254902f));
-            hairColors.Add(new Color(0.5176471f, 0.3254902f, 0.1843137f));
-            hairColors.Add(new Color(0.7568628f, 0.572549f, 0.3333333f));
-            hairColors.Add(new Color(0.9294118f, 0.7921569f, 0.6117647f));
-
             // Set up default skin colors
             foreach (Color color in PawnColorUtils.Colors) {
                 skinColors.Add(color);
@@ -289,6 +243,14 @@ namespace EdB.PrepareCarefully {
             Action previousSelectionAction = null;
             Action nextSelectionAction = null;
             Action clickAction = null;
+
+            RaceHairs hairOptions  = null;
+            List<HairDef> hairList = null;
+            if (this.selectedPawnLayer == PawnLayers.Hair) {
+                hairOptions = PrepareCarefully.Instance.Providers.Hair.GetHairsForRace(customPawn);
+                hairList = hairOptions.GetHairs(customPawn.Gender);
+            }
+
             if (this.selectedPawnLayer == PawnLayers.HeadType) {
                 int headTypeCount = PrepareCarefully.Instance.Providers.HeadTypes.GetHeadTypes(customPawn).Count();
                 if (customPawn.HeadType != null && headTypeCount > 1) {
@@ -323,17 +285,21 @@ namespace EdB.PrepareCarefully {
                 };
             }
             else if (this.selectedPawnLayer == PawnLayers.Hair) {
-                previousSelectionAction = () => {
-                    SoundDefOf.TickTiny.PlayOneShotOnCamera();
-                    SelectNextHair(customPawn, -1);
-                };
-                nextSelectionAction = () => {
-                    SoundDefOf.TickTiny.PlayOneShotOnCamera();
-                    SelectNextHair(customPawn, 1);
-                };
-                clickAction = () => {
-                    ShowHairDialog(customPawn);
-                };
+                if (hairList.Count > 1) {
+                    previousSelectionAction = () => {
+                        SoundDefOf.TickTiny.PlayOneShotOnCamera();
+                        SelectNextHair(customPawn, -1);
+                    };
+                    nextSelectionAction = () => {
+                        SoundDefOf.TickTiny.PlayOneShotOnCamera();
+                        SelectNextHair(customPawn, 1);
+                    };
+                }
+                if (hairList.Count > 0) {
+                    clickAction = () => {
+                        ShowHairDialog(customPawn);
+                    };
+                }
             }
             else {
                 previousSelectionAction = () => {
@@ -349,7 +315,11 @@ namespace EdB.PrepareCarefully {
                 };
             }
 
-            DrawFieldSelector(fieldRect, PawnLayerLabel.CapitalizeFirst(), previousSelectionAction, nextSelectionAction, clickAction);
+            string selectorLabel = PawnLayerLabel.CapitalizeFirst();
+            if (hairList != null && hairList.Count == 0) {
+                selectorLabel = "EdB.PC.Common.NoOptionAvailable".Translate();
+            }
+            DrawFieldSelector(fieldRect, selectorLabel, previousSelectionAction, nextSelectionAction, clickAction);
 
             float cursorY = fieldRect.y + 34;
 
@@ -412,7 +382,7 @@ namespace EdB.PrepareCarefully {
                 }
             }
             else if (selectedPawnLayer == PawnLayers.Hair) {
-                DrawColorSelector(customPawn, cursorY, hairColors, true);
+                DrawColorSelector(customPawn, cursorY, hairOptions.Colors, true);
             }
 
             // Random button
@@ -870,7 +840,7 @@ namespace EdB.PrepareCarefully {
         }
 
         protected void SelectNextHair(CustomPawn customPawn, int direction) {
-            List<HairDef> hairDefs = customPawn.Gender == Gender.Male ? maleHairDefs : femaleHairDefs;
+            List<HairDef> hairDefs = PrepareCarefully.Instance.Providers.Hair.GetHairs(customPawn);
             int index = hairDefs.IndexOf(customPawn.HairDef);
             index += direction;
             if (index < 0) {
@@ -960,7 +930,7 @@ namespace EdB.PrepareCarefully {
         }
 
         protected void ShowHairDialog(CustomPawn customPawn) {
-            List<HairDef> hairDefs = customPawn.Gender == Gender.Male ? maleHairDefs : femaleHairDefs;
+            List<HairDef> hairDefs = PrepareCarefully.Instance.Providers.Hair.GetHairs(customPawn);
             Dialog_Options<HairDef> dialog = new Dialog_Options<HairDef>(hairDefs) {
                 NameFunc = (HairDef hairDef) => {
                     return hairDef.LabelCap;

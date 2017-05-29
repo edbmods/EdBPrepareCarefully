@@ -131,6 +131,37 @@ namespace EdB.PrepareCarefully {
                 result.SecondaryColors = new List<Color>();
             }
 
+            // Hair properties.
+            object hairSettingsValue = GetFieldValue(raceDef, alienRaceObject, "hairSettings", true);
+            result.HasHair = true;
+            if (hairSettingsValue != null) {
+                bool? hasHair = GetFieldValueAsBool(raceDef, hairSettingsValue, "HasHair");
+                if (hasHair != null) {
+                    result.HasHair = hasHair.Value;
+                }
+                var hairTagCollection = GetFieldValueAsCollection(raceDef, hairSettingsValue, "hairTags");
+                if (hairTagCollection != null) {
+                    var hairTags = new HashSet<string>();
+                    foreach (var o in hairTagCollection) {
+                        string tag = o as string;
+                        if (tag != null) {
+                            hairTags.Add(tag);
+                        }
+                    }
+                    if (hairTags.Count > 0) {
+                        result.HairTags = hairTags;
+                    }
+                }
+            }
+            object hairColorGeneratorValue = GetFieldValue(raceDef, alienPartGeneratorObject, "alienhaircolorgen", true);
+            ColorGenerator hairColorGenerator = hairColorGeneratorValue as ColorGenerator;
+            if (hairColorGenerator != null) {
+                result.HairColors = primaryGenerator.GetColorList();
+            }
+            else {
+                result.HairColors = null;
+            }
+
             return result;
         }
         protected object GetFieldValue(ThingDef raceDef, object source, string name, bool allowNull = false) {

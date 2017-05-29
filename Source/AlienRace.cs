@@ -24,6 +24,9 @@ namespace EdB.PrepareCarefully {
         public List<Color> SecondaryColors {
             get; set;
         }
+        public List<Color> HairColors {
+            get; set;
+        }
         public List<BodyType> BodyTypes {
             get; set;
         }
@@ -34,6 +37,12 @@ namespace EdB.PrepareCarefully {
             get; set;
         }
         public string GraphicsPathForHeads {
+            get; set;
+        }
+        public bool HasHair {
+            get; set;
+        }
+        public HashSet<string> HairTags {
             get; set;
         }
     }
