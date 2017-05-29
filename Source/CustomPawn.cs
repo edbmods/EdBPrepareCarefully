@@ -1163,6 +1163,7 @@ namespace EdB.PrepareCarefully {
         }
 
         protected void ResetGender() {
+            List<BodyType> bodyTypes = PrepareCarefully.Instance.Providers.BodyTypes.GetBodyTypesForPawn(this);
             if (pawn.gender == Gender.Female) {
                 if (HairDef.hairGender == HairGender.Male) {
                     HairDef = DefDatabase<HairDef>.AllDefsListForReading.Find((HairDef def) => {
@@ -1170,7 +1171,9 @@ namespace EdB.PrepareCarefully {
                     });
                 }
                 if (BodyType == BodyType.Male) {
-                    BodyType = BodyType.Female;
+                    if (bodyTypes.Contains(BodyType.Female)) {
+                        BodyType = BodyType.Female;
+                    }
                 }
             }
             else {
@@ -1180,7 +1183,9 @@ namespace EdB.PrepareCarefully {
                     });
                 }
                 if (BodyType == BodyType.Female) {
-                    BodyType = BodyType.Male;
+                    if (bodyTypes.Contains(BodyType.Male)) {
+                        BodyType = BodyType.Male;
+                    }
                 }
             }
             ResetCachedHead();

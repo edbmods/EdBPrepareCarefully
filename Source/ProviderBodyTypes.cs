@@ -77,11 +77,14 @@ namespace EdB.PrepareCarefully {
                 return null;
             }
             if (alienRace.BodyTypes.Count > 0) {
+                bool containsMale = alienRace.BodyTypes.Contains(BodyType.Male);
+                bool containsFemale = alienRace.BodyTypes.Contains(BodyType.Female);
+                bool containsBothMaleAndFemale = containsMale && containsFemale;
                 foreach (BodyType type in alienRace.BodyTypes) {
-                    if (type != BodyType.Male) {
+                    if (type != BodyType.Male || !containsBothMaleAndFemale) {
                         result.FemaleBodyTypes.Add(type);
                     }
-                    if (type != BodyType.Female) {
+                    if (type != BodyType.Female || !containsBothMaleAndFemale) {
                         result.MaleBodyTypes.Add(type);
                     }
                     result.NoGenderBodyTypes.Add(type);
