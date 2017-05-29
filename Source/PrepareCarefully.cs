@@ -144,7 +144,9 @@ namespace EdB.PrepareCarefully {
             Providers.BodyTypes = new ProviderBodyTypes() {
                 AlienRaceProvider = Providers.AlienRaces
             };
-            Providers.HeadType = new ProviderHeadType();
+            Providers.HeadTypes = new ProviderHeadTypes() {
+                AlienRaceProvider = Providers.AlienRaces
+            };
             Providers.Factions = new ProviderFactions();
         }
 

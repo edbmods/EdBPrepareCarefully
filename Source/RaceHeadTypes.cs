@@ -19,20 +19,18 @@ namespace EdB.PrepareCarefully {
         protected List<CustomHeadType> femaleHeadTypes = new List<CustomHeadType>();
         protected List<CustomHeadType> noGenderHeaderTypes = new List<CustomHeadType>();
         public Dictionary<string, CustomHeadType> pathDictionary = new Dictionary<string, CustomHeadType>();
-        public RaceHeadTypes(ThingDef race) {
-            this.race = race;
-            Initialize();
+        public List<CustomHeadType> headTypes = new List<CustomHeadType>();
+        protected int count = 0;
+        public RaceHeadTypes() {
         }
-        public List<CustomHeadType> GetHeadTypes(Gender gender) {
-            if (gender == Gender.Male) {
-                return maleHeadTypes;
-            }
-            else if (gender == Gender.Female) {
-                return femaleHeadTypes;
-            }
-            else {
-                return noGenderHeaderTypes;
-            }
+        public void AddHeadType(CustomHeadType headType) {
+            headTypes.Add(headType);
+            pathDictionary.Add(headType.GraphicPath, headType);
+        }
+        public IEnumerable<CustomHeadType> GetHeadTypes(Gender gender) {
+            return headTypes.Where((CustomHeadType headType) => {
+                return (headType.Gender == gender || headType.Gender == null);
+            });
         }
         public CustomHeadType FindHeadType(string graphicsPath) {
             CustomHeadType result;
@@ -44,126 +42,26 @@ namespace EdB.PrepareCarefully {
             }
         }
         public CustomHeadType FindHeadTypeForGender(CustomHeadType headType, Gender gender) {
-            if (headType.Gender == gender) {
+            if (headType.Gender == null || headType.Gender == gender) {
                 return headType;
             }
             string graphicsPath = headType.GraphicPath;
-            if (gender == Gender.Male) {
-                graphicsPath = graphicsPath.Replace("Female", "Male");
+            string prefixReplacementString = "/" + gender.ToString() + "_";
+            string directoryReplacementString = "/" + gender.ToString() + "/";
+            if (headType.Gender == Gender.Male) {
+                graphicsPath = graphicsPath.Replace("/Male/", directoryReplacementString);
+                graphicsPath = graphicsPath.Replace("/Male_", prefixReplacementString);
+            }
+            if (headType.Gender == Gender.Female) {
+                graphicsPath = graphicsPath.Replace("/Female/", directoryReplacementString);
+                graphicsPath = graphicsPath.Replace("/Female_", prefixReplacementString);
             }
             else {
-                graphicsPath = graphicsPath.Replace("Male", "Female");
+                graphicsPath = graphicsPath.Replace("/None/", directoryReplacementString);
+                graphicsPath = graphicsPath.Replace("/None_", prefixReplacementString);
             }
             CustomHeadType result = FindHeadType(graphicsPath);
             return result != null ? result : headType;
-        }
-        protected void Initialize() {
-            MethodInfo headGraphicsMethod = typeof(GraphicDatabaseHeadRecords).GetMethod("BuildDatabaseIfNecessary", BindingFlags.Static | BindingFlags.NonPublic);
-            headGraphicsMethod.Invoke(null, null);
-            string[] headsFolderPaths = GetFolderPaths();
-            for (int i = 0; i < headsFolderPaths.Length; i++) {
-                string text = headsFolderPaths[i];
-                // TODO: Looks like this doesn't work for modded graphics.  Need to figure out how to get
-                // the list of heads from the mod directory.
-                IEnumerable<string> graphicsInFolder = GraphicDatabaseUtility.GraphicNamesInFolder(text);
-                if (graphicsInFolder.Count() == 0) {
-                    //Log.Message("No head graphics in folder: " + text);
-                }
-                foreach (string current in GraphicDatabaseUtility.GraphicNamesInFolder(text)) {
-                    //Log.Message("head in folder: " + current);
-                    string fullPath = text + "/" + current;
-                    CustomHeadType headType = CreateHeadTypeFromGraphicPath(fullPath);
-                    if (headType.Gender == Gender.Male) {
-                        maleHeadTypes.Add(headType);
-                    }
-                    else if (headType.Gender == Gender.Female) {
-                        femaleHeadTypes.Add(headType);
-                    }
-                    else {
-                        noGenderHeaderTypes.Add(headType);
-                    }
-                    pathDictionary.Add(fullPath, headType);
-                }
-            }
-        }
-        protected CustomHeadType CreateHeadTypeFromGraphicPath(string graphicPath) {
-            CustomHeadType result = new CustomHeadType();
-            result.GraphicPath = graphicPath;
-            string[] strArray = Path.GetFileNameWithoutExtension(graphicPath).Split('_');
-            try {
-                result.CrownType = (CrownType)ParseHelper.FromString(strArray[strArray.Length - 2], typeof(CrownType));
-                result.Gender = (Gender)ParseHelper.FromString(strArray[strArray.Length - 3], typeof(Gender));
-            }
-            catch (Exception ex) {
-                Log.Warning("Parse error with head graphic at " + graphicPath + ": " + ex.Message);
-                result.CrownType = CrownType.Undefined;
-                result.Gender = Gender.None;
-            }
-            return result;
-        }
-        protected string[] GetFolderPaths() {
-            if (race == ThingDefOf.Human) {
-                return GetHumanFolderPaths();
-            }
-            else {
-                // TODO: WIP. Evaluate where this Alien Races custom logic should go.
-                List<string> resultPathList = new List<string>();
-                FieldInfo alienRaceField = this.race.GetType().GetField("alienRace", BindingFlags.Public | BindingFlags.Instance);
-                //Log.Message(" alienRaceField " + (alienRaceField == null ? "is null" : "in not null"));
-                if (alienRaceField != null) {
-                    object alienRaceObject = alienRaceField.GetValue(race);
-                    if (alienRaceObject != null) {
-                        FieldInfo graphicPathsField = alienRaceObject.GetType().GetField("graphicPaths", BindingFlags.Public | BindingFlags.Instance);
-                        //Log.Message(" graphicPathsField " + (graphicPathsField == null ? "is null" : "in not null"));
-                        object graphicPathsObject = graphicPathsField.GetValue(alienRaceObject);
-                        if (graphicPathsObject != null) {
-                            System.Collections.ICollection graphicPathsList = graphicPathsObject as System.Collections.ICollection;
-                            if (graphicPathsList != null) {
-                                //Log.Message("List count: " + graphicPathsList.Count);
-                                if (graphicPathsList.Count > 0) {
-                                    foreach (object o in graphicPathsList) {
-                                        //Log.Message(o.GetType().FullName);
-                                        FieldInfo headField = o.GetType().GetField("head", BindingFlags.Public | BindingFlags.Instance);
-                                        if (headField != null) {
-                                            object headsObject = headField.GetValue(o);
-                                            if (headsObject != null) {
-                                                string headPath = headsObject as string;
-                                                if (headPath != null) {
-                                                    headPath = headPath.Trim('/');
-                                                    resultPathList.Add(headPath);
-                                                    //Log.Message("headPath: " + headPath);
-                                                }
-                                                else {
-                                                    //Log.Message("headPath is not a string");
-                                                }
-                                            }
-                                            else {
-                                                //Log.Message("headsObject is null");
-                                            }
-                                        }
-                                        else {
-                                            //Log.Message("headField is null");
-                                        }
-                                    }
-                                }
-                            }
-                            else {
-                                //Log.Message("graphicPathsList is null");
-                            }
-                        }
-                    }
-                    else {
-                        //Log.Message("alienRaceObject is null");
-                    }
-                }
-                return resultPathList.ToArray();
-            }
-        }
-        protected string[] GetHumanFolderPaths() {
-            return new string[] {
-                "Things/Pawn/Humanlike/Heads/Male",
-                "Things/Pawn/Humanlike/Heads/Female"
-            };
         }
     }
 }

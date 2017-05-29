@@ -11,7 +11,7 @@ namespace EdB.PrepareCarefully {
         public ProviderBodyTypes BodyTypes {
             get; set;
         }
-        public ProviderHeadType HeadType {
+        public ProviderHeadTypes HeadTypes {
             get; set;
         }
         public ProviderFactions Factions {

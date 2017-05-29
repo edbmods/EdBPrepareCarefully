@@ -178,7 +178,7 @@ namespace EdB.PrepareCarefully {
             }
 
             // Initialize head type.
-            CustomHeadType headType = PrepareCarefully.Instance.Providers.HeadType.FindHeadType(pawn.def, pawn.story.HeadGraphicPath);
+            CustomHeadType headType = PrepareCarefully.Instance.Providers.HeadTypes.FindHeadType(pawn.def, pawn.story.HeadGraphicPath);
             if (headType != null) {
                 this.headType = headType;
             }
@@ -982,7 +982,7 @@ namespace EdB.PrepareCarefully {
                 return pawn.story.HeadGraphicPath;
             }
             set {
-                CustomHeadType headType = PrepareCarefully.Instance.Providers.HeadType.FindHeadType(pawn.def, value);
+                CustomHeadType headType = PrepareCarefully.Instance.Providers.HeadTypes.FindHeadType(pawn.def, value);
                 if (headType != null) {
                     HeadType = headType;
                 }
@@ -1146,7 +1146,7 @@ namespace EdB.PrepareCarefully {
             if (headType != null) {
                 // Get the matching head type for the pawn's current gender.  We do this in case the user switches the
                 // gender, swapping to the correct head type if necessary.
-                CustomHeadType filteredHeadType = PrepareCarefully.Instance.Providers.HeadType.FindHeadTypeForGender(pawn.def, headType, Gender);
+                CustomHeadType filteredHeadType = PrepareCarefully.Instance.Providers.HeadTypes.FindHeadTypeForGender(pawn.def, headType, Gender);
                 // Need to use reflection to set the private field.
                 typeof(Pawn_StoryTracker).GetField("headGraphicPath", BindingFlags.Instance | BindingFlags.NonPublic).SetValue(pawn.story, filteredHeadType.GraphicPath);
             }

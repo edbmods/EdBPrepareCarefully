@@ -37,56 +37,34 @@ namespace EdB.PrepareCarefully {
             return (alienRaceField != null);
         }
         protected AlienRace InitializeAlienRace(ThingDef raceDef) {
-            FieldInfo alienRaceField = raceDef.GetType().GetField("alienRace", BindingFlags.Public | BindingFlags.Instance);
-            if (alienRaceField == null) {
-                Log.Warning("Prepare carefully could not find alien race field for " + raceDef.defName);
-                return null;
-            }
-            object alienRaceObject = alienRaceField.GetValue(raceDef);
+            object alienRaceObject = GetFieldValue(raceDef, raceDef, "alienRace");
             if (alienRaceObject == null) {
-                Log.Warning("Prepare carefully could not find alien race field value for " + raceDef.defName);
                 return null;
             }
-            FieldInfo generalSettingsField = alienRaceObject.GetType().GetField("generalSettings", BindingFlags.Public | BindingFlags.Instance);
-            if (generalSettingsField == null) {
-                Log.Warning("Prepare carefully could not find alien general settings field for " + raceDef.defName);
-                return null;
-            }
-            object generalSettingsObject = generalSettingsField.GetValue(alienRaceObject);
+            object generalSettingsObject = GetFieldValue(raceDef, alienRaceObject, "generalSettings");
             if (generalSettingsObject == null) {
-                Log.Warning("Prepare carefully could not find alien general settings field value for " + raceDef.defName);
                 return null;
             }
-            FieldInfo alienPartGeneratorField = generalSettingsObject.GetType().GetField("alienPartGenerator", BindingFlags.Public | BindingFlags.Instance);
-            if (alienPartGeneratorField == null) {
-                Log.Warning("Prepare carefully could not find alien part generator field for " + raceDef.defName);
-                return null;
-            }
-            object alienPartGeneratorObject = alienPartGeneratorField.GetValue(generalSettingsObject);
+            object alienPartGeneratorObject = GetFieldValue(raceDef, generalSettingsObject, "alienPartGenerator");
             if (alienPartGeneratorObject == null) {
-                Log.Warning("Prepare carefully could not find alien part generator field value for " + raceDef.defName);
+                return null;
+            }
+            System.Collections.ICollection graphicPathsCollection = GetFieldValueAsCollection(raceDef, alienRaceObject, "graphicPaths");
+            if (graphicPathsCollection == null) {
                 return null;
             }
 
+            // We have enough to start putting together the result object, so we instantiate it now.
             AlienRace result = new AlienRace();
-            FieldInfo alienBodyTypesField = alienPartGeneratorObject.GetType().GetField("alienbodytypes", BindingFlags.Public | BindingFlags.Instance);
-            if (alienBodyTypesField == null) {
-                Log.Warning("Prepare carefully could not find alien body types field for " + raceDef.defName);
-                return null;
-            }
-            object alienBodyTypesObject = alienBodyTypesField.GetValue(alienPartGeneratorObject);
-            if (alienBodyTypesObject == null) {
-                Log.Warning("Prepare carefully could not find alien body types field value for " + raceDef.defName);
-                return null;
-            }
-            System.Collections.ICollection alienBodyTypesList = alienBodyTypesObject as System.Collections.ICollection;
-            if (alienBodyTypesList == null) {
-                Log.Warning("Prepare carefully could not convert alien body types field value into a collection for " + raceDef.defName + ".");
+
+            // Get the list of body types.
+            System.Collections.ICollection alienBodyTypesCollection = GetFieldValueAsCollection(raceDef, alienPartGeneratorObject, "alienbodytypes");
+            if (alienBodyTypesCollection == null) {
                 return null;
             }
             List<BodyType> bodyTypes = new List<BodyType>();
-            if (alienBodyTypesList.Count > 0) {
-                foreach (object o in alienBodyTypesList) {
+            if (alienBodyTypesCollection.Count > 0) {
+                foreach (object o in alienBodyTypesCollection) {
                     if (o.GetType() == typeof(BodyType)) {
                         bodyTypes.Add((BodyType)o);
                     }
@@ -94,7 +72,108 @@ namespace EdB.PrepareCarefully {
             }
             result.BodyTypes = bodyTypes;
 
+            // Determine if the alien races uses gender-specific heads.
+            bool? useGenderedHeads = GetFieldValueAsBool(raceDef, alienPartGeneratorObject, "UseGenderedHeads");
+            if (useGenderedHeads == null) {
+                return null;
+            }
+            result.GenderSpecificHeads = useGenderedHeads.Value;
+
+            // Get the list of crown types.
+            System.Collections.ICollection alienCrownTypesCollection = GetFieldValueAsCollection(raceDef, alienPartGeneratorObject, "aliencrowntypes");
+            if (alienCrownTypesCollection == null) {
+                return null;
+            }
+            List<string> crownTypes = new List<string>();
+            if (alienCrownTypesCollection.Count > 0) {
+                foreach (object o in alienCrownTypesCollection) {
+                    string crownTypeString = o as string;
+                    if (crownTypeString != null) {
+                        crownTypes.Add(crownTypeString);
+                    }
+                }
+            }
+            result.CrownTypes = crownTypes;
+
+            // Go through the graphics paths and find the heads path.
+            string graphicsPathForHeads = null;
+            foreach (var graphicsPath in graphicPathsCollection) {
+                System.Collections.ICollection lifeStageCollection = GetFieldValueAsCollection(raceDef, graphicsPath, "lifeStageDefs");
+                if (lifeStageCollection == null || lifeStageCollection.Count == 0) {
+                    string path = GetFieldValueAsString(raceDef, graphicsPath, "head");
+                    if (path != null) {
+                        graphicsPathForHeads = path;
+                        break;
+                    }
+                }
+            }
+            result.GraphicsPathForHeads = graphicsPathForHeads;
+
             return result;
+        }
+        protected object GetFieldValue(ThingDef raceDef, object source, string name, bool allowNull = false) {
+            try {
+                FieldInfo field = source.GetType().GetField(name, BindingFlags.Public | BindingFlags.Instance);
+                if (field == null) {
+                    Log.Warning("Prepare carefully could not find " + name + " field for " + raceDef.defName);
+                    return null;
+                }
+                object result = field.GetValue(source);
+                if (result == null) {
+                    if (!allowNull) {
+                        Log.Warning("Prepare carefully could not find " + name + " field value for " + raceDef.defName);
+                    }
+                    return null;
+                }
+                else {
+                    return result;
+                }
+            }
+            catch (Exception) {
+                Log.Warning("Prepare carefully could resolve value of the " + name + " field for " + raceDef.defName);
+                return null;
+            }
+        }
+        protected System.Collections.ICollection GetFieldValueAsCollection(ThingDef raceDef, object source, string name) {
+            object result = GetFieldValue(raceDef, source, name, true);
+            if (result == null) {
+                return null;
+            }
+            System.Collections.ICollection collection = result as System.Collections.ICollection;
+            if (collection == null) {
+                Log.Warning("Prepare carefully could not convert " + name + " field value into a collection for " + raceDef.defName + ".");
+                return null;
+            }
+            else {
+                return collection;
+            }
+        }
+        protected bool? GetFieldValueAsBool(ThingDef raceDef, object source, string name) {
+            object result = GetFieldValue(raceDef, source, name, true);
+            if (result == null) {
+                return null;
+            }
+            if (result.GetType() == typeof(bool)) {
+                return (bool)result;
+            }
+            else {
+                Log.Warning("Prepare carefully could not convert " + name + " field value into a bool for " + raceDef.defName + ".");
+                return null;
+            }
+        }
+        protected string GetFieldValueAsString(ThingDef raceDef, object source, string name) {
+            object value = GetFieldValue(raceDef, source, name, true);
+            if (value == null) {
+                return null;
+            }
+            string result = value as string;
+            if (result != null) {
+                return result;
+            }
+            else {
+                Log.Warning("Prepare carefully could not convert " + name + " field value into a string for " + raceDef.defName + ".");
+                return null;
+            }
         }
     }
 }

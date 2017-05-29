@@ -82,7 +82,7 @@
     <Compile Include="Source\PresetSaver.cs" />
     <Compile Include="Source\ProviderAlienRaces.cs" />
     <Compile Include="Source\ProviderBodyTypes.cs" />
-    <Compile Include="Source\ProviderHeadType.cs" />
+    <Compile Include="Source\ProviderHeadTypes.cs" />
     <Compile Include="Source\Providers.cs" />
     <Compile Include="Source\RaceBodyTypes.cs" />
     <Compile Include="Source\RaceHeadTypes.cs" />

@@ -12,7 +12,7 @@ namespace EdB.PrepareCarefully {
         private CrownType crownType;
         private string graphicsPath;
         private string label;
-        private Gender gender;
+        private Gender? gender;
         public CrownType CrownType {
             get {
                 return crownType;
@@ -30,7 +30,7 @@ namespace EdB.PrepareCarefully {
                 label = GetHeadLabel(graphicsPath);
             }
         }
-        public Gender Gender {
+        public Gender? Gender {
             get {
                 return gender;
             }
@@ -47,11 +47,19 @@ namespace EdB.PrepareCarefully {
 
         }
         protected static string GetHeadLabel(string path) {
-            string[] values = path.Split(new string[] { "_" }, StringSplitOptions.None);
-            return values[values.Count() - 2] + ", " + values[values.Count() - 1];
+            try {
+                string[] pathValues = path.Split('/');
+                string crownType = pathValues[pathValues.Length - 1];
+                string[] values = crownType.Split('_');
+                return values[values.Count() - 2] + ", " + values[values.Count() - 1];
+            }
+            catch (Exception) {
+                Log.Warning("Prepare Carefully could not determine head type label from graphics path: " + path);
+                return "EdB.PC.Common.Default".Translate();
+            }
         }
         public override string ToString() {
-            return "{ graphicsPath = " + graphicsPath + ", crownType = " + crownType + ", gender = " + gender + "}";
+            return "{ label = \"" + label + "\", graphicsPath = \"" + graphicsPath + "\", crownType = " + crownType + ", gender = " + gender + "}";
         }
     }
 }

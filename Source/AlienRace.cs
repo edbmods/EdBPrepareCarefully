@@ -10,16 +10,19 @@ using Verse.Sound;
 
 namespace EdB.PrepareCarefully {
     public class AlienRace {
-        protected List<BodyType> bodyTypes = null;
         public AlienRace() {
         }
         public List<BodyType> BodyTypes {
-            get {
-                return bodyTypes;
-            }
-            set {
-                bodyTypes = value;
-            }
+            get; set;
+        }
+        public List<string> CrownTypes {
+            get; set;
+        }
+        public bool GenderSpecificHeads {
+            get; set;
+        }
+        public string GraphicsPathForHeads {
+            get; set;
         }
     }
 }

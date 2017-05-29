@@ -12,7 +12,6 @@ namespace EdB.PrepareCarefully {
     public class ProviderBodyTypes {
         protected Dictionary<ThingDef, RaceBodyTypes> raceBodyTypeLookup = new Dictionary<ThingDef, RaceBodyTypes>();
         protected Dictionary<BodyType, string> bodyTypeLabels = new Dictionary<BodyType, string>();
-        protected ProviderAlienRaces alienRaceProvider;
         public ProviderBodyTypes() {
             bodyTypeLabels.Add(BodyType.Fat, "EdB.PC.Pawn.BodyType.Fat".Translate());
             bodyTypeLabels.Add(BodyType.Hulk, "EdB.PC.Pawn.BodyType.Hulk".Translate());
@@ -21,12 +20,7 @@ namespace EdB.PrepareCarefully {
             bodyTypeLabels.Add(BodyType.Female, "EdB.PC.Pawn.BodyType.Average".Translate());
         }
         public ProviderAlienRaces AlienRaceProvider {
-            get {
-                return alienRaceProvider;
-            }
-            set {
-                alienRaceProvider = value;
-            }
+            get; set;
         }
         public List<BodyType> GetBodyTypesForPawn(CustomPawn pawn) {
             return GetBodyTypesForPawn(pawn.Pawn);
@@ -78,7 +72,7 @@ namespace EdB.PrepareCarefully {
         }
         protected RaceBodyTypes InitializeAlienRaceBodyTypes(ThingDef def) {
             RaceBodyTypes result = new RaceBodyTypes();
-            AlienRace alienRace = alienRaceProvider.GetAlienRace(def);
+            AlienRace alienRace = AlienRaceProvider.GetAlienRace(def);
             if (alienRace == null) {
                 return null;
             }
