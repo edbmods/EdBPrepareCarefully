@@ -162,6 +162,29 @@ namespace EdB.PrepareCarefully {
                 result.HairColors = null;
             }
 
+            // Apparel properties.
+            object restrictionSettingsValue = GetFieldValue(raceDef, alienRaceObject, "raceRestriction", true);
+            result.RestrictedApparelOnly = false;
+            if (restrictionSettingsValue != null) {
+                bool? restrictedApparelOnly = GetFieldValueAsBool(raceDef, restrictionSettingsValue, "onlyUseRaceRestrictedApparel");
+                if (restrictedApparelOnly != null) {
+                    result.RestrictedApparelOnly = restrictedApparelOnly.Value;
+                }
+                var restrictedApparelCollection = GetFieldValueAsCollection(raceDef, restrictionSettingsValue, "apparelList");
+                if (restrictedApparelCollection != null) {
+                    var apparel = new HashSet<string>();
+                    foreach (var o in restrictedApparelCollection) {
+                        string defName = o as string;
+                        if (defName != null) {
+                            apparel.Add(defName);
+                        }
+                    }
+                    if (apparel.Count > 0) {
+                        result.RestrictedApparel = apparel;
+                    }
+                }
+            }
+
             return result;
         }
         protected object GetFieldValue(ThingDef raceDef, object source, string name, bool allowNull = false) {

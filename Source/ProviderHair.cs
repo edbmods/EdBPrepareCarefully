@@ -112,7 +112,8 @@ namespace EdB.PrepareCarefully {
                     }
                 }
             }
-            OptionsHair result = new OptionsHair(); foreach (HairDef hairDef in DefDatabase<HairDef>.AllDefs.Where((HairDef def) => {
+            OptionsHair result = new OptionsHair();
+            foreach (HairDef hairDef in DefDatabase<HairDef>.AllDefs.Where((HairDef def) => {
                 foreach (var tag in def.hairTags) {
                     if (nonHumanHairTags.Contains(tag)) {
                         return false;

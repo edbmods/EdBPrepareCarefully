@@ -25,9 +25,7 @@ namespace EdB.PrepareCarefully {
         protected int pawnLayerLabelIndex = -1;
         protected CustomPawn pawnLayerLabelModel = null;
         protected string pawnLayerLabel = null;
-
-        protected FieldInfo apparelGraphicsField = null;
-        protected List<List<ThingDef>> apparelLists = new List<List<ThingDef>>(PawnLayers.Count);
+        
         protected List<Color> skinColors = new List<Color>();
         protected Dictionary<ThingDef, List<ThingDef>> apparelStuffLookup = new Dictionary<ThingDef, List<ThingDef>>();
         protected int selectedStuff = 0;
@@ -55,31 +53,6 @@ namespace EdB.PrepareCarefully {
                 delegate { this.ChangePawnLayer(PawnLayers.Accessory); },
                 delegate { this.ChangePawnLayer(PawnLayers.Hat); }
             });
-
-            for (int i = 0; i < PawnLayers.Count; i++) {
-                if (PawnLayers.IsApparelLayer(i)) {
-
-                    this.apparelLists.Add(new List<ThingDef>());
-                }
-                else {
-
-                    this.apparelLists.Add(null);
-                }
-            }
-
-            // Get all apparel options
-            foreach (ThingDef apparelDef in DefDatabase<ThingDef>.AllDefs) {
-                if (apparelDef.apparel == null) {
-                    continue;
-                }
-                int layer = PawnLayers.ToPawnLayerIndex(apparelDef.apparel);
-                if (layer != -1) {
-                    apparelLists[layer].Add(apparelDef);
-                }
-            }
-
-            // Get the apparel graphics private method so that we can call it later
-            apparelGraphicsField = typeof(PawnGraphicSet).GetField("apparelGraphics", BindingFlags.Instance | BindingFlags.NonPublic);
 
             // Organize stuff by its category
             Dictionary<StuffCategoryDef, HashSet<ThingDef>> stuffByCategory = new Dictionary<StuffCategoryDef, HashSet<ThingDef>>();
@@ -153,23 +126,6 @@ namespace EdB.PrepareCarefully {
                 }
             }
 
-            // Sort the apparel lists
-            foreach (var list in apparelLists) {
-                if (list != null) {
-                    list.Sort((ThingDef x, ThingDef y) => {
-                        if (x.label == null) {
-                            return -1;
-                        }
-                        else if (y.label == null) {
-                            return 1;
-                        }
-                        else {
-                            return x.label.CompareTo(y.label);
-                        }
-                    });
-                }
-            }
-
             // Set up default skin colors
             foreach (Color color in PawnColorUtils.Colors) {
                 skinColors.Add(color);
@@ -208,14 +164,6 @@ namespace EdB.PrepareCarefully {
                 int layerCount = this.pawnLayerActions.Count;
                 for (int i = 0; i < layerCount; i++) {
                     int pawnLayer = pawnLayers[i];
-                    // Only add apparel layers that have items.
-                    if (PawnLayers.IsApparelLayer(pawnLayer)) {
-                        if (pawnLayer == PawnLayers.Accessory) {
-                            if (apparelLists[pawnLayer] == null || apparelLists[pawnLayer].Count == 0) {
-                                continue;
-                            }
-                        }
-                    }
                     label = PawnLayers.Label(pawnLayers[i]);
                     list.Add(new FloatMenuOption(label, this.pawnLayerActions[i], MenuOptionPriority.Default, null, null, 0, null, null));
                 }
@@ -244,11 +192,17 @@ namespace EdB.PrepareCarefully {
             Action nextSelectionAction = null;
             Action clickAction = null;
 
+            OptionsApparel apparelOptions = null;
+            List<ThingDef> apparelList = null;
             OptionsHair hairOptions  = null;
             List<HairDef> hairList = null;
             if (this.selectedPawnLayer == PawnLayers.Hair) {
                 hairOptions = PrepareCarefully.Instance.Providers.Hair.GetHairsForRace(customPawn);
                 hairList = hairOptions.GetHairs(customPawn.Gender);
+            }
+            else if (PawnLayers.IsApparelLayer(this.selectedPawnLayer)) {
+                apparelOptions = PrepareCarefully.Instance.Providers.Apparel.GetApparelForRace(customPawn);
+                apparelList = apparelOptions.GetApparel(this.selectedPawnLayer);
             }
 
             if (this.selectedPawnLayer == PawnLayers.HeadType) {
@@ -302,21 +256,28 @@ namespace EdB.PrepareCarefully {
                 }
             }
             else {
-                previousSelectionAction = () => {
-                    SoundDefOf.TickTiny.PlayOneShotOnCamera();
-                    SelectNextApparel(customPawn, -1);
-                };
-                nextSelectionAction = () => {
-                    SelectNextApparel(customPawn, 1);
-                    SoundDefOf.TickTiny.PlayOneShotOnCamera();
-                };
-                clickAction = () => {
-                    ShowApparelDialog(customPawn, this.selectedPawnLayer);
-                };
+                if (apparelList.Count > 1) {
+                    previousSelectionAction = () => {
+                        SoundDefOf.TickTiny.PlayOneShotOnCamera();
+                        SelectNextApparel(customPawn, -1);
+                    };
+                    nextSelectionAction = () => {
+                        SelectNextApparel(customPawn, 1);
+                        SoundDefOf.TickTiny.PlayOneShotOnCamera();
+                    };
+                }
+                if (apparelList.Count > 0) {
+                    clickAction = () => {
+                        ShowApparelDialog(customPawn, this.selectedPawnLayer);
+                    };
+                }
             }
 
             string selectorLabel = PawnLayerLabel.CapitalizeFirst();
             if (hairList != null && hairList.Count == 0) {
+                selectorLabel = "EdB.PC.Common.NoOptionAvailable".Translate();
+            }
+            if (apparelList != null && apparelList.Count == 0) {
                 selectorLabel = "EdB.PC.Common.NoOptionAvailable".Translate();
             }
             DrawFieldSelector(fieldRect, selectorLabel, previousSelectionAction, nextSelectionAction, clickAction);
@@ -362,13 +323,15 @@ namespace EdB.PrepareCarefully {
 
             // Draw Color Selector
             if (PawnLayers.IsApparelLayer(selectedPawnLayer)) {
-                ThingDef def = customPawn.GetSelectedApparel(selectedPawnLayer);
-                if (def != null && def.HasComp(typeof(CompColorable))) {
-                    if (def.MadeFromStuff) {
-                        DrawColorSelector(customPawn, cursorY, null);
-                    }
-                    else {
-                        DrawColorSelector(customPawn, cursorY, def.colorGenerator);
+                if (apparelList != null && apparelList.Count > 0) {
+                    ThingDef def = customPawn.GetSelectedApparel(selectedPawnLayer);
+                    if (def != null && def.HasComp(typeof(CompColorable))) {
+                        if (def.MadeFromStuff) {
+                            DrawColorSelector(customPawn, cursorY, null);
+                        }
+                        else {
+                            DrawColorSelector(customPawn, cursorY, def.colorGenerator);
+                        }
                     }
                 }
             }
@@ -382,7 +345,9 @@ namespace EdB.PrepareCarefully {
                 }
             }
             else if (selectedPawnLayer == PawnLayers.Hair) {
-                DrawColorSelector(customPawn, cursorY, hairOptions.Colors, true);
+                if (hairList != null && hairList.Count > 0) {
+                    DrawColorSelector(customPawn, cursorY, hairOptions.Colors, true);
+                }
             }
 
             // Random button
@@ -787,10 +752,7 @@ namespace EdB.PrepareCarefully {
                     label = null;
                     ThingDef def = customPawn.GetSelectedApparel(selectedPawnLayer);
                     if (def != null) {
-                        int index = this.apparelLists[selectedPawnLayer].IndexOf(def);
-                        if (index > -1) {
-                            label = this.apparelLists[selectedPawnLayer][index].label;
-                        }
+                        label = def.LabelCap;
                     }
                     else {
                         label = "EdB.PC.Panel.Appearance.NoneSelected".Translate();
@@ -855,7 +817,7 @@ namespace EdB.PrepareCarefully {
 
         protected void SelectNextApparel(CustomPawn customPawn, int direction) {
             int layer = this.selectedPawnLayer;
-            List<ThingDef> apparelList = this.apparelLists[layer];
+            List<ThingDef> apparelList = PrepareCarefully.Instance.Providers.Apparel.GetApparel(customPawn, layer);
             int index = apparelList.IndexOf(customPawn.GetSelectedApparel(layer));
             index += direction;
             if (index < -1) {
@@ -948,8 +910,7 @@ namespace EdB.PrepareCarefully {
         }
 
         protected void ShowApparelDialog(CustomPawn customPawn, int layer) {
-            List<ThingDef> apparelList = this.apparelLists[layer];
-
+            List<ThingDef> apparelList = PrepareCarefully.Instance.Providers.Apparel.GetApparel(customPawn, layer);
             Dialog_Options<ThingDef> dialog = new Dialog_Options<ThingDef>(apparelList) {
                 IncludeNone = true,
                 NameFunc = (ThingDef apparel) => {

@@ -3,7 +3,7 @@ using System;
 using Verse;
 
 namespace EdB.PrepareCarefully {
-    public class PawnLayers {
+    public static class PawnLayers {
         public const int BodyType = 0;
         public const int BottomClothingLayer = 1;
         public const int Pants = 2;

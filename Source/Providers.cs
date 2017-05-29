@@ -8,6 +8,9 @@ namespace EdB.PrepareCarefully {
         public ProviderAlienRaces AlienRaces {
             get; set;
         }
+        public ProviderApparel Apparel {
+            get; set;
+        }
         public ProviderBodyTypes BodyTypes {
             get; set;
         }

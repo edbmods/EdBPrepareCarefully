@@ -72,6 +72,7 @@
     <Compile Include="Source\GenStep_CustomScatterThings.cs" />
     <Compile Include="Source\CustomHeadType.cs" />
     <Compile Include="Source\IRelationshipWorker.cs" />
+    <Compile Include="Source\OptionsApparel.cs" />
     <Compile Include="Source\Page_ConfigureStartingPawns.cs" />
     <Compile Include="Source\PanelRelationshipsOther.cs" />
     <Compile Include="Source\PanelRelationshipsParentChild.cs" />
@@ -83,6 +84,7 @@
     <Compile Include="Source\PresetLoader.cs" />
     <Compile Include="Source\PresetSaver.cs" />
     <Compile Include="Source\ProviderAlienRaces.cs" />
+    <Compile Include="Source\ProviderApparel.cs" />
     <Compile Include="Source\ProviderBodyTypes.cs" />
     <Compile Include="Source\ProviderHair.cs" />
     <Compile Include="Source\ProviderHeadTypes.cs" />

@@ -150,6 +150,9 @@ namespace EdB.PrepareCarefully {
             Providers.Hair = new ProviderHair() {
                 AlienRaceProvider = Providers.AlienRaces
             };
+            Providers.Apparel = new ProviderApparel() {
+                AlienRaceProvider = Providers.AlienRaces
+            };
             Providers.Factions = new ProviderFactions();
         }
 
