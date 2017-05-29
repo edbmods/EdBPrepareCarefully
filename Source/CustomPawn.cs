@@ -56,6 +56,7 @@ namespace EdB.PrepareCarefully {
         public List<CustomBodyPart> bodyParts = new List<CustomBodyPart>();
         protected ThingCache thingCache = new ThingCache();
         protected bool portraitDirty = true;
+        protected AlienRace alienRace = null;
 
         public CustomPawn() {
             GenerateId();
@@ -82,6 +83,12 @@ namespace EdB.PrepareCarefully {
             set {
                 this.pawn.story.bodyType = value;
                 MarkPortraitAsDirty();
+            }
+        }
+
+        public AlienRace AlienRace {
+            get {
+                return alienRace;
             }
         }
         
@@ -123,7 +130,7 @@ namespace EdB.PrepareCarefully {
             }
         }
 
-        protected void MarkPortraitAsDirty() {
+        public void MarkPortraitAsDirty() {
             portraitDirty = true;
         }
 
@@ -198,6 +205,9 @@ namespace EdB.PrepareCarefully {
 
             // Evaluate all hediffs.
             InitializePawnHediffs(pawn);
+            
+            // Set the alien race, if any.
+            alienRace = PrepareCarefully.Instance.Providers.AlienRaces.GetAlienRace(pawn.def);
 
             // Clear all of the pawn caches.
             ClearPawnCaches();

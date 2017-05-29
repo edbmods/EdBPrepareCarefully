@@ -12,6 +12,18 @@ namespace EdB.PrepareCarefully {
     public class AlienRace {
         public AlienRace() {
         }
+        public bool UseMelaninLevels {
+            get; set;
+        }
+        public bool HasSecondaryColor {
+            get; set;
+        }
+        public List<Color> PrimaryColors {
+            get; set;
+        }
+        public List<Color> SecondaryColors {
+            get; set;
+        }
         public List<BodyType> BodyTypes {
             get; set;
         }

@@ -109,6 +109,28 @@ namespace EdB.PrepareCarefully {
             }
             result.GraphicsPathForHeads = graphicsPathForHeads;
 
+            // Figure out colors.
+            object primaryColorGeneratorValue = GetFieldValue(raceDef, alienPartGeneratorObject, "alienskincolorgen", true);
+            result.UseMelaninLevels = true;
+            ColorGenerator primaryGenerator = primaryColorGeneratorValue as ColorGenerator;
+            if (primaryGenerator != null) {
+                result.UseMelaninLevels = false;
+                result.PrimaryColors = primaryGenerator.GetColorList();
+            }
+            else {
+                result.PrimaryColors = new List<Color>();
+            }
+            object secondaryColorGeneratorValue = GetFieldValue(raceDef, alienPartGeneratorObject, "alienskinsecondcolorgen", true);
+            result.HasSecondaryColor = false;
+            ColorGenerator secondaryGenerator = secondaryColorGeneratorValue as ColorGenerator;
+            if (secondaryGenerator != null) {
+                result.HasSecondaryColor = true;
+                result.SecondaryColors = secondaryGenerator.GetColorList();
+            }
+            else {
+                result.SecondaryColors = new List<Color>();
+            }
+
             return result;
         }
         protected object GetFieldValue(ThingDef raceDef, object source, string name, bool allowNull = false) {

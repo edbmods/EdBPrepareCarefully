@@ -403,7 +403,13 @@ namespace EdB.PrepareCarefully {
                 }
             }
             else if (selectedPawnLayer == PawnLayers.BodyType || selectedPawnLayer == PawnLayers.HeadType) {
-                DrawSkinSelector(customPawn, cursorY);
+                AlienRace alienRace = customPawn.AlienRace;
+                if (alienRace == null || alienRace.UseMelaninLevels) {
+                    DrawHumanlikeColorSelector(customPawn, cursorY);
+                }
+                else {
+                    DrawAlienPawnColorSelector(customPawn, cursorY, alienRace.PrimaryColors, true);
+                }
             }
             else if (selectedPawnLayer == PawnLayers.Hair) {
                 DrawColorSelector(customPawn, cursorY, hairColors, true);
@@ -458,64 +464,47 @@ namespace EdB.PrepareCarefully {
             GUI.color = Color.white;
         }
 
-        protected List<Color> colorSelectorColors = new List<Color>();
         protected void DrawColorSelector(CustomPawn customPawn, float cursorY, ColorGenerator generator) {
-            colorSelectorColors.Clear();
-            if (generator != null) {
-                Type generatorType = generator.GetType();
-                if (typeof(ColorGenerator_Options).Equals(generatorType)) {
-                    ColorGenerator_Options gen = generator as ColorGenerator_Options;
-                    foreach (ColorOption option in gen.options) {
-                        if (option.only != ColorValidator.ColorEmpty) {
-                            colorSelectorColors.Add(option.only);
-                        }
-                    }
-                }
-                else if (typeof(ColorGenerator_White).Equals(generatorType)) {
-                    colorSelectorColors.Add(Color.white);
-                }
-                else if (typeof(ColorGenerator_Single).Equals(generatorType)) {
-                    ColorGenerator_Single gen = generator as ColorGenerator_Single;
-                    colorSelectorColors.Add(gen.color);
-                }
-            }
-            DrawColorSelector(customPawn, cursorY, colorSelectorColors, true);
+            DrawColorSelector(customPawn, cursorY, generator != null ? generator.GetColorList() : null, true);
         }
 
-        protected static Vector2 SwatchSize = new Vector2(16, 16);
+        protected static float SwatchLimit = 210;
+        protected static Vector2 SwatchSize = new Vector2(15, 15);
         protected static Vector2 SwatchPosition = new Vector2(18, 320);
-        protected static Vector2 SwatchSpacing = new Vector2(22, 22);
+        protected static Vector2 SwatchSpacing = new Vector2(21, 21);
         protected static Color ColorSwatchBorder = new Color(0.77255f, 0.77255f, 0.77255f);
         protected static Color ColorSwatchSelection = new Color(0.9098f, 0.9098f, 0.9098f);
         protected void DrawColorSelector(CustomPawn customPawn, float cursorY, List<Color> colors, bool allowAnyColor) {
             Color currentColor = customPawn.GetColor(selectedPawnLayer);
             Rect rect = new Rect(SwatchPosition.x, cursorY, SwatchSize.x, SwatchSize.y);
-            foreach (Color color in colors) {
-                bool selected = (color == currentColor);
-                if (selected) {
-                    Rect selectionRect = new Rect(rect.x - 2, rect.y - 2, SwatchSize.x + 4, SwatchSize.y + 4);
-                    GUI.color = ColorSwatchSelection;
-                    GUI.DrawTexture(selectionRect, BaseContent.WhiteTex);
-                }
-
-                Rect borderRect = new Rect(rect.x - 1, rect.y - 1, SwatchSize.x + 2, SwatchSize.y + 2);
-                GUI.color = ColorSwatchBorder;
-                GUI.DrawTexture(borderRect, BaseContent.WhiteTex);
-
-                GUI.color = color;
-                GUI.DrawTexture(rect, BaseContent.WhiteTex);
-
-                if (!selected) {
-                    if (Widgets.ButtonInvisible(rect, false)) {
-                        SetColor(customPawn, color);
-                        currentColor = color;
+            if (colors != null) {
+                foreach (Color color in colors) {
+                    bool selected = (color == currentColor);
+                    if (selected) {
+                        Rect selectionRect = new Rect(rect.x - 2, rect.y - 2, SwatchSize.x + 4, SwatchSize.y + 4);
+                        GUI.color = ColorSwatchSelection;
+                        GUI.DrawTexture(selectionRect, BaseContent.WhiteTex);
                     }
-                }
 
-                rect.x += SwatchSpacing.x;
-                if (rect.x >= 227) {
-                    rect.y += SwatchSpacing.y;
-                    rect.x = SwatchPosition.x;
+                    Rect borderRect = new Rect(rect.x - 1, rect.y - 1, SwatchSize.x + 2, SwatchSize.y + 2);
+                    GUI.color = ColorSwatchBorder;
+                    GUI.DrawTexture(borderRect, BaseContent.WhiteTex);
+
+                    GUI.color = color;
+                    GUI.DrawTexture(rect, BaseContent.WhiteTex);
+
+                    if (!selected) {
+                        if (Widgets.ButtonInvisible(rect, false)) {
+                            SetColor(customPawn, color);
+                            currentColor = color;
+                        }
+                    }
+
+                    rect.x += SwatchSpacing.x;
+                    if (rect.x >= SwatchLimit - SwatchSize.x) {
+                        rect.y += SwatchSpacing.y;
+                        rect.x = SwatchPosition.x;
+                    }
                 }
             }
 
@@ -552,6 +541,108 @@ namespace EdB.PrepareCarefully {
             GUI.color = Color.white;
         }
 
+        public void SetAlienPawnColor(CustomPawn pawn, Color color) {
+            AlienRace alienRace = pawn.AlienRace;
+            if (alienRace == null) {
+                return;
+            }
+            ThingComp alienComp = pawn.Pawn.AllComps.FirstOrDefault((ThingComp comp) => {
+                return (comp.GetType().Name == "AlienComp");
+            });
+            if (alienComp == null) {
+                return;
+            }
+            FieldInfo primaryColorField = alienComp.GetType().GetField("skinColor", BindingFlags.Instance | BindingFlags.Public);
+            if (primaryColorField == null) {
+                return;
+            }
+            FieldInfo secondaryColorField = alienComp.GetType().GetField("skinColorSecond", BindingFlags.Instance | BindingFlags.Public);
+            if (secondaryColorField == null) {
+                return;
+            }
+            primaryColorField.SetValue(alienComp, color);
+            if (!alienRace.HasSecondaryColor) {
+                secondaryColorField.SetValue(alienComp, color);
+            }
+            pawn.MarkPortraitAsDirty();
+        }
+
+        public void SetPawnMelaninLevel(CustomPawn pawn, float value) {
+            pawn.MelaninLevel = value;
+            if (pawn.AlienRace != null) {
+                SetAlienPawnColor(pawn, PawnSkinColors.GetSkinColor(value));
+            }
+        }
+
+        protected void DrawAlienPawnColorSelector(CustomPawn customPawn, float cursorY, List<Color> colors, bool allowAnyColor) {
+            Color currentColor = customPawn.Pawn.story.SkinColor;
+            Color clickedColor = currentColor;
+            Rect rect = new Rect(SwatchPosition.x, cursorY, SwatchSize.x, SwatchSize.y);
+            foreach (Color color in colors) {
+                bool selected = (color == currentColor);
+                if (selected) {
+                    Rect selectionRect = new Rect(rect.x - 2, rect.y - 2, SwatchSize.x + 4, SwatchSize.y + 4);
+                    GUI.color = ColorSwatchSelection;
+                    GUI.DrawTexture(selectionRect, BaseContent.WhiteTex);
+                }
+
+                Rect borderRect = new Rect(rect.x - 1, rect.y - 1, SwatchSize.x + 2, SwatchSize.y + 2);
+                GUI.color = ColorSwatchBorder;
+                GUI.DrawTexture(borderRect, BaseContent.WhiteTex);
+
+                GUI.color = color;
+                GUI.DrawTexture(rect, BaseContent.WhiteTex);
+
+                if (!selected) {
+                    if (Widgets.ButtonInvisible(rect, false)) {
+                        clickedColor = color;
+                    }
+                }
+
+                rect.x += SwatchSpacing.x;
+                if (rect.x >= SwatchLimit - SwatchSize.x) {
+                    rect.y += SwatchSpacing.y;
+                    rect.x = SwatchPosition.x;
+                }
+            }
+
+            GUI.color = Color.white;
+            if (!allowAnyColor) {
+                return;
+            }
+
+            if (rect.x != SwatchPosition.x) {
+                rect.x = SwatchPosition.x;
+                rect.y += SwatchSpacing.y;
+            }
+            rect.y += 4;
+            rect.width = 49;
+            rect.height = 49;
+            GUI.color = ColorSwatchBorder;
+            GUI.DrawTexture(rect, BaseContent.WhiteTex);
+            GUI.color = currentColor;
+            GUI.DrawTexture(rect.ContractedBy(1), BaseContent.WhiteTex);
+
+            float originalR = currentColor.r;
+            float originalG = currentColor.g;
+            float originalB = currentColor.b;
+            GUI.color = Color.red;
+            float r = GUI.HorizontalSlider(new Rect(rect.x + 56, rect.y - 1, 136, 16), currentColor.r, 0, 1);
+            GUI.color = Color.green;
+            float g = GUI.HorizontalSlider(new Rect(rect.x + 56, rect.y + 19, 136, 16), currentColor.g, 0, 1);
+            GUI.color = Color.blue;
+            float b = GUI.HorizontalSlider(new Rect(rect.x + 56, rect.y + 39, 136, 16), currentColor.b, 0, 1);
+            if (!CloseEnough(r, originalR) || !CloseEnough(g, originalG) || !CloseEnough(b, originalB)) {
+                clickedColor = new Color(r, g, b);
+            }
+
+            GUI.color = Color.white;
+
+            if (clickedColor != currentColor) {
+                SetAlienPawnColor(customPawn, clickedColor);
+            }
+        }
+
         protected bool CloseEnough(float a, float b) {
             if (a > b - 0.0001f && a < b + 0.0001f) {
                 return true;
@@ -565,7 +656,7 @@ namespace EdB.PrepareCarefully {
             customPawn.SetColor(selectedPawnLayer, color);
         }
 
-        protected void DrawSkinSelector(CustomPawn customPawn, float cursorY) {
+        protected void DrawHumanlikeColorSelector(CustomPawn customPawn, float cursorY) {
             int currentSwatchIndex = PawnColorUtils.GetLeftIndexForValue(customPawn.MelaninLevel);
             Color currentSwatchColor = PawnColorUtils.Colors[currentSwatchIndex];
 
@@ -603,7 +694,7 @@ namespace EdB.PrepareCarefully {
 
                 // Advance the swatch rect cursor position and wrap it if necessary.
                 swatchRect.x += SwatchSpacing.x;
-                if (swatchRect.x >= 227) {
+                if (swatchRect.x >= SwatchLimit - SwatchSize.x) {
                     swatchRect.y += SwatchSpacing.y;
                     swatchRect.x = SwatchPosition.x;
                 }
@@ -650,7 +741,8 @@ namespace EdB.PrepareCarefully {
                 if (clickedIndex != -1) {
                     currentSwatchIndex = clickedIndex;
                 }
-                customPawn.MelaninLevel = PawnColorUtils.GetValueFromRelativeLerp(currentSwatchIndex, newValue);
+                float melaninLevel = PawnColorUtils.GetValueFromRelativeLerp(currentSwatchIndex, newValue);
+                SetPawnMelaninLevel(customPawn, melaninLevel);
             }
         }
 

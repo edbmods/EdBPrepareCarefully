@@ -66,6 +66,7 @@
     <Compile Include="Source\DragSlider.cs" />
     <Compile Include="Source\EquipmentDatabase.cs" />
     <Compile Include="Source\EquipmentRecord.cs" />
+    <Compile Include="Source\ExtensionsColorGenerator.cs" />
     <Compile Include="Source\ExtensionsPawn.cs" />
     <Compile Include="Source\ExtensionsThing.cs" />
     <Compile Include="Source\GenStep_CustomScatterThings.cs" />
