@@ -42,7 +42,9 @@ namespace EdB.PrepareCarefully {
             return rect.InsetBy(new Vector2(xAmount, yAmount), new Vector2(xAmount, yAmount));
         }
         public static Rect Combined(this Rect rect, Rect other) {
-            return new Rect(Mathf.Min(rect.x, other.x), Mathf.Min(rect.y, other.y), Mathf.Max(rect.width, other.width), Mathf.Max(rect.height, other.height));
+            Vector2 min = new Vector2(Mathf.Min(rect.xMin, other.xMin), Mathf.Min(rect.yMin, other.yMin));
+            Vector2 max = new Vector2(Mathf.Max(rect.xMax, other.xMax), Mathf.Max(rect.yMax, other.yMax));
+            return new Rect(min, max - min);
         }
         public static bool Mouseover(this Rect rect) {
             return rect.Contains(Event.current.mousePosition);
