@@ -8,7 +8,7 @@ using Verse;
 namespace EdB.PrepareCarefully {
     public class SaveRecordImplantV3 : IExposable {
         public string bodyPart = null;
-        public int? bodyPartIndex = 0;
+        public int? bodyPartIndex = null;
         public string recipe = null;
 
         public SaveRecordImplantV3() {

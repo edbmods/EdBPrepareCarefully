@@ -173,8 +173,14 @@ namespace EdB.PrepareCarefully {
             try {
                 foreach (SaveRecordPawnV3 p in pawns) {
                     CustomPawn pawn = LoadPawn(p);
-                    allPawns.Add(pawn);
-                    colonistCustomPawns.Add(pawn);
+                    if (pawn != null) {
+                        allPawns.Add(pawn);
+                        colonistCustomPawns.Add(pawn);
+                    }
+                    else {
+                        Messages.Message("EdB.PC.Dialog.Preset.Error.NoCharacter".Translate(), MessageSound.SeriousAlert);
+                        Log.Warning("Preset was created with the following mods: " + ModString);
+                    }
                 }
             }
             catch (Exception e) {
@@ -189,8 +195,13 @@ namespace EdB.PrepareCarefully {
                 if (hiddenPawns != null) {
                     foreach (SaveRecordPawnV3 p in hiddenPawns) {
                         CustomPawn pawn = LoadPawn(p);
-                        allPawns.Add(pawn);
-                        hiddenCustomPawns.Add(pawn);
+                        if (pawn != null) {
+                            allPawns.Add(pawn);
+                            hiddenCustomPawns.Add(pawn);
+                        }
+                        else {
+                            Log.Warning("Prepare Carefully failed to load a hidden character from the preset");
+                        }
                     }
                 }
             }
@@ -296,6 +307,10 @@ namespace EdB.PrepareCarefully {
             PawnKindDef pawnKindDef = null;
             if (record.pawnKindDef != null) {
                 pawnKindDef = DefDatabase<PawnKindDef>.GetNamedSilentFail(record.pawnKindDef);
+                if (pawnKindDef == null) {
+                    Log.Warning("Prepare Carefully could not find the pawn kind definition for the saved character: \"" + record.pawnKindDef + "\"");
+                    return null;
+                }
             }
             
             ThingDef pawnThingDef = ThingDefOf.Human;
@@ -476,7 +491,8 @@ namespace EdB.PrepareCarefully {
                 SaveRecordImplantV3 implantRecord = record.implants[i];
                 UniqueBodyPart uniqueBodyPart = healthOptions.FindBodyPartByName(implantRecord.bodyPart, implantRecord.bodyPartIndex != null ? implantRecord.bodyPartIndex.Value : 0);
                 if (uniqueBodyPart == null) {
-                    Log.Warning("Could not find replaceable body part definition \"" + implantRecord.bodyPart + "\"");
+                    Log.Warning("Prepare Carefully could not add the implant because it could not find the needed body part \"" + implantRecord.bodyPart + "\""
+                        + (implantRecord.bodyPartIndex != null ? " with index " + implantRecord.bodyPartIndex : ""));
                     Failed = true;
                     continue;
                 }
@@ -484,7 +500,7 @@ namespace EdB.PrepareCarefully {
                 if (implantRecord.recipe != null) {
                     RecipeDef recipeDef = FindRecipeDef(implantRecord.recipe);
                     if (recipeDef == null) {
-                        Log.Warning("Could not find recipe definition \"" + implantRecord.recipe + "\"");
+                        Log.Warning("Prepare Carefully could not add the implant because it could not find the recipe definition \"" + implantRecord.recipe + "\"");
                         Failed = true;
                         continue;
                     }
@@ -496,7 +512,7 @@ namespace EdB.PrepareCarefully {
                         }
                     }
                     if (!found) {
-                        Log.Warning("Prepare carefully could apply implant recipe \"" + implantRecord.recipe + "\" to the saved body part \"" + bodyPart.def.defName + "\".  Recipe does not support that part.");
+                        Log.Warning("Prepare carefully could not apply the saved implant recipe \"" + implantRecord.recipe + "\" to the body part \"" + bodyPart.def.defName + "\".  Recipe does not support that part.");
                         Failed = true;
                         continue;
                     }
@@ -511,13 +527,13 @@ namespace EdB.PrepareCarefully {
             foreach (var injuryRecord in record.injuries) {
                 HediffDef def = DefDatabase<HediffDef>.GetNamedSilentFail(injuryRecord.hediffDef);
                 if (def == null) {
-                    Log.Warning("Could not find hediff definition \"" + injuryRecord.hediffDef + "\"");
+                    Log.Warning("Prepare Carefully could not add the injury because it could not find the hediff definition \"" + injuryRecord.hediffDef + "\"");
                     Failed = true;
                     continue;
                 }
                 InjuryOption option = healthOptions.FindInjuryOptionByHediffDef(def);
                 if (option == null) {
-                    Log.Warning("Could not find injury option for \"" + injuryRecord.hediffDef + "\"");
+                    Log.Warning("Prepare Carefully could not add the injury because it could not find a matching injury option for the saved hediff \"" + injuryRecord.hediffDef + "\"");
                     Failed = true;
                     continue;
                 }
@@ -526,7 +542,8 @@ namespace EdB.PrepareCarefully {
                     UniqueBodyPart uniquePart = healthOptions.FindBodyPartByName(injuryRecord.bodyPart,
                         injuryRecord.bodyPartIndex != null ? injuryRecord.bodyPartIndex.Value : 0);
                     if (uniquePart == null) {
-                        Log.Warning("Could not find body part \"" + injuryRecord.bodyPart + "\"");
+                        Log.Warning("Prepare Carefully could not add the injury because it could not find the needed body part \"" + injuryRecord.bodyPart + "\""
+                            + (injuryRecord.bodyPartIndex != null ? " with index " + injuryRecord.bodyPartIndex : ""));
                         Failed = true;
                         continue;
                     }

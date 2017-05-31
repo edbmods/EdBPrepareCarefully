@@ -9,6 +9,7 @@
 <!-- v0.17.1.4 -->
 <!-- NEW: EdB.PC.Common.Default -->
 <!-- NEW: EdB.PC.Common.NoOptionAvailable -->
+<!-- NEW: EdB.PC.Dialog.Preset.Error.NoCharacter -->
 
 <LanguageData>
   <EdB.PC.AddParentChild.Header.AddParent>Add a Parent</EdB.PC.AddParentChild.Header.AddParent>
@@ -70,6 +71,7 @@
   <EdB.PC.Dialog.Preset.Error.RelationshipFailed>Could not load a custom relationship from the preset.</EdB.PC.Dialog.Preset.Error.RelationshipFailed>
   <EdB.PC.Dialog.Preset.Error.SaveFailed>There was a problem while saving.  You may not be able to load the preset.</EdB.PC.Dialog.Preset.Error.SaveFailed>
   <EdB.PC.Dialog.Preset.Error.ThingDefFailed>Could not fully load preset.  Check that all required mods are enabled.</EdB.PC.Dialog.Preset.Error.ThingDefFailed>
+  <EdB.PC.Dialog.Preset.Error.NoCharacter>Could not load saved character.  Check that all required mods are enabled.</EdB.PC.Dialog.Preset.Error.NoCharacter>
   <EdB.PC.Dialog.Preset.Loaded>Loaded preset {0}</EdB.PC.Dialog.Preset.Loaded>
 
   <EdB.PC.Dialog.Severity.Header>Select a severity level</EdB.PC.Dialog.Severity.Header>
