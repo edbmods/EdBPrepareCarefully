@@ -8,6 +8,7 @@ using Verse;
 namespace EdB.PrepareCarefully {
     public class SaveRecordInjuryV3 : IExposable {
         public string bodyPart = null;
+        public int? bodyPartIndex = null;
         public string hediffDef = null;
         public string severity = null;
         public string painFactor = null;
@@ -29,6 +30,7 @@ namespace EdB.PrepareCarefully {
         public void ExposeData() {
             Scribe_Values.Look<string>(ref this.hediffDef, "hediffDef", null, false);
             Scribe_Values.Look<string>(ref this.bodyPart, "bodyPart", null, false);
+            Scribe_Values.Look<int?>(ref this.bodyPartIndex, "bodyPartIndex", null, false);
             Scribe_Values.Look<string>(ref this.severity, "severity", null, false);
             Scribe_Values.Look<string>(ref this.painFactor, "painFactor", null, false);
         }

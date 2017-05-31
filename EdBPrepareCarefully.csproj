@@ -67,12 +67,14 @@
     <Compile Include="Source\EquipmentDatabase.cs" />
     <Compile Include="Source\EquipmentRecord.cs" />
     <Compile Include="Source\ExtensionsColorGenerator.cs" />
+    <Compile Include="Source\ExtensionsHediffDef.cs" />
     <Compile Include="Source\ExtensionsPawn.cs" />
     <Compile Include="Source\ExtensionsThing.cs" />
     <Compile Include="Source\GenStep_CustomScatterThings.cs" />
     <Compile Include="Source\CustomHeadType.cs" />
     <Compile Include="Source\IRelationshipWorker.cs" />
     <Compile Include="Source\OptionsApparel.cs" />
+    <Compile Include="Source\OptionsHealth.cs" />
     <Compile Include="Source\Page_ConfigureStartingPawns.cs" />
     <Compile Include="Source\PanelRelationshipsOther.cs" />
     <Compile Include="Source\PanelRelationshipsParentChild.cs" />
@@ -85,6 +87,7 @@
     <Compile Include="Source\PresetSaver.cs" />
     <Compile Include="Source\ProviderAlienRaces.cs" />
     <Compile Include="Source\ProviderApparel.cs" />
+    <Compile Include="Source\ProviderHealthOptions.cs" />
     <Compile Include="Source\ProviderBodyTypes.cs" />
     <Compile Include="Source\ProviderHair.cs" />
     <Compile Include="Source\ProviderHeadTypes.cs" />
@@ -116,8 +119,6 @@
     <Compile Include="Source\RelationshipManager.cs" />
     <Compile Include="Source\RelationshipList.cs" />
     <Compile Include="Source\CustomRelationship.cs" />
-    <Compile Include="Source\HealthManager.cs" />
-    <Compile Include="Source\ImplantManager.cs" />
     <Compile Include="Source\Implant.cs" />
     <Compile Include="Source\CustomBodyPart.cs" />
     <Compile Include="Source\CarefullyPawnRelationDef.cs" />
@@ -132,12 +133,10 @@
     <Compile Include="Source\ColonistLoader.cs" />
     <Compile Include="Source\Injury.cs" />
     <Compile Include="Source\InjuryOption.cs" />
-    <Compile Include="Source\InjuryManager.cs" />
     <Compile Include="Source\CustomPawn.cs" />
     <Compile Include="Source\PawnColorUtils.cs" />
     <Compile Include="Source\Dialog_Confirm.cs" />
     <Compile Include="Source\ThingCache.cs" />
-    <Compile Include="Source\BodyPartDictionary.cs" />
     <Compile Include="Source\Page_PrepareCarefully.cs" />
     <Compile Include="Source\ITabView.cs" />
     <Compile Include="Source\TabViewPawns.cs" />
@@ -177,8 +176,6 @@
     <Compile Include="Source\WidgetDropdown.cs" />
     <Compile Include="Source\ProviderFactions.cs" />
     <Compile Include="Source\TabViewRelationships.cs" />
-    <Compile Include="Source\ProviderInjuries.cs" />
-    <Compile Include="Source\ProviderImplants.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup />

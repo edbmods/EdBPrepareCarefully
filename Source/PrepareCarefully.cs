@@ -44,9 +44,7 @@ namespace EdB.PrepareCarefully {
         protected List<SelectedPet> petsToRemove = new List<SelectedPet>();
         protected bool active = false;
         protected string filename = "";
-        protected ImplantManager implantManager;
         protected RelationshipManager relationshipManager;
-        protected HealthManager healthManager = new HealthManager();
         protected Randomizer randomizer = new Randomizer();
         protected Configuration config = new Configuration();
         protected State state = new State();
@@ -75,13 +73,7 @@ namespace EdB.PrepareCarefully {
                 return relationshipManager;
             }
         }
-
-        public HealthManager HealthManager {
-            get {
-                return healthManager;
-            }
-        }
-
+        
         public SortField SortField { get; set; }
         public SortOrder NameSortOrder { get; set; }
         public SortOrder CostSortOrder { get; set; }
@@ -95,7 +87,6 @@ namespace EdB.PrepareCarefully {
         }
 
         public PrepareCarefully() {
-            implantManager = new ImplantManager();
             NameSortOrder = SortOrder.Ascending;
             CostSortOrder = SortOrder.Ascending;
             SortField = SortField.Name;
@@ -153,6 +144,7 @@ namespace EdB.PrepareCarefully {
             Providers.Apparel = new ProviderApparel() {
                 AlienRaceProvider = Providers.AlienRaces
             };
+            Providers.Health = new ProviderHealthOptions();
             Providers.Factions = new ProviderFactions();
         }
 
@@ -360,10 +352,13 @@ namespace EdB.PrepareCarefully {
         public void CreateColonists() {
             colonists.Clear();
             foreach (CustomPawn customPawn in pawns) {
+                if (customPawn.Pawn.workSettings == null) {
+                    customPawn.Pawn.workSettings = new Pawn_WorkSettings(customPawn.Pawn);
+                }
                 customPawn.Pawn.workSettings.EnableAndInitialize();
                 colonists.Add(customPawn.Pawn);
             }
-
+            
             pawnLookup.Clear();
             for (int i = 0; i < pawns.Count; i++) {
                 CustomPawn customPawn = pawns[i];

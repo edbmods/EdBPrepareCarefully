@@ -52,7 +52,8 @@ namespace EdB.PrepareCarefully {
                     catch (Exception e) {
                         problem = true;
                         Log.Warning("Prepare Carefully failed to save a pawn into the preset: " + presetName);
-                        Log.Warning("  Exception: " + e.Message);
+                        Log.Warning(e.Message);
+                        Log.Warning(e.StackTrace);
                     }
                 }
                 Scribe.ExitNode();
@@ -90,7 +91,8 @@ namespace EdB.PrepareCarefully {
                     catch (Exception e) {
                         problem = true;
                         Log.Warning("Prepare Carefully failed to save a hidden pawn into the preset: " + presetName);
-                        Log.Warning("  Exception: " + e.Message);
+                        Log.Warning(e.Message);
+                        Log.Warning(e.StackTrace);
                     }
                 }
                 Scribe.ExitNode();
