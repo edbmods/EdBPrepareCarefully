@@ -470,15 +470,17 @@ namespace EdB.PrepareCarefully {
                 pawn.SetSelectedStuff(layer, stuffDef);
                 pawn.SetColor(layer, record.apparelColors[i]);
             }
-            
+
+            OptionsHealth healthOptions = PrepareCarefully.Instance.Providers.Health.GetOptions(pawn);
             for (int i = 0; i < record.implants.Count; i++) {
                 SaveRecordImplantV3 implantRecord = record.implants[i];
-                BodyPartRecord bodyPart = PrepareCarefully.Instance.HealthManager.ImplantManager.FindReplaceableBodyPartByName(pawn.Pawn, implantRecord.bodyPart);
-                if (bodyPart == null) {
+                UniqueBodyPart uniqueBodyPart = healthOptions.FindBodyPartByName(implantRecord.bodyPart, implantRecord.bodyPartIndex != null ? implantRecord.bodyPartIndex.Value : 0);
+                if (uniqueBodyPart == null) {
                     Log.Warning("Could not find replaceable body part definition \"" + implantRecord.bodyPart + "\"");
                     Failed = true;
                     continue;
                 }
+                BodyPartRecord bodyPart = uniqueBodyPart.Record;
                 if (implantRecord.recipe != null) {
                     RecipeDef recipeDef = FindRecipeDef(implantRecord.recipe);
                     if (recipeDef == null) {
@@ -494,7 +496,7 @@ namespace EdB.PrepareCarefully {
                         }
                     }
                     if (!found) {
-                        Log.Warning("Body part \"" + bodyPart.def.defName + "\" does not match recipe used to replace it");
+                        Log.Warning("Prepare carefully could apply implant recipe \"" + implantRecord.recipe + "\" to the saved body part \"" + bodyPart.def.defName + "\".  Recipe does not support that part.");
                         Failed = true;
                         continue;
                     }
@@ -513,7 +515,7 @@ namespace EdB.PrepareCarefully {
                     Failed = true;
                     continue;
                 }
-                InjuryOption option = PrepareCarefully.Instance.HealthManager.InjuryManager.FindOptionByHediffDef(def);
+                InjuryOption option = healthOptions.FindInjuryOptionByHediffDef(def);
                 if (option == null) {
                     Log.Warning("Could not find injury option for \"" + injuryRecord.hediffDef + "\"");
                     Failed = true;
@@ -521,12 +523,14 @@ namespace EdB.PrepareCarefully {
                 }
                 BodyPartRecord bodyPart = null;
                 if (injuryRecord.bodyPart != null) {
-                    bodyPart = PrepareCarefully.Instance.HealthManager.FirstBodyPartRecord(pawn, injuryRecord.bodyPart);
-                    if (bodyPart == null) {
+                    UniqueBodyPart uniquePart = healthOptions.FindBodyPartByName(injuryRecord.bodyPart,
+                        injuryRecord.bodyPartIndex != null ? injuryRecord.bodyPartIndex.Value : 0);
+                    if (uniquePart == null) {
                         Log.Warning("Could not find body part \"" + injuryRecord.bodyPart + "\"");
                         Failed = true;
                         continue;
                     }
+                    bodyPart = uniquePart.Record;
                 }
                 Injury injury = new Injury();
                 injury.Option = option;

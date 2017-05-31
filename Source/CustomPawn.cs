@@ -146,6 +146,8 @@ namespace EdB.PrepareCarefully {
             this.pawn = pawn;
             this.pawn.ClearCaches();
 
+            PrepareCarefully.Instance.Providers.Health.GetOptions(this);
+
             // Set the skills.
             InitializeSkillLevelsAndPassions();
             ComputeSkillLevelModifiers();
@@ -214,11 +216,11 @@ namespace EdB.PrepareCarefully {
         }
 
         protected void InitializePawnHediffs(Pawn pawn) {
-            InjuryManager injuryManager = PrepareCarefully.Instance.HealthManager.InjuryManager;
+            OptionsHealth healthOptions = PrepareCarefully.Instance.Providers.Health.GetOptions(this);
             List<Injury> injuries = new List<Injury>();
             List<Implant> implants = new List<Implant>();
             foreach (var hediff in pawn.health.hediffSet.hediffs) {
-                InjuryOption option = injuryManager.FindOptionByHediffDef(hediff.def);
+                InjuryOption option = healthOptions.FindInjuryOptionByHediffDef(hediff.def);
                 if (option != null) {
                     Injury injury = new Injury();
                     injury.BodyPartRecord = hediff.Part;
@@ -1355,6 +1357,14 @@ namespace EdB.PrepareCarefully {
             SyncBodyParts();
         }
 
+        public bool AtLeastOneImplantedPart(IEnumerable<BodyPartRecord> records) {
+            foreach (var record in records) {
+                if (IsImplantedPart(record)) {
+                    return true;
+                }
+            }
+            return false;
+        }
         public bool IsImplantedPart(BodyPartRecord record) {
             return FindImplant(record) != null;
         }

@@ -206,19 +206,28 @@ namespace EdB.PrepareCarefully {
                     Faction = faction,
                     KindDef = kindDef
                 }.Request);
-                pawn.equipment.DestroyAllEquipment(DestroyMode.Vanish);
-                pawn.inventory.DestroyAll(DestroyMode.Vanish);
+                if (pawn.equipment != null) {
+                    pawn.equipment.DestroyAllEquipment(DestroyMode.Vanish);
+                }
+                if (pawn.inventory != null) {
+                    pawn.inventory.DestroyAll(DestroyMode.Vanish);
+                }
             }
             catch (Exception e) {
                 Log.Warning("Failed to create faction pawn of kind " + kindDef.defName);
                 Log.Message(e.Message);
-                pawn.Destroy();
+                Log.Message(e.StackTrace);
+                if (pawn != null) {
+                    pawn.Destroy();
+                }
+                state.AddError("EdB.PC.Panel.PawnList.Error.FactionPawnFailed".Translate());
+                return;
             }
             finally {
                 kindDef.weaponMoney = savedWeaponsMoney;
             }
-            CustomPawn customPawn = new CustomPawn(pawn);
 
+            CustomPawn customPawn = new CustomPawn(pawn);
             customPawn.Pawn.SetFactionDirect(Faction.OfPlayer);
             PrepareCarefully.Instance.AddPawn(customPawn);
             state.CurrentPawnIndex = PrepareCarefully.Instance.Pawns.Count - 1;

@@ -175,10 +175,9 @@ namespace EdB.PrepareCarefully {
             if (Widgets.ButtonInvisible(RectButtonAdd, false)) {
                 CustomPawn customPawn = PrepareCarefully.Instance.State.CurrentPawn;
 
-                Action addEntryAction = () => {
+                Action addEntryAction = () => { };
 
-                };
-
+                OptionsHealth healthOptions = PrepareCarefully.Instance.Providers.Health.GetOptions(customPawn);
                 string selectedHediffType = null;
                 RecipeDef selectedRecipe = null;
                 InjuryOption selectedInjury = null;
@@ -199,11 +198,11 @@ namespace EdB.PrepareCarefully {
                         AddInjuryToPawn(selectedInjury, selectedSeverity, selectedBodyPart);
                     }
                     else {
-                        if (selectedInjury.ValidParts.Count > 0) {
+                        if (selectedInjury.ValidParts != null && selectedInjury.ValidParts.Count > 0) {
                             foreach (var p in selectedInjury.ValidParts) {
-                                BodyPartRecord record = PrepareCarefully.Instance.HealthManager.FirstBodyPartRecord(customPawn, p);
-                                if (record != null) {
-                                    AddInjuryToPawn(selectedInjury, selectedSeverity, record);
+                                var part = healthOptions.FindBodyPartsForDef(p).FirstOrDefault();
+                                if (part != null) {
+                                    AddInjuryToPawn(selectedInjury, selectedSeverity, part.Record);
                                 }
                                 else {
                                     Log.Warning("Could not find body part record for definition: " + p.defName);
@@ -289,7 +288,7 @@ namespace EdB.PrepareCarefully {
                     }
                 };
 
-                injuryOptionDialog = new Dialog_Options<InjuryOption>(PrepareCarefully.Instance.HealthManager.InjuryManager.Options) {
+                injuryOptionDialog = new Dialog_Options<InjuryOption>(healthOptions.InjuryOptions) {
                     ConfirmButtonLabel = "EdB.PC.Common.Next".Translate(),
                     CancelButtonLabel = "EdB.PC.Common.Cancel".Translate(),
                     HeaderLabel = "EdB.PC.Dialog.Injury.Header".Translate(),
@@ -301,7 +300,7 @@ namespace EdB.PrepareCarefully {
                     },
                     SelectAction = (InjuryOption option) => {
                         selectedInjury = option;
-                        if (option.ValidParts == null) {
+                        if (option.ValidParts == null && !option.WholeBody) {
                             bodyPartSelectionRequired = true;
                         }
                         else {
@@ -322,7 +321,7 @@ namespace EdB.PrepareCarefully {
                     CloseAction = () => {
                         ResetSeverityOptions(selectedInjury);
                         if (bodyPartSelectionRequired) {
-                            bodyPartDialog.Options = PrepareCarefully.Instance.HealthManager.AllSkinCoveredBodyParts(customPawn);
+                            bodyPartDialog.Options = healthOptions.BodyPartsForInjury(selectedInjury);
                             ResetBodyPartEnabledState(bodyPartDialog.Options, customPawn);
                             Find.WindowStack.Add(bodyPartDialog);
                         }
@@ -338,19 +337,20 @@ namespace EdB.PrepareCarefully {
                     }
                 };
 
-                implantRecipeDialog = new Dialog_Options<RecipeDef>(PrepareCarefully.Instance.HealthManager.ImplantManager.RecipesForPawn(customPawn)) {
+                implantRecipeDialog = new Dialog_Options<RecipeDef>(healthOptions.ImplantRecipes) {
                     ConfirmButtonLabel = "EdB.PC.Common.Next".Translate(),
                     CancelButtonLabel = "EdB.PC.Common.Cancel".Translate(),
                     HeaderLabel = "EdB.PC.Dialog.Implant.Header".Translate(),
                     NameFunc = (RecipeDef recipe) => {
-                        return recipe.LabelCap;
+                        return recipe.defName;
+                        //return recipe.LabelCap;
                     },
                     SelectedFunc = (RecipeDef recipe) => {
                         return selectedRecipe == recipe;
                     },
                     SelectAction = (RecipeDef recipe) => {
                         selectedRecipe = recipe;
-                        IEnumerable<BodyPartRecord> bodyParts = PrepareCarefully.Instance.HealthManager.ImplantManager.PartsForRecipe(customPawn.Pawn, recipe);
+                        IEnumerable<BodyPartRecord> bodyParts = healthOptions.FindBodyPartsForImplantRecipe(recipe).Select((UniqueBodyPart p) => { return p.Record; });
                         int bodyPartCount = bodyParts.Count();
                         if (bodyParts != null && bodyPartCount > 0) {
                             if (bodyPartCount > 1) {
@@ -436,8 +436,7 @@ namespace EdB.PrepareCarefully {
 
         protected void ResetInjuryOptionEnabledState(CustomPawn pawn) {
             disabledInjuryOptions.Clear();
-            InjuryManager injuryManager = PrepareCarefully.Instance.HealthManager.InjuryManager;
-            foreach (var injuryOption in injuryManager.Options) {
+            foreach (var injuryOption in PrepareCarefully.Instance.Providers.Health.GetOptions(pawn).InjuryOptions) {
                 InjuryOption option = injuryOption;
                 if (option.IsOldInjury) {
                     continue;
@@ -453,9 +452,10 @@ namespace EdB.PrepareCarefully {
 
         protected void ResetBodyPartEnabledState(IEnumerable<BodyPartRecord> parts, CustomPawn pawn) {
             disabledBodyParts.Clear();
-            ImplantManager implantManager = PrepareCarefully.Instance.HealthManager.ImplantManager;
+            OptionsHealth healthOptions = PrepareCarefully.Instance.Providers.Health.GetOptions(pawn);
             foreach (var part in parts) {
-                if (pawn.IsImplantedPart(part) || implantManager.AncestorIsImplant(pawn, part)) {
+                UniqueBodyPart uniquePart = healthOptions.FindBodyPartsForRecord(part);
+                if (pawn.IsImplantedPart(part) || pawn.AtLeastOneImplantedPart(uniquePart.Ancestors.Select((UniqueBodyPart p) => { return p.Record; }))) {
                     disabledBodyParts.Add(part);
                 }
             }
@@ -480,16 +480,14 @@ namespace EdB.PrepareCarefully {
             InjurySeverity previous = null;
 
             foreach (var stage in injuryOption.HediffDef.stages) {
-
                 // Filter out a stage if it will definitely kill the pawn.
-                if (PrepareCarefully.Instance.HealthManager.InjuryManager.DoesStageKillPawn(injuryOption.HediffDef, stage)) {
+                if (injuryOption.HediffDef.DoesStageDefinitelyKillPawn(stage)) {
                     continue;
                 }
-
+                // Filter out hidden stages.
                 if (!stage.everVisible) {
                     continue;
                 }
-
                 InjurySeverity value = null;
                 if (stage.minSeverity == 0) {
                     float severity = injuryOption.HediffDef.initialSeverity > 0 ? injuryOption.HediffDef.initialSeverity : 0.001f;

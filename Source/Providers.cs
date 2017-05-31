@@ -23,5 +23,8 @@ namespace EdB.PrepareCarefully {
         public ProviderHair Hair {
             get; set;
         }
+        public ProviderHealthOptions Health {
+            get; set;
+        }
     }
 }
