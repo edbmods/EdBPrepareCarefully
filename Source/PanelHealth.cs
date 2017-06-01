@@ -342,8 +342,7 @@ namespace EdB.PrepareCarefully {
                     CancelButtonLabel = "EdB.PC.Common.Cancel".Translate(),
                     HeaderLabel = "EdB.PC.Dialog.Implant.Header".Translate(),
                     NameFunc = (RecipeDef recipe) => {
-                        return recipe.defName;
-                        //return recipe.LabelCap;
+                        return recipe.LabelCap;
                     },
                     SelectedFunc = (RecipeDef recipe) => {
                         return selectedRecipe == recipe;
