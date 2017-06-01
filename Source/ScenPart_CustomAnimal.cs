@@ -13,6 +13,11 @@ namespace EdB.PrepareCarefully {
         protected PawnKindDef animalKindDef = null;
         protected Gender gender = Gender.None;
         protected int count = 1;
+        public ScenPart_CustomAnimal() {
+            // Set the def to match the standard starting animal that we'll be replacing with this one.
+            // Doing so makes sure that this part gets sorted as expected when building the scenario description
+            this.def = ScenPartDefOf.StartingAnimal;
+        }
         public PawnKindDef KindDef {
             get {
                 return animalKindDef;
@@ -61,6 +66,28 @@ namespace EdB.PrepareCarefully {
                 result.Add(pawn);
             }
             return result;
+        }
+        public override string Summary(Scenario scen) {
+            return ScenSummaryList.SummaryWithList(scen, "PlayerStartsWith", ScenPart_StartingThing_Defined.PlayerStartWithIntro);
+        }
+        public override IEnumerable<string> GetSummaryListEntries(string tag) {
+            if (tag == "PlayerStartsWith") {
+                StringBuilder label = new StringBuilder();
+                List<string> entries = new List<string>();
+                if (this.KindDef.RaceProps.hasGenders) {
+                    label.Append("PawnMainDescGendered".Translate(new object[] { this.gender.GetLabel(), this.KindDef.label }).CapitalizeFirst());
+                }
+                else {
+                    label.Append(this.KindDef.label.CapitalizeFirst());
+                }
+                label.Append(" x");
+                label.Append(count.ToString());
+                entries.Add(label.ToString());
+                return entries;
+            }
+            else {
+                return Enumerable.Empty<string>();
+            }
         }
     }
 }

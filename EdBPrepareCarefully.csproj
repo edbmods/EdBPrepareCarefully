@@ -101,6 +101,7 @@
     <Compile Include="Source\RelationshipGroup.cs" />
     <Compile Include="Source\ScenPart_CustomAnimal.cs" />
     <Compile Include="Source\ScenPart_CustomScatterThingsNearPlayerStart.cs" />
+    <Compile Include="Source\ScenPart_PrepareCarefullyPawns.cs" />
     <Compile Include="Source\ScrollViewHorizontal.cs" />
     <Compile Include="Source\SelectedAnimal.cs" />
     <Compile Include="Source\EquipmentSelection.cs" />
@@ -171,7 +172,6 @@
     <Compile Include="Source\WidgetNumberField.cs" />
     <Compile Include="Source\WidgetTable.cs" />
     <Compile Include="Source\ControllerEquipment.cs" />
-    <Compile Include="Source\PanelEquipmentBase.cs" />
     <Compile Include="Source\ExtensionsVector.cs" />
     <Compile Include="Source\WidgetDropdown.cs" />
     <Compile Include="Source\ProviderFactions.cs" />

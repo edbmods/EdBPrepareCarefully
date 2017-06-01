@@ -1,8 +1,10 @@
 ﻿using RimWorld;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Text;
 using UnityEngine;
 using Verse;
 namespace EdB.PrepareCarefully {
@@ -113,21 +115,23 @@ namespace EdB.PrepareCarefully {
 
             // Make a copy of the scenario so that we can modify it.
             Current.Game.Scenario = UtilityCopy.CopyExposable(Find.Scenario);
+            Scenario scenario = Current.Game.Scenario;
 
             // Remove equipment scenario parts.
             ReplaceScenarioParts();
         }
-
-        // Remove all scene parts that add equipment so that we can instead spawn our custom equipment.
+        
         protected void ReplaceScenarioParts() {
+            // Create a lookup of all of the scenario types that we want to replace.
             HashSet<string> equipmentScenarioParts = new HashSet<string>() {
+                typeof(RimWorld.ScenPart_ConfigPage_ConfigureStartingPawns).FullName,
                 typeof(RimWorld.ScenPart_StartingThing_Defined).FullName,
                 typeof(RimWorld.ScenPart_ScatterThingsNearPlayerStart).FullName,
                 typeof(RimWorld.ScenPart_StartingAnimal).FullName
             };
             List<ScenPart> newParts = new List<ScenPart>();
 
-            // Remove any existing equipment scenario parts.
+            // Remove existing scenario parts that match the ones in the lookup.
             FieldInfo partsField = typeof(Scenario).GetField("parts", BindingFlags.NonPublic | BindingFlags.Instance);
             List<ScenPart> originalParts = (List<ScenPart>)partsField.GetValue(Find.Scenario);
             foreach (var part in originalParts) {
@@ -135,6 +139,11 @@ namespace EdB.PrepareCarefully {
                     newParts.Add(part);
                 }
             }
+
+            // Add a replacement for the starting character config.  We do this so that if the player looks at
+            // the scenario summary, they will see a colonist count that matches the number of characters that
+            // the set up in Prepare Carefully.
+            newParts.Add(new ScenPart_PrepareCarefullyStartingPawns(Find.GameInitData.startingPawns.Count));
 
             // Sort the equipment from highest count to lowest so that gear is less likely to get blocked
             // if there's a bulk item included.  If you don't do this, then a large number of an item (meals,
@@ -200,6 +209,10 @@ namespace EdB.PrepareCarefully {
                     if (nearCount > 0) {
                         stackCount += Mathf.CeilToInt((float)nearCount / (float)e.ThingDef.stackLimit);
                         ScenPart_StartingThing_Defined part = new ScenPart_StartingThing_Defined();
+                        // Be sure to set the def, since that doesn't happen automatically.  Failing to do so will
+                        // cause null pointer exceptions when trying to sort the scenario parts when creating the
+                        // description to display in the "Scenario Summary."
+                        part.def = ScenPartDefOf.StartingThing_Defined;
                         thingDefField.SetValue(part, e.ThingDef);
                         stuffField.SetValue(part, e.StuffDef);
                         countField.SetValue(part, nearCount);
