@@ -23,15 +23,15 @@ namespace EdB.PrepareCarefully {
         public PanelAge() {
             biologicalField = new WidgetNumberField() {
                 DragSlider = new DragSlider(0.4f, 20, 100),
-                MinValue = Constraints.AgeBiologicalMin,
-                MaxValue = Constraints.AgeBiologicalMax,
+                MinValue = 14,
+                MaxValue = 99,
                 UpdateAction = (int value) => {
                     UpdateBiologicalAge(value);
                 }
             };
             chronologicalField = new WidgetNumberField() {
                 DragSlider = new DragSlider(0.4f, 15, 100),
-                MinValue = Constraints.AgeBiologicalMin,
+                MinValue = 14,
                 MaxValue = Constraints.AgeChronologicalMax,
                 UpdateAction = (int value) => {
                     UpdateChronologicalAge(value);
@@ -103,9 +103,11 @@ namespace EdB.PrepareCarefully {
 
             // Update field values.
             CustomPawn customPawn = state.CurrentPawn;
-            biologicalField.MaxValue = customPawn.ChronologicalAge < Constraints.AgeBiologicalMax ?
-                customPawn.ChronologicalAge : Constraints.AgeBiologicalMax;
+            int maxAge = customPawn.MaxAge;
+            int minAge = customPawn.MinAge;
             chronologicalField.MinValue = customPawn.BiologicalAge;
+            biologicalField.MinValue = minAge;
+            biologicalField.MaxValue = customPawn.ChronologicalAge < maxAge ? customPawn.ChronologicalAge : maxAge;
 
             // Age labels.
             Text.Font = GameFont.Tiny;

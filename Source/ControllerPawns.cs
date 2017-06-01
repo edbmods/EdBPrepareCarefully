@@ -101,12 +101,14 @@ namespace EdB.PrepareCarefully {
 
         // Age-related actions.
         public void UpdateBiologicalAge(int age) {
-            if (age < Constraints.AgeBiologicalMin) {
-                age = Constraints.AgeBiologicalMin;
+            int min = state.CurrentPawn.MinAge;
+            int max = state.CurrentPawn.MaxAge;
+            if (age < min) {
+                age = min;
             }
-            else if (age > Constraints.AgeBiologicalMax || age > state.CurrentPawn.ChronologicalAge) {
-                if (age > Constraints.AgeBiologicalMax) {
-                    age = Constraints.AgeBiologicalMax;
+            else if (age > max || age > state.CurrentPawn.ChronologicalAge) {
+                if (age > max) {
+                    age = max;
                 }
                 else {
                     age = state.CurrentPawn.ChronologicalAge;
