@@ -29,7 +29,6 @@ namespace EdB.PrepareCarefully {
         protected Rect RectButtonDelete;
         protected float SizeEntrySpacing = 4;
         protected ScrollViewVertical scrollView = new ScrollViewVertical();
-        protected ProviderFactions providerFactions = new ProviderFactions();
         protected FactionDef previousFaction = null;
 
         protected float shorterNameWidth = 0;
@@ -215,8 +214,9 @@ namespace EdB.PrepareCarefully {
         }
 
         protected void OpenAddPawnDialog() {
-            FactionDef selectedFaction = previousFaction != null ? previousFaction : providerFactions.NonPlayerHumanlikeFactionDefs.First();
-            var dialog = new Dialog_Options<FactionDef>(providerFactions.NonPlayerHumanlikeFactionDefs) {
+            ProviderFactions factionProvider = PrepareCarefully.Instance.Providers.Factions;
+            FactionDef selectedFaction = previousFaction != null ? previousFaction : factionProvider.NonPlayerHumanlikeFactionDefs.First();
+            var dialog = new Dialog_Options<FactionDef>(factionProvider.NonPlayerHumanlikeFactionDefs) {
                 ConfirmButtonLabel = "EdB.PC.Common.Add".Translate(),
                 CancelButtonLabel = "EdB.PC.Common.Cancel".Translate(),
                 HeaderLabel = "EdB.PC.Panel.PawnList.SelectFaction".Translate(),

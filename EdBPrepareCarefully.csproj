@@ -7,7 +7,7 @@
     <OutputType>Library</OutputType>
     <RootNamespace>EdB.PrepareCarefully</RootNamespace>
     <AssemblyName>EdBPrepareCarefully</AssemblyName>
-    <ReleaseVersion>0.17.1.3</ReleaseVersion>
+    <ReleaseVersion>0.17.1.4</ReleaseVersion>
     <UseMSBuildEngine>False</UseMSBuildEngine>
     <TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
   </PropertyGroup>
@@ -42,6 +42,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Source\AlienRace.cs" />
     <Compile Include="Source\AnimalDatabase.cs" />
     <Compile Include="Source\AnimalRecord.cs" />
     <Compile Include="Source\AnimalRecordKey.cs" />
@@ -65,29 +66,42 @@
     <Compile Include="Source\DragSlider.cs" />
     <Compile Include="Source\EquipmentDatabase.cs" />
     <Compile Include="Source\EquipmentRecord.cs" />
+    <Compile Include="Source\ExtensionsColorGenerator.cs" />
+    <Compile Include="Source\ExtensionsHediffDef.cs" />
     <Compile Include="Source\ExtensionsPawn.cs" />
     <Compile Include="Source\ExtensionsThing.cs" />
     <Compile Include="Source\GenStep_CustomScatterThings.cs" />
-    <Compile Include="Source\HeadType.cs" />
+    <Compile Include="Source\CustomHeadType.cs" />
     <Compile Include="Source\IRelationshipWorker.cs" />
+    <Compile Include="Source\OptionsApparel.cs" />
+    <Compile Include="Source\OptionsHealth.cs" />
     <Compile Include="Source\Page_ConfigureStartingPawns.cs" />
     <Compile Include="Source\PanelRelationshipsOther.cs" />
     <Compile Include="Source\PanelRelationshipsParentChild.cs" />
     <Compile Include="Source\PawnGenerationRequestWrapper.cs" />
     <Compile Include="Source\PawnLayers.cs" />
+    <Compile Include="Source\PawnRace.cs" />
     <Compile Include="Source\PrepareCarefully.cs" />
     <Compile Include="Source\PresetFiles.cs" />
     <Compile Include="Source\PresetLoader.cs" />
     <Compile Include="Source\PresetSaver.cs" />
-    <Compile Include="Source\ProviderHeadType.cs" />
+    <Compile Include="Source\ProviderAlienRaces.cs" />
+    <Compile Include="Source\ProviderApparel.cs" />
+    <Compile Include="Source\ProviderHealthOptions.cs" />
+    <Compile Include="Source\ProviderBodyTypes.cs" />
+    <Compile Include="Source\ProviderHair.cs" />
+    <Compile Include="Source\ProviderHeadTypes.cs" />
     <Compile Include="Source\Providers.cs" />
-    <Compile Include="Source\RaceHeadTypes.cs" />
+    <Compile Include="Source\OptionsBodyType.cs" />
+    <Compile Include="Source\OptionsHair.cs" />
+    <Compile Include="Source\OptionsHeadType.cs" />
     <Compile Include="Source\Randomizer.cs" />
     <Compile Include="Source\RelatedPawn.cs" />
     <Compile Include="Source\RelationshipBuilder.cs" />
     <Compile Include="Source\RelationshipGroup.cs" />
     <Compile Include="Source\ScenPart_CustomAnimal.cs" />
     <Compile Include="Source\ScenPart_CustomScatterThingsNearPlayerStart.cs" />
+    <Compile Include="Source\ScenPart_PrepareCarefullyPawns.cs" />
     <Compile Include="Source\ScrollViewHorizontal.cs" />
     <Compile Include="Source\SelectedAnimal.cs" />
     <Compile Include="Source\EquipmentSelection.cs" />
@@ -106,13 +120,12 @@
     <Compile Include="Source\RelationshipManager.cs" />
     <Compile Include="Source\RelationshipList.cs" />
     <Compile Include="Source\CustomRelationship.cs" />
-    <Compile Include="Source\HealthManager.cs" />
-    <Compile Include="Source\ImplantManager.cs" />
     <Compile Include="Source\Implant.cs" />
     <Compile Include="Source\CustomBodyPart.cs" />
     <Compile Include="Source\CarefullyPawnRelationDef.cs" />
     <Compile Include="Source\UtilityCopy.cs" />
     <Compile Include="Source\Version3\PresetLoaderVersion3.cs" />
+    <Compile Include="Source\Version3\SaveRecordParentChildGroupV3.cs" />
     <Compile Include="Source\Version3\SaveRecordPawnV3.cs" />
     <Compile Include="Source\Version3\SaveRecordRelationshipV3.cs" />
     <Compile Include="Source\Version3\SaveRecordImplantV3.cs" />
@@ -121,12 +134,10 @@
     <Compile Include="Source\ColonistLoader.cs" />
     <Compile Include="Source\Injury.cs" />
     <Compile Include="Source\InjuryOption.cs" />
-    <Compile Include="Source\InjuryManager.cs" />
     <Compile Include="Source\CustomPawn.cs" />
     <Compile Include="Source\PawnColorUtils.cs" />
     <Compile Include="Source\Dialog_Confirm.cs" />
     <Compile Include="Source\ThingCache.cs" />
-    <Compile Include="Source\BodyPartDictionary.cs" />
     <Compile Include="Source\Page_PrepareCarefully.cs" />
     <Compile Include="Source\ITabView.cs" />
     <Compile Include="Source\TabViewPawns.cs" />
@@ -161,13 +172,10 @@
     <Compile Include="Source\WidgetNumberField.cs" />
     <Compile Include="Source\WidgetTable.cs" />
     <Compile Include="Source\ControllerEquipment.cs" />
-    <Compile Include="Source\PanelEquipmentBase.cs" />
     <Compile Include="Source\ExtensionsVector.cs" />
     <Compile Include="Source\WidgetDropdown.cs" />
     <Compile Include="Source\ProviderFactions.cs" />
     <Compile Include="Source\TabViewRelationships.cs" />
-    <Compile Include="Source\ProviderInjuries.cs" />
-    <Compile Include="Source\ProviderImplants.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup />

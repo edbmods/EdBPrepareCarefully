@@ -10,7 +10,7 @@ namespace EdB.PrepareCarefully {
         protected HediffGiver hediffGiver;
         protected bool oldInjury = false;
         protected bool removesPart = false;
-        protected bool chronic = false;
+        protected bool wholeBody = false;
         protected string label = "?";
         protected List<BodyPartDef> validParts = null;
 
@@ -45,15 +45,15 @@ namespace EdB.PrepareCarefully {
             get { return removesPart; }
             set { removesPart = value; }
         }
-
-        public bool Chronic {
-            get { return chronic; }
-            set { chronic = value; }
-        }
-
+        
         public string Label {
             get { return label; }
             set { label = value; }
+        }
+
+        public bool WholeBody {
+            get { return wholeBody; }
+            set { wholeBody = value; }
         }
 
         public List<BodyPartDef> ValidParts {

@@ -191,10 +191,16 @@ namespace EdB.PrepareCarefully {
             }
 
             // Calculate cost for any materials needed for implants.
+            OptionsHealth healthOptions = PrepareCarefully.Instance.Providers.Health.GetOptions(pawn);
             foreach (Implant option in pawn.Implants) {
 
                 // Check if there are any ancestor parts that override the selection.
-                if (PrepareCarefully.Instance.HealthManager.ImplantManager.AncestorIsImplant(pawn, option.BodyPartRecord)) {
+                UniqueBodyPart uniquePart = healthOptions.FindBodyPartsForRecord(option.BodyPartRecord);
+                if (uniquePart == null) {
+                    Log.Warning("Prepare Carefully could not find body part record when computing the cost of an implant: " + option.BodyPartRecord.def.defName);
+                    continue;
+                }
+                if (pawn.AtLeastOneImplantedPart(uniquePart.Ancestors.Select((UniqueBodyPart p) => { return p.Record; }))) {
                     continue;
                 }
 

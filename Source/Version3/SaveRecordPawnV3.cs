@@ -53,7 +53,7 @@ namespace EdB.PrepareCarefully {
                 this.adulthood = pawn.Adulthood.identifier;
             }
             else {
-                this.adulthood = pawn.LastSelectedAdulthood.identifier;
+                this.adulthood = pawn.LastSelectedAdulthoodBackstory.identifier;
             }
             this.childhood = pawn.Childhood.identifier;
             this.skinColor = pawn.Pawn.story.SkinColor;
@@ -91,11 +91,26 @@ namespace EdB.PrepareCarefully {
                     this.apparelColors.Add(color);
                 }
             }
+            OptionsHealth healthOptions = PrepareCarefully.Instance.Providers.Health.GetOptions(pawn);
             foreach (Implant implant in pawn.Implants) {
-                this.implants.Add(new SaveRecordImplantV3(implant));
+                var saveRecord = new SaveRecordImplantV3(implant);
+                if (implant.BodyPartRecord != null) {
+                    UniqueBodyPart part = healthOptions.FindBodyPartsForRecord(implant.BodyPartRecord);
+                    if (part != null && part.Index > 0) {
+                        saveRecord.bodyPartIndex = part.Index;
+                    }
+                }
+                this.implants.Add(saveRecord);
             }
             foreach (Injury injury in pawn.Injuries) {
-                this.injuries.Add(new SaveRecordInjuryV3(injury));
+                var saveRecord = new SaveRecordInjuryV3(injury);
+                if (injury.BodyPartRecord != null) {
+                    UniqueBodyPart part = healthOptions.FindBodyPartsForRecord(injury.BodyPartRecord);
+                    if (part != null && part.Index > 0) {
+                        saveRecord.bodyPartIndex = part.Index;
+                    }
+                }
+                this.injuries.Add(saveRecord);
             }
         }
 

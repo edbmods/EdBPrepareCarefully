@@ -44,9 +44,7 @@ namespace EdB.PrepareCarefully {
         protected List<SelectedPet> petsToRemove = new List<SelectedPet>();
         protected bool active = false;
         protected string filename = "";
-        protected ImplantManager implantManager;
         protected RelationshipManager relationshipManager;
-        protected HealthManager healthManager = new HealthManager();
         protected Randomizer randomizer = new Randomizer();
         protected Configuration config = new Configuration();
         protected State state = new State();
@@ -75,13 +73,7 @@ namespace EdB.PrepareCarefully {
                 return relationshipManager;
             }
         }
-
-        public HealthManager HealthManager {
-            get {
-                return healthManager;
-            }
-        }
-
+        
         public SortField SortField { get; set; }
         public SortOrder NameSortOrder { get; set; }
         public SortOrder CostSortOrder { get; set; }
@@ -95,7 +87,6 @@ namespace EdB.PrepareCarefully {
         }
 
         public PrepareCarefully() {
-            implantManager = new ImplantManager();
             NameSortOrder = SortOrder.Ascending;
             CostSortOrder = SortOrder.Ascending;
             SortField = SortField.Name;
@@ -135,7 +126,26 @@ namespace EdB.PrepareCarefully {
         }
 
         protected void InitializeProviders() {
-            Providers.HeadType = new ProviderHeadType();
+            // Initialize providers.  Note that the initialize order may matter as some providers depend on others.
+            // TODO: For providers that do depend on other providers, consider adding constructor arguments for those
+            // required providers so that they don't need to go back to this singleton to get the references.
+            // If those dependencies get complicated, we might want to separate out the provider construction from
+            // initialization.
+            Providers.AlienRaces = new ProviderAlienRaces();
+            Providers.BodyTypes = new ProviderBodyTypes() {
+                AlienRaceProvider = Providers.AlienRaces
+            };
+            Providers.HeadTypes = new ProviderHeadTypes() {
+                AlienRaceProvider = Providers.AlienRaces
+            };
+            Providers.Hair = new ProviderHair() {
+                AlienRaceProvider = Providers.AlienRaces
+            };
+            Providers.Apparel = new ProviderApparel() {
+                AlienRaceProvider = Providers.AlienRaces
+            };
+            Providers.Health = new ProviderHealthOptions();
+            Providers.Factions = new ProviderFactions();
         }
 
         // TODO: Alpha 14
@@ -342,10 +352,13 @@ namespace EdB.PrepareCarefully {
         public void CreateColonists() {
             colonists.Clear();
             foreach (CustomPawn customPawn in pawns) {
+                if (customPawn.Pawn.workSettings == null) {
+                    customPawn.Pawn.workSettings = new Pawn_WorkSettings(customPawn.Pawn);
+                }
                 customPawn.Pawn.workSettings.EnableAndInitialize();
                 colonists.Add(customPawn.Pawn);
             }
-
+            
             pawnLookup.Clear();
             for (int i = 0; i < pawns.Count; i++) {
                 CustomPawn customPawn = pawns[i];

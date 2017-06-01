@@ -6,6 +6,13 @@
 <!-- NEW: EdB.PC.Dialog.Preset.Error.SaveFailed -->
 <!-- UPDATED: EdB.PC.Panel.RelationshipsParentChild.Title -->
 
+<!-- v0.17.1.4 -->
+<!-- NEW: EdB.PC.Common.Default -->
+<!-- NEW: EdB.PC.Common.NoOptionAvailable -->
+<!-- NEW: EdB.PC.Dialog.Preset.Error.NoCharacter -->
+<!-- NEW: EdB.PC.Page.StartingPawnScenarioPartMessage.Plural -->
+<!-- NEW: EdB.PC.Page.StartingPawnScenarioPartMessage.Singular -->
+
 <LanguageData>
   <EdB.PC.AddParentChild.Header.AddParent>Add a Parent</EdB.PC.AddParentChild.Header.AddParent>
   <EdB.PC.AddParentChild.Error.ParentRequired>You must select a parent</EdB.PC.AddParentChild.Error.ParentRequired>
@@ -31,9 +38,11 @@
   <EdB.PC.Common.Add>Add</EdB.PC.Common.Add>
   <EdB.PC.Common.Next>Next</EdB.PC.Common.Next>
   <EdB.PC.Common.NoOptionSelected>None</EdB.PC.Common.NoOptionSelected>
+  <EdB.PC.Common.NoOptionAvailable>None</EdB.PC.Common.NoOptionAvailable>
   <EdB.PC.Common.Cancel>Cancel</EdB.PC.Common.Cancel>
   <EdB.PC.Common.Close>Close</EdB.PC.Common.Close>
   <EdB.PC.Common.Confirm>Confirm</EdB.PC.Common.Confirm>
+  <EdB.PC.Common.Default>Default</EdB.PC.Common.Default>
 
   <EdB.PC.Dialog.BodyPart.Header>Select a location</EdB.PC.Dialog.BodyPart.Header>
   <EdB.PC.Dialog.BodyPart.Error.Required>You must select a location</EdB.PC.Dialog.BodyPart.Error.Required>
@@ -64,6 +73,7 @@
   <EdB.PC.Dialog.Preset.Error.RelationshipFailed>Could not load a custom relationship from the preset.</EdB.PC.Dialog.Preset.Error.RelationshipFailed>
   <EdB.PC.Dialog.Preset.Error.SaveFailed>There was a problem while saving.  You may not be able to load the preset.</EdB.PC.Dialog.Preset.Error.SaveFailed>
   <EdB.PC.Dialog.Preset.Error.ThingDefFailed>Could not fully load preset.  Check that all required mods are enabled.</EdB.PC.Dialog.Preset.Error.ThingDefFailed>
+  <EdB.PC.Dialog.Preset.Error.NoCharacter>Could not load saved character.  Check that all required mods are enabled.</EdB.PC.Dialog.Preset.Error.NoCharacter>
   <EdB.PC.Dialog.Preset.Loaded>Loaded preset {0}</EdB.PC.Dialog.Preset.Loaded>
 
   <EdB.PC.Dialog.Severity.Header>Select a severity level</EdB.PC.Dialog.Severity.Header>
@@ -136,6 +146,8 @@
     Disable point limits to prepare your starting colonists with no limitations.
   </EdB.PC.Page.Points.UsePoints.Tip>
   <EdB.PC.Page.Title>Prepare Carefully</EdB.PC.Page.Title>
+  <EdB.PC.Page.StartingPawnScenarioPartMessage.Plural>Start with {0} carefully prepared characters.</EdB.PC.Page.StartingPawnScenarioPartMessage.Plural>
+  <EdB.PC.Page.StartingPawnScenarioPartMessage.Singular>Start with 1 carefully prepared character.</EdB.PC.Page.StartingPawnScenarioPartMessage.Singular>
   
   <EdB.PC.Panel.Age.Biological>Biological Age</EdB.PC.Panel.Age.Biological>
   <EdB.PC.Panel.Age.Chronological>Chronological Age</EdB.PC.Panel.Age.Chronological>
@@ -181,6 +193,7 @@ You can play the game with your colonists as they are, but you may see an error 
   <EdB.PC.Panel.PawnList.Delete.Confirm>Are you sure that you want to remove this character?</EdB.PC.Panel.PawnList.Delete.Confirm>
   <EdB.PC.Panel.PawnList.Error.MustSelectFaction>Must select a faction</EdB.PC.Panel.PawnList.Error.MustSelectFaction>
   <EdB.PC.Panel.PawnList.SelectFaction>Select from a Different Faction</EdB.PC.Panel.PawnList.SelectFaction>
+  <EdB.PC.Panel.PawnList.Error.FactionPawnFailed>There was an unexpected error when trying to create the new character</EdB.PC.Panel.PawnList.Error.FactionPawnFailed>
 
   <EdB.PC.Panel.RelationshipsOther.Title>Other Relationships</EdB.PC.Panel.RelationshipsOther.Title>
 

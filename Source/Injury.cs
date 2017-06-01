@@ -103,8 +103,8 @@ namespace EdB.PrepareCarefully {
 
                 HediffComp_GetsOld getsOld = hediff.TryGetComp<HediffComp_GetsOld>();
                 if (getsOld != null) {
-                    hediff.TryGetComp<HediffComp_GetsOld>().IsOld = true;
-                    hediff.TryGetComp<HediffComp_GetsOld>().painFactor = painFactor == null ? OldInjuryUtility.GetRandomPainFactor() : painFactor.Value;
+                    getsOld.IsOld = true;
+                    getsOld.painFactor = painFactor == null ? 0 : painFactor.Value;
                 }
 
                 pawn.health.AddHediff(hediff, BodyPartRecord, null);

@@ -1,32 +1,16 @@
 ﻿using RimWorld;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
+using System.Text;
+using UnityEngine;
 using Verse;
+using Verse.Sound;
 
 namespace EdB.PrepareCarefully {
-    public class InjuryManager {
-        private ProviderInjuries providerInjuries = new ProviderInjuries();
-
-        public InjuryManager() {
-        }
-
-        public IEnumerable<InjuryOption> Options {
-            get {
-                return providerInjuries.InjuryOptions;
-            }
-        }
-
-        public InjuryOption FindOptionByHediffDef(HediffDef def) {
-            foreach (InjuryOption o in Options) {
-                if (o.HediffDef == def) {
-                    return o;
-                }
-            }
-            return null;
-        }
-
-        public bool DoesStageKillPawn(HediffDef def, HediffStage stage) {
+    public static class ExtensionsHediffDef {
+        public static bool DoesStageDefinitelyKillPawn(this HediffDef def, HediffStage stage) {
             if (def.lethalSeverity > -1.0f && stage.minSeverity >= def.lethalSeverity) {
                 return true;
             }
@@ -42,8 +26,10 @@ namespace EdB.PrepareCarefully {
                     }
                 }
             }
+            if (stage.partEfficiencyOffset == -1) {
+                return true;
+            }
             return false;
         }
     }
 }
-

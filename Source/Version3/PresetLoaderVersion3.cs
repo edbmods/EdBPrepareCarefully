@@ -19,6 +19,7 @@ namespace EdB.PrepareCarefully {
             List<SaveRecordPawnV3> pawns = new List<SaveRecordPawnV3>();
             List<SaveRecordPawnV3> hiddenPawns = new List<SaveRecordPawnV3>();
             List<SaveRecordRelationshipV3> savedRelationships = new List<SaveRecordRelationshipV3>();
+            List<SaveRecordParentChildGroupV3> parentChildGroups = new List<SaveRecordParentChildGroupV3>();
             Failed = false;
             int startingPoints = 0;
             bool usePoints = false;
@@ -51,6 +52,16 @@ namespace EdB.PrepareCarefully {
 
                 try {
                     Scribe_Collections.Look<SaveRecordRelationshipV3>(ref savedRelationships, "relationships", LookMode.Deep, null);
+                }
+                catch (Exception e) {
+                    Messages.Message("EdB.PC.Dialog.Preset.Error.Failed".Translate(), MessageSound.SeriousAlert);
+                    Log.Warning(e.ToString());
+                    Log.Warning("Preset was created with the following mods: " + ModString);
+                    return false;
+                }
+
+                try {
+                    Scribe_Collections.Look<SaveRecordParentChildGroupV3>(ref parentChildGroups, "parentChildGroups", LookMode.Deep, null);
                 }
                 catch (Exception e) {
                     Messages.Message("EdB.PC.Dialog.Preset.Error.Failed".Translate(), MessageSound.SeriousAlert);
@@ -162,25 +173,13 @@ namespace EdB.PrepareCarefully {
             try {
                 foreach (SaveRecordPawnV3 p in pawns) {
                     CustomPawn pawn = LoadPawn(p);
-                    allPawns.Add(pawn);
-                    colonistCustomPawns.Add(pawn);
-                }
-            }
-            catch (Exception e) {
-                Messages.Message("EdB.PC.Dialog.Preset.Error.Failed".Translate(), MessageSound.SeriousAlert);
-                Log.Warning(e.ToString());
-                Log.Warning("Preset was created with the following mods: " + ModString);
-                return false;
-            }
-
-
-            List<CustomPawn> hiddenCustomPawns = new List<CustomPawn>();
-            try {
-                if (hiddenPawns != null) {
-                    foreach (SaveRecordPawnV3 p in hiddenPawns) {
-                        CustomPawn pawn = LoadPawn(p);
+                    if (pawn != null) {
                         allPawns.Add(pawn);
-                        hiddenCustomPawns.Add(pawn);
+                        colonistCustomPawns.Add(pawn);
+                    }
+                    else {
+                        Messages.Message("EdB.PC.Dialog.Preset.Error.NoCharacter".Translate(), MessageSound.SeriousAlert);
+                        Log.Warning("Preset was created with the following mods: " + ModString);
                     }
                 }
             }
@@ -191,9 +190,37 @@ namespace EdB.PrepareCarefully {
                 return false;
             }
 
+            List<CustomPawn> hiddenCustomPawns = new List<CustomPawn>();
+            try {
+                if (hiddenPawns != null) {
+                    foreach (SaveRecordPawnV3 p in hiddenPawns) {
+                        CustomPawn pawn = LoadPawn(p);
+                        if (pawn != null) {
+                            allPawns.Add(pawn);
+                            hiddenCustomPawns.Add(pawn);
+                        }
+                        else {
+                            Log.Warning("Prepare Carefully failed to load a hidden character from the preset");
+                        }
+                    }
+                }
+            }
+            catch (Exception e) {
+                Messages.Message("EdB.PC.Dialog.Preset.Error.Failed".Translate(), MessageSound.SeriousAlert);
+                Log.Warning(e.ToString());
+                Log.Warning("Preset was created with the following mods: " + ModString);
+                return false;
+            }
+
+            loadout.ClearPawns();
+            foreach (CustomPawn p in colonistCustomPawns) {
+                loadout.AddPawn(p);
+            }
+            loadout.RelationshipManager.Clear();
+            loadout.RelationshipManager.InitializeWithParentChildPawns(colonistCustomPawns, hiddenCustomPawns);
+
             bool atLeastOneRelationshipFailed = false;
-            List<CustomRelationship> parentChildRelationships = new List<CustomRelationship>();
-            List<CustomRelationship> otherRelationships = new List<CustomRelationship>();
+            List<CustomRelationship> allRelationships = new List<CustomRelationship>();
             if (savedRelationships != null) {
                 try {
                     foreach (SaveRecordRelationshipV3 r in savedRelationships) {
@@ -208,12 +235,7 @@ namespace EdB.PrepareCarefully {
                             Log.Warning("Prepare Carefully failed to load a custom relationship from the preset: " + r);
                         }
                         else {
-                            if (r.relation == "Parent" || r.relation == "Child") {
-                                parentChildRelationships.Add(relationship);
-                            }
-                            else {
-                                otherRelationships.Add(relationship);
-                            }
+                            allRelationships.Add(relationship);
                         }
                     }
                 }
@@ -227,18 +249,50 @@ namespace EdB.PrepareCarefully {
                     Messages.Message("EdB.PC.Dialog.Preset.Error.RelationshipFailed".Translate(), MessageSound.SeriousAlert);
                 }
             }
+            loadout.RelationshipManager.AddRelationships(allRelationships);
 
-            loadout.ClearPawns();
-            foreach (CustomPawn p in colonistCustomPawns) {
-                loadout.AddPawn(p);
+            if (parentChildGroups != null) {
+                foreach (var groupRecord in parentChildGroups) {
+                    CustomParentChildGroup group = new CustomParentChildGroup();
+                    if (groupRecord.parents != null) {
+                        foreach (var id in groupRecord.parents) {
+                            CustomPawn parent = FindPawnById(id, colonistCustomPawns, hiddenCustomPawns);
+                            if (parent != null) {
+                                var pawn = loadout.RelationshipManager.FindParentChildPawn(parent);
+                                if (pawn != null) {
+                                    group.Parents.Add(pawn);
+                                }
+                                else {
+                                    Log.Warning("Prepare Carefully could not load a custom parent relationship because it could not find a matching pawn in the relationship manager.");
+                                }
+                            }
+                            else {
+                                Log.Warning("Prepare Carefully could not load a custom parent relationship because it could not find a pawn with the saved identifer.");
+                            }
+                        }
+                    }
+                    if (groupRecord.children != null) {
+                        foreach (var id in groupRecord.children) {
+                            CustomPawn child = FindPawnById(id, colonistCustomPawns, hiddenCustomPawns);
+                            if (child != null) {
+                                var pawn = loadout.RelationshipManager.FindParentChildPawn(child);
+                                if (pawn != null) {
+                                    group.Children.Add(pawn);
+                                }
+                                else {
+                                    Log.Warning("Prepare Carefully could not load a custom child relationship because it could not find a matching pawn in the relationship manager.");
+                                }
+                            }
+                            else {
+                                Log.Warning("Prepare Carefully could not load a custom child relationship because it could not find a pawn with the saved identifer.");
+                            }
+                        }
+                    }
+                    loadout.RelationshipManager.ParentChildGroups.Add(group);
+                }
             }
+            loadout.RelationshipManager.ReassignHiddenPawnIndices();
 
-            loadout.RelationshipManager.Clear();
-            foreach (CustomRelationship r in otherRelationships) {
-                loadout.RelationshipManager.AddRelationship(r.def, r.source, r.target);
-            }
-            loadout.RelationshipManager.InitializeParentChildRelationshipsForLoadedPawns(parentChildRelationships, colonistCustomPawns, hiddenCustomPawns);
-            
             if (Failed) {
                 Messages.Message(ModString, MessageSound.Silent);
                 Messages.Message("EdB.PC.Dialog.Preset.Error.ThingDefFailed".Translate(), MessageSound.SeriousAlert);
@@ -253,6 +307,10 @@ namespace EdB.PrepareCarefully {
             PawnKindDef pawnKindDef = null;
             if (record.pawnKindDef != null) {
                 pawnKindDef = DefDatabase<PawnKindDef>.GetNamedSilentFail(record.pawnKindDef);
+                if (pawnKindDef == null) {
+                    Log.Warning("Prepare Carefully could not find the pawn kind definition for the saved character: \"" + record.pawnKindDef + "\"");
+                    return null;
+                }
             }
             
             ThingDef pawnThingDef = ThingDefOf.Human;
@@ -313,6 +371,10 @@ namespace EdB.PrepareCarefully {
             }
             else {
                 pawn.MelaninLevel = PawnColorUtils.FindMelaninValueFromColor(record.skinColor);
+            }
+            // Set the skin color (only for Alien Races).
+            if (pawn.AlienRace != null) {
+                pawn.SkinColor = record.skinColor;
             }
             
             Backstory backstory = FindBackstory(record.childhood);
@@ -423,19 +485,22 @@ namespace EdB.PrepareCarefully {
                 pawn.SetSelectedStuff(layer, stuffDef);
                 pawn.SetColor(layer, record.apparelColors[i]);
             }
-            
+
+            OptionsHealth healthOptions = PrepareCarefully.Instance.Providers.Health.GetOptions(pawn);
             for (int i = 0; i < record.implants.Count; i++) {
                 SaveRecordImplantV3 implantRecord = record.implants[i];
-                BodyPartRecord bodyPart = PrepareCarefully.Instance.HealthManager.ImplantManager.FindReplaceableBodyPartByName(pawn.Pawn, implantRecord.bodyPart);
-                if (bodyPart == null) {
-                    Log.Warning("Could not find replaceable body part definition \"" + implantRecord.bodyPart + "\"");
+                UniqueBodyPart uniqueBodyPart = healthOptions.FindBodyPartByName(implantRecord.bodyPart, implantRecord.bodyPartIndex != null ? implantRecord.bodyPartIndex.Value : 0);
+                if (uniqueBodyPart == null) {
+                    Log.Warning("Prepare Carefully could not add the implant because it could not find the needed body part \"" + implantRecord.bodyPart + "\""
+                        + (implantRecord.bodyPartIndex != null ? " with index " + implantRecord.bodyPartIndex : ""));
                     Failed = true;
                     continue;
                 }
+                BodyPartRecord bodyPart = uniqueBodyPart.Record;
                 if (implantRecord.recipe != null) {
                     RecipeDef recipeDef = FindRecipeDef(implantRecord.recipe);
                     if (recipeDef == null) {
-                        Log.Warning("Could not find recipe definition \"" + implantRecord.recipe + "\"");
+                        Log.Warning("Prepare Carefully could not add the implant because it could not find the recipe definition \"" + implantRecord.recipe + "\"");
                         Failed = true;
                         continue;
                     }
@@ -447,7 +512,7 @@ namespace EdB.PrepareCarefully {
                         }
                     }
                     if (!found) {
-                        Log.Warning("Body part \"" + bodyPart.def.defName + "\" does not match recipe used to replace it");
+                        Log.Warning("Prepare carefully could not apply the saved implant recipe \"" + implantRecord.recipe + "\" to the body part \"" + bodyPart.def.defName + "\".  Recipe does not support that part.");
                         Failed = true;
                         continue;
                     }
@@ -462,24 +527,27 @@ namespace EdB.PrepareCarefully {
             foreach (var injuryRecord in record.injuries) {
                 HediffDef def = DefDatabase<HediffDef>.GetNamedSilentFail(injuryRecord.hediffDef);
                 if (def == null) {
-                    Log.Warning("Could not find hediff definition \"" + injuryRecord.hediffDef + "\"");
+                    Log.Warning("Prepare Carefully could not add the injury because it could not find the hediff definition \"" + injuryRecord.hediffDef + "\"");
                     Failed = true;
                     continue;
                 }
-                InjuryOption option = PrepareCarefully.Instance.HealthManager.InjuryManager.FindOptionByHediffDef(def);
+                InjuryOption option = healthOptions.FindInjuryOptionByHediffDef(def);
                 if (option == null) {
-                    Log.Warning("Could not find injury option for \"" + injuryRecord.hediffDef + "\"");
+                    Log.Warning("Prepare Carefully could not add the injury because it could not find a matching injury option for the saved hediff \"" + injuryRecord.hediffDef + "\"");
                     Failed = true;
                     continue;
                 }
                 BodyPartRecord bodyPart = null;
                 if (injuryRecord.bodyPart != null) {
-                    bodyPart = PrepareCarefully.Instance.HealthManager.FirstBodyPartRecord(pawn, injuryRecord.bodyPart);
-                    if (bodyPart == null) {
-                        Log.Warning("Could not find body part \"" + injuryRecord.bodyPart + "\"");
+                    UniqueBodyPart uniquePart = healthOptions.FindBodyPartByName(injuryRecord.bodyPart,
+                        injuryRecord.bodyPartIndex != null ? injuryRecord.bodyPartIndex.Value : 0);
+                    if (uniquePart == null) {
+                        Log.Warning("Prepare Carefully could not add the injury because it could not find the needed body part \"" + injuryRecord.bodyPart + "\""
+                            + (injuryRecord.bodyPartIndex != null ? " with index " + injuryRecord.bodyPartIndex : ""));
                         Failed = true;
                         continue;
                     }
+                    bodyPart = uniquePart.Record;
                 }
                 Injury injury = new Injury();
                 injury.Option = option;
@@ -497,6 +565,18 @@ namespace EdB.PrepareCarefully {
             pawn.ClearPawnCaches();
 
             return pawn;
+        }
+
+        protected CustomPawn FindPawnById(string id, List<CustomPawn> colonistPawns, List<CustomPawn> hiddenPawns) {
+            CustomPawn result = colonistPawns.FirstOrDefault((CustomPawn c) => {
+                return id == c.Id;
+            });
+            if (result == null) {
+                result = hiddenPawns.FirstOrDefault((CustomPawn c) => {
+                    return id == c.Id;
+                });
+            }
+            return result;
         }
 
         public CustomRelationship LoadRelationship(SaveRecordRelationshipV3 saved, List<CustomPawn> pawns) {

@@ -25,37 +25,12 @@ namespace EdB.PrepareCarefully {
         protected int pawnLayerLabelIndex = -1;
         protected CustomPawn pawnLayerLabelModel = null;
         protected string pawnLayerLabel = null;
-
-        protected FieldInfo apparelGraphicsField = null;
-        protected List<List<ThingDef>> apparelLists = new List<List<ThingDef>>(PawnLayers.Count);
-        protected Dictionary<BodyType, string> bodyTypeLabels = new Dictionary<BodyType, string>();
-        protected List<HairDef> maleHairDefs = new List<HairDef>();
-        protected List<HairDef> femaleHairDefs = new List<HairDef>();
+        
         protected List<Color> skinColors = new List<Color>();
-        protected List<Color> hairColors = new List<Color>();
-        protected List<BodyType> maleBodyTypes = new List<BodyType>();
-        protected List<BodyType> femaleBodyTypes = new List<BodyType>();
         protected Dictionary<ThingDef, List<ThingDef>> apparelStuffLookup = new Dictionary<ThingDef, List<ThingDef>>();
         protected int selectedStuff = 0;
-
-
+        
         public PanelAppearance() {
-            maleBodyTypes.Add(BodyType.Male);
-            maleBodyTypes.Add(BodyType.Thin);
-            maleBodyTypes.Add(BodyType.Fat);
-            maleBodyTypes.Add(BodyType.Hulk);
-
-            femaleBodyTypes.Add(BodyType.Female);
-            femaleBodyTypes.Add(BodyType.Thin);
-            femaleBodyTypes.Add(BodyType.Fat);
-            femaleBodyTypes.Add(BodyType.Hulk);
-
-            bodyTypeLabels.Add(BodyType.Fat, "EdB.PC.Pawn.BodyType.Fat".Translate());
-            bodyTypeLabels.Add(BodyType.Hulk, "EdB.PC.Pawn.BodyType.Hulk".Translate());
-            bodyTypeLabels.Add(BodyType.Thin, "EdB.PC.Pawn.BodyType.Thin".Translate());
-            bodyTypeLabels.Add(BodyType.Male, "EdB.PC.Pawn.BodyType.Average".Translate());
-            bodyTypeLabels.Add(BodyType.Female, "EdB.PC.Pawn.BodyType.Average".Translate());
-
             pawnLayers = new List<int>(new int[] {
                 PawnLayers.BodyType,
                 PawnLayers.HeadType,
@@ -78,63 +53,6 @@ namespace EdB.PrepareCarefully {
                 delegate { this.ChangePawnLayer(PawnLayers.Accessory); },
                 delegate { this.ChangePawnLayer(PawnLayers.Hat); }
             });
-
-            // Initialize and sort hair lists.
-            foreach (HairDef hairDef in DefDatabase<HairDef>.AllDefs) {
-                if (hairDef.hairGender != HairGender.Male) {
-                    femaleHairDefs.Add(hairDef);
-                }
-                if (hairDef.hairGender != HairGender.Female) {
-                    maleHairDefs.Add(hairDef);
-                }
-            }
-            femaleHairDefs.Sort((HairDef x, HairDef y) => {
-                if (x.label == null) {
-                    return -1;
-                }
-                else if (y.label == null) {
-                    return 1;
-                }
-                else {
-                    return x.label.CompareTo(y.label);
-                }
-            });
-            maleHairDefs.Sort((HairDef x, HairDef y) => {
-                if (x.label == null) {
-                    return -1;
-                }
-                else if (y.label == null) {
-                    return 1;
-                }
-                else {
-                    return x.label.CompareTo(y.label);
-                }
-            });
-
-            for (int i = 0; i < PawnLayers.Count; i++) {
-                if (PawnLayers.IsApparelLayer(i)) {
-
-                    this.apparelLists.Add(new List<ThingDef>());
-                }
-                else {
-
-                    this.apparelLists.Add(null);
-                }
-            }
-
-            // Get all apparel options
-            foreach (ThingDef apparelDef in DefDatabase<ThingDef>.AllDefs) {
-                if (apparelDef.apparel == null) {
-                    continue;
-                }
-                int layer = PawnLayers.ToPawnLayerIndex(apparelDef.apparel);
-                if (layer != -1) {
-                    apparelLists[layer].Add(apparelDef);
-                }
-            }
-
-            // Get the apparel graphics private method so that we can call it later
-            apparelGraphicsField = typeof(PawnGraphicSet).GetField("apparelGraphics", BindingFlags.Instance | BindingFlags.NonPublic);
 
             // Organize stuff by its category
             Dictionary<StuffCategoryDef, HashSet<ThingDef>> stuffByCategory = new Dictionary<StuffCategoryDef, HashSet<ThingDef>>();
@@ -208,33 +126,6 @@ namespace EdB.PrepareCarefully {
                 }
             }
 
-            // Sort the apparel lists
-            foreach (var list in apparelLists) {
-                if (list != null) {
-                    list.Sort((ThingDef x, ThingDef y) => {
-                        if (x.label == null) {
-                            return -1;
-                        }
-                        else if (y.label == null) {
-                            return 1;
-                        }
-                        else {
-                            return x.label.CompareTo(y.label);
-                        }
-                    });
-                }
-            }
-
-            // Set up default hair colors
-            hairColors.Add(new Color(0.2f, 0.2f, 0.2f));
-            hairColors.Add(new Color(0.31f, 0.28f, 0.26f));
-            hairColors.Add(new Color(0.25f, 0.2f, 0.15f));
-            hairColors.Add(new Color(0.3f, 0.2f, 0.1f));
-            hairColors.Add(new Color(0.3529412f, 0.227451f, 0.1254902f));
-            hairColors.Add(new Color(0.5176471f, 0.3254902f, 0.1843137f));
-            hairColors.Add(new Color(0.7568628f, 0.572549f, 0.3333333f));
-            hairColors.Add(new Color(0.9294118f, 0.7921569f, 0.6117647f));
-
             // Set up default skin colors
             foreach (Color color in PawnColorUtils.Colors) {
                 skinColors.Add(color);
@@ -258,7 +149,7 @@ namespace EdB.PrepareCarefully {
             RectLayerSelector = new Rect(panelPadding.x, panelPadding.y, panelContentSize.x, buttonHeight);
             RectPortrait = new Rect(panelPadding.x, RectLayerSelector.yMax + 8, panelContentSize.x, panelContentSize.x);
             RectButtonRandomize = new Rect(RectPortrait.xMax - randomizeButtonSize.x - 12, RectPortrait.y + 12,
-                                           randomizeButtonSize.x, randomizeButtonSize.y);
+                randomizeButtonSize.x, randomizeButtonSize.y);
             RectGenderFemale = new Rect(RectPortrait.x + 8, RectPortrait.y + 6, 18, 24);
             RectGenderMale = new Rect(RectGenderFemale.xMax + 2, RectPortrait.y + 6, 20, 24);
         }
@@ -273,18 +164,6 @@ namespace EdB.PrepareCarefully {
                 int layerCount = this.pawnLayerActions.Count;
                 for (int i = 0; i < layerCount; i++) {
                     int pawnLayer = pawnLayers[i];
-                    // Only add apparel layers that have items.
-                    if (PawnLayers.IsApparelLayer(pawnLayer)) {
-                        if (pawnLayer == PawnLayers.Accessory) {
-                            if (apparelLists[pawnLayer] == null || apparelLists[pawnLayer].Count == 0) {
-                                continue;
-                            }
-                        }
-                    }
-                    // Disable head type selection when no valid head type could be found for the pawn (i.e. headType is null).
-                    if (pawnLayer == PawnLayers.HeadType && customPawn.HeadType == null) {
-                        continue;
-                    }
                     label = PawnLayers.Label(pawnLayers[i]);
                     list.Add(new FloatMenuOption(label, this.pawnLayerActions[i], MenuOptionPriority.Default, null, null, 0, null, null));
                 }
@@ -307,61 +186,101 @@ namespace EdB.PrepareCarefully {
                 TooltipHandler.TipRegion(alertRect, customPawn.ApparelConflict);
             }
 
-            // Draw apparel selector
+            // Draw selector field.
             Rect fieldRect = new Rect(RectPortrait.x, RectPortrait.y + RectPortrait.height + 5, RectPortrait.width, 28);
-            DrawFieldSelector(fieldRect, PawnLayerLabel.CapitalizeFirst(),
-                () => {
-                    if (this.selectedPawnLayer == PawnLayers.HeadType) {
+            Action previousSelectionAction = null;
+            Action nextSelectionAction = null;
+            Action clickAction = null;
+
+            OptionsApparel apparelOptions = null;
+            List<ThingDef> apparelList = null;
+            OptionsHair hairOptions  = null;
+            List<HairDef> hairList = null;
+            if (this.selectedPawnLayer == PawnLayers.Hair) {
+                hairOptions = PrepareCarefully.Instance.Providers.Hair.GetHairsForRace(customPawn);
+                hairList = hairOptions.GetHairs(customPawn.Gender);
+            }
+            else if (PawnLayers.IsApparelLayer(this.selectedPawnLayer)) {
+                apparelOptions = PrepareCarefully.Instance.Providers.Apparel.GetApparelForRace(customPawn);
+                apparelList = apparelOptions.GetApparel(this.selectedPawnLayer);
+            }
+
+            if (this.selectedPawnLayer == PawnLayers.HeadType) {
+                int headTypeCount = PrepareCarefully.Instance.Providers.HeadTypes.GetHeadTypes(customPawn).Count();
+                if (customPawn.HeadType != null && headTypeCount > 1) {
+                    previousSelectionAction = () => {
                         SoundDefOf.TickTiny.PlayOneShotOnCamera();
                         SelectNextHead(customPawn, -1);
-                    }
-                    else if (this.selectedPawnLayer == PawnLayers.BodyType) {
-                        SoundDefOf.TickTiny.PlayOneShotOnCamera();
-                        SelectNextBodyType(customPawn, -1);
-                    }
-                    else if (this.selectedPawnLayer == PawnLayers.Hair) {
-                        SoundDefOf.TickTiny.PlayOneShotOnCamera();
-                        SelectNextHair(customPawn, -1);
-                    }
-                    else {
-                        SoundDefOf.TickTiny.PlayOneShotOnCamera();
-                        SelectNextApparel(customPawn, -1);
-                    }
-                },
-                () => {
-                    if (this.selectedPawnLayer == PawnLayers.HeadType) {
+                    };
+                    nextSelectionAction = () => {
                         SoundDefOf.TickTiny.PlayOneShotOnCamera();
                         SelectNextHead(customPawn, 1);
-                    }
-                    else if (this.selectedPawnLayer == PawnLayers.BodyType) {
-                        SoundDefOf.TickTiny.PlayOneShotOnCamera();
-                        SelectNextBodyType(customPawn, 1);
-                    }
-                    else if (this.selectedPawnLayer == PawnLayers.Hair) {
-                        SoundDefOf.TickTiny.PlayOneShotOnCamera();
-                        SelectNextHair(customPawn, 1);
-                    }
-                    else {
-                        SelectNextApparel(customPawn, 1);
-                        SoundDefOf.TickTiny.PlayOneShotOnCamera();
-                    }
+                    };
                 }
-            );
-
-            if (Widgets.ButtonInvisible(fieldRect, false)) {
-                if (this.selectedPawnLayer == PawnLayers.HeadType) {
-                    ShowHeadDialog(customPawn);
-                }
-                else if (this.selectedPawnLayer == PawnLayers.BodyType) {
-                    ShowBodyTypeDialog(customPawn);
-                }
-                else if (this.selectedPawnLayer == PawnLayers.Hair) {
-                    ShowHairDialog(customPawn);
-                }
-                else {
-                    ShowApparelDialog(customPawn, this.selectedPawnLayer);
+                if (customPawn.HeadType != null && headTypeCount > 0) {
+                    clickAction = () => {
+                        ShowHeadDialog(customPawn);
+                    };
                 }
             }
+            else if (this.selectedPawnLayer == PawnLayers.BodyType) {
+                if (PrepareCarefully.Instance.Providers.BodyTypes.GetBodyTypesForPawn(customPawn.Pawn).Count > 1) {
+                    previousSelectionAction = () => {
+                        SoundDefOf.TickTiny.PlayOneShotOnCamera();
+                        SelectNextBodyType(customPawn, -1);
+                    };
+                    nextSelectionAction = () => {
+                        SoundDefOf.TickTiny.PlayOneShotOnCamera();
+                        SelectNextBodyType(customPawn, 1);
+                    };
+                }
+                clickAction = () => {
+                    ShowBodyTypeDialog(customPawn);
+                };
+            }
+            else if (this.selectedPawnLayer == PawnLayers.Hair) {
+                if (hairList.Count > 1) {
+                    previousSelectionAction = () => {
+                        SoundDefOf.TickTiny.PlayOneShotOnCamera();
+                        SelectNextHair(customPawn, -1);
+                    };
+                    nextSelectionAction = () => {
+                        SoundDefOf.TickTiny.PlayOneShotOnCamera();
+                        SelectNextHair(customPawn, 1);
+                    };
+                }
+                if (hairList.Count > 0) {
+                    clickAction = () => {
+                        ShowHairDialog(customPawn);
+                    };
+                }
+            }
+            else {
+                if (apparelList.Count > 1) {
+                    previousSelectionAction = () => {
+                        SoundDefOf.TickTiny.PlayOneShotOnCamera();
+                        SelectNextApparel(customPawn, -1);
+                    };
+                    nextSelectionAction = () => {
+                        SelectNextApparel(customPawn, 1);
+                        SoundDefOf.TickTiny.PlayOneShotOnCamera();
+                    };
+                }
+                if (apparelList.Count > 0) {
+                    clickAction = () => {
+                        ShowApparelDialog(customPawn, this.selectedPawnLayer);
+                    };
+                }
+            }
+
+            string selectorLabel = PawnLayerLabel.CapitalizeFirst();
+            if (hairList != null && hairList.Count == 0) {
+                selectorLabel = "EdB.PC.Common.NoOptionAvailable".Translate();
+            }
+            if (apparelList != null && apparelList.Count == 0) {
+                selectorLabel = "EdB.PC.Common.NoOptionAvailable".Translate();
+            }
+            DrawFieldSelector(fieldRect, selectorLabel, previousSelectionAction, nextSelectionAction, clickAction);
 
             float cursorY = fieldRect.y + 34;
 
@@ -391,12 +310,11 @@ namespace EdB.PrepareCarefully {
                                 index = 0;
                             }
                             customPawn.SetSelectedStuff(selectedPawnLayer, this.apparelStuffLookup[apparelDef][index]);
+                        },
+                        () => {
+                            ShowApparelStuffDialog(customPawn, this.selectedPawnLayer);
                         }
                     );
-
-                    if (Widgets.ButtonInvisible(stuffFieldRect, false)) {
-                        ShowApparelStuffDialog(customPawn, this.selectedPawnLayer);
-                    }
 
                     cursorY += stuffFieldRect.height;
                 }
@@ -405,21 +323,31 @@ namespace EdB.PrepareCarefully {
 
             // Draw Color Selector
             if (PawnLayers.IsApparelLayer(selectedPawnLayer)) {
-                ThingDef def = customPawn.GetSelectedApparel(selectedPawnLayer);
-                if (def != null && def.HasComp(typeof(CompColorable))) {
-                    if (def.MadeFromStuff) {
-                        DrawColorSelector(customPawn, cursorY, null);
-                    }
-                    else {
-                        DrawColorSelector(customPawn, cursorY, def.colorGenerator);
+                if (apparelList != null && apparelList.Count > 0) {
+                    ThingDef def = customPawn.GetSelectedApparel(selectedPawnLayer);
+                    if (def != null && def.HasComp(typeof(CompColorable))) {
+                        if (def.MadeFromStuff) {
+                            DrawColorSelector(customPawn, cursorY, null);
+                        }
+                        else {
+                            DrawColorSelector(customPawn, cursorY, def.colorGenerator);
+                        }
                     }
                 }
             }
             else if (selectedPawnLayer == PawnLayers.BodyType || selectedPawnLayer == PawnLayers.HeadType) {
-                DrawSkinSelector(customPawn, cursorY);
+                AlienRace alienRace = customPawn.AlienRace;
+                if (alienRace == null || alienRace.UseMelaninLevels) {
+                    DrawHumanlikeColorSelector(customPawn, cursorY);
+                }
+                else {
+                    DrawAlienPawnColorSelector(customPawn, cursorY, alienRace.PrimaryColors, true);
+                }
             }
             else if (selectedPawnLayer == PawnLayers.Hair) {
-                DrawColorSelector(customPawn, cursorY, hairColors, true);
+                if (hairList != null && hairList.Count > 0) {
+                    DrawColorSelector(customPawn, cursorY, hairOptions.Colors, true);
+                }
             }
 
             // Random button
@@ -471,64 +399,47 @@ namespace EdB.PrepareCarefully {
             GUI.color = Color.white;
         }
 
-        protected List<Color> colorSelectorColors = new List<Color>();
         protected void DrawColorSelector(CustomPawn customPawn, float cursorY, ColorGenerator generator) {
-            colorSelectorColors.Clear();
-            if (generator != null) {
-                Type generatorType = generator.GetType();
-                if (typeof(ColorGenerator_Options).Equals(generatorType)) {
-                    ColorGenerator_Options gen = generator as ColorGenerator_Options;
-                    foreach (ColorOption option in gen.options) {
-                        if (option.only != ColorValidator.ColorEmpty) {
-                            colorSelectorColors.Add(option.only);
-                        }
-                    }
-                }
-                else if (typeof(ColorGenerator_White).Equals(generatorType)) {
-                    colorSelectorColors.Add(Color.white);
-                }
-                else if (typeof(ColorGenerator_Single).Equals(generatorType)) {
-                    ColorGenerator_Single gen = generator as ColorGenerator_Single;
-                    colorSelectorColors.Add(gen.color);
-                }
-            }
-            DrawColorSelector(customPawn, cursorY, colorSelectorColors, true);
+            DrawColorSelector(customPawn, cursorY, generator != null ? generator.GetColorList() : null, true);
         }
 
-        protected static Vector2 SwatchSize = new Vector2(16, 16);
+        protected static float SwatchLimit = 210;
+        protected static Vector2 SwatchSize = new Vector2(15, 15);
         protected static Vector2 SwatchPosition = new Vector2(18, 320);
-        protected static Vector2 SwatchSpacing = new Vector2(22, 22);
+        protected static Vector2 SwatchSpacing = new Vector2(21, 21);
         protected static Color ColorSwatchBorder = new Color(0.77255f, 0.77255f, 0.77255f);
         protected static Color ColorSwatchSelection = new Color(0.9098f, 0.9098f, 0.9098f);
         protected void DrawColorSelector(CustomPawn customPawn, float cursorY, List<Color> colors, bool allowAnyColor) {
             Color currentColor = customPawn.GetColor(selectedPawnLayer);
             Rect rect = new Rect(SwatchPosition.x, cursorY, SwatchSize.x, SwatchSize.y);
-            foreach (Color color in colors) {
-                bool selected = (color == currentColor);
-                if (selected) {
-                    Rect selectionRect = new Rect(rect.x - 2, rect.y - 2, SwatchSize.x + 4, SwatchSize.y + 4);
-                    GUI.color = ColorSwatchSelection;
-                    GUI.DrawTexture(selectionRect, BaseContent.WhiteTex);
-                }
-
-                Rect borderRect = new Rect(rect.x - 1, rect.y - 1, SwatchSize.x + 2, SwatchSize.y + 2);
-                GUI.color = ColorSwatchBorder;
-                GUI.DrawTexture(borderRect, BaseContent.WhiteTex);
-
-                GUI.color = color;
-                GUI.DrawTexture(rect, BaseContent.WhiteTex);
-
-                if (!selected) {
-                    if (Widgets.ButtonInvisible(rect, false)) {
-                        SetColor(customPawn, color);
-                        currentColor = color;
+            if (colors != null) {
+                foreach (Color color in colors) {
+                    bool selected = (color == currentColor);
+                    if (selected) {
+                        Rect selectionRect = new Rect(rect.x - 2, rect.y - 2, SwatchSize.x + 4, SwatchSize.y + 4);
+                        GUI.color = ColorSwatchSelection;
+                        GUI.DrawTexture(selectionRect, BaseContent.WhiteTex);
                     }
-                }
 
-                rect.x += SwatchSpacing.x;
-                if (rect.x >= 227) {
-                    rect.y += SwatchSpacing.y;
-                    rect.x = SwatchPosition.x;
+                    Rect borderRect = new Rect(rect.x - 1, rect.y - 1, SwatchSize.x + 2, SwatchSize.y + 2);
+                    GUI.color = ColorSwatchBorder;
+                    GUI.DrawTexture(borderRect, BaseContent.WhiteTex);
+
+                    GUI.color = color;
+                    GUI.DrawTexture(rect, BaseContent.WhiteTex);
+
+                    if (!selected) {
+                        if (Widgets.ButtonInvisible(rect, false)) {
+                            SetColor(customPawn, color);
+                            currentColor = color;
+                        }
+                    }
+
+                    rect.x += SwatchSpacing.x;
+                    if (rect.x >= SwatchLimit - SwatchSize.x) {
+                        rect.y += SwatchSpacing.y;
+                        rect.x = SwatchPosition.x;
+                    }
                 }
             }
 
@@ -565,6 +476,75 @@ namespace EdB.PrepareCarefully {
             GUI.color = Color.white;
         }
 
+        protected void DrawAlienPawnColorSelector(CustomPawn customPawn, float cursorY, List<Color> colors, bool allowAnyColor) {
+            Color currentColor = customPawn.Pawn.story.SkinColor;
+            Color clickedColor = currentColor;
+            Rect rect = new Rect(SwatchPosition.x, cursorY, SwatchSize.x, SwatchSize.y);
+            foreach (Color color in colors) {
+                bool selected = (color == currentColor);
+                if (selected) {
+                    Rect selectionRect = new Rect(rect.x - 2, rect.y - 2, SwatchSize.x + 4, SwatchSize.y + 4);
+                    GUI.color = ColorSwatchSelection;
+                    GUI.DrawTexture(selectionRect, BaseContent.WhiteTex);
+                }
+
+                Rect borderRect = new Rect(rect.x - 1, rect.y - 1, SwatchSize.x + 2, SwatchSize.y + 2);
+                GUI.color = ColorSwatchBorder;
+                GUI.DrawTexture(borderRect, BaseContent.WhiteTex);
+
+                GUI.color = color;
+                GUI.DrawTexture(rect, BaseContent.WhiteTex);
+
+                if (!selected) {
+                    if (Widgets.ButtonInvisible(rect, false)) {
+                        clickedColor = color;
+                    }
+                }
+
+                rect.x += SwatchSpacing.x;
+                if (rect.x >= SwatchLimit - SwatchSize.x) {
+                    rect.y += SwatchSpacing.y;
+                    rect.x = SwatchPosition.x;
+                }
+            }
+
+            GUI.color = Color.white;
+            if (!allowAnyColor) {
+                return;
+            }
+
+            if (rect.x != SwatchPosition.x) {
+                rect.x = SwatchPosition.x;
+                rect.y += SwatchSpacing.y;
+            }
+            rect.y += 4;
+            rect.width = 49;
+            rect.height = 49;
+            GUI.color = ColorSwatchBorder;
+            GUI.DrawTexture(rect, BaseContent.WhiteTex);
+            GUI.color = currentColor;
+            GUI.DrawTexture(rect.ContractedBy(1), BaseContent.WhiteTex);
+
+            float originalR = currentColor.r;
+            float originalG = currentColor.g;
+            float originalB = currentColor.b;
+            GUI.color = Color.red;
+            float r = GUI.HorizontalSlider(new Rect(rect.x + 56, rect.y - 1, 136, 16), currentColor.r, 0, 1);
+            GUI.color = Color.green;
+            float g = GUI.HorizontalSlider(new Rect(rect.x + 56, rect.y + 19, 136, 16), currentColor.g, 0, 1);
+            GUI.color = Color.blue;
+            float b = GUI.HorizontalSlider(new Rect(rect.x + 56, rect.y + 39, 136, 16), currentColor.b, 0, 1);
+            if (!CloseEnough(r, originalR) || !CloseEnough(g, originalG) || !CloseEnough(b, originalB)) {
+                clickedColor = new Color(r, g, b);
+            }
+
+            GUI.color = Color.white;
+
+            if (clickedColor != currentColor) {
+                customPawn.SkinColor = clickedColor;
+            }
+        }
+
         protected bool CloseEnough(float a, float b) {
             if (a > b - 0.0001f && a < b + 0.0001f) {
                 return true;
@@ -578,7 +558,7 @@ namespace EdB.PrepareCarefully {
             customPawn.SetColor(selectedPawnLayer, color);
         }
 
-        protected void DrawSkinSelector(CustomPawn customPawn, float cursorY) {
+        protected void DrawHumanlikeColorSelector(CustomPawn customPawn, float cursorY) {
             int currentSwatchIndex = PawnColorUtils.GetLeftIndexForValue(customPawn.MelaninLevel);
             Color currentSwatchColor = PawnColorUtils.Colors[currentSwatchIndex];
 
@@ -616,7 +596,7 @@ namespace EdB.PrepareCarefully {
 
                 // Advance the swatch rect cursor position and wrap it if necessary.
                 swatchRect.x += SwatchSpacing.x;
-                if (swatchRect.x >= 227) {
+                if (swatchRect.x >= SwatchLimit - SwatchSize.x) {
                     swatchRect.y += SwatchSpacing.y;
                     swatchRect.x = SwatchPosition.x;
                 }
@@ -663,53 +643,60 @@ namespace EdB.PrepareCarefully {
                 if (clickedIndex != -1) {
                     currentSwatchIndex = clickedIndex;
                 }
-                customPawn.MelaninLevel = PawnColorUtils.GetValueFromRelativeLerp(currentSwatchIndex, newValue);
+                float melaninLevel = PawnColorUtils.GetValueFromRelativeLerp(currentSwatchIndex, newValue);
+                customPawn.MelaninLevel = melaninLevel;
             }
         }
 
-        protected void DrawFieldSelector(Rect fieldRect, string label, Action previousAction, Action nextAction) {
-            DrawFieldSelector(fieldRect, label, previousAction, nextAction, Style.ColorText);
+        protected void DrawFieldSelector(Rect fieldRect, string label, Action previousAction, Action nextAction, Action clickAction) {
+            DrawFieldSelector(fieldRect, label, previousAction, nextAction, clickAction, Style.ColorText);
         }
 
-        protected void DrawFieldSelector(Rect fieldRect, string label, Action previousAction, Action nextAction, Color labelColor) {
+        protected void DrawFieldSelector(Rect fieldRect, string label, Action previousAction, Action nextAction, Action clickAction, Color labelColor) {
             GUI.color = Color.white;
             Widgets.DrawAtlas(fieldRect, Textures.TextureFieldAtlas);
 
             Text.Anchor = TextAnchor.MiddleCenter;
             fieldRect.y += 2;
             GUI.color = labelColor;
-            if (fieldRect.Contains(Event.current.mousePosition)) {
+            if (clickAction != null && fieldRect.Contains(Event.current.mousePosition)) {
                 GUI.color = Color.white;
             }
             Widgets.Label(fieldRect, label);
             GUI.color = Color.white;
 
-            Rect prevButtonRect = new Rect(fieldRect.x - Textures.TextureButtonPrevious.width - 3, fieldRect.y + 4, Textures.TextureButtonPrevious.width, Textures.TextureButtonPrevious.height);
+            // Draw previous and next buttons.  Disable the buttons if no action arguments were passed in.
+            Rect prevButtonRect = new Rect(fieldRect.x - Textures.TextureButtonPrevious.width - 2, fieldRect.y + 4, Textures.TextureButtonPrevious.width, Textures.TextureButtonPrevious.height);
             Rect nextButtonRect = new Rect(fieldRect.x + fieldRect.width + 1, fieldRect.y + 4, Textures.TextureButtonPrevious.width, Textures.TextureButtonPrevious.height);
-
-            if (prevButtonRect.Contains(Event.current.mousePosition)) {
-                GUI.color = Style.ColorButtonHighlight;
+            if (previousAction != null) {
+                Style.SetGUIColorForButton(prevButtonRect);
+                GUI.DrawTexture(prevButtonRect, Textures.TextureButtonPrevious);
+                if (previousAction != null && Widgets.ButtonInvisible(prevButtonRect, false)) {
+                    SoundDefOf.TickTiny.PlayOneShotOnCamera();
+                    previousAction();
+                }
             }
             else {
-                GUI.color = Style.ColorButton;
+                GUI.color = Style.ColorButtonDisabled;
+                GUI.DrawTexture(prevButtonRect, Textures.TextureButtonPrevious);
             }
-            GUI.DrawTexture(prevButtonRect, Textures.TextureButtonPrevious);
-            if (previousAction != null && Widgets.ButtonInvisible(prevButtonRect, false)) {
-                SoundDefOf.TickTiny.PlayOneShotOnCamera();
-                previousAction();
-            }
-
-            if (nextButtonRect.Contains(Event.current.mousePosition)) {
-                GUI.color = Style.ColorButtonHighlight;
+            if (nextAction != null) {
+                Style.SetGUIColorForButton(nextButtonRect);
+                GUI.DrawTexture(nextButtonRect, Textures.TextureButtonNext);
+                if (nextAction != null && Widgets.ButtonInvisible(nextButtonRect, false)) {
+                    SoundDefOf.TickTiny.PlayOneShotOnCamera();
+                    nextAction();
+                }
             }
             else {
-                GUI.color = Style.ColorButton;
+                GUI.color = Style.ColorButtonDisabled;
+                GUI.DrawTexture(nextButtonRect, Textures.TextureButtonNext);
             }
-            GUI.DrawTexture(nextButtonRect, Textures.TextureButtonNext);
-            if (nextAction != null && Widgets.ButtonInvisible(nextButtonRect, false)) {
-                SoundDefOf.TickTiny.PlayOneShotOnCamera();
-                nextAction();
+
+            if (clickAction != null && Widgets.ButtonInvisible(fieldRect, false)) {
+                clickAction();
             }
+
             Text.Anchor = TextAnchor.UpperLeft;
         }
 
@@ -718,10 +705,10 @@ namespace EdB.PrepareCarefully {
                 CustomPawn customPawn = PrepareCarefully.Instance.State.CurrentPawn;
                 string label = "EdB.PC.Panel.Appearance.NoneSelected".Translate();
                 if (selectedPawnLayer == PawnLayers.BodyType) {
-                    label = bodyTypeLabels[customPawn.BodyType];
+                    label = PrepareCarefully.Instance.Providers.BodyTypes.GetBodyTypeLabel(customPawn.BodyType);
                 }
                 else if (selectedPawnLayer == PawnLayers.HeadType) {
-                    label = GetHeadLabel(customPawn.HeadGraphicPath);
+                    label = GetHeadLabel(customPawn);
                 }
                 else if (selectedPawnLayer == PawnLayers.Hair) {
                     if (customPawn.HairDef != null) {
@@ -732,10 +719,7 @@ namespace EdB.PrepareCarefully {
                     label = null;
                     ThingDef def = customPawn.GetSelectedApparel(selectedPawnLayer);
                     if (def != null) {
-                        int index = this.apparelLists[selectedPawnLayer].IndexOf(def);
-                        if (index > -1) {
-                            label = this.apparelLists[selectedPawnLayer][index].label;
-                        }
+                        label = def.LabelCap;
                     }
                     else {
                         label = "EdB.PC.Panel.Appearance.NoneSelected".Translate();
@@ -749,7 +733,7 @@ namespace EdB.PrepareCarefully {
         }
 
         protected void SelectNextHead(CustomPawn customPawn, int direction) {
-            List<HeadType> heads = PrepareCarefully.Instance.Providers.HeadType.GetHeadTypes(customPawn.Pawn.def, customPawn.Gender);
+            List<CustomHeadType> heads = PrepareCarefully.Instance.Providers.HeadTypes.GetHeadTypes(customPawn.Pawn.def, customPawn.Gender).ToList();
             int index = heads.IndexOf(customPawn.HeadType);
             if (index == -1) {
                 return;
@@ -762,11 +746,12 @@ namespace EdB.PrepareCarefully {
                 index = 0;
             }
             customPawn.HeadType = heads[index];
-            this.pawnLayerLabel = GetHeadLabel(customPawn.HeadGraphicPath);
+            this.pawnLayerLabel = GetHeadLabel(customPawn);
         }
 
         protected void SelectNextBodyType(CustomPawn customPawn, int direction) {
-            List<BodyType> bodyTypes = customPawn.Gender == Gender.Male ? maleBodyTypes : femaleBodyTypes;
+            ProviderBodyTypes provider = PrepareCarefully.Instance.Providers.BodyTypes;
+            List<BodyType> bodyTypes = provider.GetBodyTypesForPawn(customPawn);
             int index = bodyTypes.IndexOf(customPawn.BodyType);
             if (index == -1) {
                 Log.Warning("Could not find the current pawn's body type in list of available options: " + customPawn.BodyType);
@@ -780,11 +765,11 @@ namespace EdB.PrepareCarefully {
                 index = 0;
             }
             customPawn.BodyType = bodyTypes[index];
-            this.pawnLayerLabel = bodyTypeLabels[customPawn.BodyType];
+            this.pawnLayerLabel = provider.GetBodyTypeLabel(customPawn.BodyType);
         }
 
         protected void SelectNextHair(CustomPawn customPawn, int direction) {
-            List<HairDef> hairDefs = customPawn.Gender == Gender.Male ? maleHairDefs : femaleHairDefs;
+            List<HairDef> hairDefs = PrepareCarefully.Instance.Providers.Hair.GetHairs(customPawn);
             int index = hairDefs.IndexOf(customPawn.HairDef);
             index += direction;
             if (index < 0) {
@@ -799,7 +784,7 @@ namespace EdB.PrepareCarefully {
 
         protected void SelectNextApparel(CustomPawn customPawn, int direction) {
             int layer = this.selectedPawnLayer;
-            List<ThingDef> apparelList = this.apparelLists[layer];
+            List<ThingDef> apparelList = PrepareCarefully.Instance.Providers.Apparel.GetApparel(customPawn, layer);
             int index = apparelList.IndexOf(customPawn.GetSelectedApparel(layer));
             index += direction;
             if (index < -1) {
@@ -827,21 +812,25 @@ namespace EdB.PrepareCarefully {
             }
         }
 
-        protected string GetHeadLabel(string path) {
-            string[] values = path.Split(new string[] { "_" }, StringSplitOptions.None);
-            return values[values.Count() - 2] + ", " + values[values.Count() - 1];
+        protected string GetHeadLabel(CustomPawn pawn) {
+            if (pawn.HeadType != null) {
+                return pawn.HeadType.Label;
+            }
+            else {
+                return "EdB.PC.Common.Default".Translate();
+            }
         }
 
         protected void ShowHeadDialog(CustomPawn customPawn) {
-            List<HeadType> headTypes = PrepareCarefully.Instance.Providers.HeadType.GetHeadTypes(customPawn.Pawn.def, customPawn.Gender);
-            Dialog_Options<HeadType> dialog = new Dialog_Options<HeadType>(headTypes) {
-                NameFunc = (HeadType headType) => {
+            IEnumerable<CustomHeadType> headTypes = PrepareCarefully.Instance.Providers.HeadTypes.GetHeadTypes(customPawn.Pawn.def, customPawn.Gender);
+            Dialog_Options<CustomHeadType> dialog = new Dialog_Options<CustomHeadType>(headTypes) {
+                NameFunc = (CustomHeadType headType) => {
                     return headType.Label;
                 },
-                SelectedFunc = (HeadType headType) => {
+                SelectedFunc = (CustomHeadType headType) => {
                     return customPawn.HeadType.GraphicPath == headType.GraphicPath;
                 },
-                SelectAction = (HeadType headType) => {
+                SelectAction = (CustomHeadType headType) => {
                     customPawn.HeadType = headType;
                     this.pawnLayerLabel = headType.Label;
                 },
@@ -851,17 +840,18 @@ namespace EdB.PrepareCarefully {
         }
 
         protected void ShowBodyTypeDialog(CustomPawn customPawn) {
-            List<BodyType> bodyTypes = customPawn.Gender == Gender.Male ? maleBodyTypes : femaleBodyTypes;
+            ProviderBodyTypes provider = PrepareCarefully.Instance.Providers.BodyTypes;
+            List<BodyType> bodyTypes = provider.GetBodyTypesForPawn(customPawn);
             Dialog_Options<BodyType> dialog = new Dialog_Options<BodyType>(bodyTypes) {
                 NameFunc = (BodyType bodyType) => {
-                    return bodyTypeLabels[bodyType];
+                    return provider.GetBodyTypeLabel(bodyType);
                 },
                 SelectedFunc = (BodyType bodyType) => {
                     return customPawn.BodyType == bodyType;
                 },
                 SelectAction = (BodyType bodyType) => {
                     customPawn.BodyType = bodyType;
-                    this.pawnLayerLabel = bodyTypeLabels[bodyType];
+                    this.pawnLayerLabel = provider.GetBodyTypeLabel(bodyType);
                 },
                 CloseAction = () => { }
             };
@@ -869,7 +859,7 @@ namespace EdB.PrepareCarefully {
         }
 
         protected void ShowHairDialog(CustomPawn customPawn) {
-            List<HairDef> hairDefs = customPawn.Gender == Gender.Male ? maleHairDefs : femaleHairDefs;
+            List<HairDef> hairDefs = PrepareCarefully.Instance.Providers.Hair.GetHairs(customPawn);
             Dialog_Options<HairDef> dialog = new Dialog_Options<HairDef>(hairDefs) {
                 NameFunc = (HairDef hairDef) => {
                     return hairDef.LabelCap;
@@ -887,8 +877,7 @@ namespace EdB.PrepareCarefully {
         }
 
         protected void ShowApparelDialog(CustomPawn customPawn, int layer) {
-            List<ThingDef> apparelList = this.apparelLists[layer];
-
+            List<ThingDef> apparelList = PrepareCarefully.Instance.Providers.Apparel.GetApparel(customPawn, layer);
             Dialog_Options<ThingDef> dialog = new Dialog_Options<ThingDef>(apparelList) {
                 IncludeNone = true,
                 NameFunc = (ThingDef apparel) => {
