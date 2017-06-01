@@ -10,6 +10,8 @@
 <!-- NEW: EdB.PC.Common.Default -->
 <!-- NEW: EdB.PC.Common.NoOptionAvailable -->
 <!-- NEW: EdB.PC.Dialog.Preset.Error.NoCharacter -->
+<!-- NEW: EdB.PC.Page.StartingPawnScenarioPartMessage.Plural -->
+<!-- NEW: EdB.PC.Page.StartingPawnScenarioPartMessage.Singular -->
 
 <LanguageData>
   <EdB.PC.AddParentChild.Header.AddParent>Add a Parent</EdB.PC.AddParentChild.Header.AddParent>
@@ -144,6 +146,8 @@
     Disable point limits to prepare your starting colonists with no limitations.
   </EdB.PC.Page.Points.UsePoints.Tip>
   <EdB.PC.Page.Title>Prepare Carefully</EdB.PC.Page.Title>
+  <EdB.PC.Page.StartingPawnScenarioPartMessage.Plural>Start with {0} carefully prepared characters.</EdB.PC.Page.StartingPawnScenarioPartMessage.Plural>
+  <EdB.PC.Page.StartingPawnScenarioPartMessage.Singular>Start with 1 carefully prepared character.</EdB.PC.Page.StartingPawnScenarioPartMessage.Singular>
   
   <EdB.PC.Panel.Age.Biological>Biological Age</EdB.PC.Panel.Age.Biological>
   <EdB.PC.Panel.Age.Chronological>Chronological Age</EdB.PC.Panel.Age.Chronological>

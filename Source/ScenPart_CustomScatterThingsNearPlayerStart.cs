@@ -10,6 +10,11 @@ using Verse.Sound;
 namespace EdB.PrepareCarefully {
     class ScenPart_CustomScatterThingsNearPlayerStart : ScenPart_ScatterThings {
         protected int radius = 4;
+        public ScenPart_CustomScatterThingsNearPlayerStart() {
+            // Set the def to match the standard scatter part that we'll be replacing with this one.
+            // Doing so makes sure that this part gets sorted as expected when building the scenario description
+            this.def = ScenPartDefOf.ScatterThingsNearPlayerStart;
+        }
         public ThingDef ThingDef {
             get {
                 return this.thingDef;
@@ -61,6 +66,19 @@ namespace EdB.PrepareCarefully {
                 clusterSize = ((this.thingDef.category != ThingCategory.Building) ? 4 : 1),
                 radius = 4 + radius
             }.Generate(map);
+        }
+        public override string Summary(Scenario scen) {
+            return ScenSummaryList.SummaryWithList(scen, "PlayerStartsWith", ScenPart_StartingThing_Defined.PlayerStartWithIntro);
+        }
+        public override IEnumerable<string> GetSummaryListEntries(string tag) {
+            if (tag == "PlayerStartsWith") {
+                List<string> entries = new List<string>();
+                entries.Add(GenLabel.ThingLabel(thingDef, stuff, count).CapitalizeFirst());
+                return entries;
+            }
+            else {
+                return Enumerable.Empty<string>();
+            }
         }
     }
 }
