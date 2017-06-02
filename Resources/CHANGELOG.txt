@@ -8,6 +8,11 @@
  - Bug fix: The randomize options now take into account a character's faction.
  - Bug fix: Updated preset file format so that sibling-only parent/child
    groups are no longer lost when saving a preset.
+ - Bug fix: Removed the save-game dependency created by customized scenario
+   parts.
+   Bug fix: Fixed the "Review Scenario" button in the gameplay menu.
+   Bug fix: Sibling and some other relationships are no longer lost when
+   saving a game.
 
  _____________________________________________________________________________
  

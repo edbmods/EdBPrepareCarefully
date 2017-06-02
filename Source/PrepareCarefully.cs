@@ -64,6 +64,10 @@ namespace EdB.PrepareCarefully {
             }
         }
 
+        public static Scenario OriginalScenario {
+            get; set;
+        }
+
         public Providers Providers {
             get; set;
         }
@@ -99,6 +103,7 @@ namespace EdB.PrepareCarefully {
         }
 
         public void Clear() {
+            OriginalScenario = null;
             this.Active = false;
             this.Providers = new Providers();
             this.equipmentDatabase = new EquipmentDatabase();

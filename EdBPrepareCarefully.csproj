@@ -72,6 +72,7 @@
     <Compile Include="Source\ExtensionsThing.cs" />
     <Compile Include="Source\GenStep_CustomScatterThings.cs" />
     <Compile Include="Source\CustomHeadType.cs" />
+    <Compile Include="Source\GenStep_RemovePrepareCarefullyScenario.cs" />
     <Compile Include="Source\IRelationshipWorker.cs" />
     <Compile Include="Source\OptionsApparel.cs" />
     <Compile Include="Source\OptionsHealth.cs" />
@@ -101,7 +102,6 @@
     <Compile Include="Source\RelationshipGroup.cs" />
     <Compile Include="Source\ScenPart_CustomAnimal.cs" />
     <Compile Include="Source\ScenPart_CustomScatterThingsNearPlayerStart.cs" />
-    <Compile Include="Source\ScenPart_PrepareCarefullyPawns.cs" />
     <Compile Include="Source\ScrollViewHorizontal.cs" />
     <Compile Include="Source\SelectedAnimal.cs" />
     <Compile Include="Source\EquipmentSelection.cs" />
@@ -124,6 +124,7 @@
     <Compile Include="Source\CustomBodyPart.cs" />
     <Compile Include="Source\CarefullyPawnRelationDef.cs" />
     <Compile Include="Source\UtilityCopy.cs" />
+    <Compile Include="Source\ExtensionsObject.cs" />
     <Compile Include="Source\Version3\PresetLoaderVersion3.cs" />
     <Compile Include="Source\Version3\SaveRecordParentChildGroupV3.cs" />
     <Compile Include="Source\Version3\SaveRecordPawnV3.cs" />
