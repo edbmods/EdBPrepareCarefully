@@ -97,6 +97,46 @@ namespace EdB.PrepareCarefully {
                     }
                 }
             }
+
+            // Add pawns to the world.
+            // TODO: Killing a pawn adds it to the world and doesn't force us to figure out which
+            // faction we want to assign the pawn to (not sure that I understand why all relatives need
+            // to live on the planet or be available in a spacer faction).  Should revisit this to
+            // decide if that's really what we want to do.
+            // Start by assigning each hidden pawn to a random faction that's not the player faction.
+            // If the pawn ends up assigned to the player faction, the stats screen will count the pawn
+            // as a killed colonist--we don't want that to happen.
+            FactionManager factionManager = Find.World.factionManager;
+            Faction newPawnFaction = factionManager.FirstFactionOfDef(FactionDefOf.Spacer);
+            if (newPawnFaction == null) {
+                if (!factionManager.TryGetRandomNonColonyHumanlikeFaction(out newPawnFaction, false, true)) {
+                    newPawnFaction = factionManager.AllFactions.RandomElementWithFallback(Faction.OfPlayer);
+                }
+            }
+            // Kill the pawns.
+            HashSet<Pawn> pawnsAddedToWorld = new HashSet<Pawn>();
+            foreach (var group in parentChildGroups) {
+                foreach (var parent in group.Parents) {
+                    if (parent.Hidden) {
+                        Pawn newPawn = parent.Pawn.Pawn;
+                        newPawn.SetFactionDirect(newPawnFaction);
+                        if (!pawnsAddedToWorld.Contains(newPawn)) {
+                            newPawn.Kill(null);
+                            pawnsAddedToWorld.Add(newPawn);
+                        }
+                    }
+                    foreach (var child in group.Children) {
+                        if (child.Hidden) {
+                            Pawn newPawn = child.Pawn.Pawn;
+                            newPawn.SetFactionDirect(newPawnFaction);
+                            if (!pawnsAddedToWorld.Contains(newPawn)) {
+                                newPawn.Kill(null);
+                                pawnsAddedToWorld.Add(newPawn);
+                            }
+                        }
+                    }
+                }
+            }
         }
 
         private int GetValidParentAge(CustomPawn parent, CustomPawn firstChild) {
@@ -141,6 +181,7 @@ namespace EdB.PrepareCarefully {
                 FixedGender = gender
             }.Request));
             CustomParentChildPawn result = new CustomParentChildPawn(parent);
+            result.Hidden = true;
             return result;
         }
 
