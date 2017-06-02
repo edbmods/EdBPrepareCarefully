@@ -10,9 +10,9 @@ using Verse.Sound;
 namespace EdB.PrepareCarefully {
     class ScenPart_CustomAnimal : ScenPart {
         private float bondToRandomPlayerPawnChance = 0.5f;
-        protected PawnKindDef animalKindDef = null;
+        public PawnKindDef animalKindDef = null;
         protected Gender gender = Gender.None;
-        protected int count = 1;
+        public int count = 1;
         public ScenPart_CustomAnimal() {
             // Set the def to match the standard starting animal that we'll be replacing with this one.
             // Doing so makes sure that this part gets sorted as expected when building the scenario description
@@ -88,6 +88,12 @@ namespace EdB.PrepareCarefully {
             else {
                 return Enumerable.Empty<string>();
             }
+        }
+        public override void ExposeData() {
+            base.ExposeData();
+            Scribe_Defs.Look<PawnKindDef>(ref this.animalKindDef, "animalKind");
+            Scribe_Values.Look<int>(ref this.count, "count", 0, false);
+            Scribe_Values.Look<float>(ref this.bondToRandomPlayerPawnChance, "bondToRandomPlayerPawnChance", 0f, false);
         }
     }
 }
