@@ -128,25 +128,29 @@ namespace EdB.PrepareCarefully {
                     newPawnFaction = factionManager.AllFactions.RandomElementWithFallback(Faction.OfPlayer);
                 }
             }
-            // Kill the pawns.
+            // Kill the pawns (but only if they are not already in the world).
             HashSet<Pawn> pawnsAddedToWorld = new HashSet<Pawn>();
             foreach (var group in parentChildGroups) {
                 foreach (var parent in group.Parents) {
                     if (parent.Hidden) {
                         Pawn newPawn = parent.Pawn.Pawn;
-                        newPawn.SetFactionDirect(newPawnFaction);
-                        if (!pawnsAddedToWorld.Contains(newPawn)) {
-                            newPawn.Kill(null);
-                            pawnsAddedToWorld.Add(newPawn);
+                        if (!Find.World.worldPawns.Contains(newPawn)) {
+                            newPawn.SetFactionDirect(newPawnFaction);
+                            if (!pawnsAddedToWorld.Contains(newPawn)) {
+                                newPawn.Kill(null);
+                                pawnsAddedToWorld.Add(newPawn);
+                            }
                         }
                     }
                     foreach (var child in group.Children) {
                         if (child.Hidden) {
                             Pawn newPawn = child.Pawn.Pawn;
-                            newPawn.SetFactionDirect(newPawnFaction);
-                            if (!pawnsAddedToWorld.Contains(newPawn)) {
-                                newPawn.Kill(null);
-                                pawnsAddedToWorld.Add(newPawn);
+                            if (!Find.World.worldPawns.Contains(newPawn)) {
+                                newPawn.SetFactionDirect(newPawnFaction);
+                                if (!pawnsAddedToWorld.Contains(newPawn)) {
+                                    newPawn.Kill(null);
+                                    pawnsAddedToWorld.Add(newPawn);
+                                }
                             }
                         }
                     }
