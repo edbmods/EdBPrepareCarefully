@@ -20,7 +20,6 @@ namespace EdB.PrepareCarefully {
         public event AddChildToGroupHandler ChildAddedToGroup;
         public event RemoveChildFromGroupHandler ChildRemovedFromGroup;
         public event AddGroupHandler GroupAdded;
-        public event RemoveGroupHandler GroupRemoved;
 
         private ScrollViewHorizontal scrollView = new ScrollViewHorizontal();
         private Rect RectScrollView;
