@@ -30,8 +30,6 @@ namespace EdB.PrepareCarefully {
             else {
                 throw new Exception("Invalid preset version");
             }
-
-            return null;
         }
     }
 }
