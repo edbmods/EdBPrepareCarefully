@@ -50,11 +50,26 @@ namespace EdB.PrepareCarefully {
                 AddRelationship(rel.source.Pawn, rel.target.Pawn, rel.def);
             }
 
-            // For any parent/child group that is missing parents, create a parent.
+            // For any parent/child group that is missing parents, create them.
             foreach (var group in parentChildGroups) {
-                if (group.Children.Count > 1 && group.Parents.Count == 0) {
-                    CustomParentChildPawn parent = CreateParent(null, group.Children);
-                    group.Parents.Add(parent);
+                if (group.Children.Count > 1) {
+                    // Siblings need to have 2 parents, or they will be considered half-siblings.
+                    if (group.Parents.Count == 0) {
+                        CustomParentChildPawn parent1 = CreateParent(Gender.Female, group.Children);
+                        CustomParentChildPawn parent2 = CreateParent(Gender.Male, group.Children);
+                        group.Parents.Add(parent1);
+                        group.Parents.Add(parent2);
+                    }
+                    else if (group.Parents.Count == 1) {
+                        if (group.Parents[0].Gender == Gender.Male) {
+                            CustomParentChildPawn parent = CreateParent(Gender.Female, group.Children);
+                            group.Parents.Add(parent);
+                        }
+                        else {
+                            CustomParentChildPawn parent = CreateParent(Gender.Male, group.Children);
+                            group.Parents.Add(parent);
+                        }
+                    }
                 }
             }
 
