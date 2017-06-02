@@ -81,7 +81,6 @@
     <Compile Include="Source\PanelRelationshipsParentChild.cs" />
     <Compile Include="Source\PawnGenerationRequestWrapper.cs" />
     <Compile Include="Source\PawnLayers.cs" />
-    <Compile Include="Source\PawnRace.cs" />
     <Compile Include="Source\PrepareCarefully.cs" />
     <Compile Include="Source\PresetFiles.cs" />
     <Compile Include="Source\PresetLoader.cs" />

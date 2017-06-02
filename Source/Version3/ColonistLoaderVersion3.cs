@@ -61,18 +61,11 @@ namespace EdB.PrepareCarefully {
                 return loadedPawn;
             }
             else {
-                Messages.Message("EdB.PC.Dialog.Preset.Error.NoCharacter".Translate(), MessageSound.SeriousAlert);
-                Log.Warning("Preset was created with the following mods: " + modString);
-                return null;
-            }
-            if (loader.Failed) {
                 loadout.State.AddError(loader.ModString);
-                loadout.State.AddError("EdB.PC.Dialog.PawnPreset.Error.Failed".Translate());
+                loadout.State.AddError("EdB.PC.Dialog.Preset.Error.NoCharacter".Translate());
                 Log.Warning("Preset was created with the following mods: " + modString);
                 return null;
             }
-
-            return null;
         }
     }
 }
