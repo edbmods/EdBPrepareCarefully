@@ -38,6 +38,8 @@ namespace EdB.PrepareCarefully {
                 cachedThings = new LinkedList<Thing>();
                 cache.Add(def, cachedThings);
             }
+            thing.SetQuality(QualityCategory.Normal);
+            thing.HitPoints = thing.MaxHitPoints;
             cachedThings.AddLast(thing);
         }
     }
