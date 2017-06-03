@@ -68,6 +68,10 @@ namespace EdB.PrepareCarefully {
             get; set;
         }
 
+        public static void ClearOriginalScenario() {
+            OriginalScenario = null;
+        }
+
         public Providers Providers {
             get; set;
         }
