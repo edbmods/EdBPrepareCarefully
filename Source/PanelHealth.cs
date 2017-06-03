@@ -47,7 +47,7 @@ namespace EdB.PrepareCarefully {
         }
         public override string PanelHeader {
             get {
-                return "EdB.PC.Panel.Health.Title".Translate();
+                return "Health".Translate();
             }
         }
 

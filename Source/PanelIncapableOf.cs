@@ -13,7 +13,7 @@ namespace EdB.PrepareCarefully {
         }
         public override string PanelHeader {
             get {
-                return "EdB.PC.Panel.Incapable.Title".Translate();
+                return "IncapableOf".Translate();
             }
         }
         public override void Resize(Rect rect) {
