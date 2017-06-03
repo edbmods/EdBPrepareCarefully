@@ -23,7 +23,7 @@ namespace EdB.PrepareCarefully {
         }
         public override string PanelHeader {
             get {
-                return "EdB.PC.Panel.Skills.Title".Translate();
+                return "Skills".Translate();
             }
         }
 
@@ -52,7 +52,7 @@ namespace EdB.PrepareCarefully {
             Text.Font = GameFont.Small;
             Vector2 maxLabelSize = new Vector2(float.MinValue, float.MinValue);
             foreach (SkillDef current in DefDatabase<SkillDef>.AllDefs) {
-                Vector2 labelSize = Text.CalcSize(current.LabelCap);
+                Vector2 labelSize = Text.CalcSize(current.skillLabel);
                 maxLabelSize.x = Mathf.Max(labelSize.x, maxLabelSize.x);
                 maxLabelSize.y = Mathf.Max(labelSize.y, maxLabelSize.y);
             }
@@ -126,7 +126,7 @@ namespace EdB.PrepareCarefully {
                     GUI.color = Style.ColorText;
                     rect = RectLabel;
                     rect.y = rect.y + cursor;
-                    Widgets.Label(rect, def.LabelCap);
+                    Widgets.Label(rect, def.skillLabel);
 
                     // Draw the passion.
                     rect = RectPassion;
