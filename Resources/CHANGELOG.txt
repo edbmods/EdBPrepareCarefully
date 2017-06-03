@@ -3,6 +3,8 @@
    Version 0.17.1.5
  _____________________________________________________________________________
 
+ - Can now choose from both player and non-player factions when creating a
+   new faction pawn.
  - Bug fix: Hidden pawns are not killed if they have already been added into
    the world.
  - Bug fix: Apparel generated for faction pawns is now also set to normal

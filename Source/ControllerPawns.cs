@@ -22,7 +22,15 @@ namespace EdB.PrepareCarefully {
         }
 
         public void RandomizeAll() {
-            Pawn pawn = randomizer.GenerateSameKindOfPawn(state.CurrentPawn);
+            // Start by picking a new pawn kind def from the faction.
+            FactionDef factionDef = state.CurrentPawn.Pawn.kindDef.defaultFactionType;
+            if (factionDef == null) {
+                factionDef = Faction.OfPlayer.def;
+            }
+            PawnKindDef kindDef = PrepareCarefully.Instance.Providers.Factions.GetPawnKindsForFactionDefLabel(factionDef)
+                .RandomElementWithFallback(factionDef.basicMemberKind);
+            // Create the pawn.
+            Pawn pawn = randomizer.GenerateKindOfPawn(kindDef);
             state.CurrentPawn.InitializeWithPawn(pawn);
             state.CurrentPawn.GenerateId();
             PawnReplaced(state.CurrentPawn);
