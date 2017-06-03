@@ -228,6 +228,11 @@ namespace EdB.PrepareCarefully {
             finally {
                 kindDef.weaponMoney = savedWeaponsMoney;
             }
+            // Reset the quality and damage of all apparel.
+            foreach (var a in pawn.apparel.WornApparel) {
+                a.SetQuality(QualityCategory.Normal);
+                a.HitPoints = a.MaxHitPoints;
+            }
 
             CustomPawn customPawn = new CustomPawn(pawn);
             customPawn.Pawn.SetFactionDirect(Faction.OfPlayer);
