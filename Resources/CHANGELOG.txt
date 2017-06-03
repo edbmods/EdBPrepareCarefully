@@ -5,6 +5,9 @@
 
  - Bug fix: Hidden pawns are not killed if they have already been added into
    the world.
+ - Bug fix: Apparel generated for faction pawns is now also set to normal
+   quality with no damage.
+ - Bug fix: Fixed skill name labels so that they are localized properly.
 
  _____________________________________________________________________________
  
