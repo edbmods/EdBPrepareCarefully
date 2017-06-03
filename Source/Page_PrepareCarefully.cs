@@ -109,6 +109,7 @@ namespace EdB.PrepareCarefully {
                 delegate {
                     Find.WindowStack.Add(new Dialog_Confirm("EdB.PC.Page.ConfirmExit".Translate(), delegate {
                         PrepareCarefully.Instance.Clear();
+                        PrepareCarefully.ClearOriginalScenario();
                         this.Close(true);
                     }, true, null, true));
                 }

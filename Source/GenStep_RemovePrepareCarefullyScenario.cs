@@ -18,6 +18,7 @@ namespace EdB.PrepareCarefully {
         public override void Generate(Map map) {
             if (PrepareCarefully.OriginalScenario != null) {
                 Current.Game.Scenario = PrepareCarefully.OriginalScenario;
+                PrepareCarefully.ClearOriginalScenario();
             }
         }
     }

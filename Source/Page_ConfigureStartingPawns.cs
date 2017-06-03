@@ -25,6 +25,10 @@ namespace EdB.PrepareCarefully {
         //
         private Pawn curPawn;
 
+        public Page_ConfigureStartingPawns() {
+            PrepareCarefully.ClearOriginalScenario();
+        }
+
         //
         // Properties
         //
