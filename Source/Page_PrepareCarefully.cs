@@ -55,8 +55,9 @@ namespace EdB.PrepareCarefully {
 
         public override void PreOpen() {
             base.PreOpen();
-            // Set the default tab view to the first tab.
+            // Set the default tab view to the first tab and the selected pawn to the first pawn.
             State.CurrentTab = tabViews[0];
+            State.CurrentPawn = State.Pawns.FirstOrDefault();
 
             controller = new Controller(State);
             InstrumentPanels();

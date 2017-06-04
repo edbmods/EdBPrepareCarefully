@@ -6,7 +6,7 @@ using Verse;
 
 namespace EdB.PrepareCarefully {
     public class State {
-        protected int currentPawnIndex;
+        protected CustomPawn currentPawn;
         
         protected List<string> errors = new List<string>();
         protected List<string> messages = new List<string>();
@@ -16,16 +16,7 @@ namespace EdB.PrepareCarefully {
             get;
             set;
         }
-
-        public int CurrentPawnIndex {
-            get {
-                return currentPawnIndex;
-            }
-            set {
-                currentPawnIndex = value;
-            }
-        }
-
+        
         public List<CustomPawn> Pawns {
             get {
                 return PrepareCarefully.Instance.Pawns;
@@ -34,7 +25,10 @@ namespace EdB.PrepareCarefully {
 
         public CustomPawn CurrentPawn {
             get {
-                return PrepareCarefully.Instance.Pawns[currentPawnIndex];
+                return currentPawn;
+            }
+            set {
+                currentPawn = value;
             }
         }
 

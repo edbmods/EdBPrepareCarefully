@@ -158,21 +158,24 @@ namespace EdB.PrepareCarefully {
 
         // Pawn-related actions.
         public void SelectPawn(CustomPawn pawn) {
-            int index = PrepareCarefully.Instance.Pawns.IndexOf(pawn);
-            if (index != -1) {
-                state.CurrentPawnIndex = index;
-            }
+            state.CurrentPawn = pawn;
         }
         public void AddingPawn() {
             CustomPawn pawn = new CustomPawn(randomizer.GenerateColonist());
             PrepareCarefully.Instance.AddPawn(pawn);
-            state.CurrentPawnIndex = PrepareCarefully.Instance.Pawns.Count - 1;
+            state.CurrentPawn = pawn;
             PawnAdded(pawn);
         }
         public void DeletePawn(CustomPawn pawn) {
+            int index = PrepareCarefully.Instance.Pawns.IndexOf(pawn);
             PrepareCarefully.Instance.Pawns.Remove(pawn);
-            if (state.CurrentPawnIndex >= PrepareCarefully.Instance.Pawns.Count) {
-                state.CurrentPawnIndex = PrepareCarefully.Instance.Pawns.Count - 1;
+            if (state.CurrentPawn == pawn) {
+                if (index > -1 && index < PrepareCarefully.Instance.Pawns.Count) {
+                    state.CurrentPawn = PrepareCarefully.Instance.Pawns[index];
+                }
+                else {
+                    state.CurrentPawn = PrepareCarefully.Instance.Pawns.LastOrDefault();
+                }
             }
             PrepareCarefully.Instance.RelationshipManager.DeletePawn(pawn);
         }
@@ -186,7 +189,7 @@ namespace EdB.PrepareCarefully {
                 state.AddMessage("EdB.PC.Dialog.PawnPreset.Loaded".Translate(new object[] { name }));
             }
             PrepareCarefully.Instance.AddPawn(pawn);
-            state.CurrentPawnIndex = PrepareCarefully.Instance.Pawns.Count - 1;
+            state.CurrentPawn = pawn;
             PawnAdded(pawn);
         }
         public void SaveCharacter(CustomPawn pawn, string filename) {
@@ -245,7 +248,7 @@ namespace EdB.PrepareCarefully {
             CustomPawn customPawn = new CustomPawn(pawn);
             customPawn.Pawn.SetFactionDirect(Faction.OfPlayer);
             PrepareCarefully.Instance.AddPawn(customPawn);
-            state.CurrentPawnIndex = PrepareCarefully.Instance.Pawns.Count - 1;
+            state.CurrentPawn = customPawn;
             PawnAdded(customPawn);
         }
 
