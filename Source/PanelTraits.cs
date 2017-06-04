@@ -34,7 +34,7 @@ namespace EdB.PrepareCarefully {
         }
         public override string PanelHeader {
             get {
-                return "EdB.PC.Panel.Traits.Title".Translate();
+                return "Traits".Translate();
             }
         }
 

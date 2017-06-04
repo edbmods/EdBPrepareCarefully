@@ -23,7 +23,7 @@ namespace EdB.PrepareCarefully {
         }
         public override string PanelHeader {
             get {
-                return "EdB.PC.Panel.Backstory.Title".Translate();
+                return "Backstory".Translate();
             }
         }
 
@@ -42,8 +42,8 @@ namespace EdB.PrepareCarefully {
 
             GameFont savedFont = Text.Font;
             Text.Font = GameFont.Small;
-            Vector2 sizeChildhood = Text.CalcSize("EdB.PC.Panel.Backstory.Childhood".Translate());
-            Vector2 sizeAdulthood = Text.CalcSize("EdB.PC.Panel.Backstory.Adulthood".Translate());
+            Vector2 sizeChildhood = Text.CalcSize("Childhood".Translate());
+            Vector2 sizeAdulthood = Text.CalcSize("Adulthood".Translate());
             Text.Font = savedFont;
 
             float labelWidth = Mathf.Max(sizeChildhood.x, sizeAdulthood.x);
@@ -67,11 +67,11 @@ namespace EdB.PrepareCarefully {
             Text.Font = GameFont.Small;
             GUI.color = Style.ColorText;
             Text.Anchor = TextAnchor.MiddleCenter;
-            Widgets.Label(RectChildhoodLabel, "EdB.PC.Panel.Backstory.Childhood".Translate());
+            Widgets.Label(RectChildhoodLabel, "Childhood".Translate());
             if (!isAdult) {
                 GUI.color = Style.ColorControlDisabled;
             }
-            Widgets.Label(RectAdulthoodLabel, "EdB.PC.Panel.Backstory.Adulthood".Translate());
+            Widgets.Label(RectAdulthoodLabel, "Adulthood".Translate());
             Text.Anchor = TextAnchor.UpperLeft;
             GUI.color = Color.white;
 

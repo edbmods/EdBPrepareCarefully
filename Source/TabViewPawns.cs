@@ -40,16 +40,18 @@ namespace EdB.PrepareCarefully {
 
             // Draw the panels.
             PanelPawnList.Draw(state);
-            PanelRandomize.Draw(state);
-            PanelName.Draw(state);
-            PanelSaveLoad.Draw(state);
-            PanelAge.Draw(state);
-            PanelAppearance.Draw(state);
-            PanelBackstory.Draw(state);
-            PanelTraits.Draw(state);
-            PanelHealth.Draw(state);
-            PanelSkills.Draw(state);
-            PanelIncapable.Draw(state);
+            if (state.CurrentPawn != null) {
+                PanelRandomize.Draw(state);
+                PanelName.Draw(state);
+                PanelSaveLoad.Draw(state);
+                PanelAge.Draw(state);
+                PanelAppearance.Draw(state);
+                PanelBackstory.Draw(state);
+                PanelTraits.Draw(state);
+                PanelHealth.Draw(state);
+                PanelSkills.Draw(state);
+                PanelIncapable.Draw(state);
+            }
         }
 
         protected override void Resize(Rect rect) {

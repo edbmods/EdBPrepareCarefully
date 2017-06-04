@@ -1288,7 +1288,11 @@ namespace EdB.PrepareCarefully {
                     a.DrawColor = color;
                 }
 
+                // This post-process will set the quality and damage on the apparel based on the 
+                // pawn kind definition, so after we call it, we need to reset the quality and damage.
                 PawnGenerator.PostProcessGeneratedGear(a, targetPawn);
+                a.SetQuality(QualityCategory.Normal);
+                a.HitPoints = a.MaxHitPoints;
                 if (ApparelUtility.HasPartsToWear(targetPawn, a.def)) {
                     targetPawn.apparel.Wear(a, false);
                 }

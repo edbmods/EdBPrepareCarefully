@@ -9,8 +9,6 @@ namespace EdB.PrepareCarefully {
         private List<FactionDef> nonPlayerHumanlikeFactionDefs = new List<FactionDef>();
         private Dictionary<FactionDef, Faction> factionLookup = new Dictionary<FactionDef, Faction>();
         private Dictionary<PawnKindDef, Faction> pawnKindFactionLookup = new Dictionary<PawnKindDef, Faction>();
-        private List<PawnKindDef> nonPlayerPawnKinds = new List<PawnKindDef>();
-        private List<PawnKindDef> playerPawnKinds = new List<PawnKindDef>();
         private Dictionary<FactionDef, List<PawnKindDef>> factionDefPawnKindLookup = new Dictionary<FactionDef, List<PawnKindDef>>();
         public ProviderFactions() {
             foreach (var kindDef in DefDatabase<PawnKindDef>.AllDefs) {
@@ -26,13 +24,6 @@ namespace EdB.PrepareCarefully {
                 // Double-check that it's a humanlike pawn by looking at the value on the faction.
                 if (!faction.def.humanlikeFaction) {
                     continue;
-                }
-                // Sort the pawn kind into player and non-player buckets.
-                if (faction.IsPlayer) {
-                    playerPawnKinds.Add(kindDef);
-                }
-                else {
-                    nonPlayerPawnKinds.Add(kindDef);
                 }
                 // Create a lookup of where you can get the list of pawn kinds given a faction def.
                 // If no valid pawn kinds exist for a faction def, this lookup will have no faction def
@@ -50,14 +41,15 @@ namespace EdB.PrepareCarefully {
                 if (!def.humanlikeFaction) {
                     continue;
                 }
-                if (def.isPlayer || def == Faction.OfPlayer.def) {
+                if (def == Faction.OfPlayer.def) {
                     continue;
                 }
                 List<PawnKindDef> factionKindDefs;
                 if (factionDefPawnKindLookup.TryGetValue(def, out factionKindDefs)) {
                     if (factionKindDefs.Count > 0) {
-                        if (!labels.Contains(def.label)) {
-                            labels.Add(def.label);
+                        string defLabel = def.label.ToLower();
+                        if (!labels.Contains(defLabel)) {
+                            labels.Add(defLabel);
                             nonPlayerHumanlikeFactionDefs.Add(def);
                         }
                     }
@@ -72,16 +64,6 @@ namespace EdB.PrepareCarefully {
                 return nonPlayerHumanlikeFactionDefs;
             }
         }
-        public IEnumerable<PawnKindDef> NonPlayerPawnKinds {
-            get {
-                return nonPlayerPawnKinds;
-            }
-        }
-        public IEnumerable<PawnKindDef> PlayerPawnKinds {
-            get {
-                return playerPawnKinds;
-            }
-        }
         public IEnumerable<PawnKindDef> GetPawnKindsForFactionDef(FactionDef def) {
             List<PawnKindDef> factionDefPawnKinds;
             if (factionDefPawnKindLookup.TryGetValue(def, out factionDefPawnKinds)) {
@@ -92,7 +74,8 @@ namespace EdB.PrepareCarefully {
             }
         }
         public IEnumerable<PawnKindDef> GetPawnKindsForFactionDefLabel(FactionDef def) {
-            var keys = factionDefPawnKindLookup.Keys.Where((FactionDef f) => { return def.LabelCap == f.LabelCap; });
+            string defLabel = def.label.ToLower();
+            var keys = factionDefPawnKindLookup.Keys.Where((FactionDef f) => { return defLabel == f.label.ToLower(); });
             IEnumerable<PawnKindDef> result = null;
             if (keys != null) {
                 foreach (var key in keys) {
