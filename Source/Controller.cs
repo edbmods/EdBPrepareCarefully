@@ -92,7 +92,7 @@ namespace EdB.PrepareCarefully {
                 state.AddMessage("EdB.PC.Dialog.Preset.Loaded".Translate(new object[] {
                     name
                 }));
-                state.CurrentPawnIndex = 0;
+                state.CurrentPawn = state.Pawns.FirstOrDefault();
             }
             CheckPawnCapabilities();
         }
