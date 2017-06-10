@@ -60,10 +60,15 @@ namespace EdB.PrepareCarefully {
         public string LabelForAnimal {
             get {
                 Pawn pawn = thing as Pawn;
-                return "PawnMainDescGendered".Translate(new object[] {
-                    pawn.gender.GetLabel(),
-                    pawn.kindDef.label
-                }).CapitalizeFirst();
+                if (pawn.def.race.hasGenders) {
+                    return "PawnMainDescGendered".Translate(new object[] {
+                        pawn.gender.GetLabel(),
+                        pawn.kindDef.label
+                    }).CapitalizeFirst();
+                }
+                else {
+                    return pawn.LabelCap;
+                }
             }
         }
 
