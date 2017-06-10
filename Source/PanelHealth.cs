@@ -38,7 +38,6 @@ namespace EdB.PrepareCarefully {
 
         protected List<InjurySeverity> severityOptions = new List<InjurySeverity>();
         protected List<InjurySeverity> oldInjurySeverities = new List<InjurySeverity>();
-        protected Dictionary<RecipeDef, string> recipeToolips = new Dictionary<RecipeDef, string>();
 
         public PanelHealth() {
             oldInjurySeverities.Add(new InjurySeverity(2));
@@ -583,14 +582,6 @@ namespace EdB.PrepareCarefully {
             GUI.EndGroup();
 
             return cursor + RectItem.height + HeightEntrySpacing;
-        }
-
-        protected string GetRecipeTooltip(RecipeDef def) {
-            string tip;
-            if (recipeToolips.TryGetValue(def, out tip)) {
-                return tip;
-            }
-            return null;
         }
     }
 }
