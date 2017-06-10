@@ -1383,7 +1383,25 @@ namespace EdB.PrepareCarefully {
         public bool IsImplantedPart(BodyPartRecord record) {
             return FindImplant(record) != null;
         }
-
+        public bool AtLeastOneReplacedPart(IEnumerable<BodyPartRecord> records) {
+            foreach (var record in records) {
+                if (IsReplacedPart(record)) {
+                    return true;
+                }
+            }
+            return false;
+        }
+        public bool IsReplacedPart(BodyPartRecord record) {
+            Implant implant = FindImplant(record);
+            if (implant == null) {
+                return false;
+            }
+            if (implant.Recipe != null && implant.Recipe.addsHediff != null
+                    && typeof(Hediff_AddedPart).IsAssignableFrom(implant.Recipe.addsHediff.hediffClass)) {
+                return true;
+            }
+            return false;
+        }
         public Implant FindImplant(BodyPartRecord record) {
             if (implants.Count == 0) {
                 return null;

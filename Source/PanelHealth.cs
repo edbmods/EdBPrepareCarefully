@@ -454,7 +454,7 @@ namespace EdB.PrepareCarefully {
             OptionsHealth healthOptions = PrepareCarefully.Instance.Providers.Health.GetOptions(pawn);
             foreach (var part in parts) {
                 UniqueBodyPart uniquePart = healthOptions.FindBodyPartsForRecord(part);
-                if (pawn.IsImplantedPart(part) || pawn.AtLeastOneImplantedPart(uniquePart.Ancestors.Select((UniqueBodyPart p) => { return p.Record; }))) {
+                if (pawn.IsReplacedPart(part) || pawn.AtLeastOneReplacedPart(uniquePart.Ancestors.Select((UniqueBodyPart p) => { return p.Record; }))) {
                     disabledBodyParts.Add(part);
                 }
             }
