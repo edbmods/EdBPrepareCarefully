@@ -33,10 +33,8 @@ namespace EdB.PrepareCarefully {
             }
         }
 
-        public virtual string Tooltip {
-            get {
-                return "";
-            }
+        public abstract string Tooltip {
+            get;
         }
 
     }

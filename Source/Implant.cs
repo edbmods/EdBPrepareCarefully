@@ -60,18 +60,6 @@ namespace EdB.PrepareCarefully {
             }
         }
 
-        public Hediff_AddedPart AddedBodyPart {
-            get {
-                if (recipe == null) {
-                    return null;
-                }
-                Hediff_AddedPart addedPart = new Hediff_AddedPart();
-                addedPart.Part = BodyPartRecord;
-                addedPart.def = recipe.addsHediff;
-                return addedPart;
-            }
-        }
-
         public string Label {
             get {
                 if (recipe == null) {
