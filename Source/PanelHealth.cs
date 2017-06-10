@@ -16,6 +16,7 @@ namespace EdB.PrepareCarefully {
 
         protected static readonly string HediffTypeInjury = "HediffTypeInjury";
         protected static readonly string HediffTypeImplant = "HediffTypeImplant";
+        protected string selectedHediffType = HediffTypeImplant;
 
         protected float HeightEntrySpacing = 4;
         protected Vector2 SizeEntry;
@@ -178,7 +179,7 @@ namespace EdB.PrepareCarefully {
                 Action addEntryAction = () => { };
 
                 OptionsHealth healthOptions = PrepareCarefully.Instance.Providers.Health.GetOptions(customPawn);
-                string selectedHediffType = null;
+                string selectedHediffType = this.selectedHediffType;
                 RecipeDef selectedRecipe = null;
                 InjuryOption selectedInjury = null;
                 BodyPartRecord selectedBodyPart = null;
@@ -407,6 +408,7 @@ namespace EdB.PrepareCarefully {
                         }
                     },
                     CloseAction = () => {
+                        this.selectedHediffType = selectedHediffType;
                         if (selectedHediffType == HediffTypeInjury) {
                             Find.WindowStack.Add(injuryOptionDialog);
                         }
