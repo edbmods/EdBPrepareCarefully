@@ -1,15 +1,22 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
 <!-- CHANGE NOTES -->
-<!-- v0.17.1.3 -->
-<!-- NEW: EdB.PC.Dialog.Preset.Error.EquipmentFailed -->
-<!-- NEW: EdB.PC.Dialog.Preset.Error.PartialSaveFailure -->
-<!-- NEW: EdB.PC.Dialog.Preset.Error.SaveFailed -->
-<!-- UPDATED: EdB.PC.Panel.RelationshipsParentChild.Title -->
+<!-- v0.17.1.6 -->
+<!-- NEW: EdB.PC.Panel.Traits.Tip.Conflict -->
+<!-- NEW: EdB.PC.Panel.Traits.Tip.Conflict.List.1 -->
+<!-- NEW: EdB.PC.Panel.Traits.Tip.Conflict.List.2 -->
+<!-- NEW: EdB.PC.Panel.Traits.Tip.Conflict.List.Many -->
+<!-- NEW: EdB.PC.Panel.Traits.Tip.Conflict.List.Last -->
 
 <!-- v0.17.1.4 -->
 <!-- NEW: EdB.PC.Common.Default -->
 <!-- NEW: EdB.PC.Common.NoOptionAvailable -->
 <!-- NEW: EdB.PC.Dialog.Preset.Error.NoCharacter -->
+
+<!-- v0.17.1.3 -->
+<!-- NEW: EdB.PC.Dialog.Preset.Error.EquipmentFailed -->
+<!-- NEW: EdB.PC.Dialog.Preset.Error.PartialSaveFailure -->
+<!-- NEW: EdB.PC.Dialog.Preset.Error.SaveFailed -->
+<!-- UPDATED: EdB.PC.Panel.RelationshipsParentChild.Title -->
 
 <LanguageData>
   <EdB.PC.AddParentChild.Header.AddParent>Add a Parent</EdB.PC.AddParentChild.Header.AddParent>
@@ -196,7 +203,12 @@ You can play the game with your colonists as they are, but you may see an error 
   
   <EdB.PC.Panel.Traits.None>No traits</EdB.PC.Panel.Traits.None>
   <EdB.PC.Panel.Traits.Warning.TooManyTraits>Normally, three traits is the maximum allowed per character.  You can add more here, but those traits may not be displayed properly in all of the character information screens in the game.</EdB.PC.Panel.Traits.Warning.TooManyTraits>
-
+  <EdB.PC.Panel.Traits.Tip.Conflict>{0}\n\nConflicts with:\n{1}</EdB.PC.Panel.Traits.Tip.Conflict>
+  <EdB.PC.Panel.Traits.Tip.Conflict.List.1> - {0}</EdB.PC.Panel.Traits.Tip.Conflict.List.1>
+  <EdB.PC.Panel.Traits.Tip.Conflict.List.2> - {0}\n - {1}</EdB.PC.Panel.Traits.Tip.Conflict.List.2>
+  <EdB.PC.Panel.Traits.Tip.Conflict.List.Many> - {0}\n{1}</EdB.PC.Panel.Traits.Tip.Conflict.List.Many>
+  <EdB.PC.Panel.Traits.Tip.Conflict.List.Last> - {0}\n - {1}</EdB.PC.Panel.Traits.Tip.Conflict.List.Last>
+  
   <EdB.PC.TabView.Animals.Title>Animals</EdB.PC.TabView.Animals.Title>
   <EdB.PC.TabView.Equipment.Title>Equipment</EdB.PC.TabView.Equipment.Title>
   <EdB.PC.TabView.Pawns.Title>Characters</EdB.PC.TabView.Pawns.Title>
