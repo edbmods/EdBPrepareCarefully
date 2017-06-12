@@ -77,7 +77,6 @@ namespace EdB.PrepareCarefully {
                 PrepareCarefully.Instance.State.Page.Close(false);
                 PrepareCarefully.Instance.State.Page = null;
                 PrepareGame();
-                PrepareCarefully.Instance.NextPage();
                 PrepareCarefully.RemoveInstance();
             }
         }
@@ -129,7 +128,7 @@ namespace EdB.PrepareCarefully {
             // Remove equipment scenario parts.
             ReplaceScenarioParts(actualScenario, vanillaFriendlyScenario);
         }
-        
+
         protected void ReplaceScenarioParts(Scenario actualScenario, Scenario vanillaFriendlyScenario) {
             // Create a lookup of all of the scenario types that we want to replace.
             HashSet<string> scenarioPartsToReplace = new HashSet<string>() {
@@ -147,7 +146,7 @@ namespace EdB.PrepareCarefully {
             // need to look at the parts in one of them.
             FieldInfo partsField = typeof(Scenario).GetField("parts", BindingFlags.NonPublic | BindingFlags.Instance);
             List<ScenPart> originalParts = (List<ScenPart>)partsField.GetValue(actualScenario);
-            
+
             // Replace the pawn count in the configure pawns scenario part to reflect the number of
             // pawns that were selected in Prepare Carefully.
             foreach (var part in originalParts) {
@@ -158,7 +157,7 @@ namespace EdB.PrepareCarefully {
                 configurePawnPart.pawnCount = Find.GameInitData.startingPawns.Count;
             }
 
-            // Fill in each part list with only the scenario parts that we're not going to replace. 
+            // Fill in each part list with only the scenario parts that we're not going to replace.
             foreach (var part in originalParts) {
                 if (!scenarioPartsToReplace.Contains(part.GetType().FullName)) {
                     actualScenarioParts.Add(part);
@@ -285,7 +284,7 @@ namespace EdB.PrepareCarefully {
                     }
                 }
             }
-            
+
             // The vanilla starting animal part does not distinguish between genders, so we combine
             // the custom parts into a single vanilla part for each animal kind.
             foreach (var animalKindDef in animalKindCounts.Keys) {
@@ -295,7 +294,7 @@ namespace EdB.PrepareCarefully {
                 vanillaPart.SetPrivateField("count", animalKindCounts[animalKindDef]);
                 vanillaFriendlyScenarioParts.Add(vanillaPart);
             }
-            
+
             // We figure out how dense the spawn area will be after spawning all of the scattered things.
             // We'll target a maximum density and increase the spawn radius if we're over that density.
             stackCount += scatterStackCount;

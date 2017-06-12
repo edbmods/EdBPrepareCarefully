@@ -1,4 +1,5 @@
 ﻿using RimWorld;
+﻿using Harmony;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -16,20 +17,12 @@ namespace EdB.PrepareCarefully {
         Descending
     }
 
-    public class PrepareCarefully {
-        protected static PrepareCarefully instance = null;
-        public static PrepareCarefully Instance {
-            get {
-                if (instance == null) {
-                    instance = new PrepareCarefully();
-                }
-                return instance;
-            }
-        }
+    public class PrepareCarefully : Mod {
+        private HarmonyInstance HarmonyInst = HarmonyInstance.Create("com.EdB.PrepareCarefully");
 
-        public static void RemoveInstance() {
-            instance = null;
-        }
+        internal static HarmonyInstance Harmony { get { return Instance.HarmonyInst; } }
+
+        internal static PrepareCarefully Instance { get; private set; }
 
         protected EquipmentDatabase equipmentDatabase = null;
         protected AnimalDatabase animalDatabase = null;
@@ -86,7 +79,6 @@ namespace EdB.PrepareCarefully {
         public SortOrder NameSortOrder { get; set; }
         public SortOrder CostSortOrder { get; set; }
         public int StartingPoints { get; set; }
-        public Page_ConfigureStartingPawns OriginalPage { get; set; }
 
         public int PointsRemaining {
             get {
@@ -94,16 +86,16 @@ namespace EdB.PrepareCarefully {
             }
         }
 
-        public PrepareCarefully() {
+        public PrepareCarefully(ModContentPack content) : base(content)  {
             NameSortOrder = SortOrder.Ascending;
             CostSortOrder = SortOrder.Ascending;
             SortField = SortField.Name;
+            Instance = this;
+            HarmonyInst.PatchAll(Assembly.GetExecutingAssembly());
         }
 
-        public void NextPage() {
-            if (OriginalPage != null) {
-                typeof(Page_ConfigureStartingPawns).GetMethod("DoNext", BindingFlags.NonPublic | BindingFlags.Instance).Invoke(OriginalPage, null);
-            }
+        public static void RemoveInstance() {
+            Instance = null;
         }
 
         public void Clear() {
