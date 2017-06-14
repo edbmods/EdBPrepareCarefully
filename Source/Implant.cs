@@ -106,6 +106,17 @@ namespace EdB.PrepareCarefully {
             }
         }
 
+        public bool ReplacesPart {
+            get {
+                if (Recipe != null && Recipe.addsHediff != null
+                        && (typeof(Hediff_AddedPart).IsAssignableFrom(Recipe.addsHediff.hediffClass)
+                            || typeof(Hediff_MissingPart).IsAssignableFrom(Recipe.addsHediff.hediffClass))) {
+                    return true;
+                }
+                return false;
+            }
+        }
+
         public override bool HasTooltip {
             get {
                 return hediff != null;

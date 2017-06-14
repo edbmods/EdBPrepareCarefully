@@ -1,11 +1,16 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
 <!-- CHANGE NOTES -->
 <!-- v0.17.1.6 -->
+<!-- NEW: EdB.PC.Dialog.Implant.Button.Confirm -->
 <!-- NEW: EdB.PC.Panel.Traits.Tip.Conflict -->
 <!-- NEW: EdB.PC.Panel.Traits.Tip.Conflict.List.1 -->
 <!-- NEW: EdB.PC.Panel.Traits.Tip.Conflict.List.2 -->
 <!-- NEW: EdB.PC.Panel.Traits.Tip.Conflict.List.Many -->
 <!-- NEW: EdB.PC.Panel.Traits.Tip.Conflict.List.Last -->
+<!-- UPDATED: EdB.PC.Dialog.Implant.Header -->
+<!-- UPDATED: EdB.PC.Panel.Health.HediffTypeImplant -->
+<!-- REMOVED: EdB.PC.Dialog.Implant.Error.Required -->
+<!-- REMOVED: EdB.PC.Panel.Health.SelectImplant -->
 
 <!-- v0.17.1.4 -->
 <!-- NEW: EdB.PC.Common.Default -->
@@ -52,8 +57,8 @@
   <EdB.PC.Dialog.BodyPart.Header>Select a location</EdB.PC.Dialog.BodyPart.Header>
   <EdB.PC.Dialog.BodyPart.Error.Required>You must select a location</EdB.PC.Dialog.BodyPart.Error.Required>
 
-  <EdB.PC.Dialog.Implant.Header>Select an Implant Procedure</EdB.PC.Dialog.Implant.Header>
-  <EdB.PC.Dialog.Implant.Error.Required>You must select an implant procedure</EdB.PC.Dialog.Implant.Error.Required>
+  <EdB.PC.Dialog.Implant.Header>Select Implants and Bionics</EdB.PC.Dialog.Implant.Header>
+  <EdB.PC.Dialog.Implant.Button.Confirm>Apply</EdB.PC.Dialog.Implant.Button.Confirm>
 
   <EdB.PC.Dialog.Injury.Header>Select a condition</EdB.PC.Dialog.Injury.Header>
   <EdB.PC.Dialog.Injury.Error.Required>You must select a condition</EdB.PC.Dialog.Injury.Error.Required>
@@ -168,11 +173,10 @@
   <EdB.PC.Panel.Health.Error.MustSelectOption>You must select an option</EdB.PC.Panel.Health.Error.MustSelectOption>
   <EdB.PC.Panel.Health.Error.MustSelectSeverity>You must select a severity level</EdB.PC.Panel.Health.Error.MustSelectSeverity>
   <EdB.PC.Panel.Health.HediffTypeInjury>Add an injury or health condition</EdB.PC.Panel.Health.HediffTypeInjury>
-  <EdB.PC.Panel.Health.HediffTypeImplant>Add an implant</EdB.PC.Panel.Health.HediffTypeImplant>
+  <EdB.PC.Panel.Health.HediffTypeImplant>Manage implants and bionics</EdB.PC.Panel.Health.HediffTypeImplant>
   <EdB.PC.Panel.Health.InjuryLabel.Stage>{0}, {1}</EdB.PC.Panel.Health.InjuryLabel.Stage>
   <EdB.PC.Panel.Health.InjuryLabel.Severity>{0}</EdB.PC.Panel.Health.InjuryLabel.Severity>
   <EdB.PC.Panel.Health.None>No injuries, conditions or implants</EdB.PC.Panel.Health.None>
-  <EdB.PC.Panel.Health.SelectImplant>Select an Implant Procedure</EdB.PC.Panel.Health.SelectImplant>
   <EdB.PC.Panel.Health.SelectBodyPart>Select a location</EdB.PC.Panel.Health.SelectBodyPart>
   <EdB.PC.Panel.Health.SelectSeverity>Select a severity level</EdB.PC.Panel.Health.SelectSeverity>
 
