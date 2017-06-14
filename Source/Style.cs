@@ -22,7 +22,8 @@ namespace EdB.PrepareCarefully {
         public static Color ColorTableRow1 = new Color(47f / 255f, 49f / 255f, 50f/255f);
         public static Color ColorTableRow2 = new Color(54f / 255f, 56f / 255f, 57f/255f);
         public static Color ColorTableRowSelected = new Color(12f / 255f, 12f / 255f, 12f/255f);
-
+        
+        public static Color ColorWindowBackground = new Color(21f / 255f, 25f / 255f, 29f / 255f);
 
         public static Vector2 SizePanelMargin = new Vector2(12, 12);
         public static Vector2 SizePanelPadding = new Vector2(12, 12);
@@ -47,6 +48,19 @@ namespace EdB.PrepareCarefully {
                 }
                 else {
                     GUI.color = Style.ColorButton;
+                }
+            }
+        }
+        public static void SetGUIColorForButton(Rect rect, bool selected, Color color, Color hoverColor, Color selectedColor) {
+            if (selected) {
+                GUI.color = selectedColor;
+            }
+            else {
+                if (rect.Contains(Event.current.mousePosition)) {
+                    GUI.color = hoverColor;
+                }
+                else {
+                    GUI.color = color;
                 }
             }
         }
