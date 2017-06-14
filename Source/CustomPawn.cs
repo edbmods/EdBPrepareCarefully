@@ -217,7 +217,7 @@ namespace EdB.PrepareCarefully {
             this.LastSelectedAdulthoodBackstory = pawn.story.adulthood;
 
             // Evaluate all hediffs.
-            InitializePawnHediffs(pawn);
+            InitializeInjuriesAndImplantsFromPawn(pawn);
             
             // Set the alien race, if any.
             alienRace = PrepareCarefully.Instance.Providers.AlienRaces.GetAlienRace(pawn.def);
@@ -226,7 +226,7 @@ namespace EdB.PrepareCarefully {
             ClearPawnCaches();
         }
 
-        protected void InitializePawnHediffs(Pawn pawn) {
+        public void InitializeInjuriesAndImplantsFromPawn(Pawn pawn) {
             OptionsHealth healthOptions = PrepareCarefully.Instance.Providers.Health.GetOptions(this);
             List<Injury> injuries = new List<Injury>();
             List<Implant> implants = new List<Implant>();
@@ -253,12 +253,22 @@ namespace EdB.PrepareCarefully {
                         implant.BodyPartRecord = hediff.Part;
                         implants.Add(implant);
                     }
-                    else {
-                        Log.Warning("Could not add hediff to pawn: " + hediff.def.defName + ", " + (hediff.Part != null ? hediff.Part.def.defName : "no part"));
+                    else if (hediff.def.defName != "MissingBodyPart") {
+                        Log.Warning("Prepare Carefully could not add a hediff to the pawn: " + hediff.def.defName + ", " + (hediff.Part != null ? hediff.Part.def.defName : "no part"));
                     }
                 }
             }
-            SetInjuriesAndImplants(injuries, implants);
+            this.injuries.Clear();
+            this.implants.Clear();
+            this.bodyParts.Clear();
+            foreach (var injury in injuries) {
+                this.injuries.Add(injury);
+                this.bodyParts.Add(injury);
+            }
+            foreach (var implant in implants) {
+                this.implants.Add(implant);
+                this.bodyParts.Add(implant);
+            }
         }
 
         protected void InitializeSkillLevelsAndPassions() {
@@ -1064,7 +1074,7 @@ namespace EdB.PrepareCarefully {
         }
 
         protected void ResetTraits() {
-            SyncBodyParts();
+            ApplyInjuriesAndImplantsToPawn();
             UpdateSkillLevelsForNewBackstoryOrTrait();
         }
 
@@ -1302,25 +1312,29 @@ namespace EdB.PrepareCarefully {
         public void AddInjury(Injury injury) {
             injuries.Add(injury);
             bodyParts.Add(injury);
-            SyncBodyParts();
-        }
-        
-        public void SetInjuriesAndImplants(IEnumerable<Injury> injuries, IEnumerable<Implant> implants) {
-            this.injuries.Clear();
-            this.implants.Clear();
-            this.bodyParts.Clear();
-            foreach (var injury in injuries) {
-                this.injuries.Add(injury);
-                this.bodyParts.Add(injury);
-            }
-            foreach (var implant in implants) {
-                this.implants.Add(implant);
-                this.bodyParts.Add(implant);
-            }
-            SyncBodyParts();
+            ApplyInjuriesAndImplantsToPawn();
+            InitializeInjuriesAndImplantsFromPawn(this.pawn);
         }
 
-        protected void SyncBodyParts() {
+        public void UpdateImplants(List<Implant> implants) {
+            List<Implant> implantsToRemove = new List<Implant>();
+            foreach (var bodyPart in bodyParts) {
+                Implant asImplant = bodyPart as Implant;
+                implantsToRemove.Add(asImplant);
+            }
+            foreach (var implant in implantsToRemove) {
+                bodyParts.Remove(implant);
+            }
+            this.implants.Clear();
+            foreach (var implant in implants) {
+                bodyParts.Add(implant);
+                this.implants.Add(implant);
+            }
+            ApplyInjuriesAndImplantsToPawn();
+            InitializeInjuriesAndImplantsFromPawn(this.pawn);
+        }
+
+        protected void ApplyInjuriesAndImplantsToPawn() {
             this.pawn.health.Reset();
             foreach (var injury in injuries) {
                 injury.AddToPawn(this, pawn);
@@ -1341,7 +1355,7 @@ namespace EdB.PrepareCarefully {
                 injuries.Remove(injury);
             }
             bodyParts.Remove(part);
-            SyncBodyParts();
+            ApplyInjuriesAndImplantsToPawn();
         }
 
         public void RemoveCustomBodyParts(BodyPartRecord part) {
@@ -1351,15 +1365,15 @@ namespace EdB.PrepareCarefully {
             implants.RemoveAll((Implant i) => {
                 return part == i.BodyPartRecord;
             });
-            SyncBodyParts();
+            ApplyInjuriesAndImplantsToPawn();
         }
 
         public void AddImplant(Implant implant) {
             if (implant != null && implant.BodyPartRecord != null) {
-                RemoveCustomBodyParts(implant.BodyPartRecord);
                 implants.Add(implant);
                 bodyParts.Add(implant);
-                SyncBodyParts();
+                ApplyInjuriesAndImplantsToPawn();
+                InitializeInjuriesAndImplantsFromPawn(this.pawn);
             }
             else {
                 Log.Warning("Discarding implant because of missing body part: " + implant.BodyPartRecord.def.defName);
@@ -1369,7 +1383,14 @@ namespace EdB.PrepareCarefully {
         public void RemoveImplant(Implant implant) {
             implants.Remove(implant);
             bodyParts.Remove(implant);
-            SyncBodyParts();
+            ApplyInjuriesAndImplantsToPawn();
+        }
+        public void RemoveImplants(IEnumerable<Implant> implants) {
+            foreach (var implant in implants) {
+                this.implants.Remove(implant);
+                this.bodyParts.Remove(implant);
+            }
+            ApplyInjuriesAndImplantsToPawn();
         }
 
         public bool AtLeastOneImplantedPart(IEnumerable<BodyPartRecord> records) {
@@ -1380,27 +1401,33 @@ namespace EdB.PrepareCarefully {
             }
             return false;
         }
+        public bool HasSameImplant(Implant implant) {
+            return implants.FirstOrDefault((Implant i) => {
+                return i.BodyPartRecord == implant.BodyPartRecord && i.Recipe == implant.Recipe;
+            }) != null;
+        }
+        public bool HasSameImplant(BodyPartRecord part, RecipeDef def) {
+            return implants.FirstOrDefault((Implant i) => {
+                return i.BodyPartRecord == part && i.Recipe == def;
+            }) != null;
+        }
         public bool IsImplantedPart(BodyPartRecord record) {
             return FindImplant(record) != null;
         }
-        public bool AtLeastOneReplacedPart(IEnumerable<BodyPartRecord> records) {
+        public bool HasAtLeastOnePartBeenReplaced(IEnumerable<BodyPartRecord> records) {
             foreach (var record in records) {
-                if (IsReplacedPart(record)) {
+                if (HasPartBeenReplaced(record)) {
                     return true;
                 }
             }
             return false;
         }
-        public bool IsReplacedPart(BodyPartRecord record) {
+        public bool HasPartBeenReplaced(BodyPartRecord record) {
             Implant implant = FindImplant(record);
             if (implant == null) {
                 return false;
             }
-            if (implant.Recipe != null && implant.Recipe.addsHediff != null
-                    && typeof(Hediff_AddedPart).IsAssignableFrom(implant.Recipe.addsHediff.hediffClass)) {
-                return true;
-            }
-            return false;
+            return implant.ReplacesPart;
         }
         public Implant FindImplant(BodyPartRecord record) {
             if (implants.Count == 0) {

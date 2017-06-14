@@ -55,6 +55,7 @@
     <Compile Include="Source\CostCalculator.cs" />
     <Compile Include="Source\CustomParentChildGroup.cs" />
     <Compile Include="Source\CustomParentChildPawn.cs" />
+    <Compile Include="Source\DialogManageImplants.cs" />
     <Compile Include="Source\DialogSelectPawn.cs" />
     <Compile Include="Source\DialogSelectParentChildPawn.cs" />
     <Compile Include="Source\Dialog_Colonist.cs" />
