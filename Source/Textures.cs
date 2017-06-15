@@ -46,6 +46,10 @@ namespace EdB.PrepareCarefully {
         public static Texture2D TextureGenderMaleLarge;
         public static Texture2D TextureGenderlessLarge;
         public static Texture2D TextureButtonInfo;
+        public static Texture2D TextureCheckbox;
+        public static Texture2D TextureCheckboxSelected;
+        public static Texture2D TextureCheckboxPartiallySelected;
+        public static Texture2D TextureDottedLine;
 
         static Textures() {
             LoadTextures();
@@ -96,6 +100,10 @@ namespace EdB.PrepareCarefully {
             TextureGenderFemaleLarge = ContentFinder<Texture2D>.Get("EdB/PrepareCarefully/GenderFemaleLarge", true);
             TextureGenderMaleLarge = ContentFinder<Texture2D>.Get("EdB/PrepareCarefully/GenderMaleLarge", true);
             TextureGenderlessLarge = ContentFinder<Texture2D>.Get("EdB/PrepareCarefully/GenderlessLarge", true);
+            TextureCheckbox = ContentFinder<Texture2D>.Get("EdB/PrepareCarefully/Checkbox", true);
+            TextureCheckboxSelected = ContentFinder<Texture2D>.Get("EdB/PrepareCarefully/CheckboxSelected", true);
+            TextureCheckboxPartiallySelected = ContentFinder<Texture2D>.Get("EdB/PrepareCarefully/CheckboxPartiallySelected", true);
+            TextureDottedLine = ContentFinder<Texture2D>.Get("EdB/PrepareCarefully/DottedLine", true);
 
             TextureTabAtlas = ContentFinder<Texture2D>.Get("UI/Widgets/TabAtlas", true);
 

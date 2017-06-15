@@ -197,6 +197,6 @@ Global
 		$29.IncludeStaticEntities = True
 		$0.VersionControlPolicy = $31
 		$31.inheritsSet = Mono
-		version = 0.17.1.5
+		version = 0.17.1.6
 	EndGlobalSection
 EndGlobal

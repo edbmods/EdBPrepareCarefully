@@ -42,9 +42,11 @@ namespace EdB.PrepareCarefully {
             public TextAnchor Alignment = TextAnchor.LowerLeft;
             public bool AdjustForScrollbars = false;
             public Action<T, Rect, Metadata> DrawAction = (T, Rect, Metadata) => { };
+            public Func<T, float, Metadata, float> MeasureAction = null;
             public bool AllowSorting = false;
         }
         protected List<Column> columns = new List<Column>();
+        protected List<float> columnHeights = new List<float>();
         public WidgetTable() {
             SupportSelection = false;
         }
@@ -97,6 +99,14 @@ namespace EdB.PrepareCarefully {
             set;
         }
         public Action<Column, int> SortAction {
+            get;
+            set;
+        }
+        public Action<RowGroup, int> DrawRowGroupHeaderAction {
+            get;
+            set;
+        }
+        public Func<RowGroup, int, float> MeasureRowGroupHeaderAction {
             get;
             set;
         }
@@ -243,8 +253,35 @@ namespace EdB.PrepareCarefully {
                 scrollTo = null;
             }
         }
+        protected void ResizeColumnHeights() {
+            // If the number of column heights don't match the number of columns, add enough to match.
+            if (columnHeights.Count < columns.Count) {
+                int diff = columns.Count - columnHeights.Count;
+                for (int i = 0; i < diff; i++) {
+                    columnHeights.Add(0);
+                }
+            }
+        }
+        protected float MeasureRow(T row, int index) {
+            float rowHeight = 0;
+            int columnIndex = 0;
+            foreach (var column in columns) {
+                float columnHeight = column.MeasureAction == null ? RowHeight : column.MeasureAction(row, column.Width, new Metadata(0, index, columnIndex));
+                columnHeights[columnIndex] = columnHeight;
+                rowHeight = Mathf.Max(rowHeight, columnHeight);
+                columnIndex++;
+            }
+            return rowHeight;
+        }
         protected float DrawRow(float cursor, T row, int index) {
-            Rect rowRect = new Rect(0, cursor, tableRect.width, RowHeight);
+            // Measure the columns and get the row height from the maximum column height.
+            ResizeColumnHeights();
+            float rowHeight = MeasureRow(row, index);
+
+            // Set the row rectangle using the row height that we previously calculated.
+            Rect rowRect = new Rect(0, cursor, tableRect.width, rowHeight);
+
+            // Only draw the row if it's within the bounds of the content rect.
             if (cursor + rowRect.height >= scrollView.Position.y
                     && cursor <= scrollView.Position.y + scrollView.ViewHeight) {
                 GUI.color = (index % 2 == 0) ? RowColor : AlternateRowColor;
@@ -288,24 +325,32 @@ namespace EdB.PrepareCarefully {
                     }
                 }
             }
-            cursor += RowHeight;
+            cursor += rowHeight;
             return cursor;
         }
         protected void DoScroll(IEnumerable<T> rows, T scrollTo) {
+            ResizeColumnHeights();
+            // Iterate the rows to try to find the one we're looking for and to determine the
+            // row top and bottom positions.
             int index = -1;
+            float rowTop = 0;
+            float rowBottom = 0;
+            bool foundRow = false;
             foreach (var row in rows) {
                 index++;
+                rowBottom = rowTop + MeasureRow(row, index);
                 if (object.Equals(row, scrollTo)) {
+                    foundRow = true;
                     break;
                 }
+                rowTop = rowBottom;
             }
-            if (index < 0) {
+            if (index < 0 || !foundRow) {
                 return;
             }
+
             float min = ScrollView.Position.y;
             float max = min + Rect.height;
-            float rowTop = (float)index * RowHeight;
-            float rowBottom = rowTop + RowHeight;
             float pos = (float)index * RowHeight;
             if (rowTop < min) {
                 float amount = min - rowTop;

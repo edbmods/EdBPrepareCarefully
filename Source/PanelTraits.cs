@@ -22,6 +22,7 @@ namespace EdB.PrepareCarefully {
         protected List<Field> fields = new List<Field>();
         protected List<Trait> traitsToRemove = new List<Trait>();
         protected HashSet<TraitDef> disallowedTraitDefs = new HashSet<TraitDef>();
+        protected Dictionary<Trait,string> conflictingTraitList = new Dictionary<Trait, string>();
 
         protected Vector2 SizeField;
         protected Vector2 SizeTrait;
@@ -96,7 +97,7 @@ namespace EdB.PrepareCarefully {
 
                     if (trait != null) {
                         field.Label = trait.LabelCap;
-                        field.Tip = trait.TipString(currentPawn.Pawn);
+                        field.Tip = GetTraitTip(trait, currentPawn);
                     }
                     else {
                         field.Label = null;
@@ -113,7 +114,7 @@ namespace EdB.PrepareCarefully {
                                 return t.LabelCap;
                             },
                             DescriptionFunc = (Trait t) => {
-                                return t.TipString(currentPawn.Pawn);
+                                return GetTraitTip(t, currentPawn);
                             },
                             SelectedFunc = (Trait t) => {
                                 if ((selectedTrait == null || t == null) && selectedTrait != t) {
@@ -207,7 +208,7 @@ namespace EdB.PrepareCarefully {
                         return t.LabelCap;
                     },
                     DescriptionFunc = (Trait t) => {
-                        return t.TipString(currentPawn.Pawn);
+                        return GetTraitTip(t, state.CurrentPawn);
                     },
                     SelectedFunc = (Trait t) => {
                         return selectedTrait == t;
@@ -235,6 +236,42 @@ namespace EdB.PrepareCarefully {
             }
         }
 
+        protected string GetTraitTip(Trait trait, CustomPawn pawn) {
+            string baseTip = trait.TipString(pawn.Pawn);
+            string conflictingNames = null;
+            if (!conflictingTraitList.TryGetValue(trait, out conflictingNames)) {
+                List<Trait> conflictingTraits = providerTraits.Traits.Where((Trait t) => {
+                    return trait.def.conflictingTraits.Contains(t.def) || (t.def == trait.def && t.Label != trait.Label);
+                }).ToList();
+                if (conflictingTraits.Count == 0) {
+                    conflictingTraitList.Add(trait, null);
+                }
+                else {
+                    conflictingNames = "";
+                    if (conflictingTraits.Count == 1) {
+                        conflictingNames = "EdB.PC.Panel.Traits.Tip.Conflict.List.1".Translate(new object[] { conflictingTraits[0].LabelCap });
+                    }
+                    else if (conflictingTraits.Count == 2) {
+                        conflictingNames = "EdB.PC.Panel.Traits.Tip.Conflict.List.2".Translate(new object[] { conflictingTraits[0].LabelCap, conflictingTraits[1].LabelCap });
+                    }
+                    else {
+                        int c = conflictingTraits.Count;
+                        conflictingNames = "EdB.PC.Panel.Traits.Tip.Conflict.List.Last".Translate(new object[] { conflictingTraits[c - 2].LabelCap, conflictingTraits[c - 1].LabelCap });
+                        for (int i = c - 3; i >= 0; i--) {
+                            conflictingNames = "EdB.PC.Panel.Traits.Tip.Conflict.List.Many".Translate(new object[] { conflictingTraits[i].LabelCap, conflictingNames });
+                        }
+                    }
+                    conflictingTraitList.Add(trait, conflictingNames);
+                }
+            }
+            if (conflictingNames == null) {
+                return baseTip;
+            }
+            else {
+                return "EdB.PC.Panel.Traits.Tip.Conflict".Translate(new object[] { baseTip, conflictingNames });
+            }
+        }
+
         protected void ComputeDisallowedTraits(CustomPawn customPawn, Trait traitToReplace) {
             disallowedTraitDefs.Clear();
             foreach (Trait t in customPawn.Traits) {
@@ -252,6 +289,7 @@ namespace EdB.PrepareCarefully {
 
         protected void SelectNextTrait(CustomPawn customPawn, int traitIndex) {
             Trait currentTrait = customPawn.GetTrait(traitIndex);
+            ComputeDisallowedTraits(customPawn, currentTrait);
             int index = -1;
             if (currentTrait != null) {
                 index = providerTraits.Traits.FindIndex((Trait t) => {
@@ -262,14 +300,14 @@ namespace EdB.PrepareCarefully {
             do {
                 index++;
                 if (index >= providerTraits.Traits.Count) {
-                    index = -1;
+                    index = 0;
                 }
                 if (++count > providerTraits.Traits.Count + 1) {
                     index = -1;
                     break;
                 }
             }
-            while (index != -1 && customPawn.HasTrait(providerTraits.Traits[index]));
+            while (index != -1 && (customPawn.HasTrait(providerTraits.Traits[index]) || disallowedTraitDefs.Contains(providerTraits.Traits[index].def)));
 
             Trait newTrait = null;
             if (index > -1) {
@@ -280,6 +318,7 @@ namespace EdB.PrepareCarefully {
 
         protected void SelectPreviousTrait(CustomPawn customPawn, int traitIndex) {
             Trait currentTrait = customPawn.GetTrait(traitIndex);
+            ComputeDisallowedTraits(customPawn, currentTrait);
             int index = -1;
             if (currentTrait != null) {
                 index = providerTraits.Traits.FindIndex((Trait t) => {
@@ -289,7 +328,7 @@ namespace EdB.PrepareCarefully {
             int count = 0;
             do {
                 index--;
-                if (index < -1) {
+                if (index < 0) {
                     index = providerTraits.Traits.Count - 1;
                 }
                 if (++count > providerTraits.Traits.Count + 1) {
@@ -297,7 +336,7 @@ namespace EdB.PrepareCarefully {
                     break;
                 }
             }
-            while (index != -1 && customPawn.HasTrait(providerTraits.Traits[index]));
+            while (index != -1 && (customPawn.HasTrait(providerTraits.Traits[index]) || disallowedTraitDefs.Contains(providerTraits.Traits[index].def)));
 
             Trait newTrait = null;
             if (index > -1) {

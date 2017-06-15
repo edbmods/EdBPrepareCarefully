@@ -60,18 +60,6 @@ namespace EdB.PrepareCarefully {
             }
         }
 
-        public Hediff_AddedPart AddedBodyPart {
-            get {
-                if (recipe == null) {
-                    return null;
-                }
-                Hediff_AddedPart addedPart = new Hediff_AddedPart();
-                addedPart.Part = BodyPartRecord;
-                addedPart.def = recipe.addsHediff;
-                return addedPart;
-            }
-        }
-
         public string Label {
             get {
                 if (recipe == null) {
@@ -115,6 +103,17 @@ namespace EdB.PrepareCarefully {
                 this.hediff = HediffMaker.MakeHediff(recipe.addsHediff, pawn, BodyPartRecord);
                 pawn.health.AddHediff(hediff, BodyPartRecord, new DamageInfo?());
                 pawn.health.capacities.Clear();
+            }
+        }
+
+        public bool ReplacesPart {
+            get {
+                if (Recipe != null && Recipe.addsHediff != null
+                        && (typeof(Hediff_AddedPart).IsAssignableFrom(Recipe.addsHediff.hediffClass)
+                            || typeof(Hediff_MissingPart).IsAssignableFrom(Recipe.addsHediff.hediffClass))) {
+                    return true;
+                }
+                return false;
             }
         }
 

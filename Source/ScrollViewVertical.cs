@@ -71,12 +71,17 @@ namespace EdB.PrepareCarefully {
         }
 
         public void End(float yPosition) {
-            if (Event.current.type == EventType.Layout) {
-                contentHeight = yPosition;
-            }
+            contentHeight = yPosition;
             Widgets.EndScrollView();
             if (scrollTo != null) {
-                Position = scrollTo.Value;
+                Vector2 newPosition = scrollTo.Value;
+                if (newPosition.y < 0) {
+                    newPosition.y = 0;
+                }
+                else if (newPosition.y > ContentHeight - ViewHeight - 1) {
+                    newPosition.y = ContentHeight - ViewHeight - 1;
+                }
+                Position = newPosition;
                 scrollTo = null;
             }
         }
@@ -90,12 +95,6 @@ namespace EdB.PrepareCarefully {
         }
 
         public void ScrollTo(float y) {
-            if (y < 0) {
-                y = 0;
-            }
-            else if (y > ContentHeight - ViewHeight) {
-                y = ContentHeight - ViewHeight;
-            }
             scrollTo = new Vector2(0, y);
         }
 

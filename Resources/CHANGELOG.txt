@@ -1,5 +1,17 @@
  _____________________________________________________________________________
  
+   Version 0.17.1.6
+ _____________________________________________________________________________
+
+ - New UI for managing implants and bionics.
+ - Trait tooltips now display conflicting traits.
+ - Bug fix: Previous/next buttons for traits now skip over conflicting traits.
+ - Bug fix: No longer treating all implants as replaced parts, which was
+   causing implant locations to be disabled in some cases when they should not
+   have been.
+
+ _____________________________________________________________________________
+ 
    Version 0.17.1.5
  _____________________________________________________________________________
 
