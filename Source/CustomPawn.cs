@@ -109,15 +109,6 @@ namespace EdB.PrepareCarefully {
             }
         }
 
-        public Faction Faction {
-            get {
-                return pawn.Faction;
-            }
-            set {
-                pawn.SetFactionDirect(value);
-            }
-        }
-
         public int MinAge {
             get {
                 return Constraints.AgeBiologicalMin;
@@ -221,6 +212,9 @@ namespace EdB.PrepareCarefully {
             
             // Set the alien race, if any.
             alienRace = PrepareCarefully.Instance.Providers.AlienRaces.GetAlienRace(pawn.def);
+
+            // Clear out the faction.
+            pawn.SetFactionDirect(null);
 
             // Clear all of the pawn caches.
             ClearPawnCaches();
