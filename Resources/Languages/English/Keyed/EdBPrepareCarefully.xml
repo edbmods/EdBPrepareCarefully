@@ -1,7 +1,10 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
 <!-- CHANGE NOTES -->
 <!-- v0.17.1.6 -->
+<!-- NEW: EdB.PC.Dialog.Implant.Alert -->
+<!-- NEW: EdB.PC.Dialog.Implant.Alert.Item -->
 <!-- NEW: EdB.PC.Dialog.Implant.Button.Confirm -->
+<!-- NEW: EdB.PC.Dialog.Implant.Conflict -->
 <!-- NEW: EdB.PC.Panel.Traits.Tip.Conflict -->
 <!-- NEW: EdB.PC.Panel.Traits.Tip.Conflict.List.1 -->
 <!-- NEW: EdB.PC.Panel.Traits.Tip.Conflict.List.2 -->
@@ -57,11 +60,11 @@
   <EdB.PC.Dialog.BodyPart.Header>Select a location</EdB.PC.Dialog.BodyPart.Header>
   <EdB.PC.Dialog.BodyPart.Error.Required>You must select a location</EdB.PC.Dialog.BodyPart.Error.Required>
 
-  <EdB.PC.Dialog.Implant.Header>Select Implants and Bionics</EdB.PC.Dialog.Implant.Header>
-  <EdB.PC.Dialog.Implant.Button.Confirm>Apply</EdB.PC.Dialog.Implant.Button.Confirm>
-  <EdB.PC.Dialog.Implant.Conflict>This implant cannot be installed because it conflicts with the following:\n\n- {0}, {1}</EdB.PC.Dialog.Implant.Conflict>
   <EdB.PC.Dialog.Implant.Alert>You've selected at least one implant that will not be installed because it conflicts with another selection:\n{0}</EdB.PC.Dialog.Implant.Alert>
   <EdB.PC.Dialog.Implant.Alert.Item>- {0}, {1}</EdB.PC.Dialog.Implant.Alert.Item>
+  <EdB.PC.Dialog.Implant.Button.Confirm>Apply</EdB.PC.Dialog.Implant.Button.Confirm>
+  <EdB.PC.Dialog.Implant.Conflict>This implant cannot be installed because it conflicts with the following:\n\n- {0}, {1}</EdB.PC.Dialog.Implant.Conflict>
+  <EdB.PC.Dialog.Implant.Header>Select Implants and Bionics</EdB.PC.Dialog.Implant.Header>
 
   <EdB.PC.Dialog.Injury.Header>Select a condition</EdB.PC.Dialog.Injury.Header>
   <EdB.PC.Dialog.Injury.Error.Required>You must select a condition</EdB.PC.Dialog.Injury.Error.Required>
