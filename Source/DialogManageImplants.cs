@@ -28,6 +28,9 @@ namespace EdB.PrepareCarefully {
             public Implant Implant {
                 get; set;
             }
+            public Implant BlockingImplant {
+                get; set;
+            }
         }
         public class ImplantRecipe {
             protected List<ImplantBodyPart> parts = new List<ImplantBodyPart>();
@@ -47,6 +50,9 @@ namespace EdB.PrepareCarefully {
                 get {
                     return parts != null && parts.Count > 1;
                 }
+            }
+            public Implant BlockingImplant {
+                get; set;
             }
             public List<ImplantBodyPart> Parts {
                 get {
@@ -83,10 +89,11 @@ namespace EdB.PrepareCarefully {
         protected WidgetTable<ImplantRecipe> table;
         protected List<ImplantRecipe> recipes = new List<ImplantRecipe>();
         protected List<Implant> implantList = new List<Implant>();
-        protected HashSet<BodyPartRecord> replacedParts = new HashSet<BodyPartRecord>();
+        protected Dictionary<BodyPartRecord, Implant> replacedParts = new Dictionary<BodyPartRecord, Implant>();
         protected CustomPawn pawn = null;
         protected bool disabledOptionsDirtyFlag = false;
         protected List<Implant> validImplants = new List<Implant>();
+        protected string cachedBlockedSelectionAlert = null;
 
         public DialogManageImplants(CustomPawn pawn) {
             this.closeOnEscapeKey = true;
@@ -110,7 +117,7 @@ namespace EdB.PrepareCarefully {
             foreach (var implant in pawn.Implants) {
                 implantList.Add(implant);
                 if (implant.ReplacesPart) {
-                    replacedParts.Add(implant.BodyPartRecord);
+                    replacedParts.Add(implant.BodyPartRecord, implant);
                 }
             }
         }
@@ -144,7 +151,7 @@ namespace EdB.PrepareCarefully {
             }
             this.recipes = result;
         }
-
+        
         protected void ResetDisabledState() {
             OptionsHealth health = PrepareCarefully.Instance.Providers.Health.GetOptions(pawn);
 
@@ -152,25 +159,25 @@ namespace EdB.PrepareCarefully {
             // trying to replace or install on top of an already-missing part.
 
             // The first pass looks for duplicate implants that both try replace the same part.
-            HashSet<BodyPartRecord> firstPassReplacedParts = new HashSet<BodyPartRecord>();
+            Dictionary<BodyPartRecord, Implant> firstPassReplacedParts = new Dictionary<BodyPartRecord, Implant>();
             List<Implant> firstPassValidImplants = new List<Implant>();
             foreach (var implant in implantList) {
                 UniqueBodyPart part = health.FindBodyPartsForRecord(implant.BodyPartRecord);
                 if (part == null) {
                     continue;
                 }
-                if (firstPassReplacedParts.Contains(part.Record)) {
+                if (firstPassReplacedParts.ContainsKey(part.Record)) {
                     continue;
                 }
                 firstPassValidImplants.Add(implant);
                 if (implant.ReplacesPart) {
-                    firstPassReplacedParts.Add(implant.BodyPartRecord);
+                    firstPassReplacedParts.Add(implant.BodyPartRecord, implant);
                 }
             }
 
             // Second pass removes implants whose ancestor parts have been removed and implants
             // that don't replace parts but whose target part has been removed.
-            HashSet<BodyPartRecord> secondPassReplacedParts = new HashSet<BodyPartRecord>();
+            Dictionary<BodyPartRecord, Implant> secondPassReplacedParts = new Dictionary<BodyPartRecord, Implant>();
             List<Implant> secondPassValidImplants = new List<Implant>();
             foreach (var implant in firstPassValidImplants) {
                 UniqueBodyPart part = health.FindBodyPartsForRecord(implant.BodyPartRecord);
@@ -178,12 +185,12 @@ namespace EdB.PrepareCarefully {
                     continue;
                 }
                 bool isValid = true;
-                if (!implant.ReplacesPart && firstPassReplacedParts.Contains(part.Record)) {
+                if (!implant.ReplacesPart && firstPassReplacedParts.ContainsKey(part.Record)) {
                     isValid = false;
                 }
                 else {
                     foreach (var ancestor in part.Ancestors) {
-                        if (firstPassReplacedParts.Contains(ancestor.Record)) {
+                        if (firstPassReplacedParts.ContainsKey(ancestor.Record)) {
                             isValid = false;
                             break;
                         }
@@ -194,7 +201,7 @@ namespace EdB.PrepareCarefully {
                 }
                 secondPassValidImplants.Add(implant);
                 if (implant.ReplacesPart) {
-                    secondPassReplacedParts.Add(implant.BodyPartRecord);
+                    secondPassReplacedParts.Add(implant.BodyPartRecord, implant);
                 }
             }
             
@@ -203,7 +210,7 @@ namespace EdB.PrepareCarefully {
             validImplants.Clear();
             foreach (var implant in secondPassValidImplants) {
                 if (implant.ReplacesPart) {
-                    replacedParts.Add(implant.BodyPartRecord);
+                    replacedParts.Add(implant.BodyPartRecord, implant);
                 }
                 validImplants.Add(implant);
             }
@@ -218,27 +225,23 @@ namespace EdB.PrepareCarefully {
             // body part once.  The result will be used to determine if recipes and part options should be
             // disabled.
             HashSet<BodyPartRecord> evaluatedParts = new HashSet<BodyPartRecord>();
-            HashSet<BodyPartRecord> missingParts = new HashSet<BodyPartRecord>();
+            Dictionary<BodyPartRecord, Implant> blockedParts = new Dictionary<BodyPartRecord, Implant>();
             foreach (var recipe in recipes) {
                 foreach (var part in recipe.Parts) {
                     if (evaluatedParts.Contains(part.Part)) {
                         continue;
                     }
-                    bool isValid = true;
-                    if (replacedParts.Contains(part.Part)) {
-                        isValid = false;
-                    }
-                    else {
+                    Implant blockingImplant = null;
+                    if (!replacedParts.TryGetValue(part.Part, out blockingImplant)) {
                         foreach (var ancestor in part.UniquePart.Ancestors) {
-                            if (replacedParts.Contains(ancestor.Record)) {
-                                isValid = false;
+                            if (replacedParts.TryGetValue(ancestor.Record, out blockingImplant)) {
                                 break;
                             }
                         }
                     }
                     evaluatedParts.Add(part.Part);
-                    if (!isValid) {
-                        missingParts.Add(part.Part);
+                    if (blockingImplant != null) {
+                        blockedParts.Add(part.Part, blockingImplant);
                     }
                 }
             }
@@ -248,13 +251,21 @@ namespace EdB.PrepareCarefully {
             // are disabled.
             foreach (var recipe in recipes) {
                 recipe.Disabled = false;
+                recipe.BlockingImplant = null;
                 int disabledCount = 0;
+                int partCount = recipe.Parts.Count;
                 foreach (var part in recipe.Parts) {
                     part.Disabled = false;
-                    if (missingParts.Contains(part.Part)) {
+                    part.BlockingImplant = null;
+                    Implant blockingImplant = null;
+                    if (blockedParts.TryGetValue(part.Part, out blockingImplant)) {
                         if (!validImplants.Contains(part.Implant)) {
                             part.Disabled = true;
+                            part.BlockingImplant = blockingImplant;
                             disabledCount++;
+                            if (partCount == 1) {
+                                recipe.BlockingImplant = blockingImplant;
+                            }
                         }
                     }
                 }
@@ -279,6 +290,41 @@ namespace EdB.PrepareCarefully {
                     }
                 }
             }
+
+            ResetCachedBlockedSelectionAlert();
+        }
+
+        protected void ResetCachedBlockedSelectionAlert() {
+            bool showAlert = false;
+            foreach (var recipe in recipes) {
+                foreach (var part in recipe.Parts) {
+                    if (part.Disabled && part.Implant != null) {
+                        showAlert = true;
+                        break;
+                    }
+                }
+                if (showAlert) {
+                    break;
+                }
+            }
+            if (!showAlert) {
+                cachedBlockedSelectionAlert = null;
+                return;
+            }
+            List<Implant> blockedSelections = new List<Implant>();
+            foreach (var recipe in recipes) {
+                int partCount = recipe.Parts.Count;
+                foreach (var part in recipe.Parts) {
+                    if (part.Disabled && part.Implant != null) {
+                        blockedSelections.Add(part.Implant);
+                    }
+                }
+            }
+            string listItems = "";
+            foreach (var item in blockedSelections) {
+                listItems += "\n" + "EdB.PC.Dialog.Implant.Alert.Item".Translate(new object[] { item.recipe.LabelCap, item.BodyPartRecord.def.label });
+            }
+            cachedBlockedSelectionAlert = "EdB.PC.Dialog.Implant.Alert".Translate(new object[] { listItems });
         }
 
         protected void MarkDisabledOptionsAsDirty() {
@@ -472,6 +518,9 @@ namespace EdB.PrepareCarefully {
                         if (Widgets.ButtonInvisible(checkboxRect)) {
                             ClickRecipeAction(recipe);
                         }
+                        if (recipe.BlockingImplant != null) {
+                            TooltipHandler.TipRegion(labelRect, "EdB.PC.Dialog.Implant.Conflict".Translate(new object[] { recipe.BlockingImplant.recipe.LabelCap, recipe.BlockingImplant.BodyPartRecord.def.label }));
+                        }
                     }
                     if (recipe.Selected && recipe.RequiresPartSelection) {
                         float partInset = 32;
@@ -506,6 +555,9 @@ namespace EdB.PrepareCarefully {
                                 if (Widgets.ButtonInvisible(checkboxRect)) {
                                     ClickPartAction(recipe, part);
                                 }
+                                if (part.BlockingImplant != null) {
+                                    TooltipHandler.TipRegion(labelRect, "EdB.PC.Dialog.Implant.Conflict".Translate(new object[] { part.BlockingImplant.recipe.LabelCap, part.BlockingImplant.BodyPartRecord.def.label }));
+                                }
                             }
                             cursor += labelRect.height;
                         }
@@ -532,8 +584,16 @@ namespace EdB.PrepareCarefully {
             }
             EvaluateDisabledOptionsDirtyState();
             GUI.color = Color.white;
-            Text.Font = GameFont.Medium; if (HeaderLabel != null) {
-                Widgets.Label(HeaderRect, HeaderLabel);
+            Text.Font = GameFont.Medium;
+            if (HeaderLabel != null) {
+                Rect headerRect = HeaderRect;
+                if (cachedBlockedSelectionAlert != null) {
+                    Rect alertRect = new Rect(headerRect.xMin, headerRect.yMin + 5, 20, 20);
+                    GUI.DrawTexture(alertRect, Textures.TextureAlertSmall);
+                    TooltipHandler.TipRegion(alertRect, cachedBlockedSelectionAlert);
+                    headerRect = headerRect.InsetBy(26, 0, 0, 0);
+                }
+                Widgets.Label(headerRect, HeaderLabel);
             }
 
             Text.Font = GameFont.Small;
