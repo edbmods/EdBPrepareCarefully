@@ -238,7 +238,7 @@ namespace EdB.PrepareCarefully {
                     injuries.Add(injury);
                 }
                 else {
-                    RecipeDef implantRecipe = DefDatabase<RecipeDef>.AllDefs.Where((RecipeDef def) => {
+                    RecipeDef implantRecipe = healthOptions.ImplantRecipes.Where((RecipeDef def) => {
                         return (def.addsHediff != null && def.addsHediff == hediff.def);
                     }).RandomElementWithFallback(null);
                     if (implantRecipe != null) {
