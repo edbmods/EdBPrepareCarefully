@@ -246,7 +246,6 @@ namespace EdB.PrepareCarefully {
             }
 
             CustomPawn customPawn = new CustomPawn(pawn);
-            customPawn.Pawn.SetFactionDirect(Faction.OfPlayer);
             PrepareCarefully.Instance.AddPawn(customPawn);
             state.CurrentPawn = customPawn;
             PawnAdded(customPawn);

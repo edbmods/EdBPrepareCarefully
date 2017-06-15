@@ -361,6 +361,7 @@ namespace EdB.PrepareCarefully {
         public void CreateColonists() {
             colonists.Clear();
             foreach (CustomPawn customPawn in pawns) {
+                customPawn.Pawn.SetFactionDirect(Faction.OfPlayer);
                 if (customPawn.Pawn.workSettings == null) {
                     customPawn.Pawn.workSettings = new Pawn_WorkSettings(customPawn.Pawn);
                 }
