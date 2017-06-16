@@ -14,12 +14,16 @@ namespace EdB.PrepareCarefully {
         private List<CustomParentChildGroup> parentChildGroups;
         FieldInfo directRelationsField;
         FieldInfo pawnsWithField;
+        private List<int> compatibilityPool = new List<int>();
 
         public RelationshipBuilder(List<CustomRelationship> relationships, List<CustomParentChildGroup> parentChildGroups) {
             directRelationsField = typeof(Pawn_RelationsTracker).GetField("directRelations", BindingFlags.Instance | BindingFlags.NonPublic);
             pawnsWithField = typeof(Pawn_RelationsTracker).GetField("pawnsWithDirectRelationsWithMe", BindingFlags.Instance | BindingFlags.NonPublic);
             this.relationships = relationships;
             this.parentChildGroups = parentChildGroups;
+
+            int compatibilityPoolSize = Mathf.Max(Mathf.Min(relationships.Count * 6, 12), 50);
+            this.FillCompatibilityPool(compatibilityPoolSize);
         }
         public void Build() {
             // These include all the pawns that have relationships with them.
@@ -214,6 +218,36 @@ namespace EdB.PrepareCarefully {
             if (def.reflexive) {
                 targetDirectRelations.Add(new DirectPawnRelation(def, source, 0));
                 sourcePawnsWithDirectRelationsWithMe.Add(target);
+            }
+
+            // Try to find a better pawn compatibility, if it makes sense for the relationship.
+            CarefullyPawnRelationDef pcDef = DefDatabase<CarefullyPawnRelationDef>.GetNamedSilentFail(def.defName);
+            if (pcDef != null) {
+                if (pcDef.needsCompatibility) {
+                    int originalId = target.thingIDNumber;
+                    float originalScore = source.relations.ConstantPerPawnsPairCompatibilityOffset(originalId);
+                    int bestId = originalId;
+                    float bestScore = originalScore;
+                    foreach (var id in compatibilityPool) {
+                        float score = source.relations.ConstantPerPawnsPairCompatibilityOffset(id);
+                        if (score > bestScore) {
+                            bestScore = score;
+                            bestId = id;
+                        }
+                    }
+                    if (bestId != originalId) {
+                        target.thingIDNumber = bestId;
+                        compatibilityPool.Remove(bestId);
+                        compatibilityPool.Add(originalId);
+                    }
+                }
+            }
+        }
+
+        private void FillCompatibilityPool(int size) {
+            int needed = size - compatibilityPool.Count;
+            for (int i=0; i<needed; i++) {
+                compatibilityPool.Add(Find.UniqueIDsManager.GetNextThingID());
             }
         }
         

@@ -66,12 +66,21 @@ namespace EdB.PrepareCarefully {
                     return false;
                 }
             }));
-            // De-dupe the recipe list.
-            HashSet<RecipeDef> recipeSet = new HashSet<RecipeDef>();
-            foreach (var r in recipes) {
-                recipeSet.Add(r);
+            
+            // Remove duplicates: recipes that apply the same hediff on the same body parts.
+            HashSet<int> recipeHashes = new HashSet<int>();
+            List<RecipeDef> dedupedRecipes = new List<RecipeDef>();
+            foreach (var recipe in recipes) {
+                int hash = recipe.addsHediff.GetHashCode();
+                foreach (var part in recipe.appliedOnFixedBodyParts) {
+                    hash = hash * 31 + part.GetHashCode();
+                }
+                if (!recipeHashes.Contains(hash)) {
+                    dedupedRecipes.Add(recipe);
+                    recipeHashes.Add(hash);
+                }
             }
-            recipes = new List<RecipeDef>(recipeSet);
+            recipes = new List<RecipeDef>(dedupedRecipes);
 
             // Iterate the recipes. Populate a list of all of the body parts that apply to a given recipe.
             foreach (var r in recipes) {
