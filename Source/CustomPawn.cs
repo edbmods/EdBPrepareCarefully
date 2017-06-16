@@ -239,7 +239,7 @@ namespace EdB.PrepareCarefully {
                 }
                 else {
                     RecipeDef implantRecipe = healthOptions.ImplantRecipes.Where((RecipeDef def) => {
-                        return (def.addsHediff != null && def.addsHediff == hediff.def);
+                        return (def.addsHediff != null && def.addsHediff == hediff.def && def.appliedOnFixedBodyParts.Contains(hediff.Part.def));
                     }).RandomElementWithFallback(null);
                     if (implantRecipe != null) {
                         Implant implant = new Implant();
