@@ -324,7 +324,7 @@ namespace EdB.PrepareCarefully {
                 disabled.AddRange(group.Children);
             }
             IEnumerable <CustomParentChildPawn> colonists = PrepareCarefully.Instance.RelationshipManager.ParentChildPawns.Where((CustomParentChildPawn p) => {
-                return !p.Hidden && p.Pawn.Pawn.Faction == Faction.OfPlayer;
+                return !p.Hidden && p.Pawn.Pawn.Faction == null;
             });
             IEnumerable<CustomParentChildPawn> hidden = PrepareCarefully.Instance.RelationshipManager.ParentChildPawns.Where((CustomParentChildPawn p) => {
                 return p.Hidden;
@@ -368,7 +368,7 @@ namespace EdB.PrepareCarefully {
                 disabled.AddRange(group.Children);
             }
             IEnumerable<CustomParentChildPawn> colonists = PrepareCarefully.Instance.RelationshipManager.ParentChildPawns.Where((CustomParentChildPawn p) => {
-                return !p.Hidden && p.Pawn.Pawn.Faction == Faction.OfPlayer;
+                return !p.Hidden && p.Pawn.Pawn.Faction == null;
             });
             IEnumerable<CustomParentChildPawn> hidden = PrepareCarefully.Instance.RelationshipManager.ParentChildPawns.Where((CustomParentChildPawn p) => {
                 return p.Hidden;
