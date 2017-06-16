@@ -13,6 +13,8 @@ namespace EdB.PrepareCarefully {
 
         public Type workerClass = null;
 
+        public bool needsCompatibility = false;
+
         [Unsaved]
         private PawnRelationWorker worker;
 
