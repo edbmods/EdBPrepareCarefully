@@ -5,6 +5,7 @@ obj
 dist
 Libraries/*
 !Libraries/README.md
+!Libraries/0Harmony.dll
 *.user
 *.bat
 !dist.bat

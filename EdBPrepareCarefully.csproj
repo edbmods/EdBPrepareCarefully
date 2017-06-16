@@ -30,6 +30,9 @@
     <ConsolePause>false</ConsolePause>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="0Harmony">
+      <HintPath>Libraries\0Harmony.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Xml" />
     <Reference Include="System.Xml.Linq" />
@@ -77,9 +80,11 @@
     <Compile Include="Source\IRelationshipWorker.cs" />
     <Compile Include="Source\OptionsApparel.cs" />
     <Compile Include="Source\OptionsHealth.cs" />
-    <Compile Include="Source\Page_ConfigureStartingPawns.cs" />
+    <Compile Include="Source\Page_ConfigureStartingPawns_Controller.cs" />
     <Compile Include="Source\PanelRelationshipsOther.cs" />
     <Compile Include="Source\PanelRelationshipsParentChild.cs" />
+    <Compile Include="Source\Patches\ConfigureStartingPawns_Patches\DoBottomButtons_Patch.cs" />
+    <Compile Include="Source\Patches\ConfigureStartingPawns_Patches\PreOpen_Patch.cs" />
     <Compile Include="Source\PawnGenerationRequestWrapper.cs" />
     <Compile Include="Source\PawnLayers.cs" />
     <Compile Include="Source\PrepareCarefully.cs" />
@@ -179,7 +184,9 @@
     <Compile Include="Source\TabViewRelationships.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
-  <ItemGroup />
+  <ItemGroup>
+    <AdditionalFiles Include="Libraries\0Harmony.dll" />
+  </ItemGroup>
   <ItemGroup>
     <None Include="Resources\CHANGELOG.txt" />
     <None Include="Resources\About\About.xml">
