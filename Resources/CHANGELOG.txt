@@ -5,6 +5,9 @@
 
  - New UI for managing implants and bionics.
  - Trait tooltips now display conflicting traits.
+ - Changed how the Prepare Carefully button is added to the character
+   customization page.  Now using Harmony patches to display the button
+   instead of replace the page with a scenario part.
  - Bug fix: Previous/next buttons for traits now skip over conflicting traits.
  - Bug fix: No longer treating all implants as replaced parts, which was
    causing implant locations to be disabled in some cases when they should not
