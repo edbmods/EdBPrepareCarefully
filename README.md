@@ -10,11 +10,16 @@ Therefore, translation pull requests will not be merged into the project.  Pleas
 
 The solution file was created using Xamarin Studio/MonoDevelop, but it should also work in Visual Studio.  Note that the project targets the older 3.5 version of the .NET framework used by the Unity engine on top of which RimWorld is built.
 
-Note that the solution has dependencies on the following DLLs:
+Note that the solution has dependencies on the following RimWorld DLLs:
 - Assembly-CSharp.dll
 - UnityEngine.dll
 
 Copy those dependencies from the RimWorld game directory into the "Libraries" directory.  Be sure to make _copies_ of the originals--don't accidentally move/delete them from the original game directory.
+
+The solution also has a dependency on the following third-party DLL:
+- 0Harmony.dll
+
+The Harmony DLL is available from https://github.com/pardeike/Harmony/releases and should also be placed in the "Libraries" directory.  Be sure to download and use the "Release" version.
 
 The result of the build will be the following DLL:
 - EdBPrepareCarefully.dll
