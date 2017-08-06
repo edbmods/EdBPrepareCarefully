@@ -11,35 +11,45 @@ using Verse;
 using Verse.Sound;
 
 namespace EdB.PrepareCarefully {
+    // Provides utilities for creating deep copies of pawn properties.  Since most of these pawn-related entities
+    // do not provide methods for creating deep copies, these utility methods take advantage of the IExposable interface
+    // to serialize/deserialize objects via strings to create the copies.
     public static class UtilityCopy {
+        // Serializes and then deserializes an instance of an IExposable class to create a deep copy.  The class must be constructable
+        // with no arguments.
+        public static T CopyExposable<T>(T type) where T : IExposable {
+        string xml = "<doc>" + Scribe.saver.DebugOutputFor(type) + "</doc>";
+            return CopyExposable<T>(type, null);
+        }
 
-        // Serializes and then deserializes an instance of a pawn tracker class (i.e. Pawn_StoryTracker, Pawn_HealthTracker)
-        // to create a complete deep copy.  Admittedly, it feels like a bit of hack, but it gives a guaranteed way to
-        // accomplish the copy.
-        public static T CopyTrackerForPawn<T>(T tracker, Pawn pawn) where T : IExposable {
-            string xml = "<doc>" + Scribe.saver.DebugOutputFor(tracker) + "</doc>";
+        // Serializes and then deserializes an instance of an IExposable class to create a deep copy.  Instantiates the copy
+        // with the provided constructor arguments.
+        public static T CopyExposable<T>(T type, object[] constructorArgs) where T : IExposable {
+            string xml = "<doc>" + Scribe.saver.DebugOutputFor(type) + "</doc>";
             //Log.Warning(xml);
             InitLoadFromString(xml);
             T result = default(T);
-            Scribe_Deep.Look(ref result, "saveable", new object[] { pawn });
+            Scribe_Deep.Look(ref result, "saveable", constructorArgs);
             Scribe.loader.FinalizeLoading();
             HashSet<IExposable> saveables = (HashSet<IExposable>)(typeof(PostLoadIniter).GetField("saveablesToPostLoad", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(Scribe.loader.initer));
             saveables.Clear();
             return result;
         }
 
-        // Serializes and then deserializes an instance of an IExposable class.  The class must be constructable
+        // Given a field name, deep-copies an instance of an IExposable class from a source object to a target object via reflection.
+        // Creates a deep copy by serializing and then deserializing the IExposable instance.  The class must be constructable
         // with no arguments.
-        public static T CopyExposable<T>(T type) where T : IExposable {
-        string xml = "<doc>" + Scribe.saver.DebugOutputFor(type) + "</doc>";
-            //Log.Warning(xml);
-            InitLoadFromString(xml);
-            T result = default(T);
-            Scribe_Deep.Look(ref result, "saveable", null);
-            Scribe.loader.FinalizeLoading();
-            HashSet<IExposable> saveables = (HashSet<IExposable>)(typeof(PostLoadIniter).GetField("saveablesToPostLoad", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(Scribe.loader.initer));
-            saveables.Clear();
-            return result;
+        public static void CopyExposableViaReflection(string fieldName, object source, object target, object[] constructorArgs) {
+            FieldInfo sourceField = source.GetType().GetField(fieldName);
+            FieldInfo targetField = target.GetType().GetField(fieldName);
+            if (sourceField != null && targetField != null) {
+                object value = sourceField.GetValue(source);
+                if (typeof(IExposable).IsAssignableFrom(value.GetType())) {
+                    IExposable e = (IExposable)value;
+                    IExposable copy = UtilityCopy.CopyExposable(e, constructorArgs);
+                    targetField.SetValue(target, copy);
+                }
+            }
         }
 
         // Performs the setup needed to begin a scribe loading operation, similar to ScribeLoader.InitLoad(), but
