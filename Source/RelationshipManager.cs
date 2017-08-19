@@ -281,6 +281,22 @@ namespace EdB.PrepareCarefully {
             }
         }
 
+        public IEnumerable<CustomParentChildPawn> ColonyPawns {
+            get {
+                return ParentChildPawns.Where((CustomParentChildPawn p) => {
+                    return !p.Hidden && p.Pawn.Pawn.Faction == Faction.OfPlayer;
+                });
+            }
+        }
+
+        public IEnumerable<CustomParentChildPawn> HiddenPawns {
+            get {
+                return ParentChildPawns.Where((CustomParentChildPawn p) => {
+                    return p.Hidden;
+                });
+            }
+        }
+
         public CustomParentChildPawn AddHiddenParentChildPawn(CustomPawn customPawn) {
             CustomParentChildPawn parentChildPawn = new CustomParentChildPawn(customPawn, true);
             parentChildPawns.Add(parentChildPawn);
