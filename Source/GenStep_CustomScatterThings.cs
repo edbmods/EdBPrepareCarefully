@@ -5,30 +5,31 @@ using UnityEngine;
 using Verse;
 
 namespace EdB.PrepareCarefully {
+    // TODO: Alpha 19
     // Duplicate of GenStep_ScatterThings with a radius field to allow for a large spawn area.
     public class GenStep_CustomScatterThings : GenStep_Scatterer {
         //
         // Static Fields
         //
-        private const int ClusterRadius = 4;
-
         private static List<Rot4> tmpRotations = new List<Rot4>();
 
-        public int radius = 4;
+        private const int ClusterRadius = 4;
 
+        public int radius = 4;
         //
         // Fields
         //
+        public ThingDef thingDef;
+
         [Unsaved]
-        private int leftInCluster;
+        private int leftInCluster = 0;
 
         [Unsaved]
         private IntVec3 clusterCenter;
 
-        [NoTranslate]
-        private List<string> terrainValidationDisallowed;
-
         private List<Rot4> possibleRotationsInt;
+
+        public float terrainValidationRadius = 0f;
 
         public int clusterSize = 1;
 
@@ -36,10 +37,9 @@ namespace EdB.PrepareCarefully {
 
         public ThingDef stuff;
 
-        public ThingDef thingDef;
+        [NoTranslate]
+        private List<string> terrainValidationDisallowed;
 
-        public float terrainValidationRadius;
-        
         //
         // Properties
         //
@@ -79,16 +79,10 @@ namespace EdB.PrepareCarefully {
                         if (list[num2] > list[num3]) {
                             int num4 = (int)((float)(list[num2] - list[num3]) * Rand.Value);
                             List<int> list2;
-                            List<int> expr_9B = list2 = list;
-                            int num5;
-                            int expr_9F = num5 = num2;
-                            num5 = list2[num5];
-                            expr_9B[expr_9F] = num5 - num4;
-                            List<int> list3;
-                            List<int> expr_B8 = list3 = list;
-                            int expr_BD = num5 = num3;
-                            num5 = list3[num5];
-                            expr_B8[expr_BD] = num5 + num4;
+                            int index;
+                            (list2 = list)[index = num2] = list2[index] - num4;
+                            int index2;
+                            (list2 = list)[index2 = num3] = list2[index2] + num4;
                         }
                     }
                 }
@@ -100,56 +94,59 @@ namespace EdB.PrepareCarefully {
         // Methods
         //
         protected override bool CanScatterAt(IntVec3 loc, Map map) {
-            if (!base.CanScatterAt(loc, map)) {
-                return false;
-            }
+            bool result;
             Rot4 rot;
-            if (!this.TryGetRandomValidRotation(loc, map, out rot)) {
-                return false;
+            if (!base.CanScatterAt(loc, map)) {
+                result = false;
             }
-            if (this.terrainValidationRadius > 0f) {
-                foreach (IntVec3 current in GenRadial.RadialCellsAround(loc, this.terrainValidationRadius, true)) {
-                    if (current.InBounds(map)) {
-                        TerrainDef terrain = current.GetTerrain(map);
-                        for (int i = 0; i < this.terrainValidationDisallowed.Count; i++) {
-                            if (terrain.HasTag(this.terrainValidationDisallowed[i])) {
-                                return false;
+            else if (!this.TryGetRandomValidRotation(loc, map, out rot)) {
+                result = false;
+            }
+            else {
+                if (this.terrainValidationRadius > 0f) {
+                    foreach (IntVec3 current in GenRadial.RadialCellsAround(loc, this.terrainValidationRadius, true)) {
+                        if (current.InBounds(map)) {
+                            TerrainDef terrain = current.GetTerrain(map);
+                            for (int i = 0; i < this.terrainValidationDisallowed.Count; i++) {
+                                if (terrain.HasTag(this.terrainValidationDisallowed[i])) {
+                                    result = false;
+                                    return result;
+                                }
                             }
                         }
                     }
                 }
-                return true;
+                result = true;
             }
-            return true;
+            return result;
         }
 
         public override void Generate(Map map) {
-            if (!this.allowOnWater && map.TileInfo.WaterCovered) {
-                return;
-            }
-            int count = base.CalculateFinalCount(map);
-            IntRange one;
-            if (this.thingDef.ingestible != null && this.thingDef.ingestible.IsMeal && this.thingDef.stackLimit <= 10) {
-                one = IntRange.one;
-            }
-            else if (this.thingDef.stackLimit > 5) {
-                one = new IntRange(Mathf.RoundToInt((float)this.thingDef.stackLimit * 0.5f), this.thingDef.stackLimit);
-            }
-            else {
-                one = new IntRange(this.thingDef.stackLimit, this.thingDef.stackLimit);
-            }
-            List<int> list = GenStep_ScatterThings.CountDividedIntoStacks(count, one);
-            for (int i = 0; i < list.Count; i++) {
-                IntVec3 intVec;
-                if (!this.TryFindScatterCell(map, out intVec)) {
-                    return;
+            if (this.allowOnWater || !map.TileInfo.WaterCovered) {
+                int count = base.CalculateFinalCount(map);
+                IntRange one;
+                if (this.thingDef.ingestible != null && this.thingDef.ingestible.IsMeal && this.thingDef.stackLimit <= 10) {
+                    one = IntRange.one;
                 }
-                this.ScatterAt(intVec, map, list[i]);
-                this.usedSpots.Add(intVec);
+                else if (this.thingDef.stackLimit > 5) {
+                    one = new IntRange(Mathf.RoundToInt((float)this.thingDef.stackLimit * 0.5f), this.thingDef.stackLimit);
+                }
+                else {
+                    one = new IntRange(this.thingDef.stackLimit, this.thingDef.stackLimit);
+                }
+                List<int> list = GenStep_ScatterThings.CountDividedIntoStacks(count, one);
+                for (int i = 0; i < list.Count; i++) {
+                    IntVec3 intVec;
+                    if (!this.TryFindScatterCell(map, out intVec)) {
+                        return;
+                    }
+                    this.ScatterAt(intVec, map, list[i]);
+                    this.usedSpots.Add(intVec);
+                }
+                this.usedSpots.Clear();
+                this.clusterCenter = IntVec3.Invalid;
+                this.leftInCluster = 0;
             }
-            this.usedSpots.Clear();
-            this.clusterCenter = IntVec3.Invalid;
-            this.leftInCluster = 0;
         }
 
         private bool IsRotationValid(IntVec3 loc, Rot4 rot, Map map) {
@@ -160,35 +157,37 @@ namespace EdB.PrepareCarefully {
             Rot4 rot;
             if (!this.TryGetRandomValidRotation(loc, map, out rot)) {
                 Log.Warning("Could not find any valid rotation for " + this.thingDef);
-                return;
-            }
-            if (this.clearSpaceSize > 0) {
-                foreach (IntVec3 current in GridShapeMaker.IrregularLump(loc, map, this.clearSpaceSize)) {
-                    Building edifice = current.GetEdifice(map);
-                    if (edifice != null) {
-                        edifice.Destroy(DestroyMode.Vanish);
-                    }
-                }
-            }
-            Thing thing = ThingMaker.MakeThing(this.thingDef, this.stuff);
-            if (this.thingDef.Minifiable) {
-                thing = thing.MakeMinified();
-            }
-            if (thing.def.category == ThingCategory.Item) {
-                thing.stackCount = stackCount;
-                thing.SetForbidden(true, false);
-                Thing thing2;
-                GenPlace.TryPlaceThing(thing, loc, map, ThingPlaceMode.Near, out thing2, null);
-                if (this.nearPlayerStart && thing2 != null && thing2.def.category == ThingCategory.Item && TutorSystem.TutorialMode) {
-                    Find.TutorialState.AddStartingItem(thing2);
-                }
             }
             else {
-                GenSpawn.Spawn(thing, loc, map, rot, false);
+                if (this.clearSpaceSize > 0) {
+                    foreach (IntVec3 current in GridShapeMaker.IrregularLump(loc, map, this.clearSpaceSize)) {
+                        Building edifice = current.GetEdifice(map);
+                        if (edifice != null) {
+                            edifice.Destroy(DestroyMode.Vanish);
+                        }
+                    }
+                }
+                Thing thing = ThingMaker.MakeThing(this.thingDef, this.stuff);
+                if (this.thingDef.Minifiable) {
+                    thing = thing.MakeMinified();
+                }
+                if (thing.def.category == ThingCategory.Item) {
+                    thing.stackCount = stackCount;
+                    thing.SetForbidden(true, false);
+                    Thing thing2;
+                    GenPlace.TryPlaceThing(thing, loc, map, ThingPlaceMode.Near, out thing2, null);
+                    if (this.nearPlayerStart && thing2 != null && thing2.def.category == ThingCategory.Item && TutorSystem.TutorialMode) {
+                        Find.TutorialState.AddStartingItem(thing2);
+                    }
+                }
+                else {
+                    GenSpawn.Spawn(thing, loc, map, rot, false);
+                }
             }
         }
 
         protected override bool TryFindScatterCell(Map map, out IntVec3 result) {
+            bool result2;
             if (this.clusterSize > 1) {
                 if (this.leftInCluster <= 0) {
                     if (!base.TryFindScatterCell(map, out this.clusterCenter)) {
@@ -197,28 +196,44 @@ namespace EdB.PrepareCarefully {
                     this.leftInCluster = this.clusterSize;
                 }
                 this.leftInCluster--;
+                // EdB: Replaced hard-coded value of 4 with the added radius field.
+                // result = CellFinder.RandomClosewalkCellNear(this.clusterCenter, map, 4, delegate (IntVec3 x) {
                 result = CellFinder.RandomClosewalkCellNear(this.clusterCenter, map, radius, delegate (IntVec3 x) {
                     Rot4 rot;
                     return this.TryGetRandomValidRotation(x, map, out rot);
                 });
-                return result.IsValid;
+                result2 = result.IsValid;
             }
-            return base.TryFindScatterCell(map, out result);
+            else {
+                result2 = base.TryFindScatterCell(map, out result);
+            }
+            return result2;
         }
 
         private bool TryGetRandomValidRotation(IntVec3 loc, Map map, out Rot4 rot) {
             List<Rot4> possibleRotations = this.PossibleRotations;
             for (int i = 0; i < possibleRotations.Count; i++) {
                 if (this.IsRotationValid(loc, possibleRotations[i], map)) {
+                    // EdB: Changed the class name to match.
+                    //GenStep_ScatterThings.tmpRotations.Add(possibleRotations[i]);
                     GenStep_CustomScatterThings.tmpRotations.Add(possibleRotations[i]);
                 }
             }
+            bool result;
+            // EdB: Changed the class name to match.
+            //if (GenStep_ScatterThings.tmpRotations.TryRandomElement(out rot)) {
+            //    GenStep_ScatterThings.tmpRotations.Clear();
+            //    result = true;
+            //}
             if (GenStep_CustomScatterThings.tmpRotations.TryRandomElement(out rot)) {
                 GenStep_CustomScatterThings.tmpRotations.Clear();
-                return true;
+                result = true;
             }
-            rot = Rot4.Invalid;
-            return false;
+            else {
+                rot = Rot4.Invalid;
+                result = false;
+            }
+            return result;
         }
     }
 }

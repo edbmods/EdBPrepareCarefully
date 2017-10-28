@@ -5,7 +5,7 @@ using System.Runtime.CompilerServices;
 // Change them to the values specific to your project.
 
 [assembly: AssemblyTitle("EdBPrepareCarefully")]
-[assembly: AssemblyDescription("A RimWorld Alpha 17 mod")]
+[assembly: AssemblyDescription("A RimWorld mod")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("")]
 [assembly: AssemblyProduct("EdB Prepare Carefully Mod")]
@@ -17,7 +17,7 @@ using System.Runtime.CompilerServices;
 // The form "{Major}.{Minor}.*" will automatically update the build and revision,
 // and "{Major}.{Minor}.{Build}.*" will update just the revision.
 
-[assembly: AssemblyVersion("0.17.1.7")]
+[assembly: AssemblyVersion("0.18.1")]
 
 // The following attributes are used to specify the signing key for the assembly,
 // if desired. See the Mono documentation for more information about signing.

@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Reflection;
 using Verse;
+using Verse.Sound;
 
 namespace EdB.PrepareCarefully {
     public class ColonistLoader {
@@ -21,7 +22,7 @@ namespace EdB.PrepareCarefully {
             }
 
             if ("2".Equals(version)) {
-                Messages.Message("EdB.PC.Dialog.PawnPreset.Error.PreAlpha13NotSupported".Translate(), MessageSound.SeriousAlert);
+                Messages.Message("EdB.PC.Dialog.PawnPreset.Error.PreAlpha13NotSupported".Translate(), MessageTypeDefOf.ThreatBig);
                 return null;
             }
             else if ("3".Equals(version)) {

@@ -272,7 +272,7 @@ namespace EdB.PrepareCarefully {
                     return def.BaseMarketValue;
                 }
                 else {
-                    // TODO: Alpha 17
+                    // TODO: Alpha 19
                     // Should look at ThingMaker.MakeThing() to decide which validations we need to do
                     // before calling that method.  That method doesn't do null checks everywher, so we
                     // may need to do those validations ourselves to avoid null pointer exceptions.

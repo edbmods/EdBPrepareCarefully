@@ -126,7 +126,7 @@ namespace EdB.PrepareCarefully {
                     GUI.color = Style.ColorText;
                     rect = RectLabel;
                     rect.y = rect.y + cursor;
-                    Widgets.Label(rect, def.skillLabel);
+                    Widgets.Label(rect, def.skillLabel.CapitalizeFirst());
 
                     // Draw the passion.
                     rect = RectPassion;
