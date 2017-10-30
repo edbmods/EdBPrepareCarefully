@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8" ?>
+<?xml version="1.0" encoding="utf-8" ?>
 <!-- CHANGE NOTES -->
 <!-- v0.17.1.6 -->
 <!-- NEW: EdB.PC.Dialog.Implant.Alert -->
@@ -174,7 +174,7 @@
   <EdB.PC.Panel.AvailableEquipment.Materials.All>Все материалы</EdB.PC.Panel.AvailableEquipment.Materials.All>
   <EdB.PC.Panel.AvailableEquipment.Materials.None>Нет материалов</EdB.PC.Panel.AvailableEquipment.Materials.None>
 
-  <EdB.PC.Panel.Health.Error.MustSelectBodyPart>Вы должны выбрать локацию/EdB.PC.Panel.Health.Error.MustSelectBodyPart>
+  <EdB.PC.Panel.Health.Error.MustSelectBodyPart>Вы должны выбрать локацию</EdB.PC.Panel.Health.Error.MustSelectBodyPart>
   <EdB.PC.Panel.Health.Error.MustSelectImplant>Вы должны выбрать имплант</EdB.PC.Panel.Health.Error.MustSelectImplant>
   <EdB.PC.Panel.Health.Error.MustSelectOption>Выберитете опцию</EdB.PC.Panel.Health.Error.MustSelectOption>
   <EdB.PC.Panel.Health.Error.MustSelectSeverity>Выберите уровень тяжести</EdB.PC.Panel.Health.Error.MustSelectSeverity>
