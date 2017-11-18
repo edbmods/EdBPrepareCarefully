@@ -27,8 +27,8 @@
   </EdB.PrepareCarefully.CarefullyPawnRelationDef>
 
   <EdB.PrepareCarefully.CarefullyPawnRelationDef>
-    <defName>Grandparent</defName>
-    <inverse>Grandchild</inverse>
+    <defName>Grandchild</defName>
+    <inverse>Grandparent</inverse>
   </EdB.PrepareCarefully.CarefullyPawnRelationDef>
 
   <EdB.PrepareCarefully.CarefullyPawnRelationDef>
