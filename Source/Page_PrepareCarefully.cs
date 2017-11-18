@@ -66,7 +66,7 @@ namespace EdB.PrepareCarefully {
         public override void DoWindowContents(Rect inRect) {
             base.DrawPageTitle(inRect);
             Rect mainRect = base.GetMainRect(inRect, 30f, false);
-            Widgets.DrawMenuSection(mainRect, true);
+            Widgets.DrawMenuSection(mainRect);
 
             // This approach to drawing tabs differs a bit from the vanilla approach.  Instead instantiating
             // brand new TabRecord instances every frame, we re-use the same instances and updated their
@@ -85,7 +85,7 @@ namespace EdB.PrepareCarefully {
             // Display any pending messages.
             if (State.Messages.Count() > 0) {
                 foreach (var message in State.Messages) {
-                    Messages.Message(message, MessageSound.Standard);
+                    Messages.Message(message, MessageTypeDefOf.NeutralEvent);
                 }
                 State.ClearMessages();
             }
@@ -93,7 +93,7 @@ namespace EdB.PrepareCarefully {
             // Display any pending errors.
             if (State.Errors.Count() > 0) {
                 foreach (var message in State.Errors) {
-                    Messages.Message(message, MessageSound.RejectInput);
+                    Messages.Message(message, MessageTypeDefOf.RejectInput);
                 }
                 State.ClearErrors();
             }

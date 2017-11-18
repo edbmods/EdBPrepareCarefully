@@ -21,8 +21,8 @@ namespace EdB.PrepareCarefully {
                     Scribe_Deep.Look<SaveRecordPawnV3>(ref pawnRecord, "colonist", null);
                 }
                 catch (Exception e) {
-                    Messages.Message(modString, MessageSound.Silent);
-                    Messages.Message("EdB.PC.Dialog.PawnPreset.Error.Failed".Translate(), MessageSound.RejectInput);
+                    Messages.Message(modString, MessageTypeDefOf.SilentInput);
+                    Messages.Message("EdB.PC.Dialog.PawnPreset.Error.Failed".Translate(), MessageTypeDefOf.RejectInput);
                     Log.Warning(e.ToString());
                     Log.Warning("Colonist was created with the following mods: " + modString);
                     return null;
@@ -43,8 +43,8 @@ namespace EdB.PrepareCarefully {
             }
 
             if (pawnRecord == null) {
-                Messages.Message(modString, MessageSound.Silent);
-                Messages.Message("EdB.PC.Dialog.PawnPreset.Error.Failed".Translate(), MessageSound.RejectInput);
+                Messages.Message(modString, MessageTypeDefOf.SilentInput);
+                Messages.Message("EdB.PC.Dialog.PawnPreset.Error.Failed".Translate(), MessageTypeDefOf.RejectInput);
                 Log.Warning("Colonist was created with the following mods: " + modString);
                 return null;
             }

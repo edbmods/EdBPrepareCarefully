@@ -1,5 +1,5 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
-<EdB.PrepareCarefully.CarefullyPawnRelationDefs>
+<Defs>
 
   <EdB.PrepareCarefully.CarefullyPawnRelationDef>
     <defName>Parent</defName>
@@ -81,4 +81,4 @@
     <inverse>Kin</inverse>
   </EdB.PrepareCarefully.CarefullyPawnRelationDef>
 
-</EdB.PrepareCarefully.CarefullyPawnRelationDefs>
+</Defs>

@@ -19,9 +19,9 @@ namespace EdB.PrepareCarefully {
         }
         private PawnGenerationRequest CreateRequest() {
             return new PawnGenerationRequest(
-                kindDef, //PawnKindDef kind,
-                faction, //Faction faction = null,
-                context, //PawnGenerationContext context = PawnGenerationContext.NonPlayer,
+                kindDef, // PawnKindDef kind
+                faction, // Faction faction = null
+                context, // PawnGenerationContext context = PawnGenerationContext.NonPlayer
                 -1, //int tile = -1,
                 true, //bool forceGenerateNewPawn = false,
                 false, //bool newborn = false,
@@ -33,14 +33,17 @@ namespace EdB.PrepareCarefully {
                 false, //bool forceAddFreeWarmLayerIfNeeded = false,
                 true, //bool allowGay = true,
                 false, //bool allowFood = true,
-                false, //bool inhabitant = false,
-                false, //bool certainlyBeenInCryptosleep = false,
-                null, //Predicate<Pawn> validator = null,
-                fixedBiologicalAge, //float? fixedBiologicalAge = default(float?),
-                null, //float? fixedChronologicalAge = default(float?),
-                fixedGender, //Gender? fixedGender = default(Gender?),
-                null, //float? fixedMelanin = default(float?),
-                null //string fixedLastName = null
+                false, // bool inhabitant = false
+                false, // bool certainlyBeenInCryptosleep = false
+                false, // bool forceRedressWorldPawnIfFormerColonist = false
+                false, // bool worldPawnFactionDoesntMatter = false
+                null, // Predicate < Pawn > validator = null
+                null, // float ? minChanceToRedressWorldPawn = null
+                fixedBiologicalAge, // float ? fixedBiologicalAge = null
+                null, // float ? fixedChronologicalAge = null
+                fixedGender, // Gender ? fixedGender = null
+                null, // float ? fixedMelanin = null
+                null // string fixedLastName = null
             );
         }
         public PawnGenerationRequest Request {

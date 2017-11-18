@@ -157,7 +157,7 @@ namespace EdB.PrepareCarefully {
             Providers.Factions = new ProviderFactions();
         }
 
-        // TODO: Alpha 14
+        // TODO: Alpha 18
         // Think about whether or not this is the best approach.  Might need to do a bug report for the vanilla game?
         // The tribal scenario adds a weapon with an invalid thing/stuff combination (jade knife).  The 
         // knife ThingDef should allow the jade material, but it does not.  We need this workaround to
@@ -528,11 +528,16 @@ namespace EdB.PrepareCarefully {
         public void InitializePawns() {
             this.customPawnToOriginalPawnMap.Clear();
             this.originalPawnToCustomPawnMap.Clear();
+            int pawnCount = Verse.Find.GameInitData.startingPawnCount;
             foreach (Pawn originalPawn in Verse.Find.GameInitData.startingPawns) {
                 Pawn copiedPawn = originalPawn.Copy();
                 CustomPawn customPawn = new CustomPawn(copiedPawn);
                 customPawnToOriginalPawnMap.Add(customPawn, originalPawn);
                 originalPawnToCustomPawnMap.Add(originalPawn, customPawn);
+            }
+            for (int i = 0; i < pawnCount; i++) {
+                Pawn originalPawn = Verse.Find.GameInitData.startingPawns[i];
+                CustomPawn customPawn = originalPawnToCustomPawnMap[originalPawn];
                 this.pawns.Add(customPawn);
             }
         }
