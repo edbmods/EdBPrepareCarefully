@@ -50,7 +50,7 @@ namespace EdB.PrepareCarefully {
             Rect butRect = new Rect(420, top, inRect.width - 400 - 20, 35);
             if (Widgets.ButtonText(butRect, "EdB.PC.Dialog.PawnPreset.Button.Save".Translate(), true, false, true) || flag) {
                 if (Filename.Length == 0) {
-                    Messages.Message("NeedAName".Translate(), MessageSound.RejectInput);
+                    Messages.Message("NeedAName".Translate(), MessageTypeDefOf.RejectInput);
                 }
                 else {
                     if (action != null) {

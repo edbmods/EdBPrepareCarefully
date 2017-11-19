@@ -66,9 +66,11 @@ namespace EdB.PrepareCarefully {
 
             foreach (var def in DefDatabase<ThingDef>.AllDefs) {
                 try {
-                    EquipmentType type = ClassifyThingDef(def);
-                    if (type != null) {
-                        AddThingDef(def, type);
+                    if (def != null) {
+                        EquipmentType type = ClassifyThingDef(def);
+                        if (type != null) {
+                            AddThingDef(def, type);
+                        }
                     }
                 }
                 catch (Exception e) {
@@ -92,7 +94,7 @@ namespace EdB.PrepareCarefully {
             }
 
             if (def.CountAsResource) {
-                if (def.IsDrug || def.IsMedicine) {
+                if (def.IsDrug || (def.statBases != null && def.IsMedicine)) {
                     if (def.ingestible != null) {
                         if (def.thingCategories != null) {
                             if (thingCategorySweetMeals != null && def.thingCategories.Contains(thingCategorySweetMeals)) {

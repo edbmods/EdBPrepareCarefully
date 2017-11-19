@@ -227,7 +227,7 @@ namespace EdB.PrepareCarefully {
                 if (Widgets.ButtonText(buttonRect, ConfirmButtonLabel.Translate(), true, true, true)) {
                     string validationMessage = ConfirmValidation();
                     if (validationMessage != null) {
-                        Messages.Message(validationMessage.Translate(), MessageSound.RejectInput);
+                        Messages.Message(validationMessage.Translate(), MessageTypeDefOf.RejectInput);
                     }
                     else {
                         this.Confirm();

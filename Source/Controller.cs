@@ -112,6 +112,7 @@ namespace EdB.PrepareCarefully {
         public void PrepareGame() {
             // Replace the pawns.
             Find.GameInitData.startingPawns = PrepareCarefully.Instance.Colonists;
+            Find.GameInitData.startingPawnCount = PrepareCarefully.Instance.Colonists.Count;
 
             // This needs some explaining.  We need custom scenario parts to handle animal spawning
             // and scattered things.  However, we don't want the scenario that gets saved with a game

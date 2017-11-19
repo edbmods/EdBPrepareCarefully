@@ -1,5 +1,5 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
-<EdB.PrepareCarefully.CarefullyPawnRelationDefs>
+<Defs>
   
   <EdB.PrepareCarefully.CarefullyPawnRelationDef>
     <defName>Spouse</defName>
@@ -69,4 +69,4 @@
 	</conflicts>
   </EdB.PrepareCarefully.CarefullyPawnRelationDef>
 
-</EdB.PrepareCarefully.CarefullyPawnRelationDefs>
+</Defs>

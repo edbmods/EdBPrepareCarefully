@@ -474,7 +474,7 @@ namespace EdB.PrepareCarefully {
                     continue;
                 }
                 // Filter out hidden stages.
-                if (!stage.everVisible) {
+                if (!stage.becomeVisible) {
                     continue;
                 }
                 InjurySeverity value = null;

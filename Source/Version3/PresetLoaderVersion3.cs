@@ -34,7 +34,7 @@ namespace EdB.PrepareCarefully {
                     Scribe_Collections.Look<SaveRecordPawnV3>(ref pawns, "colonists", LookMode.Deep, null);
                 }
                 catch (Exception e) {
-                    Messages.Message("EdB.PC.Dialog.Preset.Error.Failed".Translate(), MessageSound.SeriousAlert);
+                    Messages.Message("EdB.PC.Dialog.Preset.Error.Failed".Translate(), MessageTypeDefOf.ThreatBig);
                     Log.Warning(e.ToString());
                     Log.Warning("Preset was created with the following mods: " + ModString);
                     return false;
@@ -44,7 +44,7 @@ namespace EdB.PrepareCarefully {
                     Scribe_Collections.Look<SaveRecordPawnV3>(ref hiddenPawns, "hiddenPawns", LookMode.Deep, null);
                 }
                 catch (Exception e) {
-                    Messages.Message("EdB.PC.Dialog.Preset.Error.Failed".Translate(), MessageSound.SeriousAlert);
+                    Messages.Message("EdB.PC.Dialog.Preset.Error.Failed".Translate(), MessageTypeDefOf.ThreatBig);
                     Log.Warning(e.ToString());
                     Log.Warning("Preset was created with the following mods: " + ModString);
                     return false;
@@ -54,7 +54,7 @@ namespace EdB.PrepareCarefully {
                     Scribe_Collections.Look<SaveRecordRelationshipV3>(ref savedRelationships, "relationships", LookMode.Deep, null);
                 }
                 catch (Exception e) {
-                    Messages.Message("EdB.PC.Dialog.Preset.Error.Failed".Translate(), MessageSound.SeriousAlert);
+                    Messages.Message("EdB.PC.Dialog.Preset.Error.Failed".Translate(), MessageTypeDefOf.ThreatBig);
                     Log.Warning(e.ToString());
                     Log.Warning("Preset was created with the following mods: " + ModString);
                     return false;
@@ -64,7 +64,7 @@ namespace EdB.PrepareCarefully {
                     Scribe_Collections.Look<SaveRecordParentChildGroupV3>(ref parentChildGroups, "parentChildGroups", LookMode.Deep, null);
                 }
                 catch (Exception e) {
-                    Messages.Message("EdB.PC.Dialog.Preset.Error.Failed".Translate(), MessageSound.SeriousAlert);
+                    Messages.Message("EdB.PC.Dialog.Preset.Error.Failed".Translate(), MessageTypeDefOf.ThreatBig);
                     Log.Warning(e.ToString());
                     Log.Warning("Preset was created with the following mods: " + ModString);
                     return false;
@@ -143,7 +143,7 @@ namespace EdB.PrepareCarefully {
                     }
                 }
                 else {
-                    Messages.Message("EdB.PC.Dialog.Preset.Error.EquipmentFailed".Translate(), MessageSound.SeriousAlert);
+                    Messages.Message("EdB.PC.Dialog.Preset.Error.EquipmentFailed".Translate(), MessageTypeDefOf.ThreatBig);
                     Log.Warning("Failed to load equipment from preset");
                     Failed = true;
                 }
@@ -178,13 +178,13 @@ namespace EdB.PrepareCarefully {
                         colonistCustomPawns.Add(pawn);
                     }
                     else {
-                        Messages.Message("EdB.PC.Dialog.Preset.Error.NoCharacter".Translate(), MessageSound.SeriousAlert);
+                        Messages.Message("EdB.PC.Dialog.Preset.Error.NoCharacter".Translate(), MessageTypeDefOf.ThreatBig);
                         Log.Warning("Preset was created with the following mods: " + ModString);
                     }
                 }
             }
             catch (Exception e) {
-                Messages.Message("EdB.PC.Dialog.Preset.Error.Failed".Translate(), MessageSound.SeriousAlert);
+                Messages.Message("EdB.PC.Dialog.Preset.Error.Failed".Translate(), MessageTypeDefOf.ThreatBig);
                 Log.Warning(e.ToString());
                 Log.Warning("Preset was created with the following mods: " + ModString);
                 return false;
@@ -206,7 +206,7 @@ namespace EdB.PrepareCarefully {
                 }
             }
             catch (Exception e) {
-                Messages.Message("EdB.PC.Dialog.Preset.Error.Failed".Translate(), MessageSound.SeriousAlert);
+                Messages.Message("EdB.PC.Dialog.Preset.Error.Failed".Translate(), MessageTypeDefOf.ThreatBig);
                 Log.Warning(e.ToString());
                 Log.Warning("Preset was created with the following mods: " + ModString);
                 return false;
@@ -240,13 +240,13 @@ namespace EdB.PrepareCarefully {
                     }
                 }
                 catch (Exception e) {
-                    Messages.Message("EdB.PC.Dialog.Preset.Error.RelationshipFailed".Translate(), MessageSound.SeriousAlert);
+                    Messages.Message("EdB.PC.Dialog.Preset.Error.RelationshipFailed".Translate(), MessageTypeDefOf.ThreatBig);
                     Log.Warning(e.ToString());
                     Log.Warning("Preset was created with the following mods: " + ModString);
                     return false;
                 }
                 if (atLeastOneRelationshipFailed) {
-                    Messages.Message("EdB.PC.Dialog.Preset.Error.RelationshipFailed".Translate(), MessageSound.SeriousAlert);
+                    Messages.Message("EdB.PC.Dialog.Preset.Error.RelationshipFailed".Translate(), MessageTypeDefOf.ThreatBig);
                 }
             }
             loadout.RelationshipManager.AddRelationships(allRelationships);
@@ -294,8 +294,8 @@ namespace EdB.PrepareCarefully {
             loadout.RelationshipManager.ReassignHiddenPawnIndices();
 
             if (Failed) {
-                Messages.Message(ModString, MessageSound.Silent);
-                Messages.Message("EdB.PC.Dialog.Preset.Error.ThingDefFailed".Translate(), MessageSound.SeriousAlert);
+                Messages.Message(ModString, MessageTypeDefOf.SilentInput);
+                Messages.Message("EdB.PC.Dialog.Preset.Error.ThingDefFailed".Translate(), MessageTypeDefOf.ThreatBig);
                 Log.Warning("Preset was created with the following mods: " + ModString);
                 return false;
             }

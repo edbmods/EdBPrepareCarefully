@@ -22,11 +22,11 @@ namespace EdB.PrepareCarefully {
             }
 
             if ("1".Equals(version)) {
-                Messages.Message("EdB.PC.Dialog.Preset.Error.PreAlpha13NotSupported".Translate(), MessageSound.SeriousAlert);
+                Messages.Message("EdB.PC.Dialog.Preset.Error.PreAlpha13NotSupported".Translate(), MessageTypeDefOf.ThreatBig);
                 return false;
             }
             else if ("2".Equals(version)) {
-                Messages.Message("EdB.PC.Dialog.Preset.Error.PreAlpha13NotSupported".Translate(), MessageSound.SeriousAlert);
+                Messages.Message("EdB.PC.Dialog.Preset.Error.PreAlpha13NotSupported".Translate(), MessageTypeDefOf.ThreatBig);
                 return false;
             }
             else if ("3".Equals(version)) {

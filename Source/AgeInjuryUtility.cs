@@ -35,7 +35,7 @@ namespace EdB.PrepareCarefully {
                                                      select x;
                 if (source.Any<BodyPartRecord>()) {
                     BodyPartRecord bodyPartRecord = source.RandomElementByWeight((BodyPartRecord x) => x.coverageAbs);
-                    DamageDef dam = RandomOldInjuryDamageType(bodyPartRecord.def.frostbiteVulnerability > 0f && pawn.RaceProps.ToolUser);
+                    DamageDef dam = AgeInjuryUtility.RandomOldInjuryDamageType(bodyPartRecord.def.frostbiteVulnerability > 0f && pawn.RaceProps.ToolUser);
                     HediffDef hediffDefFromDamage = HealthUtility.GetHediffDefFromDamage(dam, pawn, bodyPartRecord);
                     if (bodyPartRecord.def.oldInjuryBaseChance > 0f && hediffDefFromDamage.CompPropsFor(typeof(HediffComp_GetsOld)) != null) {
                         if (Rand.Chance(bodyPartRecord.def.amputateIfGeneratedInjuredChance)) {
@@ -44,7 +44,7 @@ namespace EdB.PrepareCarefully {
                             hediff_MissingPart.TryGetComp<HediffComp_GetsOld>().IsOld = true;
                             pawn.health.AddHediff(hediff_MissingPart, bodyPartRecord, null);
                             if (pawn.RaceProps.Humanlike && (bodyPartRecord.def == BodyPartDefOf.LeftLeg || bodyPartRecord.def == BodyPartDefOf.RightLeg) && Rand.Chance(0.5f)) {
-                                RecipeDefOf.InstallPegLeg.Worker.ApplyOnPawn(pawn, bodyPartRecord, null, AgeInjuryUtility.emptyIngredientsList);
+                                RecipeDefOf.InstallPegLeg.Worker.ApplyOnPawn(pawn, bodyPartRecord, null, AgeInjuryUtility.emptyIngredientsList, null);
                             }
                         }
                         else {
@@ -109,18 +109,17 @@ namespace EdB.PrepareCarefully {
             return AgeInjuryUtility.RandomHediffsToGainOnBirthday(pawn.def, age);
         }
 
+
         // EdB: Interpretation of bad decompilation
         //[DebuggerHidden]
-        //private static IEnumerable<HediffGiver_Birthday> RandomHediffsToGainOnBirthday(ThingDef raceDef, int age)
-        //{
-        //	AgeInjuryUtility.<RandomHediffsToGainOnBirthday>c__Iterator92 <RandomHediffsToGainOnBirthday>c__Iterator = new AgeInjuryUtility.<RandomHediffsToGainOnBirthday>c__Iterator92();
-        //	<RandomHediffsToGainOnBirthday>c__Iterator.raceDef = raceDef;
-        //	<RandomHediffsToGainOnBirthday>c__Iterator.age = age;
-        //	<RandomHediffsToGainOnBirthday>c__Iterator.<$>raceDef = raceDef;
-        //	<RandomHediffsToGainOnBirthday>c__Iterator.<$>age = age;
-        //	AgeInjuryUtility.<RandomHediffsToGainOnBirthday>c__Iterator92 expr_23 = <RandomHediffsToGainOnBirthday>c__Iterator;
-        //	expr_23.$PC = -2;
-        //	return expr_23;
+        //private static IEnumerable<HediffGiver_Birthday> RandomHediffsToGainOnBirthday(ThingDef raceDef, int age) {
+        //    AgeInjuryUtility.< RandomHediffsToGainOnBirthday > c__Iterator0 < RandomHediffsToGainOnBirthday > c__Iterator = new AgeInjuryUtility.< RandomHediffsToGainOnBirthday > c__Iterator0();
+//
+        //    < RandomHediffsToGainOnBirthday > c__Iterator.raceDef = raceDef;
+        //    < RandomHediffsToGainOnBirthday > c__Iterator.age = age;
+        //    AgeInjuryUtility.< RandomHediffsToGainOnBirthday > c__Iterator0 expr_15 = < RandomHediffsToGainOnBirthday > c__Iterator;
+        //    expr_15.$PC = -2;
+        //    return expr_15;
         //}
 
         private static IEnumerable<HediffGiver_Birthday> RandomHediffsToGainOnBirthday(ThingDef raceDef, int age) {

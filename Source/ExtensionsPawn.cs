@@ -18,7 +18,6 @@ namespace EdB.PrepareCarefully {
             result.kindDef = source.kindDef;
             result.SetFactionDirect(source.Faction);
             PawnComponentsUtility.CreateInitialComponents(result);
-            result.gender = source.gender;
 
             // Copy gender.
             result.gender = source.gender;
@@ -34,11 +33,15 @@ namespace EdB.PrepareCarefully {
             }
 
             // Copy trackers.
-            result.ageTracker = UtilityCopy.CopyTrackerForPawn(source.ageTracker, result);
-            result.story = UtilityCopy.CopyTrackerForPawn(source.story, result);
-            result.skills = UtilityCopy.CopyTrackerForPawn(source.skills, result);
-            result.health = UtilityCopy.CopyTrackerForPawn(source.health, result);
-            result.apparel = UtilityCopy.CopyTrackerForPawn(source.apparel, result);
+            object[] constructorArgs = new object[] { result };
+            result.ageTracker = UtilityCopy.CopyExposable(source.ageTracker, constructorArgs);
+            result.story = UtilityCopy.CopyExposable(source.story, constructorArgs);
+            result.skills = UtilityCopy.CopyExposable(source.skills, constructorArgs);
+            result.health = UtilityCopy.CopyExposable(source.health, constructorArgs);
+            result.apparel = UtilityCopy.CopyExposable(source.apparel, constructorArgs);
+
+            // Copy properties added to pawns by mods.
+            CopyModdedProperties(source, result);
 
             // Verify the pawn health state.
             if (result.health.State != savedHealthState) {
@@ -50,6 +53,15 @@ namespace EdB.PrepareCarefully {
             source.ClearCaches();
             
             return result;
+        }
+
+        // Deep-copies modded properties from a source pawn to a target pawn.  Kept separate from the Copy() method to provide a
+        // clear place for modders to add patches/detours for their mods.
+        private static void CopyModdedProperties(Pawn source, Pawn target) {
+            // Copy fields from Psychology mod.
+            object[] constructorArgs = new object[] { target };
+            UtilityCopy.CopyExposableViaReflection("psyche", source, target, constructorArgs);
+            UtilityCopy.CopyExposableViaReflection("sexuality", source, target, constructorArgs);
         }
 
         public static void ClearCaches(this Pawn pawn) {

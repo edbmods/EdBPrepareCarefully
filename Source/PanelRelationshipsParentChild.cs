@@ -323,15 +323,9 @@ namespace EdB.PrepareCarefully {
                 disabled.AddRange(group.Parents);
                 disabled.AddRange(group.Children);
             }
-            IEnumerable <CustomParentChildPawn> colonists = PrepareCarefully.Instance.RelationshipManager.ParentChildPawns.Where((CustomParentChildPawn p) => {
-                return !p.Hidden && p.Pawn.Pawn.Faction == null;
-            });
-            IEnumerable<CustomParentChildPawn> hidden = PrepareCarefully.Instance.RelationshipManager.ParentChildPawns.Where((CustomParentChildPawn p) => {
-                return p.Hidden;
-            });
             rowGroups.Clear();
-            rowGroups.Add(new WidgetTable<CustomParentChildPawn>.RowGroup("EdB.PC.AddParentChild.Header.SelectColonist".Translate(), colonists));
-            rowGroups.Add(new WidgetTable<CustomParentChildPawn>.RowGroup("EdB.PC.AddParentChild.Header.SelectHidden".Translate(), hidden));
+            rowGroups.Add(new WidgetTable<CustomParentChildPawn>.RowGroup("EdB.PC.AddParentChild.Header.SelectColonist".Translate(), PrepareCarefully.Instance.RelationshipManager.ColonyPawns));
+            rowGroups.Add(new WidgetTable<CustomParentChildPawn>.RowGroup("EdB.PC.AddParentChild.Header.SelectHidden".Translate(), PrepareCarefully.Instance.RelationshipManager.HiddenPawns));
             WidgetTable<CustomParentChildPawn>.RowGroup newPawnGroup = new WidgetTable<CustomParentChildPawn>.RowGroup(null, newPawns);
             rowGroups.Add(newPawnGroup);
             DialogSelectParentChildPawn pawnDialog = new DialogSelectParentChildPawn() {
@@ -367,15 +361,9 @@ namespace EdB.PrepareCarefully {
                 disabled.AddRange(group.Parents);
                 disabled.AddRange(group.Children);
             }
-            IEnumerable<CustomParentChildPawn> colonists = PrepareCarefully.Instance.RelationshipManager.ParentChildPawns.Where((CustomParentChildPawn p) => {
-                return !p.Hidden && p.Pawn.Pawn.Faction == null;
-            });
-            IEnumerable<CustomParentChildPawn> hidden = PrepareCarefully.Instance.RelationshipManager.ParentChildPawns.Where((CustomParentChildPawn p) => {
-                return p.Hidden;
-            });
             rowGroups.Clear();
-            rowGroups.Add(new WidgetTable<CustomParentChildPawn>.RowGroup("EdB.PC.AddParentChild.Header.SelectColonist".Translate(), colonists));
-            rowGroups.Add(new WidgetTable<CustomParentChildPawn>.RowGroup("EdB.PC.AddParentChild.Header.SelectHidden".Translate(), hidden));
+            rowGroups.Add(new WidgetTable<CustomParentChildPawn>.RowGroup("EdB.PC.AddParentChild.Header.SelectColonist".Translate(), PrepareCarefully.Instance.RelationshipManager.ColonyPawns));
+            rowGroups.Add(new WidgetTable<CustomParentChildPawn>.RowGroup("EdB.PC.AddParentChild.Header.SelectHidden".Translate(), PrepareCarefully.Instance.RelationshipManager.HiddenPawns));
             WidgetTable<CustomParentChildPawn>.RowGroup newPawnGroup = new WidgetTable<CustomParentChildPawn>.RowGroup(null, newPawns);
             rowGroups.Add(newPawnGroup);
             DialogSelectParentChildPawn pawnDialog = new DialogSelectParentChildPawn() {

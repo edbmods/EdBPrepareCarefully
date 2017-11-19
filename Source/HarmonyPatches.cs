@@ -33,7 +33,7 @@ namespace EdB.PrepareCarefully {
         // Draw the "Prepare Carefully" button at the bottom of the Configure Starting Pawns page.
         public static void DoWindowContentsPostfix(Rect rect, Page_ConfigureStartingPawns __instance) {
             Vector2 BottomButSize = new Vector2(150f, 38f);
-            float num = rect.height - 38f;
+            float num = rect.height + 45f;
             Rect rect4 = new Rect(rect.x + rect.width / 2f - BottomButSize.x / 2f, num, BottomButSize.x, BottomButSize.y);
             if (Widgets.ButtonText(rect4, "EdB.PC.Page.Button.PrepareCarefully".Translate(), true, false, true)) {
                 PrepareCarefully.Instance.Initialize();

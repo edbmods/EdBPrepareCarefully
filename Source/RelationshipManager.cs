@@ -10,8 +10,6 @@ namespace EdB.PrepareCarefully {
         protected Randomizer randomizer = new Randomizer();
         protected List<PawnRelationDef> allowedRelationships = new List<PawnRelationDef>();
         protected Dictionary<PawnRelationDef, PawnRelationDef> inverseRelationships = new Dictionary<PawnRelationDef, PawnRelationDef>();
-        //protected Dictionary<CustomPawn, Pawn> facadeToSimulatedPawnMap = new Dictionary<CustomPawn, Pawn>();
-        //protected Dictionary<Pawn, CustomPawn> simulatedPawnToFacadeMap = new Dictionary<Pawn, CustomPawn>();
         protected List<CustomRelationship> deletionList = new List<CustomRelationship>();
         protected List<CustomParentChildPawn> parentChildPawns = new List<CustomParentChildPawn>();
         protected Dictionary<Pawn, CustomParentChildPawn> parentChildPawnLookup = new Dictionary<Pawn, CustomParentChildPawn>();
@@ -21,7 +19,6 @@ namespace EdB.PrepareCarefully {
         protected int HiddenParentChildIndex = 1;
 
         protected RelationshipList relationships = new RelationshipList();
-        //protected RelationshipList derivedRelationships = new RelationshipList();
 
         public RelationshipManager(List<Pawn> originalPawns, List<CustomPawn> correspondingFacades) {
             PopulateAllowedRelationships();
@@ -278,6 +275,22 @@ namespace EdB.PrepareCarefully {
         public IEnumerable<CustomParentChildPawn> ParentChildPawns {
             get {
                 return parentChildPawns;
+            }
+        }
+
+        public IEnumerable<CustomParentChildPawn> ColonyPawns {
+            get {
+                return ParentChildPawns.Where((CustomParentChildPawn p) => {
+                    return !p.Hidden && p.Pawn.Pawn.Faction == Faction.OfPlayer;
+                });
+            }
+        }
+
+        public IEnumerable<CustomParentChildPawn> HiddenPawns {
+            get {
+                return ParentChildPawns.Where((CustomParentChildPawn p) => {
+                    return p.Hidden;
+                });
             }
         }
 
