@@ -322,7 +322,8 @@ namespace EdB.PrepareCarefully {
                     return lastSelectedAdulthoodBackstory;
                 }
                 else {
-                    return Randomizer.RandomAdulthood(this);
+                    lastSelectedAdulthoodBackstory = Randomizer.RandomAdulthood(this);
+                    return lastSelectedAdulthoodBackstory;
                 }
             }
             set {
