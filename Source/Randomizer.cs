@@ -79,7 +79,7 @@ namespace EdB.PrepareCarefully {
             if (factionDef == null) {
                 factionDef = Faction.OfPlayer.def;
             }
-            MethodInfo method = typeof(PawnBioAndNameGenerator).GetMethod("SetBackstoryInSlot", BindingFlags.Static | BindingFlags.NonPublic);
+            MethodInfo method = typeof(PawnBioAndNameGenerator).GetMethod("FillBackstorySlotShuffled", BindingFlags.Static | BindingFlags.NonPublic);
             object[] arguments = new object[] { customPawn.Pawn, BackstorySlot.Adulthood, null, factionDef };
             method.Invoke(null, arguments);
             Backstory result = arguments[2] as Backstory;
