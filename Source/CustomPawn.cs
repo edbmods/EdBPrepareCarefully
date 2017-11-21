@@ -322,7 +322,8 @@ namespace EdB.PrepareCarefully {
                     return lastSelectedAdulthoodBackstory;
                 }
                 else {
-                    return Randomizer.RandomAdulthood(this);
+                    lastSelectedAdulthoodBackstory = Randomizer.RandomAdulthood(this);
+                    return lastSelectedAdulthoodBackstory;
                 }
             }
             set {
@@ -1239,7 +1240,7 @@ namespace EdB.PrepareCarefully {
             if (combinedDisabledWorkTags != WorkTags.None) {
                 IEnumerable<WorkTags> list = (IEnumerable<WorkTags>)typeof(CharacterCardUtility).GetMethod("WorkTagsFrom", BindingFlags.Static | BindingFlags.NonPublic).Invoke(null, new object[] { combinedDisabledWorkTags });
                 foreach (var tag in list) {
-                    incapableList.Add(WorkTypeDefsUtility.LabelTranslated(tag));
+                    incapableList.Add(WorkTypeDefsUtility.LabelTranslated(tag).CapitalizeFirst());
                 }
                 if (incapableList.Count > 0) {
                     incapable = string.Join(", ", incapableList.ToArray());
