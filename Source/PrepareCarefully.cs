@@ -547,7 +547,7 @@ namespace EdB.PrepareCarefully {
             foreach (Pawn pawn in Verse.Find.GameInitData.startingPawns) {
                 customPawns.Add(originalPawnToCustomPawnMap[pawn]);
             }
-            relationshipManager = new RelationshipManager(Verse.Find.GameInitData.startingPawns, customPawns);
+            relationshipManager = new RelationshipManager(Verse.Find.GameInitData.startingPawns.GetRange(0, Verse.Find.GameInitData.startingPawnCount).ToList(), customPawns);
         }
 
     }
