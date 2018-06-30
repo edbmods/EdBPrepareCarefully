@@ -149,15 +149,15 @@ namespace EdB.PrepareCarefully {
                     professionRect.width = professionRect.width - (scrollView.ScrollbarsVisible ? 16 : 0);
                     if (pawn.IsAdult) {
                         if (pawn.Adulthood != null) {
-                            Widgets.Label(professionRect, pawn.Adulthood.TitleShort);
+                            Widgets.Label(professionRect, pawn.Adulthood.TitleShortCapFor(pawn.Gender));
                         }
                     }
                     else {
-                        Widgets.Label(professionRect, pawn.Childhood.TitleShort);
+                        Widgets.Label(professionRect, pawn.Childhood.TitleShortCapFor(pawn.Gender));
                     }
 
                     if (pawn != state.CurrentPawn && Widgets.ButtonInvisible(rect, false)) {
-                        SoundDefOf.TickTiny.PlayOneShotOnCamera();
+                        SoundDefOf.Tick_Tiny.PlayOneShotOnCamera();
                         newPawnSelection = pawn;
                     }
 

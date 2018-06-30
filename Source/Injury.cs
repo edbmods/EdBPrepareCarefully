@@ -101,9 +101,9 @@ namespace EdB.PrepareCarefully {
                 Hediff hediff = HediffMaker.MakeHediff(Option.HediffDef, pawn, null);
                 hediff.Severity = this.Severity;
 
-                HediffComp_GetsOld getsOld = hediff.TryGetComp<HediffComp_GetsOld>();
+                HediffComp_GetsPermanent getsOld = hediff.TryGetComp<HediffComp_GetsPermanent>();
                 if (getsOld != null) {
-                    getsOld.IsOld = true;
+                    getsOld.IsPermanent = true;
                     getsOld.painFactor = painFactor == null ? 0 : painFactor.Value;
                 }
 

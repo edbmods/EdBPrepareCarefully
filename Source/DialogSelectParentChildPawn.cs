@@ -29,7 +29,7 @@ namespace EdB.PrepareCarefully {
         protected bool confirmed = false;
 
         public DialogSelectParentChildPawn() {
-            this.closeOnEscapeKey = true;
+            this.closeOnCancel = true;
             this.doCloseX = true;
             this.absorbInputAroundWindow = true;
             this.forcePause = true;
@@ -132,7 +132,7 @@ namespace EdB.PrepareCarefully {
             table.SupportSelection = true;
             table.SelectedAction = (CustomParentChildPawn pawn) => {
                 if (!DisabledPawns.Contains(pawn)) {
-                    SoundDefOf.TickTiny.PlayOneShotOnCamera();
+                    SoundDefOf.Tick_Tiny.PlayOneShotOnCamera();
                     Select(pawn);
                 }
             };

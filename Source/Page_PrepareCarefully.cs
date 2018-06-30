@@ -21,7 +21,12 @@ namespace EdB.PrepareCarefully {
         private Controller controller;
 
         public Page_PrepareCarefully() {
-            this.closeOnEscapeKey = true;
+            this.closeOnCancel = false;
+            this.closeOnAccept = false;
+            this.closeOnClickedOutside = false;
+            this.doCloseButton = false;
+            this.doCloseX = false;
+
             // Add the tab views to the tab view list.
             tabViews.Add(tabViewPawns);
             tabViews.Add(tabViewRelationships);
@@ -34,6 +39,14 @@ namespace EdB.PrepareCarefully {
                     State.CurrentTab = currentTab;
                 }, false);
             }
+        }
+
+        override public void OnAcceptKeyPressed() {
+            // Don't close the window if the user clicks the "enter" key.
+        }
+        override public void OnCancelKeyPressed() {
+            // Confirm that the user wants to quit if they click the escape key.
+            ConfirmExit();
         }
 
         public State State {
@@ -68,13 +81,20 @@ namespace EdB.PrepareCarefully {
             Rect mainRect = base.GetMainRect(inRect, 30f, false);
             Widgets.DrawMenuSection(mainRect);
 
-            // This approach to drawing tabs differs a bit from the vanilla approach.  Instead instantiating
+            // This approach to drawing tabs differs a bit from the vanilla approach.  Instead of instantiating
             // brand new TabRecord instances every frame, we re-use the same instances and updated their
             // selected field value every frame.
+            // TODO: 1.0, now it's a list--we probably shouldn't be creating a new list every frame
+            /*
             TabDrawer.DrawTabs(mainRect, tabViews.Select((ITabView t) => {
                 t.TabRecord.selected = State.CurrentTab == t;
                 return t.TabRecord;
             }));
+            */
+            TabDrawer.DrawTabs(mainRect, tabViews.Select((ITabView t) => {
+                t.TabRecord.selected = State.CurrentTab == t;
+                return t.TabRecord;
+            }).ToList());
 
             // Determine the size of the tab view and draw the current tab.
             Vector2 SizePageMargins = new Vector2(16, 16);
@@ -108,13 +128,17 @@ namespace EdB.PrepareCarefully {
                     }
                 },
                 delegate {
-                    Find.WindowStack.Add(new Dialog_Confirm("EdB.PC.Page.ConfirmExit".Translate(), delegate {
-                        PrepareCarefully.Instance.Clear();
-                        PrepareCarefully.ClearOriginalScenario();
-                        this.Close(true);
-                    }, true, null, true));
+                    ConfirmExit();
                 }
             );
+        }
+
+        protected void ConfirmExit() {
+            Find.WindowStack.Add(new Dialog_Confirm("EdB.PC.Page.ConfirmExit".Translate(), delegate {
+                PrepareCarefully.Instance.Clear();
+                PrepareCarefully.ClearOriginalScenario();
+                this.Close(true);
+            }, true, null, true));
         }
 
         public void DoNextBackButtons(Rect innerRect, string nextLabel, Action nextAct, Action backAct) {

@@ -126,7 +126,9 @@ namespace EdB.PrepareCarefully {
             // If the pawn ends up assigned to the player faction, the stats screen will count the pawn
             // as a killed colonist--we don't want that to happen.
             FactionManager factionManager = Find.World.factionManager;
-            Faction newPawnFaction = factionManager.FirstFactionOfDef(FactionDefOf.Spacer);
+            // TODO: 1.0.  What happened to Spacer faction?
+            //Faction newPawnFaction = factionManager.FirstFactionOfDef(FactionDefOf.Spacer);
+            Faction newPawnFaction = factionManager.FirstFactionOfDef(FactionDefOf.PlayerColony);
             if (newPawnFaction == null) {
                 if (!factionManager.TryGetRandomNonColonyHumanlikeFaction(out newPawnFaction, false, true)) {
                     newPawnFaction = factionManager.AllFactions.RandomElementWithFallback(Faction.OfPlayer);

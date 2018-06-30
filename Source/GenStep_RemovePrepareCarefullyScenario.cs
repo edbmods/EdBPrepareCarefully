@@ -14,8 +14,16 @@ namespace EdB.PrepareCarefully {
     // creating a dependency between a saved game and the mod.  See Controller.PrepareGame() for 
     // more details.
     // TODO: Re-evaluate to see if it would be better to use method routing instead of a map generator step.
+
     public class GenStep_RemovePrepareCarefullyScenario : GenStep {
-        public override void Generate(Map map) {
+        // Copied from GenStep_ScatterThings.  Should it in fact be unique?
+        public override int SeedPart {
+            get {
+                return 436751516;
+            }
+        }
+
+        public override void Generate(Map map, GenStepParams parms) {
             if (PrepareCarefully.OriginalScenario != null) {
                 Current.Game.Scenario = PrepareCarefully.OriginalScenario;
                 PrepareCarefully.ClearOriginalScenario();

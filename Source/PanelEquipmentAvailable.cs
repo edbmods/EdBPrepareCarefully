@@ -99,10 +99,10 @@ namespace EdB.PrepareCarefully {
                     table.ShowHeader = true;
                     table.SortAction = DoSort;
                     table.SelectedAction = (EquipmentRecord entry) => {
-                        SoundDefOf.TickTiny.PlayOneShotOnCamera();
+                        SoundDefOf.Tick_Tiny.PlayOneShotOnCamera();
                     };
                     table.DoubleClickAction = (EquipmentRecord entry) => {
-                        SoundDefOf.TickHigh.PlayOneShotOnCamera();
+                        SoundDefOf.Tick_High.PlayOneShotOnCamera();
                         EquipmentAdded(entry);
                     };
                     table.AddColumn(new WidgetTable<EquipmentRecord>.Column() {
@@ -186,7 +186,7 @@ namespace EdB.PrepareCarefully {
             DrawEquipmentList(view);
 
             if (Widgets.ButtonText(RectAddButton, "EdB.PC.Panel.AvailableEquipment.Add".Translate(), true, false, view.Table.Selected != null)) {
-                SoundDefOf.TickHigh.PlayOneShotOnCamera();
+                SoundDefOf.Tick_High.PlayOneShotOnCamera();
                 EquipmentAdded(view.Table.Selected);
             }
         }
@@ -303,11 +303,11 @@ namespace EdB.PrepareCarefully {
             if (column != null) {
                 if (column.Name == ColumnNameName) {
                     SortByName(view, direction);
-                    SoundDefOf.TickTiny.PlayOneShotOnCamera();
+                    SoundDefOf.Tick_Tiny.PlayOneShotOnCamera();
                 }
                 else if (column.Name == ColumnNameCost) {
                     SortByCost(view, direction);
-                    SoundDefOf.TickTiny.PlayOneShotOnCamera();
+                    SoundDefOf.Tick_Tiny.PlayOneShotOnCamera();
                 }
             }
         }

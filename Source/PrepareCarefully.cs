@@ -157,7 +157,7 @@ namespace EdB.PrepareCarefully {
             Providers.Factions = new ProviderFactions();
         }
 
-        // TODO: Alpha 18
+        // TODO:
         // Think about whether or not this is the best approach.  Might need to do a bug report for the vanilla game?
         // The tribal scenario adds a weapon with an invalid thing/stuff combination (jade knife).  The 
         // knife ThingDef should allow the jade material, but it does not.  We need this workaround to
@@ -529,14 +529,14 @@ namespace EdB.PrepareCarefully {
             this.customPawnToOriginalPawnMap.Clear();
             this.originalPawnToCustomPawnMap.Clear();
             int pawnCount = Verse.Find.GameInitData.startingPawnCount;
-            foreach (Pawn originalPawn in Verse.Find.GameInitData.startingPawns) {
+            foreach (Pawn originalPawn in Verse.Find.GameInitData.startingAndOptionalPawns) {
                 Pawn copiedPawn = originalPawn.Copy();
                 CustomPawn customPawn = new CustomPawn(copiedPawn);
                 customPawnToOriginalPawnMap.Add(customPawn, originalPawn);
                 originalPawnToCustomPawnMap.Add(originalPawn, customPawn);
             }
             for (int i = 0; i < pawnCount; i++) {
-                Pawn originalPawn = Verse.Find.GameInitData.startingPawns[i];
+                Pawn originalPawn = Verse.Find.GameInitData.startingAndOptionalPawns[i];
                 CustomPawn customPawn = originalPawnToCustomPawnMap[originalPawn];
                 this.pawns.Add(customPawn);
             }
@@ -544,10 +544,10 @@ namespace EdB.PrepareCarefully {
 
         public void InitializeRelationshipManager(List<CustomPawn> pawns) {
             List<CustomPawn> customPawns = new List<CustomPawn>();
-            foreach (Pawn pawn in Verse.Find.GameInitData.startingPawns) {
+            foreach (Pawn pawn in Verse.Find.GameInitData.startingAndOptionalPawns) {
                 customPawns.Add(originalPawnToCustomPawnMap[pawn]);
             }
-            relationshipManager = new RelationshipManager(Verse.Find.GameInitData.startingPawns.GetRange(0, Verse.Find.GameInitData.startingPawnCount).ToList(), customPawns);
+            relationshipManager = new RelationshipManager(Verse.Find.GameInitData.startingAndOptionalPawns.GetRange(0, Verse.Find.GameInitData.startingPawnCount).ToList(), customPawns);
         }
 
     }

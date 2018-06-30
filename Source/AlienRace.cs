@@ -27,7 +27,7 @@ namespace EdB.PrepareCarefully {
         public List<Color> HairColors {
             get; set;
         }
-        public List<BodyType> BodyTypes {
+        public List<BodyTypeDef> BodyTypes {
             get; set;
         }
         public List<string> CrownTypes {

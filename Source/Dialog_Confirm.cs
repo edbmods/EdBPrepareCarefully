@@ -48,7 +48,7 @@ namespace EdB.PrepareCarefully {
             this.goBackLabel = "EdB.PC.Common.Cancel".Translate();
             this.forcePause = true;
             this.absorbInputAroundWindow = true;
-            this.closeOnEscapeKey = showGoBack;
+            this.closeOnCancel = showGoBack;
             this.createRealTime = Time.realtimeSinceStartup;
         }
 
@@ -63,7 +63,7 @@ namespace EdB.PrepareCarefully {
             this.goBackLabel = "EdB.PC.Common.Cancel".Translate();
             this.forcePause = true;
             this.absorbInputAroundWindow = true;
-            this.closeOnEscapeKey = showGoBack;
+            this.closeOnCancel = showGoBack;
             this.createRealTime = Time.realtimeSinceStartup;
         }
 
@@ -77,7 +77,7 @@ namespace EdB.PrepareCarefully {
             this.goBackLabel = "EdB.PC.Common.Cancel".Translate();
             this.forcePause = true;
             this.absorbInputAroundWindow = true;
-            this.closeOnEscapeKey = showGoBack;
+            this.closeOnCancel = showGoBack;
             this.createRealTime = Time.realtimeSinceStartup;
         }
         public Dialog_Confirm(string text, Action confirmedAction, bool destructive, string title, bool showGoBack) {
@@ -90,7 +90,7 @@ namespace EdB.PrepareCarefully {
             this.goBackLabel = "EdB.PC.Common.Cancel".Translate();
             this.forcePause = true;
             this.absorbInputAroundWindow = true;
-            this.closeOnEscapeKey = showGoBack;
+            this.closeOnCancel = showGoBack;
             this.createRealTime = Time.realtimeSinceStartup;
         }
 

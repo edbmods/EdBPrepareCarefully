@@ -37,7 +37,8 @@ namespace EdB.PrepareCarefully {
                 false, // bool certainlyBeenInCryptosleep = false
                 false, // bool forceRedressWorldPawnIfFormerColonist = false
                 false, // bool worldPawnFactionDoesntMatter = false
-                null, // Predicate < Pawn > validator = null
+                null, // Predicate < Pawn > validatorPreGear = null
+                null, // Predicate < Pawn > validatorPostGear = null
                 null, // float ? minChanceToRedressWorldPawn = null
                 fixedBiologicalAge, // float ? fixedBiologicalAge = null
                 null, // float ? fixedChronologicalAge = null

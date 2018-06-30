@@ -35,9 +35,9 @@ namespace EdB.PrepareCarefully {
 
             // Create sorted versions of the backstory lists
             sortedChildhoodBackstories = new List<Backstory>(childhoodBackstories);
-            sortedChildhoodBackstories.Sort((b1, b2) => b1.Title.CompareTo(b2.Title));
+            sortedChildhoodBackstories.Sort((b1, b2) => b1.TitleCapFor(Gender.Male).CompareTo(b2.TitleCapFor(Gender.Male)));
             sortedAdulthoodBackstories = new List<Backstory>(adulthoodBackstories);
-            sortedAdulthoodBackstories.Sort((b1, b2) => b1.Title.CompareTo(b2.Title));
+            sortedAdulthoodBackstories.Sort((b1, b2) => b1.TitleCapFor(Gender.Male).CompareTo(b2.TitleCapFor(Gender.Male)));
         }
     }
 }

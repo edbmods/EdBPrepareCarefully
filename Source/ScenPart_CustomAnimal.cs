@@ -58,7 +58,7 @@ namespace EdB.PrepareCarefully {
                     pawn.Name = PawnBioAndNameGenerator.GeneratePawnName(pawn, NameStyle.Full, null);
                 }
                 if (Rand.Value < bondToRandomPlayerPawnChance) {
-                    Pawn bonded = Find.GameInitData.startingPawns.RandomElement<Pawn>();
+                    Pawn bonded = Find.GameInitData.startingAndOptionalPawns.RandomElement<Pawn>();
                     if (!bonded.story.traits.HasTrait(TraitDefOf.Psychopath)) {
                         bonded.relations.AddDirectRelation(PawnRelationDefOf.Bond, pawn);
                     }

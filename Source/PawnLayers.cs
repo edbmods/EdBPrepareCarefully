@@ -41,26 +41,30 @@ namespace EdB.PrepareCarefully {
             }
         }
 
-        public static int ToPawnLayerIndex(ApparelLayer layer) {
-            switch (layer) {
-                case ApparelLayer.OnSkin:
-                    return BottomClothingLayer;
-                case ApparelLayer.Middle:
-                    return MiddleClothingLayer;
-                case ApparelLayer.Shell:
-                    return TopClothingLayer;
-                case ApparelLayer.Overhead:
-                    return Hat;
-                case ApparelLayer.Belt:
-                    return Accessory;
-                default:
-                    return -1;
+        public static int ToPawnLayerIndex(ApparelLayerDef layer) {
+            if (layer == ApparelLayerDefOf.OnSkin) {
+                return BottomClothingLayer;
+            }
+            else if (layer == ApparelLayerDefOf.Middle) {
+                return MiddleClothingLayer;
+            }
+            else if (layer == ApparelLayerDefOf.Shell) {
+                return TopClothingLayer;
+            }
+            else if (layer == ApparelLayerDefOf.Overhead) {
+                return Hat;
+            }
+            else if (layer == ApparelLayerDefOf.Belt) {
+                return Accessory;
+            }
+            else {
+                return -1;
             }
         }
 
         public static int ToPawnLayerIndex(ApparelProperties apparelProperties) {
-            ApparelLayer layer = apparelProperties.LastLayer;
-            if (layer == ApparelLayer.OnSkin && apparelProperties.bodyPartGroups.Count == 1) {
+            ApparelLayerDef layer = apparelProperties.LastLayer;
+            if (layer == ApparelLayerDefOf.OnSkin && apparelProperties.bodyPartGroups.Count == 1) {
                 if (apparelProperties.bodyPartGroups[0].Equals(BodyPartGroupDefOf.Legs)) {
                     return Pants;
                 }
@@ -71,40 +75,43 @@ namespace EdB.PrepareCarefully {
                     return -1;
                 }
             }
-            switch (layer) {
-                case ApparelLayer.OnSkin:
-                    return BottomClothingLayer;
-                case ApparelLayer.Middle:
-                    return MiddleClothingLayer;
-                case ApparelLayer.Shell:
-                    return TopClothingLayer;
-                case ApparelLayer.Belt:
-                    return Accessory;
-                case ApparelLayer.Overhead:
-                    return Hat;
-                default: {
-                    Log.Warning("Cannot find matching layer for apparel.  Last layer: " + apparelProperties.LastLayer);
-                    return -1;
-                }
+            if (layer == ApparelLayerDefOf.OnSkin) {
+                return BottomClothingLayer;
+            }
+            else if (layer == ApparelLayerDefOf.Middle) {
+                return MiddleClothingLayer;
+            }
+            else if (layer == ApparelLayerDefOf.Shell) {
+                return TopClothingLayer;
+            }
+            else if (layer == ApparelLayerDefOf.Overhead) {
+                return Hat;
+            }
+            else if (layer == ApparelLayerDefOf.Belt) {
+                return Accessory;
+            }
+            else {
+                Log.Warning("Cannot find matching layer for apparel.  Last layer: " + apparelProperties.LastLayer);
+                return -1;
             }
         }
 
-        public static ApparelLayer ToApparelLayer(int layer) {
+        public static ApparelLayerDef ToApparelLayer(int layer) {
             switch (layer) {
                 case Pants:
-                    return ApparelLayer.OnSkin;
+                    return ApparelLayerDefOf.OnSkin;
                 case BottomClothingLayer:
-                    return ApparelLayer.OnSkin;
+                    return ApparelLayerDefOf.OnSkin;
                 case MiddleClothingLayer:
-                    return ApparelLayer.Middle;
+                    return ApparelLayerDefOf.Middle;
                 case TopClothingLayer:
-                    return ApparelLayer.Shell;
+                    return ApparelLayerDefOf.Shell;
                 case Hat:
-                    return ApparelLayer.Overhead;
+                    return ApparelLayerDefOf.Overhead;
                 case Accessory:
-                    return ApparelLayer.Belt;
+                    return ApparelLayerDefOf.Belt;
                 default:
-                    return ApparelLayer.OnSkin;
+                    return ApparelLayerDefOf.OnSkin;
             }
         }
 

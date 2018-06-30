@@ -10,12 +10,12 @@ using Verse.Sound;
 
 namespace EdB.PrepareCarefully {
     public class OptionsBodyType {
-        protected List<BodyType> maleBodyTypes = new List<BodyType>();
-        protected List<BodyType> femaleBodyTypes = new List<BodyType>();
-        protected List<BodyType> noGenderBodyTypes = new List<BodyType>();
+        protected List<BodyTypeDef> maleBodyTypes = new List<BodyTypeDef>();
+        protected List<BodyTypeDef> femaleBodyTypes = new List<BodyTypeDef>();
+        protected List<BodyTypeDef> noGenderBodyTypes = new List<BodyTypeDef>();
         public OptionsBodyType() {
         }
-        public List<BodyType> MaleBodyTypes {
+        public List<BodyTypeDef> MaleBodyTypes {
             get {
                 return maleBodyTypes;
             }
@@ -23,7 +23,7 @@ namespace EdB.PrepareCarefully {
                 maleBodyTypes = value;
             }
         }
-        public List<BodyType> FemaleBodyTypes {
+        public List<BodyTypeDef> FemaleBodyTypes {
             get {
                 return femaleBodyTypes;
             }
@@ -31,7 +31,7 @@ namespace EdB.PrepareCarefully {
                 femaleBodyTypes = value;
             }
         }
-        public List<BodyType> NoGenderBodyTypes {
+        public List<BodyTypeDef> NoGenderBodyTypes {
             get {
                 return noGenderBodyTypes;
             }
@@ -39,7 +39,7 @@ namespace EdB.PrepareCarefully {
                 noGenderBodyTypes = value;
             }
         }
-        public List<BodyType> GetBodyTypes(Gender gender) {
+        public List<BodyTypeDef> GetBodyTypes(Gender gender) {
             if (gender == Gender.Male) {
                 return maleBodyTypes;
             }

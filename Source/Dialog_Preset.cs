@@ -25,7 +25,7 @@ namespace EdB.PrepareCarefully {
         protected float bottomAreaHeight;
 
         public Dialog_Preset() {
-            this.closeOnEscapeKey = true;
+            this.closeOnCancel = true;
             this.doCloseButton = true;
             this.doCloseX = true;
             this.absorbInputAroundWindow = true;
