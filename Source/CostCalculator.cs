@@ -212,7 +212,7 @@ namespace EdB.PrepareCarefully {
                         double totalCost = 0;
                         bool skip = false;
                         foreach (ThingDef ingredientDef in amount.filter.AllowedThingDefs) {
-                            if (ingredientDef == ThingDefOf.Medicine) {
+                            if (ingredientDef.IsMedicine) {
                                 skip = true;
                                 break;
                             }
@@ -272,11 +272,11 @@ namespace EdB.PrepareCarefully {
                     return def.BaseMarketValue;
                 }
                 else {
-                    // TODO: Alpha 19
+                    // TODO:
                     // Should look at ThingMaker.MakeThing() to decide which validations we need to do
-                    // before calling that method.  That method doesn't do null checks everywher, so we
+                    // before calling that method.  That method doesn't do null checks everywhere, so we
                     // may need to do those validations ourselves to avoid null pointer exceptions.
-                    // Should re-evaluate for each new alpha and then update the todo comment with the next
+                    // Should re-evaluate for each new release and then update the todo comment with the next
                     // alpha version.
                     if (def.thingClass == null) {
                         Log.Warning("Prepare Carefully trying to calculate the cost of a ThingDef with null thingClass: " + def.defName);

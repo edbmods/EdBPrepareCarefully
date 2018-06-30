@@ -126,7 +126,8 @@ namespace EdB.PrepareCarefully {
                 FactionRelation rel = new FactionRelation();
                 rel.other = Faction.OfPlayer;
                 rel.goodwill = 50;
-                rel.hostile = false;
+                // TODO: 1.0, does it matter that this field is now gone?  Do I need to set something else?
+                //rel.hostile = false;
                 (typeof(Faction).GetField("relations", BindingFlags.Instance | BindingFlags.NonPublic)
                     .GetValue(faction) as List<FactionRelation>).Add(rel);
             }

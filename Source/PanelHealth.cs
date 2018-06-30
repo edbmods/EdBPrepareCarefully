@@ -38,14 +38,14 @@ namespace EdB.PrepareCarefully {
         protected HashSet<RecipeDef> disabledImplantRecipes = new HashSet<RecipeDef>();
 
         protected List<InjurySeverity> severityOptions = new List<InjurySeverity>();
-        protected List<InjurySeverity> oldInjurySeverities = new List<InjurySeverity>();
+        protected List<InjurySeverity> permanentInjurySeverities = new List<InjurySeverity>();
 
         public PanelHealth() {
-            oldInjurySeverities.Add(new InjurySeverity(2));
-            oldInjurySeverities.Add(new InjurySeverity(3));
-            oldInjurySeverities.Add(new InjurySeverity(4));
-            oldInjurySeverities.Add(new InjurySeverity(5));
-            oldInjurySeverities.Add(new InjurySeverity(6));
+            permanentInjurySeverities.Add(new InjurySeverity(2));
+            permanentInjurySeverities.Add(new InjurySeverity(3));
+            permanentInjurySeverities.Add(new InjurySeverity(4));
+            permanentInjurySeverities.Add(new InjurySeverity(5));
+            permanentInjurySeverities.Add(new InjurySeverity(6));
         }
         public override string PanelHeader {
             get {
@@ -254,7 +254,7 @@ namespace EdB.PrepareCarefully {
                     CancelButtonLabel = "EdB.PC.Common.Cancel".Translate(),
                     HeaderLabel = "EdB.PC.Dialog.BodyPart.Header".Translate(),
                     NameFunc = (BodyPartRecord option) => {
-                        return option.def.LabelCap;
+                        return option.LabelCap;
                     },
                     SelectedFunc = (BodyPartRecord option) => {
                         return option == selectedBodyPart;
@@ -461,7 +461,7 @@ namespace EdB.PrepareCarefully {
             // If the injury has no stages, add the old injury severity options.
             // TODO: Is this right?
             if (injuryOption.HediffDef.stages == null || injuryOption.HediffDef.stages.Count == 0) {
-                severityOptions.AddRange(oldInjurySeverities);
+                severityOptions.AddRange(permanentInjurySeverities);
                 return;
             }
 
@@ -560,7 +560,7 @@ namespace EdB.PrepareCarefully {
             Style.SetGUIColorForButton(deleteRect);
             GUI.DrawTexture(deleteRect, Textures.TextureButtonDelete);
             if (Widgets.ButtonInvisible(deleteRect, false)) {
-                SoundDefOf.TickTiny.PlayOneShotOnCamera();
+                SoundDefOf.Tick_Tiny.PlayOneShotOnCamera();
                 partRemovalList.Add(customPart);
             }
 

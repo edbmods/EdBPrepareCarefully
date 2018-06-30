@@ -141,7 +141,7 @@ namespace EdB.PrepareCarefully {
                     }
                     GUI.DrawTexture(buttonRect, Textures.TextureButtonPrevious);
                     if (Widgets.ButtonInvisible(buttonRect, false)) {
-                        SoundDefOf.TickTiny.PlayOneShotOnCamera();
+                        SoundDefOf.Tick_Tiny.PlayOneShotOnCamera();
                         previousAction();
                     }
                 }
@@ -157,7 +157,7 @@ namespace EdB.PrepareCarefully {
                     }
                     GUI.DrawTexture(buttonRect, Textures.TextureButtonNext);
                     if (Widgets.ButtonInvisible(buttonRect, false)) {
-                        SoundDefOf.TickTiny.PlayOneShotOnCamera();
+                        SoundDefOf.Tick_Tiny.PlayOneShotOnCamera();
                         nextAction();
                     }
                 }

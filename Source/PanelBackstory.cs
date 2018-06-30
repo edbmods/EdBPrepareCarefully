@@ -76,7 +76,7 @@ namespace EdB.PrepareCarefully {
             GUI.color = Color.white;
 
             if (pawn.Childhood != null) {
-                FieldChildhood.Label = pawn.Childhood.Title;
+                FieldChildhood.Label = pawn.Childhood.TitleCapFor(pawn.Gender);
             }
             else {
                 FieldChildhood.Label = null;
@@ -94,7 +94,7 @@ namespace EdB.PrepareCarefully {
 
             FieldAdulthood.Enabled = isAdult;
             if (isAdult) {
-                FieldAdulthood.Label = pawn.Adulthood.Title;
+                FieldAdulthood.Label = pawn.Adulthood.TitleCapFor(pawn.Gender);
                 FieldAdulthood.Tip = pawn.Adulthood.FullDescriptionFor(pawn.Pawn);
                 FieldAdulthood.ClickAction = () => {
                     ShowBackstoryDialog(pawn, BackstorySlot.Adulthood);
@@ -127,7 +127,7 @@ namespace EdB.PrepareCarefully {
             }
             GUI.DrawTexture(randomRect, Textures.TextureButtonRandom);
             if (Widgets.ButtonInvisible(randomRect, false)) {
-                SoundDefOf.TickLow.PlayOneShotOnCamera();
+                SoundDefOf.Tick_Low.PlayOneShotOnCamera();
                 BackstoriesRandomized();
             }
 
@@ -143,7 +143,7 @@ namespace EdB.PrepareCarefully {
                     this.providerBackstories.ChildhoodBackstories
                     : this.providerBackstories.AdulthoodBackstories) {
                 NameFunc = (Backstory backstory) => {
-                    return backstory.Title;
+                    return backstory.TitleCapFor(customPawn.Gender);
                 },
                 DescriptionFunc = (Backstory backstory) => {
                     return backstory.FullDescriptionFor(customPawn.Pawn);

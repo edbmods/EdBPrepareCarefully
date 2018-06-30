@@ -5,7 +5,7 @@ using UnityEngine;
 using Verse;
 
 namespace EdB.PrepareCarefully {
-    // TODO: Alpha 19
+    // TODO: Duplicate again for 1.0 Release
     // Duplicate of GenStep_ScatterThings with a radius field to allow for a large spawn area.
     public class GenStep_CustomScatterThings : GenStep_Scatterer {
         //
@@ -39,6 +39,13 @@ namespace EdB.PrepareCarefully {
 
         [NoTranslate]
         private List<string> terrainValidationDisallowed;
+
+        // Copied from GenStep_ScatterThings.  Should it in fact be unique?
+        public override int SeedPart {
+            get {
+                return 1158116095;
+            }
+        }
 
         //
         // Properties
@@ -121,8 +128,8 @@ namespace EdB.PrepareCarefully {
             return result;
         }
 
-        public override void Generate(Map map) {
-            if (this.allowOnWater || !map.TileInfo.WaterCovered) {
+        public override void Generate(Map map, GenStepParams parms) {
+            if (this.allowInWaterBiome || !map.TileInfo.WaterCovered) {
                 int count = base.CalculateFinalCount(map);
                 IntRange one;
                 if (this.thingDef.ingestible != null && this.thingDef.ingestible.IsMeal && this.thingDef.stackLimit <= 10) {
@@ -181,7 +188,8 @@ namespace EdB.PrepareCarefully {
                     }
                 }
                 else {
-                    GenSpawn.Spawn(thing, loc, map, rot, false);
+                    // TODO: Evaluate new WipeMode and 5th argument
+                    GenSpawn.Spawn(thing, loc, map, rot, WipeMode.Vanish, false);
                 }
             }
         }

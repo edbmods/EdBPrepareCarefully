@@ -93,7 +93,7 @@ namespace EdB.PrepareCarefully {
             Style.SetGUIColorForButton(RectRandomize);
             GUI.DrawTexture(RectRandomize, Textures.TextureButtonRandom);
             if (Widgets.ButtonInvisible(RectRandomize, false)) {
-                SoundDefOf.TickLow.PlayOneShotOnCamera();
+                SoundDefOf.Tick_Low.PlayOneShotOnCamera();
                 GUI.FocusControl(null);
                 NameRandomized();
             }

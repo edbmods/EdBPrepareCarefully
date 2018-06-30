@@ -58,10 +58,10 @@ namespace EdB.PrepareCarefully {
             table.SupportSelection = true;
             table.RowHeight = 42;
             table.SelectedAction = (EquipmentSelection entry) => {
-                SoundDefOf.TickTiny.PlayOneShotOnCamera();
+                SoundDefOf.Tick_Tiny.PlayOneShotOnCamera();
             };
             table.DoubleClickAction = (EquipmentSelection entry) => {
-                SoundDefOf.TickHigh.PlayOneShotOnCamera();
+                SoundDefOf.Tick_High.PlayOneShotOnCamera();
                 if (entry.Count > 0) {
                     EquipmentCountUpdated(entry, entry.Count - 1);
                 }
@@ -149,7 +149,7 @@ namespace EdB.PrepareCarefully {
             }
 
             if (Widgets.ButtonText(RectRemoveButton, "EdB.PC.Panel.SelectedEquipment.Remove".Translate(), true, false, table.Selected != null)) {
-                SoundDefOf.TickHigh.PlayOneShotOnCamera();
+                SoundDefOf.Tick_High.PlayOneShotOnCamera();
                 EquipmentRemoved(table.Selected);
                 table.Selected = null;
             }

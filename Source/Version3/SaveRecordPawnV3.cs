@@ -61,7 +61,7 @@ namespace EdB.PrepareCarefully {
             this.hairDef = pawn.HairDef.defName;
             this.hairColor = pawn.GetColor(PawnLayers.Hair);
             this.headGraphicPath = pawn.HeadGraphicPath;
-            this.bodyType = Enum.GetName(typeof(BodyType), pawn.BodyType);
+            this.bodyType = pawn.BodyType.defName; // TODO: Enum.GetName(typeof(BodyTypeDef), pawn.BodyType);
             this.firstName = pawn.FirstName;
             this.nickName = pawn.NickName;
             this.lastName = pawn.LastName;

@@ -65,7 +65,7 @@ namespace EdB.PrepareCarefully {
         public Action SelectNoneAction = () => { };
 
         public Dialog_Options(IEnumerable<T> options) {
-            this.closeOnEscapeKey = true;
+            this.closeOnCancel = true;
             //this.doCloseButton = true;
             this.doCloseX = true;
             this.absorbInputAroundWindow = true;

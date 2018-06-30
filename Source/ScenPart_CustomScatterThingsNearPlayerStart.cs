@@ -65,7 +65,7 @@ namespace EdB.PrepareCarefully {
                 minSpacing = 5f,
                 clusterSize = ((this.thingDef.category != ThingCategory.Building) ? 4 : 1),
                 radius = 4 + radius
-            }.Generate(map);
+            }.Generate(map, new GenStepParams());
         }
         public override string Summary(Scenario scen) {
             return ScenSummaryList.SummaryWithList(scen, "PlayerStartsWith", ScenPart_StartingThing_Defined.PlayerStartWithIntro);

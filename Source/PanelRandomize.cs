@@ -26,7 +26,7 @@ namespace EdB.PrepareCarefully {
             }
             GUI.DrawTexture(randomRect, Textures.TextureButtonRandomLarge);
             if (Widgets.ButtonInvisible(randomRect, false)) {
-                SoundDefOf.TickLow.PlayOneShotOnCamera();
+                SoundDefOf.Tick_Low.PlayOneShotOnCamera();
                 RandomizeAllClicked();
             }
 

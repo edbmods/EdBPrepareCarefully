@@ -90,14 +90,14 @@ namespace EdB.PrepareCarefully {
                 if (focusedControl == id && currentControl != id) {
                     if (newValue != null) {
                         if (newValue == value) {
-                            SoundDefOf.TickTiny.PlayOneShotOnCamera();
+                            SoundDefOf.Tick_Tiny.PlayOneShotOnCamera();
                         }
                         else if (newValue >= minValue && newValue <= maxValue) {
-                            SoundDefOf.TickHigh.PlayOneShotOnCamera();
+                            SoundDefOf.Tick_High.PlayOneShotOnCamera();
                             Update(newValue.Value);
                         }
                         else {
-                            SoundDefOf.TickLow.PlayOneShotOnCamera();
+                            SoundDefOf.Tick_Low.PlayOneShotOnCamera();
                             Update(newValue.Value);
                         }
                     }
@@ -177,7 +177,7 @@ namespace EdB.PrepareCarefully {
             GUI.DrawTexture(buttonRect, Textures.TextureButtonPrevious);
             if (value != minValue) {
                 if (Widgets.ButtonInvisible(buttonRect, false)) {
-                    SoundDefOf.TickTiny.PlayOneShotOnCamera();
+                    SoundDefOf.Tick_Tiny.PlayOneShotOnCamera();
                     int amount = Event.current.shift ? 10 : 1;
                     int newValue = value - amount;
                     Update(newValue);
@@ -200,7 +200,7 @@ namespace EdB.PrepareCarefully {
             if (value != maxValue) {
                 GUI.DrawTexture(buttonRect, Textures.TextureButtonNext);
                 if (Widgets.ButtonInvisible(buttonRect, false)) {
-                    SoundDefOf.TickTiny.PlayOneShotOnCamera();
+                    SoundDefOf.Tick_Tiny.PlayOneShotOnCamera();
                     int amount = Event.current.shift ? 10 : 1;
                     int newValue = value + amount;
                     Update(newValue);
