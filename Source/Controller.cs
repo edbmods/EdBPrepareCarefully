@@ -110,11 +110,20 @@ namespace EdB.PrepareCarefully {
         }
 
         public void PrepareGame() {
-            // Replace the pawns.
-            // TODO: 1.0, with the starting and optional pawns, we really need to figure out if this is right.  We shouldn't really be
-            // removing all of the optional pawns, should we?
+            // Replace the pawns; be sure to preserve the "left behind" pawns.
+            int prepareCarefullyPawnCount = PrepareCarefully.Instance.Colonists.Count;
+            int originalStartingPawnCount = Find.GameInitData.startingPawnCount;
+            int originalTotalPawnCount = Find.GameInitData.startingAndOptionalPawns.Count;
+            int leftBehindCount = originalTotalPawnCount - originalStartingPawnCount;
+            List<Pawn> leftBehindPawns = new List<Pawn>();
+            if (leftBehindCount > 0) {
+                leftBehindPawns.AddRange(Find.GameInitData.startingAndOptionalPawns.GetRange(originalStartingPawnCount, leftBehindCount));
+            }
             Find.GameInitData.startingAndOptionalPawns = PrepareCarefully.Instance.Colonists;
-            Find.GameInitData.startingPawnCount = PrepareCarefully.Instance.Colonists.Count;
+            if (leftBehindPawns.Count > 0) {
+                Find.GameInitData.startingAndOptionalPawns.AddRange(leftBehindPawns);
+            }
+            Find.GameInitData.startingPawnCount = prepareCarefullyPawnCount;
 
             // This needs some explaining.  We need custom scenario parts to handle animal spawning
             // and scattered things.  However, we don't want the scenario that gets saved with a game
@@ -131,8 +140,6 @@ namespace EdB.PrepareCarefully {
 
             // Remove equipment scenario parts.
             ReplaceScenarioParts(actualScenario, vanillaFriendlyScenario);
-            
-            
         }
         
         protected void ReplaceScenarioParts(Scenario actualScenario, Scenario vanillaFriendlyScenario) {
