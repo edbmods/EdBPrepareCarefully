@@ -76,7 +76,6 @@
     <Compile Include="Source\ExtensionsThing.cs" />
     <Compile Include="Source\GenStep_CustomScatterThings.cs" />
     <Compile Include="Source\CustomHeadType.cs" />
-    <Compile Include="Source\GenStep_RemovePrepareCarefullyScenario.cs" />
     <Compile Include="Source\IRelationshipWorker.cs" />
     <Compile Include="Source\OptionsApparel.cs" />
     <Compile Include="Source\OptionsHealth.cs" />

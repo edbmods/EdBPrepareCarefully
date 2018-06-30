@@ -21,6 +21,9 @@ namespace EdB.PrepareCarefully {
             harmony.Patch(typeof(Page_ConfigureStartingPawns).GetMethod("DoWindowContents"),
                 new HarmonyMethod(null),
                 new HarmonyMethod(typeof(HarmonyPatches).GetMethod("DoWindowContentsPostfix")));
+            harmony.Patch(typeof(Game).GetMethod("InitNewGame"),
+                new HarmonyMethod(null),
+                new HarmonyMethod(typeof(HarmonyPatches).GetMethod("InitNewGamePostfix")));
         }
 
         // Clear the original scenario when opening the Configure Starting Pawns page.  This makes
@@ -28,6 +31,17 @@ namespace EdB.PrepareCarefully {
         // gameplay and then start a new game.
         public static void PreOpenPostfix() {
             PrepareCarefully.ClearOriginalScenario();
+        }
+
+        // Removes the customized scenario (with PrepareCarefully-specific scenario parts) and replaces
+        // it with a vanilla-friendly version that was prepared earlier.  This is a workaround to avoid
+        // creating a dependency between a saved game and the mod.  See Controller.PrepareGame() for 
+        // more details.
+        public static void InitNewGamePostfix() {
+            if (PrepareCarefully.OriginalScenario != null) {
+                Current.Game.Scenario = PrepareCarefully.OriginalScenario;
+                PrepareCarefully.ClearOriginalScenario();
+            }
         }
 
         // Draw the "Prepare Carefully" button at the bottom of the Configure Starting Pawns page.
