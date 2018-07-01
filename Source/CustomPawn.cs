@@ -469,6 +469,8 @@ namespace EdB.PrepareCarefully {
         public void CopySkillsAndPassionsToPawn() {
             foreach (var record in pawn.skills.skills) {
                 record.Level = GetSkillLevel(record.def);
+                // Reset the XP level based on the current value of the skill.
+                record.xpSinceLastLevel = Rand.Range(record.XpRequiredForLevelUp * 0.1f, record.XpRequiredForLevelUp * 0.9f);
                 if (!record.TotallyDisabled) {
                     record.passion = currentPassions[record.def];
                 }
