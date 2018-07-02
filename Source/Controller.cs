@@ -110,6 +110,11 @@ namespace EdB.PrepareCarefully {
         }
 
         public void PrepareGame() {
+            // Get all of the related pawns.
+            RelationshipBuilder relationshipBuilder = new RelationshipBuilder(PrepareCarefully.Instance.RelationshipManager.Relationships.ToList(),
+                PrepareCarefully.Instance.RelationshipManager.ParentChildGroups);
+            List<Pawn> relatedPawns = relationshipBuilder.Build();
+
             // Replace the pawns; be sure to preserve the "left behind" pawns.
             int prepareCarefullyPawnCount = PrepareCarefully.Instance.Colonists.Count;
             int originalStartingPawnCount = Find.GameInitData.startingPawnCount;
@@ -120,10 +125,25 @@ namespace EdB.PrepareCarefully {
                 leftBehindPawns.AddRange(Find.GameInitData.startingAndOptionalPawns.GetRange(originalStartingPawnCount, leftBehindCount));
             }
             Find.GameInitData.startingAndOptionalPawns = PrepareCarefully.Instance.Colonists;
-            if (leftBehindPawns.Count > 0) {
-                Find.GameInitData.startingAndOptionalPawns.AddRange(leftBehindPawns);
+            
+            // Add related pawns who are not already in the world to the starting pawns list.
+            HashSet<Pawn> worldPawns = new HashSet<Pawn>();
+            worldPawns.AddRange(leftBehindPawns);
+            foreach (Pawn p in relatedPawns) {
+                if (!Find.World.worldPawns.Contains(p)) {
+                    worldPawns.Add(p);
+                }
+            }
+            if (worldPawns.Count > 0) {
+                Find.GameInitData.startingAndOptionalPawns.AddRange(worldPawns);
             }
             Find.GameInitData.startingPawnCount = prepareCarefullyPawnCount;
+
+            // Go through each pawn and make last minute modifications before starting the new game.
+            for (int i=0; i<prepareCarefullyPawnCount; i++) {
+                Pawn pawn = Find.GameInitData.startingAndOptionalPawns[i];
+                PreparePawnForNewGame(pawn);
+            }
 
             // This needs some explaining.  We need custom scenario parts to handle animal spawning
             // and scattered things.  However, we don't want the scenario that gets saved with a game
@@ -377,6 +397,10 @@ namespace EdB.PrepareCarefully {
                 }
             }
             state.MissingWorkTypes = missingWorkTypes;
+        }
+
+        public void PreparePawnForNewGame(Pawn pawn) {
+            // Do nothing for now.  This can be used as a hook for harmony patches for other mods.
         }
     }
 }

@@ -375,9 +375,6 @@ namespace EdB.PrepareCarefully {
                 Pawn pawn = colonists[i];
                 pawnLookup[customPawn] = pawn;
             }
-
-            RelationshipBuilder builder = new RelationshipBuilder(RelationshipManager.Relationships.ToList(), RelationshipManager.ParentChildGroups);
-            builder.Build();
         }
         
         public List<Pawn> Colonists {
