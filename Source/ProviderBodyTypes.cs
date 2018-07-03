@@ -11,7 +11,13 @@ using Verse.Sound;
 namespace EdB.PrepareCarefully {
     public class ProviderBodyTypes {
         protected Dictionary<ThingDef, OptionsBodyType> raceBodyTypeLookup = new Dictionary<ThingDef, OptionsBodyType>();
+        protected Dictionary<string, string> labels = new Dictionary<string, string>();
         public ProviderBodyTypes() {
+            labels.Add("Female", "EdB.PC.Pawn.BodyType.Average".Translate());
+            labels.Add("Male", "EdB.PC.Pawn.BodyType.Average".Translate());
+            labels.Add("Hulk", "EdB.PC.Pawn.BodyType.Hulking".Translate());
+            labels.Add("Thin", "EdB.PC.Pawn.BodyType.Thin".Translate());
+            labels.Add("Fat", "EdB.PC.Pawn.BodyType.Heavyset".Translate());
         }
         public ProviderAlienRaces AlienRaceProvider {
             get; set;
@@ -28,7 +34,18 @@ namespace EdB.PrepareCarefully {
             return bodyTypes.GetBodyTypes(pawn.gender);
         }
         public string GetBodyTypeLabel(BodyTypeDef bodyType) {
-            return bodyType.LabelCap;
+            if (bodyType.label.NullOrEmpty()) {
+                string label = null;
+                if (labels.TryGetValue(bodyType.defName, out label)) {
+                    return label;
+                }
+                else {
+                    return "EdB.PC.Pawn.BodyType.Unnamed".Translate();
+                }
+            }
+            else {
+                return bodyType.LabelCap;
+            }
         }
         protected OptionsBodyType InitializeBodyTypes(ThingDef def) {
             if (!ProviderAlienRaces.IsAlienRace(def)) {
@@ -50,18 +67,15 @@ namespace EdB.PrepareCarefully {
         }
         protected OptionsBodyType InitializeHumanlikeBodyTypes() {
             OptionsBodyType result = new OptionsBodyType();
-            result.MaleBodyTypes.Add(BodyTypeDefOf.Male);
-            result.MaleBodyTypes.Add(BodyTypeDefOf.Thin);
-            result.MaleBodyTypes.Add(BodyTypeDefOf.Fat);
-            result.MaleBodyTypes.Add(BodyTypeDefOf.Hulk);
-            result.FemaleBodyTypes.Add(BodyTypeDefOf.Female);
-            result.FemaleBodyTypes.Add(BodyTypeDefOf.Thin);
-            result.FemaleBodyTypes.Add(BodyTypeDefOf.Fat);
-            result.FemaleBodyTypes.Add(BodyTypeDefOf.Hulk);
-            result.NoGenderBodyTypes.Add(BodyTypeDefOf.Male);
-            result.NoGenderBodyTypes.Add(BodyTypeDefOf.Thin);
-            result.NoGenderBodyTypes.Add(BodyTypeDefOf.Fat);
-            result.NoGenderBodyTypes.Add(BodyTypeDefOf.Hulk);
+            foreach (BodyTypeDef d in DefDatabase<BodyTypeDef>.AllDefs) {
+                if (d != BodyTypeDefOf.Female) {
+                    result.MaleBodyTypes.Add(d);
+                }
+                if (d != BodyTypeDefOf.Male) {
+                    result.FemaleBodyTypes.Add(d);
+                }
+                result.NoGenderBodyTypes.Add(d);
+            }
             return result;
         }
         protected OptionsBodyType InitializeAlienRaceBodyTypes(ThingDef def) {
