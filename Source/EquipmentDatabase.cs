@@ -119,6 +119,9 @@ namespace EdB.PrepareCarefully {
             }
 
             if (def.CountAsResource) {
+                if (def.IsShell) {
+                    return TypeWeapons;
+                }
                 if (def.IsDrug || (def.statBases != null && def.IsMedicine)) {
                     if (def.ingestible != null) {
                         if (def.thingCategories != null) {
