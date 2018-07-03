@@ -3,7 +3,7 @@
    Version 1.0.2
  _____________________________________________________________________________
 
- - Fixes related to how related pawns are spawned into the world.
+ - Fixes to how related pawns are spawned into the world.
  - Fix for how XP progress to the next skill level is updated.
 
  _____________________________________________________________________________
