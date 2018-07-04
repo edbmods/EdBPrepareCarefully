@@ -74,7 +74,7 @@ namespace EdB.PrepareCarefully {
             result.BodyTypes = bodyTypes;
 
             // Determine if the alien races uses gender-specific heads.
-            bool? useGenderedHeads = GetFieldValueAsBool(raceDef, alienPartGeneratorObject, "UseGenderedHeads");
+            bool? useGenderedHeads = GetFieldValueAsBool(raceDef, alienPartGeneratorObject, "useGenderedHeads");
             if (useGenderedHeads == null) {
                 return null;
             }
@@ -136,7 +136,7 @@ namespace EdB.PrepareCarefully {
             object hairSettingsValue = GetFieldValue(raceDef, alienRaceObject, "hairSettings", true);
             result.HasHair = true;
             if (hairSettingsValue != null) {
-                bool? hasHair = GetFieldValueAsBool(raceDef, hairSettingsValue, "HasHair");
+                bool? hasHair = GetFieldValueAsBool(raceDef, hairSettingsValue, "hasHair");
                 if (hasHair != null) {
                     result.HasHair = hasHair.Value;
                 }
