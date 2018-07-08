@@ -17,6 +17,7 @@ namespace EdB.PrepareCarefully {
         private TabViewEquipment tabViewEquipment = new TabViewEquipment();
         private TabViewRelationships tabViewRelationships = new TabViewRelationships();
         private List<ITabView> tabViews = new List<ITabView>();
+        private List<TabRecord> tabRecords = new List<TabRecord>();
 
         private Controller controller;
 
@@ -31,13 +32,21 @@ namespace EdB.PrepareCarefully {
             tabViews.Add(tabViewPawns);
             tabViews.Add(tabViewRelationships);
             tabViews.Add(tabViewEquipment);
-
-            // Create a tab UI widget for each tab view.
+            
+            // Create a tab record UI widget for each tab view.
             foreach (var tab in tabViews) {
                 ITabView currentTab = tab;
-                currentTab.TabRecord = new TabRecord(currentTab.Name, delegate {
+                TabRecord tabRecord = new TabRecord(currentTab.Name, delegate {
+                    // When a new tab is selected, mark the previously selected TabRecord as unselected and the current one as selected.
+                    // Also, update the State to reflected the newly selected ITabView.
+                    if (State.CurrentTab != null) {
+                        State.CurrentTab.TabRecord.selected = false;
+                    }
                     State.CurrentTab = currentTab;
+                    currentTab.TabRecord.selected = true;
                 }, false);
+                currentTab.TabRecord = tabRecord;
+                tabRecords.Add(tabRecord);
             }
         }
 
@@ -76,25 +85,12 @@ namespace EdB.PrepareCarefully {
             InstrumentPanels();
         }
 
+
         public override void DoWindowContents(Rect inRect) {
             base.DrawPageTitle(inRect);
             Rect mainRect = base.GetMainRect(inRect, 30f, false);
             Widgets.DrawMenuSection(mainRect);
-
-            // This approach to drawing tabs differs a bit from the vanilla approach.  Instead of instantiating
-            // brand new TabRecord instances every frame, we re-use the same instances and updated their
-            // selected field value every frame.
-            // TODO: 1.0, now it's a list--we probably shouldn't be creating a new list every frame
-            /*
-            TabDrawer.DrawTabs(mainRect, tabViews.Select((ITabView t) => {
-                t.TabRecord.selected = State.CurrentTab == t;
-                return t.TabRecord;
-            }));
-            */
-            TabDrawer.DrawTabs(mainRect, tabViews.Select((ITabView t) => {
-                t.TabRecord.selected = State.CurrentTab == t;
-                return t.TabRecord;
-            }).ToList());
+            TabDrawer.DrawTabs(mainRect, tabRecords);
 
             // Determine the size of the tab view and draw the current tab.
             Vector2 SizePageMargins = new Vector2(16, 16);
