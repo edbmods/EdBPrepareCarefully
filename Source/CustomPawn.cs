@@ -228,9 +228,9 @@ namespace EdB.PrepareCarefully {
                     injury.BodyPartRecord = hediff.Part;
                     injury.Option = option;
                     injury.Severity = hediff.Severity;
-                    HediffComp_GetsPermanent getsOld = hediff.TryGetComp<HediffComp_GetsPermanent>();
-                    if (getsOld != null) {
-                        injury.PainFactor = getsOld.painFactor;
+                    HediffComp_GetsPermanent getsPermanent = hediff.TryGetComp<HediffComp_GetsPermanent>();
+                    if (getsPermanent != null) {
+                        injury.PainFactor = getsPermanent.PainFactor;
                     }
                     injuries.Add(injury);
                 }
