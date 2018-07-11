@@ -99,6 +99,7 @@
     <Compile Include="Source\OptionsHair.cs" />
     <Compile Include="Source\OptionsHeadType.cs" />
     <Compile Include="Source\Randomizer.cs" />
+    <Compile Include="Source\ReflectionUtil.cs" />
     <Compile Include="Source\RelatedPawn.cs" />
     <Compile Include="Source\RelationshipBuilder.cs" />
     <Compile Include="Source\RelationshipGroup.cs" />
