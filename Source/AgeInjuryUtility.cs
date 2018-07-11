@@ -35,7 +35,7 @@ namespace EdB.PrepareCarefully {
             }
             for (int i = 0; i < num3; i++) {
                 IEnumerable<BodyPartRecord> source = from x in pawn.health.hediffSet.GetNotMissingParts(BodyPartHeight.Undefined, BodyPartDepth.Undefined, null)
-                                                     where x.depth == BodyPartDepth.Outside && (x.def.permanentInjuryBaseChance != 0f || x.def.pawnGeneratorCanAmputate) && !pawn.health.hediffSet.PartOrAnyAncestorHasDirectlyAddedParts(x)
+                                                     where x.depth == BodyPartDepth.Outside && (x.def.permanentInjuryChanceFactor != 0f || x.def.pawnGeneratorCanAmputate) && !pawn.health.hediffSet.PartOrAnyAncestorHasDirectlyAddedParts(x)
                                                      select x;
                 if (source.Any<BodyPartRecord>()) {
                     BodyPartRecord bodyPartRecord = source.RandomElementByWeight((BodyPartRecord x) => x.coverageAbs);
@@ -53,7 +53,7 @@ namespace EdB.PrepareCarefully {
                             }
                         }
                     }
-                    else if (bodyPartRecord.def.permanentInjuryBaseChance > 0f && hediffDefFromDamage.HasComp(typeof(HediffComp_GetsPermanent))) {
+                    else if (bodyPartRecord.def.permanentInjuryChanceFactor > 0f && hediffDefFromDamage.HasComp(typeof(HediffComp_GetsPermanent))) {
                         Hediff_Injury hediff_Injury = (Hediff_Injury)HediffMaker.MakeHediff(hediffDefFromDamage, pawn, null);
                         hediff_Injury.Severity = (float)Rand.RangeInclusive(2, 6);
                         hediff_Injury.TryGetComp<HediffComp_GetsPermanent>().IsPermanent = true;

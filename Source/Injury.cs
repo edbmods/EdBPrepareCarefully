@@ -101,10 +101,10 @@ namespace EdB.PrepareCarefully {
                 Hediff hediff = HediffMaker.MakeHediff(Option.HediffDef, pawn, null);
                 hediff.Severity = this.Severity;
 
-                HediffComp_GetsPermanent getsOld = hediff.TryGetComp<HediffComp_GetsPermanent>();
-                if (getsOld != null) {
-                    getsOld.IsPermanent = true;
-                    getsOld.painFactor = painFactor == null ? 0 : painFactor.Value;
+                HediffComp_GetsPermanent getsPermanent = hediff.TryGetComp<HediffComp_GetsPermanent>();
+                if (getsPermanent != null) {
+                    getsPermanent.IsPermanent = true;
+                    ReflectionUtil.SetNonPublicField(getsPermanent, "painFactor", painFactor == null ? 0 : painFactor.Value);
                 }
 
                 pawn.health.AddHediff(hediff, BodyPartRecord, null);
