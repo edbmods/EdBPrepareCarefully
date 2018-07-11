@@ -163,25 +163,27 @@ namespace EdB.PrepareCarefully {
                 }
                 size.y = height;
 
-                if (enabled) {
-                    GUI.color = Color.white;
-                    if (Widgets.RadioButtonLabeled(itemRect, name, selected)) {
-                        SelectAction(option);
+                if (cursor >= ScrollView.Position.y && cursor <= ScrollView.Position.y + ScrollView.ViewHeight) {
+                    if (enabled) {
+                        GUI.color = Color.white;
+                        if (Widgets.RadioButtonLabeled(itemRect, name, selected)) {
+                            SelectAction(option);
+                        }
                     }
-                }
-                else {
-                    GUI.color = new Color(0.65f, 0.65f, 0.65f);
-                    Widgets.Label(new Rect(0, cursor + 2, ContentSize.x - 32, height), name);
-                    Texture2D image = Textures.TextureRadioButtonOff;
-                    Vector2 topLeft = new Vector2(itemRect.x + itemRect.width - 24, itemRect.y + itemRect.height / 2 - 12);
-                    GUI.color = new Color(1, 1, 1, 0.28f);
-                    GUI.DrawTexture(new Rect(topLeft.x, topLeft.y, 24, 24), image);
-                    GUI.color = Color.white;
-                }
+                    else {
+                        GUI.color = new Color(0.65f, 0.65f, 0.65f);
+                        Widgets.Label(new Rect(0, cursor + 2, ContentSize.x - 32, height), name);
+                        Texture2D image = Textures.TextureRadioButtonOff;
+                        Vector2 topLeft = new Vector2(itemRect.x + itemRect.width - 24, itemRect.y + itemRect.height / 2 - 12);
+                        GUI.color = new Color(1, 1, 1, 0.28f);
+                        GUI.DrawTexture(new Rect(topLeft.x, topLeft.y, 24, 24), image);
+                        GUI.color = Color.white;
+                    }
 
-                if (DescriptionFunc != null) {
-                    Rect tipRect = new Rect(itemRect.x, itemRect.y, size.x, size.y);
-                    TooltipHandler.TipRegion(tipRect, DescriptionFunc(option));
+                    if (DescriptionFunc != null) {
+                        Rect tipRect = new Rect(itemRect.x, itemRect.y, size.x, size.y);
+                        TooltipHandler.TipRegion(tipRect, DescriptionFunc(option));
+                    }
                 }
 
                 cursor += height;
