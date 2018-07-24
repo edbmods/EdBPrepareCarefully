@@ -82,7 +82,7 @@ namespace EdB.PrepareCarefully {
         override public Color LabelColor {
             get {
                 if (Option != null && Option.HediffDef != null) {
-                    return Option.HediffDef.defaultLabelColor;
+                    return Option.IsOldInjury ? Color.gray : Option.HediffDef.defaultLabelColor;
                 }
                 else {
                     return Style.ColorText;

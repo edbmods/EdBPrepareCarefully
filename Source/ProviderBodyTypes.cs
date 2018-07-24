@@ -26,12 +26,15 @@ namespace EdB.PrepareCarefully {
             return GetBodyTypesForPawn(pawn.Pawn);
         }
         public List<BodyTypeDef> GetBodyTypesForPawn(Pawn pawn) {
+            return GetBodyTypesForPawn(pawn.def, pawn.gender);
+        }
+        public List<BodyTypeDef> GetBodyTypesForPawn(ThingDef race, Gender gender) {
             OptionsBodyType bodyTypes;
-            if (!raceBodyTypeLookup.TryGetValue(pawn.def, out bodyTypes)) {
-                bodyTypes = InitializeBodyTypes(pawn.def);
-                raceBodyTypeLookup.Add(pawn.def, bodyTypes);
+            if (!raceBodyTypeLookup.TryGetValue(race, out bodyTypes)) {
+                bodyTypes = InitializeBodyTypes(race);
+                raceBodyTypeLookup.Add(race, bodyTypes);
             }
-            return bodyTypes.GetBodyTypes(pawn.gender);
+            return bodyTypes.GetBodyTypes(gender);
         }
         public string GetBodyTypeLabel(BodyTypeDef bodyType) {
             if (bodyType.label.NullOrEmpty()) {
@@ -79,22 +82,20 @@ namespace EdB.PrepareCarefully {
             return result;
         }
         protected OptionsBodyType InitializeAlienRaceBodyTypes(ThingDef def) {
-            return InitializeHumanlikeBodyTypes();
-            /*
             OptionsBodyType result = new OptionsBodyType();
             AlienRace alienRace = AlienRaceProvider.GetAlienRace(def);
             if (alienRace == null) {
                 return null;
             }
             if (alienRace.BodyTypes.Count > 0) {
-                bool containsMale = alienRace.BodyTypes.Contains(BodyType.Male);
-                bool containsFemale = alienRace.BodyTypes.Contains(BodyType.Female);
+                bool containsMale = alienRace.BodyTypes.Contains(BodyTypeDefOf.Male);
+                bool containsFemale = alienRace.BodyTypes.Contains(BodyTypeDefOf.Female);
                 bool containsBothMaleAndFemale = containsMale && containsFemale;
-                foreach (BodyType type in alienRace.BodyTypes) {
-                    if (type != BodyType.Male || !containsBothMaleAndFemale) {
+                foreach (BodyTypeDef type in alienRace.BodyTypes) {
+                    if (type != BodyTypeDefOf.Male || !containsBothMaleAndFemale) {
                         result.FemaleBodyTypes.Add(type);
                     }
-                    if (type != BodyType.Female || !containsBothMaleAndFemale) {
+                    if (type != BodyTypeDefOf.Female || !containsBothMaleAndFemale) {
                         result.MaleBodyTypes.Add(type);
                     }
                     result.NoGenderBodyTypes.Add(type);
@@ -109,7 +110,6 @@ namespace EdB.PrepareCarefully {
             }
 
             return result;
-            */
         }
     }
 }

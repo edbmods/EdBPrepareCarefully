@@ -11,14 +11,14 @@ namespace EdB.PrepareCarefully {
         //
         public static void SaveToFile(CustomPawn customPawn, string colonistName) {
             try {
-                Scribe.saver.InitSaving(ColonistFiles.FilePathForSavedColonist(colonistName), "colonist");
-                string versionStringFull = "3";
+                Scribe.saver.InitSaving(ColonistFiles.FilePathForSavedColonist(colonistName), "character");
+                string versionStringFull = "4";
                 Scribe_Values.Look<string>(ref versionStringFull, "version", null, false);
                 string modString = GenText.ToCommaList(Enumerable.Select<ModContentPack, string>(LoadedModManager.RunningMods, (Func<ModContentPack, string>)(mod => mod.Name)), true);
                 Scribe_Values.Look<string>(ref modString, "mods", null, false);
 
-                SaveRecordPawnV3 pawn = new SaveRecordPawnV3(customPawn);
-                Scribe_Deep.Look<SaveRecordPawnV3>(ref pawn, "colonist");
+                SaveRecordPawnV4 pawn = new SaveRecordPawnV4(customPawn);
+                Scribe_Deep.Look<SaveRecordPawnV4>(ref pawn, "pawn");
             }
             catch (Exception e) {
                 Log.Error("Failed to save preset file");

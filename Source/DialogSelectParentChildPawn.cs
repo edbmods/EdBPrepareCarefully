@@ -74,7 +74,6 @@ namespace EdB.PrepareCarefully {
         protected void MarkResizeFlagDirty() {
             resizeDirtyFlag = true;
         }
-
         protected void Resize() {
             float headerSize = 0;
             headerSize = HeaderHeight;
@@ -131,7 +130,7 @@ namespace EdB.PrepareCarefully {
             table.SelectedRowColor = new Color(0, 0, 0, 0);
             table.SupportSelection = true;
             table.SelectedAction = (CustomParentChildPawn pawn) => {
-                if (!DisabledPawns.Contains(pawn)) {
+                if (DisabledPawns == null || !DisabledPawns.Contains(pawn)) {
                     SoundDefOf.Tick_Tiny.PlayOneShotOnCamera();
                     Select(pawn);
                 }
@@ -140,7 +139,7 @@ namespace EdB.PrepareCarefully {
                 Name = "Portrait",
                 DrawAction = (CustomParentChildPawn pawn, Rect rect, WidgetTable<CustomParentChildPawn>.Metadata metadata) => {
                     GUI.color = Color.white;
-                    if (!pawn.Hidden) {
+                    if (!pawn.Pawn.Hidden) {
                         var texture = pawn.Pawn.GetPortrait(new Vector2(portraitSize.x, portraitSize.y + portraitOverflow * 2));
                         GUI.DrawTexture(new Rect(rect.position.x, rect.position.y - portraitOverflow, portraitSize.x, portraitSize.y + portraitOverflow * 2), texture as Texture);
                     }
@@ -169,10 +168,10 @@ namespace EdB.PrepareCarefully {
                     CustomPawn pawn = parentChildPawn.Pawn;
                     Text.Anchor = TextAnchor.LowerLeft;
                     Text.Font = GameFont.Small;
-                    Widgets.Label(new Rect(rect.x, rect.y + nameOffset, rect.width, nameSize.y), parentChildPawn.Name);
+                    Widgets.Label(new Rect(rect.x, rect.y + nameOffset, rect.width, nameSize.y), parentChildPawn.Pawn.FullName);
                     Text.Anchor = TextAnchor.UpperLeft;
                     string description;
-                    if (!parentChildPawn.Hidden) {
+                    if (!parentChildPawn.Pawn.Hidden) {
                         string age = pawn.BiologicalAge != pawn.ChronologicalAge ?
                             "EdB.PC.Pawn.AgeWithChronological".Translate(new object[] { pawn.BiologicalAge, pawn.ChronologicalAge }) :
                             "EdB.PC.Pawn.AgeWithoutChronological".Translate(new object[] { pawn.BiologicalAge });
@@ -214,9 +213,7 @@ namespace EdB.PrepareCarefully {
 
         protected void Select(CustomParentChildPawn pawn) {
             this.SelectedPawn = pawn;
-            if (SelectAction != null) {
-                SelectAction(pawn);
-            }
+            SelectAction?.Invoke(pawn);
         }
 
         public IEnumerable<CustomParentChildPawn> Pawns {
@@ -290,14 +287,12 @@ namespace EdB.PrepareCarefully {
 
         public override void PostClose() {
             if (ConfirmButtonLabel != null) {
-                if (confirmed && CloseAction != null) {
-                    CloseAction();
+                if (confirmed) {
+                    CloseAction?.Invoke();
                 }
             }
             else {
-                if (CloseAction != null) {
-                    CloseAction();
-                }
+                CloseAction?.Invoke();
             }
         }
     }

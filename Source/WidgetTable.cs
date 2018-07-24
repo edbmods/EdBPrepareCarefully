@@ -183,12 +183,20 @@ namespace EdB.PrepareCarefully {
             GUI.color = Color.white;
 
             float cursor = 0;
+            float? scrollToCursorTop = null;
+            float? scrollToCursorBottom = null;
             GUI.BeginGroup(tableRect);
             scrollView.Begin(new Rect(0, 0, tableRect.width, tableRect.height));
             int index = 0;
             try {
                 foreach (T row in rows) {
+                    if (scrollTo != null && row == scrollTo) {
+                        scrollToCursorTop = cursor;
+                    }
                     cursor = DrawRow(cursor, row, index);
+                    if (scrollTo != null && row == scrollTo) {
+                        scrollToCursorBottom = cursor;
+                    }
                     index++;
                 }
             }
@@ -199,7 +207,7 @@ namespace EdB.PrepareCarefully {
 
             // Scroll to the specific row, if any.  Need to do this after all of the rows have been drawn.
             if (scrollTo != null) {
-                DoScroll(rows, scrollTo);
+                ScrollTo(scrollToCursorTop.Value, scrollToCursorBottom.Value);
                 scrollTo = null;
             }
         }
@@ -214,6 +222,8 @@ namespace EdB.PrepareCarefully {
             GUI.color = Color.white;
 
             float cursor = 0;
+            float? scrollToCursorTop = null;
+            float? scrollToCursorBottom = null;
             GUI.BeginGroup(tableRect);
             scrollView.Begin(new Rect(0, 0, tableRect.width, tableRect.height));
             int index = 0;
@@ -229,15 +239,24 @@ namespace EdB.PrepareCarefully {
                         if (scrollView.ScrollbarsVisible) {
                             headerRect.width -= 16;
                         }
+                        float labelHeight = Text.CalcHeight(group.Label, headerRect.width) + 16;
+                        labelHeight = Mathf.Max(labelHeight, RowGroupHeaderHeight);
+                        headerRect.height = labelHeight;
                         Widgets.Label(headerRect, group.Label);
                         Text.Anchor = TextAnchor.UpperLeft;
                         GUI.color = Color.white;
-                        cursor += RowGroupHeaderHeight;
+                        cursor += headerRect.height;
                         index = 0;
                     }
 
                     foreach (T row in group.Rows) {
+                        if (scrollTo != null && row == scrollTo) {
+                            scrollToCursorTop = cursor;
+                        }
                         cursor = DrawRow(cursor, row, index);
+                        if (scrollTo != null && row == scrollTo) {
+                            scrollToCursorBottom = cursor;
+                        }
                         index++;
                     }
                 }
@@ -249,9 +268,17 @@ namespace EdB.PrepareCarefully {
 
             // Scroll to the specific row, if any.  Need to do this after all of the rows have been drawn.
             if (scrollTo != null) {
-                DoScroll(rowGroups, scrollTo);
+                ScrollTo(scrollToCursorTop.Value, scrollToCursorBottom.Value);
                 scrollTo = null;
             }
+        }
+        protected void ScrollTo(float top, float bottom) {
+            float contentHeight = bottom - top;
+            float pos = top - (Mathf.Ceil(scrollView.ViewHeight * 0.25f) - Mathf.Floor(contentHeight * 0.5f));
+            if (pos < scrollView.Position.y) {
+                pos = scrollView.Position.y;
+            }
+            scrollView.ScrollTo(pos);
         }
         protected void ResizeColumnHeights() {
             // If the number of column heights don't match the number of columns, add enough to match.
@@ -300,9 +327,7 @@ namespace EdB.PrepareCarefully {
                     if (column.AdjustForScrollbars && scrollView.ScrollbarsVisible) {
                         columnRect.width = columnRect.width - 16;
                     }
-                    if (column.DrawAction != null) {
-                        column.DrawAction(row, columnRect, new Metadata(0, index, columnIndex));
-                    }
+                    column.DrawAction?.Invoke(row, columnRect, new Metadata(0, index, columnIndex));
                     columnCursor += columnRect.width;
                     columnIndex++;
                 }
@@ -312,14 +337,10 @@ namespace EdB.PrepareCarefully {
                         if (Event.current.button == 0) {
                             if (Event.current.clickCount == 1) {
                                 Selected = row;
-                                if (selectedAction != null) {
-                                    selectedAction(row);
-                                }
+                                selectedAction?.Invoke(row);
                             }
                             else if (Event.current.clickCount == 2) {
-                                if (doubleClickAction != null) {
-                                    doubleClickAction(row);
-                                }
+                                doubleClickAction?.Invoke(row);
                             }
                         }
                     }
@@ -352,35 +373,6 @@ namespace EdB.PrepareCarefully {
             float min = ScrollView.Position.y;
             float max = min + Rect.height;
             float pos = (float)index * RowHeight;
-            if (rowTop < min) {
-                float amount = min - rowTop;
-                ScrollView.Position = new Vector2(ScrollView.Position.x, ScrollView.Position.y - amount);
-            }
-            else if (rowBottom > max) {
-                float amount = rowBottom - max;
-                ScrollView.Position = new Vector2(ScrollView.Position.x, ScrollView.Position.y + amount);
-            }
-        }
-        protected void DoScroll(IEnumerable<RowGroup> rowGroups, T scrollTo) {
-            int rowIndex = -1;
-            int groupIndex = -1;
-            foreach (var group in rowGroups) {
-                groupIndex++;
-                foreach (var row in group.Rows) {
-                    rowIndex++;
-                    if (object.Equals(row, scrollTo)) {
-                        break;
-                    }
-                }
-            }
-            if (rowIndex < 0) {
-                return;
-            }
-            float min = ScrollView.Position.y;
-            float max = min + Rect.height;
-            float rowTop = (float)rowIndex * RowHeight;
-            float rowBottom = rowTop + RowHeight;
-            float pos = (float)rowIndex * RowHeight + groupIndex * RowGroupHeaderHeight;
             if (rowTop < min) {
                 float amount = min - rowTop;
                 ScrollView.Position = new Vector2(ScrollView.Position.x, ScrollView.Position.y - amount);

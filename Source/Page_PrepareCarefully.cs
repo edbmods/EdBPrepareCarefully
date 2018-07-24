@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 using Verse;
+using Verse.Sound;
 namespace EdB.PrepareCarefully {
     public class Page_PrepareCarefully : Page {
         public delegate void StartGameHandler();
@@ -18,6 +19,7 @@ namespace EdB.PrepareCarefully {
         private TabViewRelationships tabViewRelationships = new TabViewRelationships();
         private List<ITabView> tabViews = new List<ITabView>();
         private List<TabRecord> tabRecords = new List<TabRecord>();
+        private bool pawnListActionThisFrame = false;
 
         private Controller controller;
 
@@ -79,7 +81,8 @@ namespace EdB.PrepareCarefully {
             base.PreOpen();
             // Set the default tab view to the first tab and the selected pawn to the first pawn.
             State.CurrentTab = tabViews[0];
-            State.CurrentPawn = State.Pawns.FirstOrDefault();
+            State.CurrentColonyPawn = State.ColonyPawns.FirstOrDefault();
+            State.CurrentWorldPawn = State.WorldPawns.FirstOrDefault();
 
             controller = new Controller(State);
             InstrumentPanels();
@@ -87,6 +90,7 @@ namespace EdB.PrepareCarefully {
 
 
         public override void DoWindowContents(Rect inRect) {
+            pawnListActionThisFrame = false;
             base.DrawPageTitle(inRect);
             Rect mainRect = base.GetMainRect(inRect, 30f, false);
             Widgets.DrawMenuSection(mainRect);
@@ -230,6 +234,35 @@ namespace EdB.PrepareCarefully {
             Widgets.Checkbox(new Vector2(optionRect.x + optionRect.width, optionRect.y - 3), ref Config.pointsEnabled, 24, false);
         }
 
+        protected void SelectPawn(CustomPawn pawn) {
+            if (!pawnListActionThisFrame) {
+                pawnListActionThisFrame = true;
+                SoundDefOf.Tick_Tiny.PlayOneShotOnCamera();
+                controller.SubcontrollerCharacters.SelectPawn(pawn);
+                tabViewPawns.PanelName.ClearSelection();
+                tabViewPawns.PanelTraits.ScrollToTop();
+                tabViewPawns.PanelSkills.ScrollToTop();
+                tabViewPawns.PanelHealth.ScrollToTop();
+                tabViewPawns.PanelAppearance.UpdatePawnLayers();
+            }
+        }
+
+        protected void SwapPawn(CustomPawn pawn) {
+            if (!pawnListActionThisFrame) {
+                pawnListActionThisFrame = true;
+                SoundDefOf.ThingSelected.PlayOneShotOnCamera();
+                controller.SubcontrollerCharacters.SwapPawn(pawn);
+                PawnListMode newMode = PrepareCarefully.Instance.State.PawnListMode == PawnListMode.ColonyPawnsMaximized ? PawnListMode.WorldPawnsMaximized : PawnListMode.ColonyPawnsMaximized;
+                PrepareCarefully.Instance.State.PawnListMode = newMode;
+                tabViewPawns.ResizeTabView();
+                if (newMode == PawnListMode.ColonyPawnsMaximized) {
+                    tabViewPawns.PanelColonyPawns.ScrollToBottom();
+                }
+                else {
+                    tabViewPawns.PanelWorldPawns.ScrollToBottom();
+                }
+            }
+        }
 
         protected void InstrumentPanels() {
             State state = PrepareCarefully.Instance.State;
@@ -245,23 +278,49 @@ namespace EdB.PrepareCarefully {
             tabViewPawns.PanelAge.ChronologicalAgeUpdated += pawns.UpdateChronologicalAge;
 
             tabViewPawns.PanelAppearance.RandomizeAppearance += pawns.RandomizeAppearance;
-            tabViewPawns.PanelAppearance.GenderUpdated += pawns.UpdateGender;
+            tabViewPawns.PanelAppearance.GenderUpdated += (Gender gender) => {
+                pawns.UpdateGender(gender);
+                tabViewPawns.PanelAppearance.UpdatePawnLayers();
+            };
 
             tabViewPawns.PanelBackstory.BackstoryUpdated += pawns.UpdateBackstory;
             tabViewPawns.PanelBackstory.BackstoryUpdated += (BackstorySlot slot, Backstory backstory) => { controller.CheckPawnCapabilities(); };
             tabViewPawns.PanelBackstory.BackstoriesRandomized += pawns.RandomizeBackstories;
             tabViewPawns.PanelBackstory.BackstoriesRandomized += () => { controller.CheckPawnCapabilities(); };
 
-            tabViewPawns.PanelPawnList.PawnSelected += pawns.SelectPawn;
-            tabViewPawns.PanelPawnList.PawnSelected += (CustomPawn pawn) => { tabViewPawns.PanelName.ClearSelection(); };
-            tabViewPawns.PanelPawnList.PawnSelected += (CustomPawn pawn) => { tabViewPawns.PanelTraits.ScrollToTop(); };
-            tabViewPawns.PanelPawnList.PawnSelected += (CustomPawn pawn) => { tabViewPawns.PanelSkills.ScrollToTop(); };
-            tabViewPawns.PanelPawnList.PawnSelected += (CustomPawn pawn) => { tabViewPawns.PanelHealth.ScrollToTop(); };
-            tabViewPawns.PanelPawnList.AddingPawn += pawns.AddingPawn;
-            tabViewPawns.PanelPawnList.AddingFactionPawn += pawns.AddFactionPawn;
-            tabViewPawns.PanelPawnList.PawnDeleted += pawns.DeletePawn;
-            tabViewPawns.PanelPawnList.PawnDeleted += (CustomPawn pawn) => { controller.CheckPawnCapabilities(); };
-            pawns.PawnAdded += (CustomPawn pawn) => { tabViewPawns.PanelPawnList.ScrollToBottom(); tabViewPawns.PanelPawnList.SelectPawn(pawn); };
+            tabViewPawns.PanelColonyPawns.PawnSelected += this.SelectPawn;
+            tabViewPawns.PanelColonyPawns.AddingPawn += pawns.AddingPawn;
+            tabViewPawns.PanelColonyPawns.AddingPawnWithPawnKind += pawns.AddFactionPawn;
+            tabViewPawns.PanelColonyPawns.PawnDeleted += pawns.DeletePawn;
+            tabViewPawns.PanelColonyPawns.PawnDeleted += (CustomPawn pawn) => { controller.CheckPawnCapabilities(); };
+            tabViewPawns.PanelColonyPawns.PawnSwapped += this.SwapPawn;
+            tabViewPawns.PanelWorldPawns.PawnSelected += this.SelectPawn;
+            tabViewPawns.PanelWorldPawns.AddingPawn += pawns.AddingPawn;
+            tabViewPawns.PanelWorldPawns.AddingPawnWithPawnKind += pawns.AddFactionPawn;
+            tabViewPawns.PanelWorldPawns.PawnDeleted += pawns.DeletePawn;
+            tabViewPawns.PanelWorldPawns.PawnDeleted += (CustomPawn pawn) => { controller.CheckPawnCapabilities(); };
+            tabViewPawns.PanelWorldPawns.PawnSwapped += this.SwapPawn;
+
+            tabViewPawns.PanelColonyPawns.Maximize += () => {
+                state.PawnListMode = PawnListMode.ColonyPawnsMaximized;
+                tabViewPawns.ResizeTabView();
+            };
+            tabViewPawns.PanelWorldPawns.Maximize += () => {
+                state.PawnListMode = PawnListMode.WorldPawnsMaximized;
+                tabViewPawns.ResizeTabView();
+            };
+
+            pawns.PawnAdded += (CustomPawn pawn) => {
+                PanelPawnList pawnList = null;
+                if (pawn.Type == CustomPawnType.Colonist) {
+                    pawnList = tabViewPawns.PanelColonyPawns;
+                }
+                else {
+                    pawnList = tabViewPawns.PanelWorldPawns;
+                }
+                pawnList.ScrollToBottom();
+                pawnList.SelectPawn(pawn);
+            };
             pawns.PawnAdded += (CustomPawn pawn) => { controller.CheckPawnCapabilities(); };
             pawns.PawnReplaced += (CustomPawn pawn) => { controller.CheckPawnCapabilities(); };
 
@@ -313,7 +372,7 @@ namespace EdB.PrepareCarefully {
             tabViewRelationships.PanelRelationshipsParentChild.ParentRemovedFromGroup += relationships.RemoveParentFromParentChildGroup;
             tabViewRelationships.PanelRelationshipsParentChild.ChildRemovedFromGroup += relationships.RemoveChildFromParentChildGroup;
             tabViewRelationships.PanelRelationshipsParentChild.GroupAdded += relationships.AddParentChildGroup;
-            tabViewPawns.PanelPawnList.PawnDeleted += relationships.DeleteAllPawnRelationships;
+            tabViewPawns.PanelColonyPawns.PawnDeleted += relationships.DeleteAllPawnRelationships;
             pawns.PawnAdded += relationships.AddPawn;
             pawns.PawnReplaced += relationships.ReplacePawn;
         }

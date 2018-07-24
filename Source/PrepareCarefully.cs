@@ -155,6 +155,7 @@ namespace EdB.PrepareCarefully {
             };
             Providers.Health = new ProviderHealthOptions();
             Providers.Factions = new ProviderFactions();
+            Providers.PawnLayers = new ProviderPawnLayers();
         }
 
         // TODO:
@@ -325,6 +326,26 @@ namespace EdB.PrepareCarefully {
                 return pawns;
             }
         }
+        public List<CustomPawn> ColonyPawns {
+            get {
+                return pawns.FindAll((CustomPawn pawn) => { return pawn.Type == CustomPawnType.Colonist; });
+            }
+        }
+        public List<CustomPawn> WorldPawns {
+            get {
+                return pawns.FindAll((CustomPawn pawn) => { return pawn.Type == CustomPawnType.World; });
+            }
+        }
+        public List<CustomPawn> HiddenPawns {
+            get {
+                return pawns.FindAll((CustomPawn pawn) => { return pawn.Type == CustomPawnType.Hidden; });
+            }
+        }
+        public List<CustomPawn> TemporaryPawns {
+            get {
+                return pawns.FindAll((CustomPawn pawn) => { return pawn.Type == CustomPawnType.Temporary; });
+            }
+        }
         public EquipmentDatabase EquipmentDatabase {
             get {
                 if (equipmentDatabase == null) {
@@ -345,6 +366,8 @@ namespace EdB.PrepareCarefully {
         */
 
         protected List<Pawn> colonists = new List<Pawn>();
+        private Dictionary<CustomPawn, Pawn> pawnLookup = new Dictionary<CustomPawn, Pawn>();
+        private Dictionary<Pawn, CustomPawn> reversePawnLookup = new Dictionary<Pawn, CustomPawn>();
 
         public Pawn FindPawn(CustomPawn pawn) {
             Pawn result;
@@ -356,30 +379,13 @@ namespace EdB.PrepareCarefully {
             }
         }
 
-        private Dictionary<CustomPawn, Pawn> pawnLookup = new Dictionary<CustomPawn, Pawn>();
-
-        public void CreateColonists() {
-            colonists.Clear();
-            foreach (CustomPawn customPawn in pawns) {
-                customPawn.Pawn.SetFactionDirect(Faction.OfPlayer);
-                if (customPawn.Pawn.workSettings == null) {
-                    customPawn.Pawn.workSettings = new Pawn_WorkSettings(customPawn.Pawn);
-                }
-                customPawn.Pawn.workSettings.EnableAndInitialize();
-                colonists.Add(customPawn.Pawn);
+        public CustomPawn FindCustomPawn(Pawn pawn) {
+            CustomPawn result;
+            if (reversePawnLookup.TryGetValue(pawn, out result)) {
+                return result;
             }
-            
-            pawnLookup.Clear();
-            for (int i = 0; i < pawns.Count; i++) {
-                CustomPawn customPawn = pawns[i];
-                Pawn pawn = colonists[i];
-                pawnLookup[customPawn] = pawn;
-            }
-        }
-        
-        public List<Pawn> Colonists {
-            get {
-                return colonists;
+            else {
+                return null;
             }
         }
 
@@ -525,7 +531,8 @@ namespace EdB.PrepareCarefully {
         public void InitializePawns() {
             this.customPawnToOriginalPawnMap.Clear();
             this.originalPawnToCustomPawnMap.Clear();
-            int pawnCount = Verse.Find.GameInitData.startingPawnCount;
+            int pawnCount = Verse.Find.GameInitData.startingAndOptionalPawns.Count;
+            int startingPawnCount = Verse.Find.GameInitData.startingPawnCount;
             foreach (Pawn originalPawn in Verse.Find.GameInitData.startingAndOptionalPawns) {
                 Pawn copiedPawn = originalPawn.Copy();
                 CustomPawn customPawn = new CustomPawn(copiedPawn);
@@ -535,6 +542,7 @@ namespace EdB.PrepareCarefully {
             for (int i = 0; i < pawnCount; i++) {
                 Pawn originalPawn = Verse.Find.GameInitData.startingAndOptionalPawns[i];
                 CustomPawn customPawn = originalPawnToCustomPawnMap[originalPawn];
+                customPawn.Type = i < startingPawnCount ? CustomPawnType.Colonist : CustomPawnType.World;
                 this.pawns.Add(customPawn);
             }
         }
@@ -544,7 +552,7 @@ namespace EdB.PrepareCarefully {
             foreach (Pawn pawn in Verse.Find.GameInitData.startingAndOptionalPawns) {
                 customPawns.Add(originalPawnToCustomPawnMap[pawn]);
             }
-            relationshipManager = new RelationshipManager(Verse.Find.GameInitData.startingAndOptionalPawns.GetRange(0, Verse.Find.GameInitData.startingPawnCount).ToList(), customPawns);
+            relationshipManager = new RelationshipManager(Verse.Find.GameInitData.startingAndOptionalPawns, customPawns);
         }
 
     }

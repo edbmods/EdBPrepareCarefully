@@ -43,7 +43,7 @@ namespace EdB.PrepareCarefully {
             base.Resize(rect);
 
             float panelPadding = 10;
-            float fieldHeight = 28;
+            float fieldHeight = Style.FieldHeight;
             SizeTrait = new Vector2(PanelRect.width - panelPadding * 2, fieldHeight + SizeFieldPadding.y * 2);
             SizeField = new Vector2(SizeTrait.x - SizeFieldPadding.x * 2, SizeTrait.y - SizeFieldPadding.y * 2);
 

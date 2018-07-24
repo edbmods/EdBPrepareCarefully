@@ -25,7 +25,7 @@ namespace EdB.PrepareCarefully {
             int compatibilityPoolSize = Mathf.Max(Mathf.Min(relationships.Count * 6, 12), 50);
             this.FillCompatibilityPool(compatibilityPoolSize);
         }
-        public List<Pawn> Build() {
+        public List<CustomPawn> Build() {
             // These include all the pawns that have relationships with them.
             HashSet<CustomPawn> relevantPawns = new HashSet<CustomPawn>();
             foreach (var rel in relationships) {
@@ -65,7 +65,7 @@ namespace EdB.PrepareCarefully {
                         group.Parents.Add(parent2);
                     }
                     else if (group.Parents.Count == 1) {
-                        if (group.Parents[0].Gender == Gender.Male) {
+                        if (group.Parents[0].Pawn.Gender == Gender.Male) {
                             CustomParentChildPawn parent = CreateParent(Gender.Female, group.Children);
                             group.Parents.Add(parent);
                         }
@@ -94,7 +94,7 @@ namespace EdB.PrepareCarefully {
                     continue;
                 }
                 foreach (var parent in group.Parents) {
-                    if (parent.Hidden) {
+                    if (parent.Pawn.Hidden) {
                         int validAge = GetValidParentAge(parent.Pawn, oldestChild);
                         if (validAge != parent.Pawn.BiologicalAge) {
                             int diff = parent.Pawn.ChronologicalAge - parent.Pawn.BiologicalAge;
@@ -118,18 +118,18 @@ namespace EdB.PrepareCarefully {
             }
 
             // Get all of the pawns to add to the world.
-            HashSet<Pawn> worldPawns = new HashSet<Pawn>();
+            HashSet<CustomPawn> worldPawns = new HashSet<CustomPawn>();
             foreach (var group in parentChildGroups) {
                 foreach (var parent in group.Parents) {
-                    if (parent.Hidden) {
-                        Pawn newPawn = parent.Pawn.Pawn;
+                    if (parent.Pawn.Hidden) {
+                        CustomPawn newPawn = parent.Pawn;
                         if (!worldPawns.Contains(newPawn)) {
                             worldPawns.Add(newPawn);
                         }
                     }
                     foreach (var child in group.Children) {
-                        if (child.Hidden) {
-                            Pawn newPawn = child.Pawn.Pawn;
+                        if (child.Pawn.Hidden) {
+                            CustomPawn newPawn = child.Pawn;
                             if (!worldPawns.Contains(newPawn)) {
                                 worldPawns.Add(newPawn);
                             }
@@ -181,8 +181,8 @@ namespace EdB.PrepareCarefully {
                 FixedBiologicalAge = age,
                 FixedGender = gender
             }.Request));
+            parent.Type = CustomPawnType.Hidden;
             CustomParentChildPawn result = new CustomParentChildPawn(parent);
-            result.Hidden = true;
             return result;
         }
 

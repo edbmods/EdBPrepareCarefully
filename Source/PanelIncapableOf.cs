@@ -18,7 +18,7 @@ namespace EdB.PrepareCarefully {
         }
         public override void Resize(Rect rect) {
             base.Resize(rect);
-            Vector2 panelPadding = new Vector2(16, 16);
+            Vector2 panelPadding = new Vector2(11, 16);
             float textWidth = PanelRect.width - panelPadding.x * 2;
             float textHeight = PanelRect.height - BodyRect.y - panelPadding.y;
             RectText = new Rect(panelPadding.x, BodyRect.y, textWidth, textHeight);

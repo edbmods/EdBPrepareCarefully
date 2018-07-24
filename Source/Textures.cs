@@ -50,6 +50,13 @@ namespace EdB.PrepareCarefully {
         public static Texture2D TextureCheckboxSelected;
         public static Texture2D TextureCheckboxPartiallySelected;
         public static Texture2D TextureDottedLine;
+        public static Texture2D TextureMaximizeUp;
+        public static Texture2D TextureMaximizeDown;
+        public static Texture2D TextureButtonWorldPawn;
+        public static Texture2D TextureButtonColonyPawn;
+        public static Texture2D TextureFilterAtlas1;
+        public static Texture2D TextureFilterAtlas2;
+        public static Texture2D TextureButtonCloseSmall;
 
         static Textures() {
             LoadTextures();
@@ -104,6 +111,13 @@ namespace EdB.PrepareCarefully {
             TextureCheckboxSelected = ContentFinder<Texture2D>.Get("EdB/PrepareCarefully/CheckboxSelected", true);
             TextureCheckboxPartiallySelected = ContentFinder<Texture2D>.Get("EdB/PrepareCarefully/CheckboxPartiallySelected", true);
             TextureDottedLine = ContentFinder<Texture2D>.Get("EdB/PrepareCarefully/DottedLine", true);
+            TextureMaximizeUp = ContentFinder<Texture2D>.Get("EdB/PrepareCarefully/MaximizeUp", true);
+            TextureMaximizeDown = ContentFinder<Texture2D>.Get("EdB/PrepareCarefully/MaximizeDown", true);
+            TextureButtonWorldPawn = ContentFinder<Texture2D>.Get("EdB/PrepareCarefully/ButtonWorldPawn", true);
+            TextureButtonColonyPawn = ContentFinder<Texture2D>.Get("EdB/PrepareCarefully/ButtonColonyPawn", true);
+            TextureFilterAtlas1 = ContentFinder<Texture2D>.Get("EdB/PrepareCarefully/FilterAtlas1", true);
+            TextureFilterAtlas2 = ContentFinder<Texture2D>.Get("EdB/PrepareCarefully/FilterAtlas2", true);
+            TextureButtonCloseSmall = ContentFinder<Texture2D>.Get("EdB/PrepareCarefully/ButtonCloseSmall", true);
 
             TextureTabAtlas = ContentFinder<Texture2D>.Get("UI/Widgets/TabAtlas", true);
 
@@ -112,9 +126,9 @@ namespace EdB.PrepareCarefully {
             TextureButtonBGAtlasClick = ContentFinder<Texture2D>.Get("UI/Widgets/ButtonBGClick", true);
             TextureButtonInfo = ContentFinder<Texture2D>.Get("UI/Buttons/InfoButton", true);
 
-        TextureAlternateRow = SolidColorMaterials.NewSolidColorTexture(new Color(1, 1, 1, 0.05f));
+            TextureAlternateRow = SolidColorMaterials.NewSolidColorTexture(new Color(1, 1, 1, 0.05f));
             TextureSkillBarFill = SolidColorMaterials.NewSolidColorTexture(new Color(1f, 1f, 1f, 0.1f));
-
+            
             loaded = true;
         }
     }

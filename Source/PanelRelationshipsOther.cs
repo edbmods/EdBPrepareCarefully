@@ -26,10 +26,12 @@ namespace EdB.PrepareCarefully {
         private Color ColorPawnSource = new Color(69f / 255f, 70f / 255f, 72f / 255f);
         private Color ColorPawnTarget = new Color(20f / 255f, 20f / 255f, 21f / 255f);
         private Color ColorPawnNew = new Color(44f / 255f, 45f / 255f, 46f / 255f);
+        private float SpacingGender = 9;
+        private Vector2 SizeGender = new Vector2(48, 48);
 
         protected List<PawnRelationDef> relationDefs = new List<PawnRelationDef>();
         protected HashSet<PawnRelationDef> disabledRelationships = new HashSet<PawnRelationDef>();
-        protected HashSet<CustomPawn> disabledTargets = new HashSet<CustomPawn>();
+        protected HashSet<CustomParentChildPawn> disabledTargets = new HashSet<CustomParentChildPawn>();
         protected List<CustomRelationship> relationshipsToDelete = new List<CustomRelationship>();
         public PanelRelationshipsOther() {
             relationDefs.AddRange(DefDatabase<PawnRelationDef>.AllDefs.ToList().FindAll((PawnRelationDef def) => {
@@ -89,6 +91,37 @@ namespace EdB.PrepareCarefully {
                 relationshipsToDelete.Clear();
             }
         }
+        private string GetProfessionLabel(CustomPawn pawn) {
+            bool hidden = pawn.Type == CustomPawnType.Hidden || pawn.Type == CustomPawnType.Temporary;
+            if (!hidden) {
+                return pawn.Type == CustomPawnType.Colonist ? "EdB.PC.AddParentChild.Colony".Translate() : "EdB.PC.AddParentChild.World".Translate();
+            }
+            else {
+                return pawn.Type == CustomPawnType.Temporary ? "EdB.PC.AddParentChild.Temporary".Translate() : "EdB.PC.AddParentChild.World".Translate();
+            }
+        }
+        protected void DrawPortrait(Rect rect, CustomPawn pawn) {
+            bool hidden = pawn.Type == CustomPawnType.Hidden || pawn.Type == CustomPawnType.Temporary;
+            if (!hidden) {
+                Rect portraitRect = rect.InsetBy(6);
+                portraitRect.y -= 8;
+                var portraitTexture = pawn.GetPortrait(portraitRect.size);
+                GUI.DrawTexture(portraitRect.OffsetBy(0, -4), portraitTexture);
+            }
+            else {
+                GUI.color = Style.ColorButton;
+                Rect portraitRect = new Rect(rect.MiddleX() - SizeGender.HalfX(), rect.y + SpacingGender, SizeGender.x, SizeGender.y);
+                if (pawn.Gender == Gender.Female) {
+                    GUI.DrawTexture(portraitRect, Textures.TextureGenderFemaleLarge);
+                }
+                else if (pawn.Gender == Gender.Male) {
+                    GUI.DrawTexture(portraitRect, Textures.TextureGenderMaleLarge);
+                }
+                else {
+                    GUI.DrawTexture(portraitRect, Textures.TextureGenderlessLarge);
+                }
+            }
+        }
         protected Vector2 DrawRelationship(Vector2 cursor, CustomRelationship relationship) {
             if (cursor.x + SizeRelationship.x > RectScrollView.width) {
                 cursor.x = 0;
@@ -105,20 +138,17 @@ namespace EdB.PrepareCarefully {
             Text.Font = GameFont.Small;
             Text.Anchor = TextAnchor.UpperCenter;
             GUI.color = Style.ColorText;
-            Widgets.Label(sourcePawnName, relationship.source.Pawn.LabelShort);
+            Widgets.Label(sourcePawnName, relationship.source.ShortName);
             GUI.color = Color.white;
 
             Rect sourceProfessionName = new Rect(sourcePawnRect.x, sourcePawnRect.yMax - 18, sourcePawnRect.width, 18);
             Text.Font = GameFont.Tiny;
             Text.Anchor = TextAnchor.LowerCenter;
             GUI.color = Style.ColorText;
-            Widgets.Label(sourceProfessionName, relationship.source.ProfessionLabelShort);
+            Widgets.Label(sourceProfessionName, GetProfessionLabel(relationship.source));
             GUI.color = Color.white;
 
-            Rect sourcePortraitRect = sourcePawnRect.InsetBy(6);
-            sourcePortraitRect.y -= 8;
-            var sourcePortraitTexture = relationship.source.GetPortrait(sourcePortraitRect.size);
-            GUI.DrawTexture(sourcePortraitRect.OffsetBy(0, -4), sourcePortraitTexture);
+            DrawPortrait(sourcePawnRect, relationship.source);
 
             TooltipHandler.TipRegion(sourcePawnRect, GetTooltipText(relationship.source));
 
@@ -139,20 +169,17 @@ namespace EdB.PrepareCarefully {
             Text.Font = GameFont.Small;
             Text.Anchor = TextAnchor.UpperCenter;
             GUI.color = Style.ColorText;
-            Widgets.Label(targetPawnName, relationship.target.Pawn.LabelShort);
+            Widgets.Label(targetPawnName, relationship.target.ShortName);
             GUI.color = Color.white;
 
             Rect targetProfessionName = new Rect(targetPawnRect.x, targetPawnRect.yMax - 18, targetPawnRect.width, 18);
             Text.Font = GameFont.Tiny;
             Text.Anchor = TextAnchor.LowerCenter;
             GUI.color = Style.ColorText;
-            Widgets.Label(targetProfessionName, relationship.target.ProfessionLabelShort);
+            Widgets.Label(targetProfessionName, GetProfessionLabel(relationship.target));
             GUI.color = Color.white;
-            
-            Rect targetPortraitRect = targetPawnRect.InsetBy(6);
-            targetPortraitRect.y -= 8;
-            var targetPortraitTexture = relationship.target.GetPortrait(targetPortraitRect.size);
-            GUI.DrawTexture(targetPortraitRect.OffsetBy(0, -4), targetPortraitTexture);
+
+            DrawPortrait(targetPawnRect, relationship.target);
             
             TooltipHandler.TipRegion(targetPawnRect, GetTooltipText(relationship.target));
 
@@ -186,12 +213,19 @@ namespace EdB.PrepareCarefully {
             cursor.x += SizeRelationship.x + SizeRelationshipSpacing.x;
             return cursor;
         }
+
         protected string GetTooltipText(CustomPawn pawn) {
-            string age = (pawn.ChronologicalAge == pawn.BiologicalAge) ? "EdB.PC.Pawn.AgeWithoutChronological".Translate(new object[] { pawn.BiologicalAge })
-                : "EdB.PC.Pawn.AgeWithChronological".Translate(new object[] { pawn.BiologicalAge, pawn.ChronologicalAge });
-            string description = (pawn.Gender != Gender.None) ? "EdB.PC.Pawn.PawnDescriptionWithGender".Translate(new object[] { pawn.ProfessionLabel, pawn.Gender.GetLabel(), age })
-                : "EdB.PC.AddParentChild.PawnDescriptionWithNoGender".Translate(new object[] { pawn.ProfessionLabel, age });
-            return pawn.Pawn.Name.ToStringFull + "\n" + description;
+            bool hidden = pawn.Type == CustomPawnType.Hidden || pawn.Type == CustomPawnType.Temporary;
+            if (!hidden) {
+                string age = (pawn.ChronologicalAge == pawn.BiologicalAge) ? "EdB.PC.Pawn.AgeWithoutChronological".Translate(new object[] { pawn.BiologicalAge })
+                    : "EdB.PC.Pawn.AgeWithChronological".Translate(new object[] { pawn.BiologicalAge, pawn.ChronologicalAge });
+                string description = (pawn.Gender != Gender.None) ? "EdB.PC.Pawn.PawnDescriptionWithGender".Translate(new object[] { pawn.ProfessionLabel, pawn.Gender.GetLabel(), age })
+                    : "EdB.PC.AddParentChild.PawnDescriptionWithNoGender".Translate(new object[] { pawn.ProfessionLabel, age });
+                return pawn.Pawn.Name.ToStringFull + "\n" + description;
+            }
+            else {
+                return null;
+            }
         }
 
         protected Vector2 DrawNextRelationship(Vector2 cursor) {
@@ -225,9 +259,9 @@ namespace EdB.PrepareCarefully {
         }
 
         protected void ShowAddRelationshipDialogs() {
-            CustomPawn sourcePawn = null;
+            CustomParentChildPawn sourceParentChildPawn = null;
             PawnRelationDef selectedRelationship = null;
-            CustomPawn targetPawn = null;
+            CustomParentChildPawn targetParentChildPawn = null;
 
             Dialog_Options<PawnRelationDef> relationshipDialog =
                 new Dialog_Options<PawnRelationDef>(null) {
@@ -235,7 +269,7 @@ namespace EdB.PrepareCarefully {
                     CancelButtonLabel = "EdB.PC.Common.Cancel".Translate(),
                     HeaderLabel = "EdB.PC.AddRelationship.Header.Relationship".Translate(),
                     NameFunc = (PawnRelationDef def) => {
-                        return def.GetGenderSpecificLabelCap(sourcePawn.Pawn);
+                        return def.GetGenderSpecificLabelCap(sourceParentChildPawn.Pawn.Pawn);
                     },
                     SelectedFunc = (PawnRelationDef def) => {
                         return def == selectedRelationship;
@@ -256,24 +290,60 @@ namespace EdB.PrepareCarefully {
                     }
                 };
 
-            DialogSelectPawn sourcePawnDialog = new DialogSelectPawn() {
+            List<WidgetTable<CustomParentChildPawn>.RowGroup> sourceRowGroups = new List<WidgetTable<CustomParentChildPawn>.RowGroup>();
+            sourceRowGroups.Add(new WidgetTable<CustomParentChildPawn>.RowGroup("EdB.PC.AddParentChild.Header.SelectColonist".Translate(),
+                PrepareCarefully.Instance.RelationshipManager.ColonyPawns.Where((CustomParentChildPawn pawn) => {
+                    return pawn.Pawn.Type == CustomPawnType.Colonist;
+                })));
+            List<CustomParentChildPawn> hiddenPawnsForSource = PrepareCarefully.Instance.RelationshipManager.HiddenPawns.ToList();
+            hiddenPawnsForSource.Sort((a, b) => {
+                if (a.Pawn.Type != b.Pawn.Type) {
+                    return a.Pawn.Type == CustomPawnType.Hidden ? -1 : 1;
+                }
+                else {
+                    int aInt = a.Pawn.Index == null ? 0 : a.Pawn.Index.Value;
+                    int bInt = b.Pawn.Index == null ? 0 : b.Pawn.Index.Value;
+                    return aInt.CompareTo(bInt);
+                }
+            });
+            sourceRowGroups.Add(new WidgetTable<CustomParentChildPawn>.RowGroup("<b>" + "EdB.PC.AddParentChild.Header.SelectWorldPawn".Translate() + "</b>",
+                PrepareCarefully.Instance.RelationshipManager.ColonyPawns.Where((CustomParentChildPawn pawn) => {
+                    return pawn.Pawn.Type != CustomPawnType.Colonist;
+                }).Concat(hiddenPawnsForSource)));
+            WidgetTable<CustomParentChildPawn>.RowGroup sourceNewPawnGroup = new WidgetTable<CustomParentChildPawn>.RowGroup("EdB.PC.AddParentChild.Header.CreateTemporaryPawn".Translate(), PrepareCarefully.Instance.RelationshipManager.TemporaryPawns);
+            sourceRowGroups.Add(sourceNewPawnGroup);
+
+            DialogSelectParentChildPawn sourcePawnDialog = new DialogSelectParentChildPawn() {
                 HeaderLabel = "EdB.PC.AddRelationship.Header.Source".Translate(),
-                SelectAction = (CustomPawn pawn) => { sourcePawn = pawn; },
-                Pawns = PrepareCarefully.Instance.Pawns,
+                SelectAction = (CustomParentChildPawn pawn) => { sourceParentChildPawn = pawn; },
+                RowGroups = sourceRowGroups,
+                DisabledPawns = null,
                 ConfirmValidation = () => {
-                    if (sourcePawn == null) {
+                    if (sourceParentChildPawn == null) {
                         return "EdB.PC.AddRelationship.Error.SourceRequired";
                     }
                     else {
                         return null;
                     }
+                },
+                CloseAction = () => {
+                    // If the user selected a new pawn, replace the pawn in the new pawn list with another one.
+                    int index = sourceNewPawnGroup.Rows.FirstIndexOf((CustomParentChildPawn p) => {
+                        return p == targetParentChildPawn;
+                    });
+                    if (index > -1 && index < PrepareCarefully.Instance.RelationshipManager.TemporaryPawns.Count) {
+                        targetParentChildPawn = PrepareCarefully.Instance.RelationshipManager.ReplaceNewTemporaryCharacter(index);
+                    }
                 }
             };
-            DialogSelectPawn targetPawnDialog = new DialogSelectPawn() {
+
+            DialogSelectParentChildPawn targetPawnDialog = new DialogSelectParentChildPawn() {
                 HeaderLabel = "EdB.PC.AddRelationship.Header.Target".Translate(),
-                SelectAction = (CustomPawn pawn) => { targetPawn = pawn; },
+                SelectAction = (CustomParentChildPawn pawn) => { targetParentChildPawn = pawn; },
+                RowGroups = null, // To be filled out later
+                DisabledPawns = null, // To be filled out later
                 ConfirmValidation = () => {
-                    if (targetPawn == null) {
+                    if (sourceParentChildPawn == null) {
                         return "EdB.PC.AddRelationship.Error.TargetRequired";
                     }
                     else {
@@ -282,42 +352,72 @@ namespace EdB.PrepareCarefully {
                 }
             };
 
+            WidgetTable<CustomParentChildPawn>.RowGroup targetNewPawnGroup = null;
+
             sourcePawnDialog.CloseAction = () => {
                 List<PawnRelationDef> relationDefs = PrepareCarefully.Instance.RelationshipManager.AllowedRelationships.Select((PawnRelationDef def) => {
                     return def;
                 }).ToList();
                 relationDefs.Sort((PawnRelationDef a, PawnRelationDef b) => {
-                    return a.GetGenderSpecificLabelCap(sourcePawn.Pawn).CompareTo(b.GetGenderSpecificLabelCap(sourcePawn.Pawn));
+                    return a.GetGenderSpecificLabelCap(sourceParentChildPawn.Pawn.Pawn).CompareTo(b.GetGenderSpecificLabelCap(sourceParentChildPawn.Pawn.Pawn));
                 });
                 relationshipDialog.Options = relationDefs;
                 Find.WindowStack.Add(relationshipDialog);
             };
             relationshipDialog.CloseAction = () => {
-                SetDisabledTargets(sourcePawn, selectedRelationship);
+                SetDisabledTargets(sourceParentChildPawn, selectedRelationship);
                 targetPawnDialog.DisabledPawns = disabledTargets;
-                List<CustomPawn> otherPawns = PrepareCarefully.Instance.Pawns.FindAll((CustomPawn p) => {
-                    return p != sourcePawn;
+
+                List<WidgetTable<CustomParentChildPawn>.RowGroup> targetRowGroups = new List<WidgetTable<CustomParentChildPawn>.RowGroup>();
+                targetRowGroups.Add(new WidgetTable<CustomParentChildPawn>.RowGroup("EdB.PC.AddParentChild.Header.SelectColonist".Translate(),
+                    PrepareCarefully.Instance.RelationshipManager.ColonyPawns.Where((CustomParentChildPawn pawn) => {
+                        return pawn.Pawn.Type == CustomPawnType.Colonist && pawn != sourceParentChildPawn;
+                    })));
+                List<CustomParentChildPawn> hiddenPawnsForTarget = PrepareCarefully.Instance.RelationshipManager.HiddenPawns.ToList();
+                hiddenPawnsForTarget.Sort((a, b) => {
+                    if (a.Pawn.Type != b.Pawn.Type) {
+                        return a.Pawn.Type == CustomPawnType.Hidden ? -1 : 1;
+                    }
+                    else {
+                        int aInt = a.Pawn.Index == null ? 0 : a.Pawn.Index.Value;
+                        int bInt = b.Pawn.Index == null ? 0 : b.Pawn.Index.Value;
+                        return aInt.CompareTo(bInt);
+                    }
                 });
-                targetPawnDialog.Pawns = otherPawns;
+                targetRowGroups.Add(new WidgetTable<CustomParentChildPawn>.RowGroup("<b>" + "EdB.PC.AddParentChild.Header.SelectWorldPawn".Translate() + "</b>",
+                    PrepareCarefully.Instance.RelationshipManager.ColonyPawns.Where((CustomParentChildPawn pawn) => {
+                        return pawn.Pawn.Type != CustomPawnType.Colonist && pawn != sourceParentChildPawn;
+                    }).Concat(hiddenPawnsForTarget)));
+                targetNewPawnGroup = new WidgetTable<CustomParentChildPawn>.RowGroup("EdB.PC.AddParentChild.Header.CreateTemporaryPawn".Translate(), PrepareCarefully.Instance.RelationshipManager.TemporaryPawns);
+                targetRowGroups.Add(targetNewPawnGroup);
+                targetPawnDialog.RowGroups = targetRowGroups;
+
                 Find.WindowStack.Add(targetPawnDialog);
             };
             targetPawnDialog.CloseAction = () => {
-                this.RelationshipAdded(PrepareCarefully.Instance.RelationshipManager.FindInverseRelationship(selectedRelationship), sourcePawn, targetPawn);
+                // If the user selected a new pawn, replace the pawn in the new pawn list with another one.
+                int index = targetNewPawnGroup.Rows.FirstIndexOf((CustomParentChildPawn p) => {
+                    return p == targetParentChildPawn;
+                });
+                if (index > -1 && index < PrepareCarefully.Instance.RelationshipManager.TemporaryPawns.Count) {
+                    targetParentChildPawn = PrepareCarefully.Instance.RelationshipManager.ReplaceNewTemporaryCharacter(index);
+                }
+                this.RelationshipAdded(PrepareCarefully.Instance.RelationshipManager.FindInverseRelationship(selectedRelationship), sourceParentChildPawn.Pawn, targetParentChildPawn.Pawn);
             };
             Find.WindowStack.Add(sourcePawnDialog);
         }
         
-        public void SetDisabledTargets(CustomPawn source, PawnRelationDef relationDef) {
+        public void SetDisabledTargets(CustomParentChildPawn source, PawnRelationDef relationDef) {
             disabledTargets.Clear();
             CarefullyPawnRelationDef extendedDef = DefDatabase<CarefullyPawnRelationDef>.GetNamedSilentFail(relationDef.defName);
-            foreach (var pawn in PrepareCarefully.Instance.Pawns) {
+            foreach (var pawn in PrepareCarefully.Instance.RelationshipManager.ColonyPawns) {
                 if (source == pawn) {
                     disabledTargets.Add(pawn);
                     continue;
                 }
                 bool bloodRelation = relationDef.familyByBloodRelation;
                 foreach (CustomRelationship r in PrepareCarefully.Instance.RelationshipManager.Relationships) {
-                    if (r.source == source && r.target == pawn) {
+                    if (r.source == source.Pawn && r.target == pawn.Pawn) {
                         if (r.inverseDef == relationDef || r.def == relationDef) {
                             disabledTargets.Add(pawn);
                             break;
@@ -331,7 +431,7 @@ namespace EdB.PrepareCarefully {
                             break;
                         }
                     }
-                    else if (r.source == pawn && r.target == source) {
+                    else if (r.source == pawn.Pawn && r.target == source.Pawn) {
                         if (r.def == relationDef || r.inverseDef == relationDef) {
                             disabledTargets.Add(pawn);
                             break;
