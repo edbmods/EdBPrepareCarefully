@@ -16,6 +16,24 @@ namespace EdB.PrepareCarefully {
             return info;
         }
 
+        public static FieldInfo GetNonPublicStaticField(Type type, string name) {
+            FieldInfo info = type.GetField(name, BindingFlags.NonPublic | BindingFlags.Static);
+            if (info == null) {
+                Log.Warning("Prepare Carefully could not find the field " + type.Name + "." + name + " via reflection");
+            }
+            return info;
+        }
+
+        public static T GetNonPublicStatic<T>(Type type, string name) {
+            FieldInfo field = GetNonPublicStaticField(type, name);
+            if (field == null) {
+                return default(T);
+            }
+            else {
+                return (T)field.GetValue(null);
+            }
+        }
+
         public static FieldInfo GetNonPublicField(object target, string name) {
             return GetNonPublicField(target.GetType(), name);
         }

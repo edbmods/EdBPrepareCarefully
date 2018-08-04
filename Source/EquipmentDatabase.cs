@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using UnityEngine;
 using Verse;
 
@@ -441,9 +442,13 @@ namespace EdB.PrepareCarefully {
                                    where td.race == def
                                    select td).FirstOrDefault();
             if (kindDef != null) {
+                int messageCount = ReflectionUtil.GetNonPublicStatic<int>(typeof(Log), "messageCount");
                 Pawn pawn = PawnGenerator.GeneratePawn(kindDef, null);
                 pawn.gender = gender;
                 pawn.Drawer.renderer.graphics.ResolveAllGraphics();
+                if (ReflectionUtil.GetNonPublicStatic<int>(typeof(Log), "messageCount") > messageCount) {
+                    Log.Warning("Prepare Carefully failed to load all graphics for equipment list pawn/animal: " + def.defName);
+                }
                 return pawn;
             }
             else {
