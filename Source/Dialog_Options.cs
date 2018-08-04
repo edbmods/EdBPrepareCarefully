@@ -63,6 +63,12 @@ namespace EdB.PrepareCarefully {
             return false;
         };
         public Action SelectNoneAction = () => { };
+        public Func<Rect, float> DrawHeader = (Rect rect) => {
+            return 0;
+        };
+        public Func<IEnumerable<T>, IEnumerable<T>> FilterOptions = (IEnumerable<T> options) => {
+            return options;
+        };
 
         public Dialog_Options(IEnumerable<T> options) {
             this.closeOnCancel = true;
@@ -79,6 +85,10 @@ namespace EdB.PrepareCarefully {
         public IEnumerable<T> Options {
             get { return options; }
             set { options = value; }
+        }
+
+        public void ScrollToTop() {
+            this.ScrollView.ScrollToTop();
         }
 
         protected void ComputeSizes() {
@@ -111,27 +121,34 @@ namespace EdB.PrepareCarefully {
                 ButtonSize.x, ButtonSize.y);
 
         }
-
+        
 
         public override Vector2 InitialSize {
             get {
                 return new Vector2(WindowSize.x, WindowSize.y);
             }
         }
-
+        
         public override void DoWindowContents(Rect inRect) {
+            
+            float cursor = DrawHeader(new Rect(0, 0, inRect.width, inRect.height));
+
             GUI.color = Color.white;
+            Rect headerRect = HeaderRect.InsetBy(0, 0, 0, cursor).OffsetBy(0, cursor);
             if (HeaderLabel != null) {
                 Text.Font = GameFont.Medium;
-                Widgets.Label(HeaderRect, HeaderLabel);
+                Widgets.Label(headerRect, HeaderLabel);
             }
 
+            Rect contentRect = ContentRect.InsetBy(0, 0, 0, cursor).OffsetBy(0, cursor);
+            Rect scrollRect = new Rect(0, 0, contentRect.width, contentRect.height);
+
             Text.Font = GameFont.Small;
-            GUI.BeginGroup(ContentRect);
-            ScrollView.Begin(ScrollRect);
+            GUI.BeginGroup(contentRect);
+            ScrollView.Begin(scrollRect);
 
-            float cursor = 0;
-
+            cursor = 0;
+            
             if (IncludeNone) {
                 float height = Text.CalcHeight("EdB.PC.Common.NoOptionSelected".Translate(), ContentSize.x - 32);
                 if (height < 30) {
@@ -147,7 +164,8 @@ namespace EdB.PrepareCarefully {
             }
 
             Rect itemRect = new Rect(0, cursor, ContentSize.x - 32, 0);
-            foreach (T option in options) {
+            IEnumerable<T> filteredOptions = FilterOptions(options);
+            foreach (T option in filteredOptions) {
                 string name = NameFunc(option);
                 bool selected = SelectedFunc(option);
                 bool enabled = EnabledFunc != null ? EnabledFunc(option) : true;
@@ -163,7 +181,7 @@ namespace EdB.PrepareCarefully {
                 }
                 size.y = height;
 
-                if (cursor >= ScrollView.Position.y && cursor <= ScrollView.Position.y + ScrollView.ViewHeight) {
+                if (cursor + height >= ScrollView.Position.y && cursor <= ScrollView.Position.y + ScrollView.ViewHeight) {
                     if (enabled) {
                         GUI.color = Color.white;
                         if (Widgets.RadioButtonLabeled(itemRect, name, selected)) {

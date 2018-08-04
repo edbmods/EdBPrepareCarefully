@@ -17,6 +17,8 @@ namespace EdB.PrepareCarefully {
         protected List<CustomParentChildGroup> parentChildGroups = new List<CustomParentChildGroup>();
         protected bool dirty = true;
         protected int HiddenParentChildIndex = 1;
+        protected int TemporaryParentChildIndex = 1;
+        private List<CustomParentChildPawn> temporaryPawns = new List<CustomParentChildPawn>();
 
         protected RelationshipList relationships = new RelationshipList();
 
@@ -24,11 +26,26 @@ namespace EdB.PrepareCarefully {
             PopulateAllowedRelationships();
             PopulateInverseRelationships();
             InitializeRelationshipsForStartingPawns(originalPawns, correspondingFacades);
+            // Add a male and a female pawn to the new hidden pawn list.
+            temporaryPawns.Add(CreateNewTemmporaryPawn(Gender.Female));
+            temporaryPawns.Add(CreateNewTemmporaryPawn(Gender.Male));
+        }
+
+        public List<CustomParentChildPawn> TemporaryPawns {
+            get {
+                return temporaryPawns;
+            }
         }
 
         public int NextHiddenParentChildIndex {
             get {
                 return HiddenParentChildIndex++;
+            }
+        }
+
+        public int NextTemporaryParentChildIndex {
+            get {
+                return TemporaryParentChildIndex++;
             }
         }
 
@@ -101,7 +118,7 @@ namespace EdB.PrepareCarefully {
             else {
                 PawnRelationWorker worker = carefullyDef.Worker;
                 if (worker != null) {
-                    Log.Message("Returned carefully worker for " + def.defName + ", " + worker.GetType().FullName);
+                    //Log.Message("Returned carefully worker for " + def.defName + ", " + worker.GetType().FullName);
                     return carefullyDef.Worker;
                 }
                 else {
@@ -258,15 +275,22 @@ namespace EdB.PrepareCarefully {
 
         public void ReassignHiddenPawnIndices() {
             HiddenParentChildIndex = 1;
+            TemporaryParentChildIndex = 1;
             foreach (var group in parentChildGroups) {
                 foreach (var parent in group.Parents) {
-                    if (parent.Hidden && parent.Index == 0) {
-                        parent.Index = HiddenParentChildIndex++;
+                    if (parent.Pawn.Type == CustomPawnType.Hidden && parent.Pawn.Index == null) {
+                        parent.Pawn.Index = HiddenParentChildIndex++;
+                    }
+                    else if (parent.Pawn.Type == CustomPawnType.Temporary && parent.Pawn.Index == null) {
+                        parent.Pawn.Index = TemporaryParentChildIndex++;
                     }
                 }
                 foreach (var child in group.Children) {
-                    if (child.Hidden && child.Index == 0) {
-                        child.Index = HiddenParentChildIndex++;
+                    if (child.Pawn.Type == CustomPawnType.Hidden && child.Pawn.Index == null) {
+                        child.Pawn.Index = HiddenParentChildIndex++;
+                    }
+                    else if (child.Pawn.Type == CustomPawnType.Temporary && child.Pawn.Index == null) {
+                        child.Pawn.Index = TemporaryParentChildIndex++;
                     }
                 }
             }
@@ -281,7 +305,7 @@ namespace EdB.PrepareCarefully {
         public IEnumerable<CustomParentChildPawn> ColonyPawns {
             get {
                 return ParentChildPawns.Where((CustomParentChildPawn p) => {
-                    return !p.Hidden && p.Pawn.Pawn.Faction == Faction.OfPlayer;
+                    return !p.Pawn.Hidden && p.Pawn.Pawn.Faction == Faction.OfPlayer;
                 });
             }
         }
@@ -289,13 +313,14 @@ namespace EdB.PrepareCarefully {
         public IEnumerable<CustomParentChildPawn> HiddenPawns {
             get {
                 return ParentChildPawns.Where((CustomParentChildPawn p) => {
-                    return p.Hidden;
+                    return p.Pawn.Type == CustomPawnType.Hidden || p.Pawn.Type == CustomPawnType.Temporary;
                 });
             }
         }
 
         public CustomParentChildPawn AddHiddenParentChildPawn(CustomPawn customPawn) {
-            CustomParentChildPawn parentChildPawn = new CustomParentChildPawn(customPawn, true);
+            customPawn.Type = CustomPawnType.Hidden;
+            CustomParentChildPawn parentChildPawn = new CustomParentChildPawn(customPawn);
             parentChildPawns.Add(parentChildPawn);
             parentChildPawnLookup.Add(customPawn.Pawn, parentChildPawn);
             parentChildCustomPawnLookup.Add(customPawn, parentChildPawn);
@@ -304,7 +329,17 @@ namespace EdB.PrepareCarefully {
 
         public CustomParentChildPawn AddHiddenParentChildPawn(Pawn pawn) {
             CustomPawn customPawn = new CustomPawn(pawn);
+            customPawn.Type = CustomPawnType.Hidden;
             return AddHiddenParentChildPawn(customPawn);
+        }
+
+        public CustomParentChildPawn AddTemporaryParentChildPawn(CustomPawn customPawn) {
+            customPawn.Type = CustomPawnType.Temporary;
+            CustomParentChildPawn parentChildPawn = new CustomParentChildPawn(customPawn);
+            parentChildPawns.Add(parentChildPawn);
+            parentChildPawnLookup.Add(customPawn.Pawn, parentChildPawn);
+            parentChildCustomPawnLookup.Add(customPawn, parentChildPawn);
+            return parentChildPawn;
         }
 
         public CustomParentChildPawn AddVisibleParentChildPawn(CustomPawn customPawn) {
@@ -312,7 +347,7 @@ namespace EdB.PrepareCarefully {
         }
 
         public CustomParentChildPawn AddVisibleParentChildPawn(Pawn pawn, CustomPawn customPawn) {
-            CustomParentChildPawn parentChildPawn = new CustomParentChildPawn(customPawn, false);
+            CustomParentChildPawn parentChildPawn = new CustomParentChildPawn(customPawn);
             parentChildPawns.Add(parentChildPawn);
             parentChildPawnLookup.Add(pawn, parentChildPawn);
             parentChildCustomPawnLookup.Add(customPawn, parentChildPawn);
@@ -349,18 +384,22 @@ namespace EdB.PrepareCarefully {
             }
         }
 
-        public void InitializeWithParentChildPawns(List<CustomPawn> colonists, List<CustomPawn> hiddenPawns) {
+        public void InitializeWithCustomPawns(IEnumerable<CustomPawn> pawns) {
             parentChildPawns.Clear();
             parentChildPawnLookup.Clear();
             parentChildCustomPawnLookup.Clear();
 
             // Create parent/child pawn records for each colonist.
-            foreach (var pawn in colonists) {
-                AddVisibleParentChildPawn(pawn);
-            }
-
-            foreach (var pawn in hiddenPawns) {
-                AddHiddenParentChildPawn(pawn);
+            foreach (var pawn in pawns) {
+                if (pawn.Type == CustomPawnType.Temporary) {
+                    AddTemporaryParentChildPawn(pawn);
+                }
+                else if (pawn.Type == CustomPawnType.Hidden) {
+                    AddHiddenParentChildPawn(pawn);
+                }
+                else {
+                    AddVisibleParentChildPawn(pawn);
+                }
             }
         }
 
@@ -403,10 +442,10 @@ namespace EdB.PrepareCarefully {
             }
         }
 
-        public void InitializeParentChildRelationshipsForLoadedPawns(List<CustomRelationship> relationships, List<CustomRelationship> siblingRelationships, List<CustomPawn> colonists, List<CustomPawn> hiddenPawns) {
-            InitializeWithParentChildPawns(colonists, hiddenPawns);
-            InitializeParentChildGroupRelationships(relationships);
-        }
+        //public void InitializeParentChildRelationshipsForLoadedPawns(List<CustomRelationship> relationships, List<CustomRelationship> siblingRelationships, List<CustomPawn> colonists, List<CustomPawn> hiddenPawns) {
+        //    InitializeWithParentChildPawns(colonists, hiddenPawns);
+        //    InitializeParentChildGroupRelationships(relationships);
+        //}
 
         public void Clear() {
             this.parentChildPawns.Clear();
@@ -519,7 +558,32 @@ namespace EdB.PrepareCarefully {
 
             dirty = true;
         }
-        
+
+        public CustomParentChildPawn ReplaceNewTemporaryCharacter(int index) {
+            var pawn = temporaryPawns[index];
+            temporaryPawns[index] = CreateNewTemmporaryPawn(pawn.Pawn.Gender);
+            CustomParentChildPawn result = PrepareCarefully.Instance.RelationshipManager.AddTemporaryParentChildPawn(pawn.Pawn);
+            result.Pawn.Index = PrepareCarefully.Instance.RelationshipManager.NextTemporaryParentChildIndex;
+            return result;
+        }
+
+        public CustomParentChildPawn CreateNewTemmporaryPawn(Gender gender) {
+            CustomPawn pawn = new CustomPawn(new Randomizer().GeneratePawn(new PawnGenerationRequestWrapper() {
+                FixedGender = gender
+            }.Request));
+            Faction faction;
+            Find.World.factionManager.TryGetRandomNonColonyHumanlikeFaction(out faction, true, true, TechLevel.Undefined);
+            if (faction == null) {
+                faction = Find.World.factionManager.OfAncients;
+            }
+            if (faction != null) {
+                pawn.Pawn.SetFactionDirect(faction);
+            }
+            pawn.Pawn.Kill(null, null);
+            pawn.Type = CustomPawnType.Temporary;
+            CustomParentChildPawn result = new CustomParentChildPawn(pawn);
+            return result;
+        }
     }
 }
 

@@ -38,6 +38,7 @@ namespace EdB.PrepareCarefully {
                 factionDef = Faction.OfPlayer.def;
             }
             Faction faction = PrepareCarefully.Instance.Providers.Factions.GetFaction(factionDef);
+            Log.Message("GenerateKindOfPawn: " + factionDef.defName + ", " + faction.Name);
             PawnGenerationRequest req = new PawnGenerationRequestWrapper() {
                 Faction = faction,
                 KindDef = kindDef
@@ -52,6 +53,7 @@ namespace EdB.PrepareCarefully {
                 factionDef = Faction.OfPlayer.def;
             }
             Faction faction = PrepareCarefully.Instance.Providers.Factions.GetFaction(factionDef);
+            Log.Message("GenerateKindAndGenderOfPawn: " + factionDef.defName + ", " + faction.Name);
             PawnGenerationRequest req = new PawnGenerationRequestWrapper() {
                 Faction = faction,
                 KindDef = kindDef,

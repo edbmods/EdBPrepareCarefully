@@ -10,9 +10,9 @@ using Verse.Sound;
 
 namespace EdB.PrepareCarefully {
     public class OptionsApparel {
-        private Dictionary<int, List<ThingDef>> pawnLayerApparelLookup = new Dictionary<int, List<ThingDef>>();
+        private Dictionary<PawnLayer, List<ThingDef>> pawnLayerApparelLookup = new Dictionary<PawnLayer, List<ThingDef>>();
         private List<ThingDef> emptyList = new List<ThingDef>();
-        public void Add(int layer, ThingDef def) {
+        public void Add(PawnLayer layer, ThingDef def) {
             List<ThingDef> list;
             if (!pawnLayerApparelLookup.TryGetValue(layer, out list)) {
                 list = new List<ThingDef>();
@@ -20,7 +20,7 @@ namespace EdB.PrepareCarefully {
             }
             list.Add(def);
         }
-        public List<ThingDef> GetApparel(int layer) {
+        public List<ThingDef> GetApparel(PawnLayer layer) {
             List<ThingDef> list;
             if (!pawnLayerApparelLookup.TryGetValue(layer, out list)) {
                 return emptyList;

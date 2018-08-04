@@ -42,7 +42,7 @@ namespace EdB.PrepareCarefully {
         public override void Resize(Rect rect) {
             base.Resize(rect);
 
-            float panelPaddingLeft = 16;
+            float panelPaddingLeft = 12;
             float panelPaddingRight = 10;
             float panelPaddingBottom = 10;
             float panelPaddingTop = 4;

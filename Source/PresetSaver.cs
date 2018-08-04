@@ -32,48 +32,28 @@ namespace EdB.PrepareCarefully {
                     }
                 }
 
-                // Start saving.
-                Scribe.saver.InitSaving(PresetFiles.FilePathForSavedPreset(presetName), "preset");
-                string versionStringFull = "3";
-                Scribe_Values.Look<string>(ref versionStringFull, "version", null, false);
-                bool usePoints = data.Config.pointsEnabled;
-                int startingPoints = PrepareCarefully.Instance.StartingPoints;
-                Scribe_Values.Look<bool>(ref usePoints, "usePoints", false, true);
-                Scribe_Values.Look<int>(ref startingPoints, "startingPoints", 0, true);
-                string modString = GenText.ToCommaList(Enumerable.Select<ModContentPack, string>(LoadedModManager.RunningMods, (Func<ModContentPack, string>)(mod => mod.Name)), true);
-                Scribe_Values.Look<string>(ref modString, "mods", null, false);
-                // Save pawns.
-                Scribe.EnterNode("colonists");
+                SaveRecordPresetV4 preset = new SaveRecordPresetV4();
+                preset.mods = GenText.ToCommaList(Enumerable.Select<ModContentPack, string>(LoadedModManager.RunningMods, (Func<ModContentPack, string>)(mod => mod.Name)), true);
                 foreach (CustomPawn customPawn in data.Pawns) {
-                    try {
-                        SaveRecordPawnV3 pawn = new SaveRecordPawnV3(customPawn);
-                        Scribe_Deep.Look<SaveRecordPawnV3>(ref pawn, "colonist");
-                    }
-                    catch (Exception e) {
-                        problem = true;
-                        Log.Warning("Prepare Carefully failed to save a pawn into the preset: " + presetName);
-                        Log.Warning(e.Message);
-                        Log.Warning(e.StackTrace);
-                    }
+                    SaveRecordPawnV4 pawn = new SaveRecordPawnV4(customPawn);
+                    preset.pawns.Add(pawn);
                 }
-                Scribe.ExitNode();
-
-                // Save hidden pawns.
-                List<CustomPawn> hiddenPawns = new List<CustomPawn>();
                 foreach (var g in data.RelationshipManager.ParentChildGroups) {
                     foreach (var parent in g.Parents) {
-                        if (parent.Hidden) {
+                        if (parent.Pawn.Hidden) {
                             if (parent.Pawn != null) {
-                                hiddenPawns.Add(parent.Pawn);
+                                SaveRecordPawnV4 pawn = new SaveRecordPawnV4(parent.Pawn);
+                                preset.pawns.Add(pawn);
                             }
                             else {
                                 Log.Warning("Prepare Carefully found an empty pawn in a parent child relationship while saving the preset.  Skipping that pawn.");
                             }
                         }
                         foreach (var child in g.Children) {
-                            if (child.Hidden) {
+                            if (child.Pawn.Hidden) {
                                 if (child.Pawn != null) {
-                                    hiddenPawns.Add(child.Pawn);
+                                    SaveRecordPawnV4 pawn = new SaveRecordPawnV4(child.Pawn);
+                                    preset.pawns.Add(pawn);
                                 }
                                 else {
                                     Log.Warning("Prepare Carefully found an empty pawn in a parent child relationship while saving the preset.  Skipping that pawn.");
@@ -82,26 +62,10 @@ namespace EdB.PrepareCarefully {
                         }
                     }
                 }
-                Scribe.EnterNode("hiddenPawns");
-                foreach (CustomPawn customPawn in hiddenPawns) {
-                    try {
-                        SaveRecordPawnV3 pawn = new SaveRecordPawnV3(customPawn);
-                        Scribe_Deep.Look<SaveRecordPawnV3>(ref pawn, "hiddenPawn");
-                    }
-                    catch (Exception e) {
-                        problem = true;
-                        Log.Warning("Prepare Carefully failed to save a hidden pawn into the preset: " + presetName);
-                        Log.Warning(e.Message);
-                        Log.Warning(e.StackTrace);
-                    }
-                }
-                Scribe.ExitNode();
-
-                Scribe.EnterNode("relationships");
                 foreach (var r in data.RelationshipManager.Relationships) {
                     if (r.source != null && r.target != null && r.def != null && r.source.Id != null && r.target.Id != null) {
                         SaveRecordRelationshipV3 s = new SaveRecordRelationshipV3(r);
-                        Scribe_Deep.Look<SaveRecordRelationshipV3>(ref s, "relationship");
+                        preset.relationships.Add(s);
                     }
                     else {
                         problem = true;
@@ -114,9 +78,6 @@ namespace EdB.PrepareCarefully {
                         }
                     }
                 }
-                Scribe.ExitNode();
-
-                Scribe.EnterNode("parentChildGroups");
                 foreach (var g in data.RelationshipManager.ParentChildGroups) {
                     if (g.Children.Count == 0 || (g.Parents.Count == 0 && g.Children.Count == 1)) {
                         continue;
@@ -144,28 +105,16 @@ namespace EdB.PrepareCarefully {
                             group.children.Add(p.Pawn.Id);
                         }
                     }
-                    try {
-                        Scribe_Deep.Look<SaveRecordParentChildGroupV3>(ref group, "group");
-                    }
-                    catch (Exception) {
-                        problem = true;
-                        Log.Warning("Prepare Carefully failed to save a parent child group when saving the preset: " + presetName);
-                    }
+                    preset.parentChildGroups.Add(group);
                 }
-                Scribe.ExitNode();
-
-                Scribe.EnterNode("equipment");
                 foreach (var e in data.Equipment) {
-                    try {
-                        EquipmentSaveRecord record = new EquipmentSaveRecord(e);
-                        Scribe_Deep.Look<EquipmentSaveRecord>(ref record, "equipment");
-                    }
-                    catch {
-                        problem = true;
-                        Log.Warning("Failed to save equipment to preset: " + e.ThingDef.defName);
-                    }
+                    SaveRecordEquipmentV3 record = new SaveRecordEquipmentV3(e);
+                    preset.equipment.Add(record);
                 }
-                Scribe.ExitNode();
+
+                // Start saving.
+                Scribe.saver.InitSaving(PresetFiles.FilePathForSavedPreset(presetName), "preset");
+                preset.ExposeData();
             }
             catch (Exception e) {
                 PrepareCarefully.Instance.State.AddError("EdB.PC.Dialog.Preset.Error.SaveFailed".Translate());

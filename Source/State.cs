@@ -6,11 +6,13 @@ using Verse;
 
 namespace EdB.PrepareCarefully {
     public class State {
-        protected CustomPawn currentPawn;
+        protected CustomPawn currentColonyPawn;
+        protected CustomPawn currentWorldPawn;
         
         protected List<string> errors = new List<string>();
         protected List<string> messages = new List<string>();
         private List<string> missingWorkTypes = null;
+        private PawnListMode pawnListMode = PawnListMode.ColonyPawnsMaximized;
 
         public Page_PrepareCarefully Page {
             get;
@@ -25,16 +27,70 @@ namespace EdB.PrepareCarefully {
 
         public CustomPawn CurrentPawn {
             get {
-                return currentPawn;
+                return pawnListMode == PawnListMode.ColonyPawnsMaximized ? currentColonyPawn : currentWorldPawn;
             }
             set {
-                currentPawn = value;
+                if (pawnListMode == PawnListMode.ColonyPawnsMaximized) {
+                    currentColonyPawn = value;
+                }
+                else {
+                    currentWorldPawn = value;
+                }
+            }
+        }
+
+        public CustomPawn CurrentColonyPawn {
+            get {
+                return currentColonyPawn;
+            }
+            set {
+                currentColonyPawn = value;
+            }
+        }
+
+        public CustomPawn CurrentWorldPawn {
+            get {
+                return currentWorldPawn;
+            }
+            set {
+                currentWorldPawn = value;
+            }
+        }
+
+        public List<CustomPawn> ColonyPawns {
+            get {
+                return PrepareCarefully.Instance.ColonyPawns;
+            }
+        }
+
+        public FactionDef LastSelectedFactionDef {
+            get;
+            set;
+        }
+
+        public PawnKindDef LastSelectedPawnKindDef {
+            get;
+            set;
+        }
+
+        public List<CustomPawn> WorldPawns {
+            get {
+                return PrepareCarefully.Instance.WorldPawns;
             }
         }
 
         public ITabView CurrentTab {
             get;
             set;
+        }
+
+        public PawnListMode PawnListMode {
+            get {
+                return pawnListMode;
+            }
+            set {
+                pawnListMode = value;
+            }
         }
 
         public IEnumerable<string> Errors {

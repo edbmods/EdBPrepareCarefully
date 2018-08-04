@@ -44,6 +44,7 @@ namespace EdB.PrepareCarefully {
 
         }
 
+        /*
         public SaveRecordPawnV3(CustomPawn pawn) {
             this.id = pawn.Id;
             this.thingDef = pawn.Pawn.def.defName;
@@ -59,7 +60,7 @@ namespace EdB.PrepareCarefully {
             this.skinColor = pawn.Pawn.story.SkinColor;
             this.melanin = pawn.Pawn.story.melanin;
             this.hairDef = pawn.HairDef.defName;
-            this.hairColor = pawn.GetColor(PawnLayers.Hair);
+            this.hairColor = pawn.GetColor(PrepareCarefully.Instance.Providers.PawnLayers.HairLayer);
             this.headGraphicPath = pawn.HeadGraphicPath;
             this.bodyType = pawn.BodyType.defName; // TODO: Enum.GetName(typeof(BodyTypeDef), pawn.BodyType);
             this.firstName = pawn.FirstName;
@@ -113,6 +114,7 @@ namespace EdB.PrepareCarefully {
                 this.injuries.Add(saveRecord);
             }
         }
+        */
 
         public void ExposeData() {
             Scribe_Values.Look<string>(ref this.id, "id", null, false);

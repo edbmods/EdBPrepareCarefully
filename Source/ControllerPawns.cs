@@ -9,6 +9,9 @@ namespace EdB.PrepareCarefully {
     public class ControllerPawns {
         public delegate void PawnAddedHandler(CustomPawn pawn);
         public delegate void PawnReplacedHandler(CustomPawn pawn);
+        public delegate void ColonyPawnsMaximizedHandler();
+        public delegate void WorldPawnsMaximizedHandler();
+        public delegate void PawnListsSplitHandler();
         public event PawnAddedHandler PawnAdded;
         public event PawnReplacedHandler PawnReplaced;
 
@@ -27,10 +30,10 @@ namespace EdB.PrepareCarefully {
             if (factionDef == null) {
                 factionDef = Faction.OfPlayer.def;
             }
-            PawnKindDef kindDef = PrepareCarefully.Instance.Providers.Factions.GetPawnKindsForFactionDefLabel(factionDef)
-                .RandomElementWithFallback(factionDef.basicMemberKind);
+            //PawnKindDef kindDef = PrepareCarefully.Instance.Providers.Factions.GetPawnKindsForFactionDefLabel(factionDef)
+            //    .RandomElementWithFallback(factionDef.basicMemberKind);
             // Create the pawn.
-            Pawn pawn = randomizer.GenerateKindOfPawn(kindDef);
+            Pawn pawn = randomizer.GenerateKindOfPawn(state.CurrentPawn.Pawn.kindDef);
             state.CurrentPawn.InitializeWithPawn(pawn);
             state.CurrentPawn.GenerateId();
             PawnReplaced(state.CurrentPawn);
@@ -159,22 +162,67 @@ namespace EdB.PrepareCarefully {
         // Pawn-related actions.
         public void SelectPawn(CustomPawn pawn) {
             state.CurrentPawn = pawn;
+
         }
-        public void AddingPawn() {
+        public void AddingPawn(bool startingPawn) {
             CustomPawn pawn = new CustomPawn(randomizer.GenerateColonist());
+            pawn.Type = startingPawn ? CustomPawnType.Colonist : CustomPawnType.World;
             PrepareCarefully.Instance.AddPawn(pawn);
             state.CurrentPawn = pawn;
             PawnAdded(pawn);
         }
-        public void DeletePawn(CustomPawn pawn) {
-            int index = PrepareCarefully.Instance.Pawns.IndexOf(pawn);
+        public void SwapPawn(CustomPawn pawn) {
+            int worldPawnIndex = PrepareCarefully.Instance.WorldPawns.IndexOf(pawn);
+            int colonyPawnIndex = PrepareCarefully.Instance.ColonyPawns.IndexOf(pawn);
             PrepareCarefully.Instance.Pawns.Remove(pawn);
-            if (state.CurrentPawn == pawn) {
-                if (index > -1 && index < PrepareCarefully.Instance.Pawns.Count) {
-                    state.CurrentPawn = PrepareCarefully.Instance.Pawns[index];
+            if (state.CurrentWorldPawn == pawn) {
+                List<CustomPawn> worldPawns = PrepareCarefully.Instance.WorldPawns;
+                if (worldPawnIndex > -1 && worldPawnIndex < worldPawns.Count) {
+                    state.CurrentWorldPawn = worldPawns[worldPawnIndex];
                 }
                 else {
-                    state.CurrentPawn = PrepareCarefully.Instance.Pawns.LastOrDefault();
+                    state.CurrentWorldPawn = worldPawns.LastOrDefault();
+                }
+            }
+            if (state.CurrentColonyPawn == pawn) {
+                List<CustomPawn> colonyPawns = PrepareCarefully.Instance.ColonyPawns;
+                if (colonyPawnIndex > -1 && colonyPawnIndex < colonyPawns.Count) {
+                    state.CurrentColonyPawn = colonyPawns[colonyPawnIndex];
+                }
+                else {
+                    state.CurrentColonyPawn = colonyPawns.LastOrDefault();
+                }
+            }
+            if (pawn.Type == CustomPawnType.Colonist) {
+                pawn.Type = CustomPawnType.World;
+                state.CurrentWorldPawn = pawn;
+            }
+            else {
+                pawn.Type = CustomPawnType.Colonist;
+                state.CurrentColonyPawn = pawn;
+            }
+            PrepareCarefully.Instance.Pawns.Add(pawn);
+        }
+        public void DeletePawn(CustomPawn pawn) {
+            int worldPawnIndex = PrepareCarefully.Instance.WorldPawns.IndexOf(pawn);
+            int colonyPawnIndex = PrepareCarefully.Instance.ColonyPawns.IndexOf(pawn);
+            PrepareCarefully.Instance.Pawns.Remove(pawn);
+            if (state.CurrentWorldPawn == pawn) {
+                List<CustomPawn> worldPawns = PrepareCarefully.Instance.WorldPawns;
+                if (worldPawnIndex > -1 && worldPawnIndex < worldPawns.Count) {
+                    state.CurrentWorldPawn = worldPawns[worldPawnIndex];
+                }
+                else {
+                    state.CurrentWorldPawn = worldPawns.LastOrDefault();
+                }
+            }
+            if (state.CurrentColonyPawn == pawn) {
+                List<CustomPawn> colonyPawns = PrepareCarefully.Instance.ColonyPawns;
+                if (colonyPawnIndex > -1 && colonyPawnIndex < colonyPawns.Count) {
+                    state.CurrentColonyPawn = colonyPawns[colonyPawnIndex];
+                }
+                else {
+                    state.CurrentColonyPawn = colonyPawns.LastOrDefault();
                 }
             }
             PrepareCarefully.Instance.RelationshipManager.DeletePawn(pawn);
@@ -188,6 +236,8 @@ namespace EdB.PrepareCarefully {
             if (pawn != null) {
                 state.AddMessage("EdB.PC.Dialog.PawnPreset.Loaded".Translate(new object[] { name }));
             }
+            bool colonyPawn = state.PawnListMode == PawnListMode.ColonyPawnsMaximized;
+            pawn.Type = colonyPawn ? CustomPawnType.Colonist : CustomPawnType.World;
             PrepareCarefully.Instance.AddPawn(pawn);
             state.CurrentPawn = pawn;
             PawnAdded(pawn);
@@ -202,10 +252,10 @@ namespace EdB.PrepareCarefully {
                 filename
             }));
         }
-        public void AddFactionPawn(FactionDef def) {
-            var kinds = PrepareCarefully.Instance.Providers.Factions.GetPawnKindsForFactionDefLabel(def);
-            PawnKindDef kindDef = kinds.RandomElementWithFallback(def.basicMemberKind);
-            Faction faction = PrepareCarefully.Instance.Providers.Factions.GetFaction(def);
+        public void AddFactionPawn(PawnKindDef kindDef, bool startingPawn) {
+            FactionDef factionDef = kindDef.defaultFactionType;
+            Faction faction = PrepareCarefully.Instance.Providers.Factions.GetFaction(factionDef);
+
             // Workaround to force pawn generation to skip adding weapons to the pawn.
             // Might be a slightly risky hack, but the finally block should guarantee that
             // the weapons money range always gets set back to its original value.
@@ -217,7 +267,9 @@ namespace EdB.PrepareCarefully {
             try {
                 pawn = randomizer.GeneratePawn(new PawnGenerationRequestWrapper() {
                     Faction = faction,
-                    KindDef = kindDef
+                    KindDef = kindDef,
+                    Context = PawnGenerationContext.NonPlayer,
+                    WorldPawnFactionDoesntMatter = true
                 }.Request);
                 if (pawn.equipment != null) {
                     pawn.equipment.DestroyAllEquipment(DestroyMode.Vanish);
@@ -246,6 +298,14 @@ namespace EdB.PrepareCarefully {
             }
 
             CustomPawn customPawn = new CustomPawn(pawn);
+            customPawn.Type = startingPawn ? CustomPawnType.Colonist : CustomPawnType.World;
+            if (!startingPawn) {
+                CustomFaction customFaction = PrepareCarefully.Instance.Providers.Factions.FindRandomCustomFactionByDef(factionDef);
+                if (customFaction != null) {
+                    customPawn.Faction = customFaction;
+                }
+            }
+
             PrepareCarefully.Instance.AddPawn(customPawn);
             state.CurrentPawn = customPawn;
             PawnAdded(customPawn);

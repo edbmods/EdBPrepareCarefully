@@ -98,7 +98,9 @@ namespace EdB.PrepareCarefully {
 
             int i = 0;
             foreach (var pawn in pawns) {
-                CalculatePawnCost(cost.colonistDetails[i++], pawn);
+                if (pawn.Type == CustomPawnType.Colonist) {
+                    CalculatePawnCost(cost.colonistDetails[i++], pawn);
+                }
             }
             foreach (var e in equipment) {
                 cost.equipment += CalculateEquipmentCost(e);
@@ -157,8 +159,8 @@ namespace EdB.PrepareCarefully {
             }
 
             // Calculate cost of worn apparel.
-            for (int layer = 0; layer < PawnLayers.Count; layer++) {
-                if (PawnLayers.IsApparelLayer(layer)) {
+            foreach (var layer in PrepareCarefully.Instance.Providers.PawnLayers.GetLayersForPawn(pawn)) {
+                if (layer.Apparel) {
                     var def = pawn.GetAcceptedApparel(layer);
                     if (def == null) {
                         continue;

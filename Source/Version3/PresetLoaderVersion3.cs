@@ -130,8 +130,8 @@ namespace EdB.PrepareCarefully {
                     return false;
                 }
 
-                List<EquipmentSaveRecord> tempEquipment = new List<EquipmentSaveRecord>();
-                Scribe_Collections.Look<EquipmentSaveRecord>(ref tempEquipment, "equipment", LookMode.Deep, null);
+                List<SaveRecordEquipmentV3> tempEquipment = new List<SaveRecordEquipmentV3>();
+                Scribe_Collections.Look<SaveRecordEquipmentV3>(ref tempEquipment, "equipment", LookMode.Deep, null);
                 loadout.Equipment.Clear();
                 if (tempEquipment != null) {
                     List<EquipmentSelection> equipment = new List<EquipmentSelection>(tempEquipment.Count);
@@ -277,7 +277,7 @@ namespace EdB.PrepareCarefully {
                 loadout.AddPawn(p);
             }
             loadout.RelationshipManager.Clear();
-            loadout.RelationshipManager.InitializeWithParentChildPawns(colonistCustomPawns, hiddenCustomPawns);
+            loadout.RelationshipManager.InitializeWithCustomPawns(colonistCustomPawns.AsEnumerable().Concat(hiddenCustomPawns));
 
             bool atLeastOneRelationshipFailed = false;
             List<CustomRelationship> allRelationships = new List<CustomRelationship>();
@@ -405,6 +405,8 @@ namespace EdB.PrepareCarefully {
             else {
                 pawn.Id = record.id;
             }
+            
+            pawn.Type = CustomPawnType.Colonist;
 
             pawn.Gender = record.gender;
             if (record.age > 0) {
@@ -417,11 +419,11 @@ namespace EdB.PrepareCarefully {
             if (record.biologicalAge > 0) {
                 pawn.BiologicalAge = record.biologicalAge;
             }
-            
+
             pawn.FirstName = record.firstName;
             pawn.NickName = record.nickName;
             pawn.LastName = record.lastName;
-            
+
             HairDef h = FindHairDef(record.hairDef);
             if (h != null) {
                 pawn.HairDef = h;
@@ -432,7 +434,7 @@ namespace EdB.PrepareCarefully {
             }
             
             pawn.HeadGraphicPath = record.headGraphicPath;
-            pawn.SetColor(PawnLayers.Hair, record.hairColor);
+            pawn.Pawn.story.hairColor = record.hairColor;
             
             if (record.melanin >= 0.0f) {
                 pawn.MelaninLevel = record.melanin;
@@ -543,14 +545,20 @@ namespace EdB.PrepareCarefully {
                 }
             }
             
-            for (int i = 0; i < PawnLayers.Count; i++) {
-                if (PawnLayers.IsApparelLayer(i)) {
-                    pawn.SetSelectedApparel(i, null);
-                    pawn.SetSelectedStuff(i, null);
+            foreach (var layer in PrepareCarefully.Instance.Providers.PawnLayers.GetLayersForPawn(pawn)) {
+                if (layer.Apparel) {
+                    pawn.SetSelectedApparel(layer, null);
+                    pawn.SetSelectedStuff(layer, null);
                 }
             }
             for (int i = 0; i < record.apparelLayers.Count; i++) {
-                int layer = record.apparelLayers[i];
+                int layerIndex = record.apparelLayers[i];
+                PawnLayer layer = PrepareCarefully.Instance.Providers.PawnLayers.FindLayerFromDeprecatedIndex(layerIndex);
+                if (layer == null) {
+                    Log.Warning("Could not find pawn layer from saved pawn layer index: \"" + layerIndex + "\"");
+                    Failed = true;
+                    continue;
+                }
                 ThingDef def = DefDatabase<ThingDef>.GetNamedSilentFail(record.apparel[i]);
                 if (def == null) {
                     Log.Warning("Could not load thing definition for apparel \"" + record.apparel[i] + "\"");

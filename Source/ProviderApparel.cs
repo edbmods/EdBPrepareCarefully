@@ -16,10 +16,10 @@ namespace EdB.PrepareCarefully {
         public ProviderAlienRaces AlienRaceProvider {
             get; set;
         }
-        public List<ThingDef> GetApparel(CustomPawn pawn, int layer) {
+        public List<ThingDef> GetApparel(CustomPawn pawn, PawnLayer layer) {
             return GetApparel(pawn.Pawn.def, layer);
         }
-        public List<ThingDef> GetApparel(ThingDef raceDef, int layer) {
+        public List<ThingDef> GetApparel(ThingDef raceDef, PawnLayer layer) {
             OptionsApparel apparel = GetApparelForRace(raceDef);
             return apparel.GetApparel(layer);
         }
@@ -45,12 +45,12 @@ namespace EdB.PrepareCarefully {
                 return apparel;
             }
         }
-        protected int? LayerForApparel(ThingDef def) {
+        protected PawnLayer LayerForApparel(ThingDef def) {
             if (def.apparel == null) {
                 return null;
             }
             else {
-                return PawnLayers.ToPawnLayerIndex(def.apparel);
+                return PrepareCarefully.Instance.Providers.PawnLayers.FindLayerForApparel(def.apparel);
             }
         }
         protected void AddApparel(OptionsApparel options, string defName) {
@@ -60,9 +60,9 @@ namespace EdB.PrepareCarefully {
             }
         }
         protected void AddApparel(OptionsApparel options, ThingDef def) {
-            int? layer = LayerForApparel(def);
+            PawnLayer layer = LayerForApparel(def);
             if (layer != null) {
-                options.Add(layer.Value, def);
+                options.Add(layer, def);
             }
         }
         protected OptionsApparel InitializeApparel(ThingDef raceDef) {

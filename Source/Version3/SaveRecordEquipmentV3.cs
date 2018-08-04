@@ -5,16 +5,16 @@ using UnityEngine;
 using Verse;
 
 namespace EdB.PrepareCarefully {
-    public class EquipmentSaveRecord : IExposable {
+    public class SaveRecordEquipmentV3 : IExposable {
         public int count;
         public string def;
         public string stuffDef;
         public string gender;
 
-        public EquipmentSaveRecord() {
+        public SaveRecordEquipmentV3() {
         }
 
-        public EquipmentSaveRecord(EquipmentSelection equipment) {
+        public SaveRecordEquipmentV3(EquipmentSelection equipment) {
             count = equipment.Count;
             def = equipment.Record.def.defName;
             stuffDef = equipment.Record.stuffDef != null ? equipment.Record.stuffDef.defName : null;

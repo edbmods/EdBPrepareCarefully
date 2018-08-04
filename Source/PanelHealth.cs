@@ -24,7 +24,6 @@ namespace EdB.PrepareCarefully {
         protected Rect RectScrollFrame;
         protected Rect RectScrollView;
         protected Rect RectItem;
-        protected Rect RectLabel;
         protected Rect RectField;
         protected Rect RectButtonDelete;
         protected Rect RectButtonAdd;
@@ -39,6 +38,8 @@ namespace EdB.PrepareCarefully {
 
         protected List<InjurySeverity> severityOptions = new List<InjurySeverity>();
         protected List<InjurySeverity> permanentInjurySeverities = new List<InjurySeverity>();
+
+        protected LabelTrimmer labelTrimmer = new LabelTrimmer();
 
         public PanelHealth() {
             permanentInjurySeverities.Add(new InjurySeverity(2));
@@ -64,21 +65,19 @@ namespace EdB.PrepareCarefully {
             base.Resize(rect);
 
             float panelPadding = 10;
-            float fieldHeight = 28;
-            float labelHeight = 18;
-            float labelPadding = -1;
+            float fieldHeight = Style.FieldHeight;
             float buttonPadding = 8;
             Vector2 buttonSize = new Vector2(12, 12);
             Vector2 itemPadding = new Vector2(8, 6);
             Vector2 contentSize = new Vector2(PanelRect.width - panelPadding * 2, BodyRect.height - panelPadding);
 
-            SizeEntry = new Vector2(contentSize.x, labelHeight + fieldHeight + itemPadding.y * 2 + labelPadding);
+            SizeEntry = new Vector2(contentSize.x, fieldHeight + itemPadding.y * 2);
             RectItem = new Rect(0, 0, SizeEntry.x, SizeEntry.y);
-            RectLabel = new Rect(itemPadding.x, itemPadding.y, contentSize.x - itemPadding.x * 2, labelHeight);
-            RectField = new Rect(itemPadding.x, RectLabel.yMax + labelPadding, RectLabel.width, fieldHeight);
+            RectField = new Rect(itemPadding.x, itemPadding.y, contentSize.x - itemPadding.x * 2, fieldHeight);
             RectButtonDelete = new Rect(RectField.xMax - buttonPadding - buttonSize.x,
                 RectField.y + RectField.height * 0.5f - buttonSize.y * 0.5f,
                 buttonSize.x, buttonSize.y);
+            labelTrimmer.Width = RectField.width - (RectField.xMax - RectButtonDelete.xMin) * 2;
 
             RectScrollFrame = new Rect(panelPadding, BodyRect.y, contentSize.x, contentSize.y);
             RectScrollView = new Rect(0, 0, RectScrollFrame.width, RectScrollFrame.height);
@@ -143,7 +142,7 @@ namespace EdB.PrepareCarefully {
 
             if (customPawn.BodyParts.Count == 0) {
                 GUI.color = Style.ColorText;
-                Widgets.Label(RectScrollView.InsetBy(6, 0, 0, 0), "EdB.PC.Panel.Health.None".Translate());
+                Widgets.Label(RectScrollView.InsetBy(1, 0, 0, 0), "EdB.PC.Panel.Health.None".Translate());
             }
             GUI.color = Color.white;
 
@@ -528,22 +527,22 @@ namespace EdB.PrepareCarefully {
 
             // Draw background box.
             GUI.BeginGroup(entryRect);
-
-            // Draw body part name.
-            GUI.color = Style.ColorText;
-            Text.Font = GameFont.Tiny;
-            Text.Anchor = TextAnchor.LowerCenter;
-            Rect labelRect = RectLabel;
-            labelRect.width = labelRect.width - (willScroll ? 16 : 0);
-            Widgets.Label(labelRect, customPart.PartName);
-            Text.Font = GameFont.Small;
-
+            
             // Draw field
             Rect fieldRect = RectField;
             fieldRect.width = fieldRect.width - (willScroll ? 16 : 0);
             field.Rect = fieldRect;
-            field.Label = customPart.ChangeName;
-            field.Color = customPart.LabelColor;
+            string label;
+            if (customPart.BodyPartRecord != null) {
+                label = "EdB.PC.Panel.Health.PartWithInjury".Translate(new object[] { customPart.PartName, customPart.ChangeName, "#" + ColorUtility.ToHtmlStringRGBA(customPart.LabelColor) });
+                field.Color = Color.white;
+            }
+            else {
+                label = customPart.ChangeName;
+                field.Color = customPart.LabelColor;
+            }
+            field.Label = labelTrimmer.TrimLabelIfNeeded(label);
+            
             if (customPart.HasTooltip) {
                 field.Tip = customPart.Tooltip;
             }

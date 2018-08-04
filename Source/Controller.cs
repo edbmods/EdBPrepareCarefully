@@ -73,7 +73,6 @@ namespace EdB.PrepareCarefully {
         public void StartGame() {
             if (ValidateStartGame()) {
                 PrepareCarefully.Instance.Active = true;
-                PrepareCarefully.Instance.CreateColonists();
                 PrepareCarefully.Instance.State.Page.Close(false);
                 PrepareCarefully.Instance.State.Page = null;
                 PrepareGame();
@@ -92,7 +91,8 @@ namespace EdB.PrepareCarefully {
                 state.AddMessage("EdB.PC.Dialog.Preset.Loaded".Translate(new object[] {
                     name
                 }));
-                state.CurrentPawn = state.Pawns.FirstOrDefault();
+                state.CurrentColonyPawn = state.ColonyPawns.FirstOrDefault();
+                state.CurrentWorldPawn = state.WorldPawns.FirstOrDefault();
             }
             CheckPawnCapabilities();
         }
@@ -108,42 +108,22 @@ namespace EdB.PrepareCarefully {
                 PrepareCarefully.Instance.Filename
             }));
         }
+        
+        private Pawn ConvertPawn(CustomPawn customPawn) {
+            customPawn.Pawn.SetFactionDirect(Faction.OfPlayer);
+            if (customPawn.Type == CustomPawnType.Colonist) {
+                customPawn.Pawn.SetFactionDirect(Faction.OfPlayer);
+            }
+            if (customPawn.Pawn.workSettings == null) {
+                customPawn.Pawn.workSettings = new Pawn_WorkSettings(customPawn.Pawn);
+            }
+            customPawn.Pawn.workSettings.EnableAndInitialize();
+            return customPawn.Pawn;
+        }
 
         public void PrepareGame() {
-            // Get all of the related pawns.
-            RelationshipBuilder relationshipBuilder = new RelationshipBuilder(PrepareCarefully.Instance.RelationshipManager.Relationships.ToList(),
-                PrepareCarefully.Instance.RelationshipManager.ParentChildGroups);
-            List<Pawn> relatedPawns = relationshipBuilder.Build();
-
-            // Replace the pawns; be sure to preserve the "left behind" pawns.
-            int prepareCarefullyPawnCount = PrepareCarefully.Instance.Colonists.Count;
-            int originalStartingPawnCount = Find.GameInitData.startingPawnCount;
-            int originalTotalPawnCount = Find.GameInitData.startingAndOptionalPawns.Count;
-            int leftBehindCount = originalTotalPawnCount - originalStartingPawnCount;
-            List<Pawn> leftBehindPawns = new List<Pawn>();
-            if (leftBehindCount > 0) {
-                leftBehindPawns.AddRange(Find.GameInitData.startingAndOptionalPawns.GetRange(originalStartingPawnCount, leftBehindCount));
-            }
-            Find.GameInitData.startingAndOptionalPawns = PrepareCarefully.Instance.Colonists;
-            
-            // Add related pawns who are not already in the world to the starting pawns list.
-            HashSet<Pawn> worldPawns = new HashSet<Pawn>();
-            worldPawns.AddRange(leftBehindPawns);
-            foreach (Pawn p in relatedPawns) {
-                if (!Find.World.worldPawns.Contains(p)) {
-                    worldPawns.Add(p);
-                }
-            }
-            if (worldPawns.Count > 0) {
-                Find.GameInitData.startingAndOptionalPawns.AddRange(worldPawns);
-            }
-            Find.GameInitData.startingPawnCount = prepareCarefullyPawnCount;
-
-            // Go through each pawn and make last minute modifications before starting the new game.
-            for (int i=0; i<prepareCarefullyPawnCount; i++) {
-                Pawn pawn = Find.GameInitData.startingAndOptionalPawns[i];
-                PreparePawnForNewGame(pawn);
-            }
+            PrepareColonists();
+            PrepareWorldPawns();
 
             // This needs some explaining.  We need custom scenario parts to handle animal spawning
             // and scattered things.  However, we don't want the scenario that gets saved with a game
@@ -161,7 +141,130 @@ namespace EdB.PrepareCarefully {
             // Remove equipment scenario parts.
             ReplaceScenarioParts(actualScenario, vanillaFriendlyScenario);
         }
-        
+
+        protected void PrepareColonists() {
+            List<Pawn> colonists = new List<Pawn>();
+            foreach (var customPawn in state.Pawns) {
+                if (customPawn.Type == CustomPawnType.Colonist) {
+                    customPawn.Pawn.SetFactionDirect(Faction.OfPlayer);
+                    customPawn.Pawn.kindDef = Faction.OfPlayer.RandomPawnKind();
+                    if (customPawn.Pawn.workSettings == null) {
+                        customPawn.Pawn.workSettings = new Pawn_WorkSettings(customPawn.Pawn);
+                    }
+                    customPawn.Pawn.workSettings.EnableAndInitialize();
+                    colonists.Add(customPawn.Pawn);
+                }
+            }
+            Find.GameInitData.startingPawnCount = colonists.Count;
+            Find.GameInitData.startingAndOptionalPawns = colonists;
+        }
+
+        protected void PrepareWorldPawns() {
+            foreach (var customPawn in state.Pawns) {
+                if (customPawn.Type == CustomPawnType.World) {
+                    AddPawnToWorld(customPawn);
+                }
+            }
+        }
+
+        protected void PrepareRelatedPawns() {
+            // Get all of the related pawns.
+            List<CustomPawn> relatedPawns = new RelationshipBuilder(PrepareCarefully.Instance.RelationshipManager.Relationships.ToList(),
+                PrepareCarefully.Instance.RelationshipManager.ParentChildGroups).Build();
+
+            // Add related pawns who are not already in the world to the starting pawns list
+            foreach (var customPawn in relatedPawns) {
+                if (PrepareCarefully.Instance.RelationshipManager.TemporaryPawns.FirstOrDefault((pawn) => {
+                    return pawn.Pawn == customPawn;
+                }) != null) {
+                    continue;
+                }
+                AddPawnToWorld(customPawn);
+            }
+        }
+
+        protected void AddPawnToWorld(CustomPawn pawn) {
+            // Don't add colonists to the world.
+            if (pawn.Type == CustomPawnType.Colonist) {
+                return;
+            }
+
+            // If we have a custom faction setting, handle that.
+            CustomFaction randomFaction = PrepareCarefully.Instance.Providers.Factions.RandomFaction;
+            if (pawn.Faction != null && pawn.Faction != PrepareCarefully.Instance.Providers.Factions.RandomFaction) {
+                // If they are assigned to a specific faction, assign them either as a leader or as a regular pawn.
+                if (pawn.Faction.Faction != null) {
+                    if (pawn.Faction.Leader) {
+                        MakePawnIntoFactionLeader(pawn);
+                    }
+                    try {
+                        pawn.Pawn.SetFaction(pawn.Faction.Faction, null);
+                    }
+                    catch (Exception) {
+                        Log.Warning("Prepare Carefully failed to add a world pawn to the expected faction");
+                    }
+                }
+                // If they are assigned to a random faction of a specific def, choose the random faction and assign it.
+                else {
+                    try {
+                        Faction faction = PrepareCarefully.Instance.Providers.Factions.GetFactions(pawn.Faction.Def).RandomElement();
+                        pawn.Pawn.SetFaction(pawn.Faction.Faction, null);
+                    }
+                    catch (Exception) {
+                        Log.Warning("Prepare Carefully failed to add a world pawn to the expected faction");
+                    }
+                }
+            }
+            // If they are assigned to a completely random faction, set their faction to null.  It will get reassigned automatically.
+            else {
+                pawn.Pawn.SetFactionDirect(null);
+            }
+            
+            // Don't add pawns to the world if they have already been added.
+            if (Find.GameInitData.startingAndOptionalPawns.Contains(pawn.Pawn)) {
+                return;
+            }
+            else {
+                Find.GameInitData.startingAndOptionalPawns.Add(pawn.Pawn);
+            }
+        }
+
+        protected void MakePawnIntoFactionLeader(CustomPawn pawn) {
+            FactionDef factionDef = pawn.Faction.Def;
+            List<PawnKindDef> source = new List<PawnKindDef>();
+            foreach (PawnGroupMaker pawnGroupMaker in factionDef.pawnGroupMakers.Where<PawnGroupMaker>((Func<PawnGroupMaker, bool>)(x => x.kindDef == PawnGroupKindDefOf.Combat))) {
+                foreach (PawnGenOption option in pawnGroupMaker.options) {
+                    if (option.kind.factionLeader)
+                        source.Add(option.kind);
+                }
+            }
+            PawnKindDef result;
+            if (source.TryRandomElement<PawnKindDef>(out result)) {
+                Pawn randomPawn = PawnGenerator.GeneratePawn(result, pawn.Faction.Faction);
+                pawn.Pawn.kindDef = randomPawn.kindDef;
+                pawn.Pawn.relations.everSeenByPlayer = true;
+
+                List<Thing> inventory = new List<Thing>();
+                foreach (var thing in randomPawn.inventory.innerContainer) {
+                    inventory.Add(thing);
+                }
+                foreach (var thing in inventory) {
+                    randomPawn.inventory.innerContainer.Remove(thing);
+                    pawn.Pawn.inventory.innerContainer.TryAdd(thing, true);
+                }
+                List<ThingWithComps> equipment = new List<ThingWithComps>();
+                foreach (var thing in randomPawn.equipment.AllEquipmentListForReading) {
+                    equipment.Add(thing);
+                }
+                foreach (var thing in equipment) {
+                    randomPawn.equipment.Remove(thing);
+                    pawn.Pawn.equipment.AddEquipment(thing);
+                }
+            }
+            // Make the pawn into the faction leader.
+            pawn.Faction.Faction.leader = pawn.Pawn;
+        }
+
         protected void ReplaceScenarioParts(Scenario actualScenario, Scenario vanillaFriendlyScenario) {
             // Create a lookup of all of the scenario types that we want to replace.
             HashSet<string> scenarioPartsToReplace = new HashSet<string>() {
@@ -378,12 +481,15 @@ namespace EdB.PrepareCarefully {
                 if (!w.alwaysStartActive) {
                     bool flag = false;
                     foreach (CustomPawn current4 in PrepareCarefully.Instance.Pawns) {
+                        if (current4.Type != CustomPawnType.Colonist) {
+                            continue;
+                        }
                         if (!current4.Pawn.story.WorkTypeIsDisabled(w)) {
                             flag = true;
                         }
                     }
                     if (!flag) {
-                        IEnumerable<CustomPawn> source = from col in PrepareCarefully.Instance.Pawns where !col.Pawn.story.WorkTypeIsDisabled(w) select col;
+                        IEnumerable<CustomPawn> source = from col in PrepareCarefully.Instance.Pawns where !col.Pawn.story.WorkTypeIsDisabled(w) && col.Type == CustomPawnType.Colonist select col;
                         if (source.Any<CustomPawn>()) {
                             CustomPawn pawn = source.InRandomOrder(null).MaxBy((CustomPawn c) => c.Pawn.skills.AverageOfRelevantSkillsFor(w));
                         }
