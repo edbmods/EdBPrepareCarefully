@@ -1,5 +1,19 @@
  _____________________________________________________________________________
  
+   Version 1.0.5
+ _____________________________________________________________________________
+
+ - Added world characters to Prepare Carefully.  The character list is now
+   divided into separate colony and world character lists.
+ - Added a faction selector for world characters.
+ - Added the concept of "temporary" pawns to the relationship tab to allow
+   you to connect two pawns in a relationship without adding the intermediate
+   pawn to the world.
+ - Added filters to the backstory dialogs.
+ - Changes to the preset file format.
+
+ _____________________________________________________________________________
+ 
    Version 1.0.4
  _____________________________________________________________________________
 
