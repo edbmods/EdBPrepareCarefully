@@ -13,10 +13,10 @@ namespace EdB.PrepareCarefully {
             this.bonusOrPenalty = bonusOrPenalty < 0 ? -1 : 1;
             this.skillDef = skillDef;
             if (this.bonusOrPenalty < 0) {
-                this.Label = "EdB.PC.Dialog.Backstory.Filter.SkillBonus".Translate(new object[] { this.skillDef.LabelCap });
+                this.Label = "EdB.PC.Dialog.Backstory.Filter.SkillPenalty".Translate(new object[] { this.skillDef.LabelCap });
             }
             else {
-                this.Label = "EdB.PC.Dialog.Backstory.Filter.SkillPenalty".Translate(new object[] { this.skillDef.LabelCap });
+                this.Label = "EdB.PC.Dialog.Backstory.Filter.SkillBonus".Translate(new object[] { this.skillDef.LabelCap });
             }
             this.FilterFunction = (Backstory backstory) => {
                 if (this.skillDef != null && backstory.skillGainsResolved.ContainsKey(this.skillDef)) {
