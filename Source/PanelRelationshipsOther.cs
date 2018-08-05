@@ -31,7 +31,7 @@ namespace EdB.PrepareCarefully {
 
         protected List<PawnRelationDef> relationDefs = new List<PawnRelationDef>();
         protected HashSet<PawnRelationDef> disabledRelationships = new HashSet<PawnRelationDef>();
-        protected HashSet<CustomParentChildPawn> disabledTargets = new HashSet<CustomParentChildPawn>();
+        protected HashSet<CustomPawn> disabledTargets = new HashSet<CustomPawn>();
         protected List<CustomRelationship> relationshipsToDelete = new List<CustomRelationship>();
         public PanelRelationshipsOther() {
             relationDefs.AddRange(DefDatabase<PawnRelationDef>.AllDefs.ToList().FindAll((PawnRelationDef def) => {
@@ -259,9 +259,9 @@ namespace EdB.PrepareCarefully {
         }
 
         protected void ShowAddRelationshipDialogs() {
-            CustomParentChildPawn sourceParentChildPawn = null;
+            CustomPawn sourceParentChildPawn = null;
             PawnRelationDef selectedRelationship = null;
-            CustomParentChildPawn targetParentChildPawn = null;
+            CustomPawn targetParentChildPawn = null;
 
             Dialog_Options<PawnRelationDef> relationshipDialog =
                 new Dialog_Options<PawnRelationDef>(null) {
@@ -269,7 +269,7 @@ namespace EdB.PrepareCarefully {
                     CancelButtonLabel = "EdB.PC.Common.Cancel".Translate(),
                     HeaderLabel = "EdB.PC.AddRelationship.Header.Relationship".Translate(),
                     NameFunc = (PawnRelationDef def) => {
-                        return def.GetGenderSpecificLabelCap(sourceParentChildPawn.Pawn.Pawn);
+                        return def.GetGenderSpecificLabelCap(sourceParentChildPawn.Pawn);
                     },
                     SelectedFunc = (PawnRelationDef def) => {
                         return def == selectedRelationship;
@@ -290,32 +290,32 @@ namespace EdB.PrepareCarefully {
                     }
                 };
 
-            List<WidgetTable<CustomParentChildPawn>.RowGroup> sourceRowGroups = new List<WidgetTable<CustomParentChildPawn>.RowGroup>();
-            sourceRowGroups.Add(new WidgetTable<CustomParentChildPawn>.RowGroup("EdB.PC.AddParentChild.Header.SelectColonist".Translate(),
-                PrepareCarefully.Instance.RelationshipManager.ColonyAndWorldPawns.Where((CustomParentChildPawn pawn) => {
-                    return pawn.Pawn.Type == CustomPawnType.Colonist;
+            List<WidgetTable<CustomPawn>.RowGroup> sourceRowGroups = new List<WidgetTable<CustomPawn>.RowGroup>();
+            sourceRowGroups.Add(new WidgetTable<CustomPawn>.RowGroup("EdB.PC.AddParentChild.Header.SelectColonist".Translate(),
+                PrepareCarefully.Instance.RelationshipManager.ColonyAndWorldPawns.Where((CustomPawn pawn) => {
+                    return pawn.Type == CustomPawnType.Colonist;
                 })));
-            List<CustomParentChildPawn> hiddenPawnsForSource = PrepareCarefully.Instance.RelationshipManager.HiddenPawns.ToList();
+            List<CustomPawn> hiddenPawnsForSource = PrepareCarefully.Instance.RelationshipManager.HiddenPawns.ToList();
             hiddenPawnsForSource.Sort((a, b) => {
-                if (a.Pawn.Type != b.Pawn.Type) {
-                    return a.Pawn.Type == CustomPawnType.Hidden ? -1 : 1;
+                if (a.Type != b.Type) {
+                    return a.Type == CustomPawnType.Hidden ? -1 : 1;
                 }
                 else {
-                    int aInt = a.Pawn.Index == null ? 0 : a.Pawn.Index.Value;
-                    int bInt = b.Pawn.Index == null ? 0 : b.Pawn.Index.Value;
+                    int aInt = a.Index == null ? 0 : a.Index.Value;
+                    int bInt = b.Index == null ? 0 : b.Index.Value;
                     return aInt.CompareTo(bInt);
                 }
             });
-            sourceRowGroups.Add(new WidgetTable<CustomParentChildPawn>.RowGroup("<b>" + "EdB.PC.AddParentChild.Header.SelectWorldPawn".Translate() + "</b>",
-                PrepareCarefully.Instance.RelationshipManager.ColonyAndWorldPawns.Where((CustomParentChildPawn pawn) => {
-                    return pawn.Pawn.Type != CustomPawnType.Colonist;
+            sourceRowGroups.Add(new WidgetTable<CustomPawn>.RowGroup("<b>" + "EdB.PC.AddParentChild.Header.SelectWorldPawn".Translate() + "</b>",
+                PrepareCarefully.Instance.RelationshipManager.ColonyAndWorldPawns.Where((CustomPawn pawn) => {
+                    return pawn.Type != CustomPawnType.Colonist;
                 }).Concat(hiddenPawnsForSource)));
-            WidgetTable<CustomParentChildPawn>.RowGroup sourceNewPawnGroup = new WidgetTable<CustomParentChildPawn>.RowGroup("EdB.PC.AddParentChild.Header.CreateTemporaryPawn".Translate(), PrepareCarefully.Instance.RelationshipManager.TemporaryPawns);
+            WidgetTable<CustomPawn>.RowGroup sourceNewPawnGroup = new WidgetTable<CustomPawn>.RowGroup("EdB.PC.AddParentChild.Header.CreateTemporaryPawn".Translate(), PrepareCarefully.Instance.RelationshipManager.TemporaryPawns);
             sourceRowGroups.Add(sourceNewPawnGroup);
 
             DialogSelectParentChildPawn sourcePawnDialog = new DialogSelectParentChildPawn() {
                 HeaderLabel = "EdB.PC.AddRelationship.Header.Source".Translate(),
-                SelectAction = (CustomParentChildPawn pawn) => { sourceParentChildPawn = pawn; },
+                SelectAction = (CustomPawn pawn) => { sourceParentChildPawn = pawn; },
                 RowGroups = sourceRowGroups,
                 DisabledPawns = null,
                 ConfirmValidation = () => {
@@ -328,7 +328,7 @@ namespace EdB.PrepareCarefully {
                 },
                 CloseAction = () => {
                     // If the user selected a new pawn, replace the pawn in the new pawn list with another one.
-                    int index = sourceNewPawnGroup.Rows.FirstIndexOf((CustomParentChildPawn p) => {
+                    int index = sourceNewPawnGroup.Rows.FirstIndexOf((CustomPawn p) => {
                         return p == targetParentChildPawn;
                     });
                     if (index > -1 && index < PrepareCarefully.Instance.RelationshipManager.TemporaryPawns.Count) {
@@ -339,7 +339,7 @@ namespace EdB.PrepareCarefully {
 
             DialogSelectParentChildPawn targetPawnDialog = new DialogSelectParentChildPawn() {
                 HeaderLabel = "EdB.PC.AddRelationship.Header.Target".Translate(),
-                SelectAction = (CustomParentChildPawn pawn) => { targetParentChildPawn = pawn; },
+                SelectAction = (CustomPawn pawn) => { targetParentChildPawn = pawn; },
                 RowGroups = null, // To be filled out later
                 DisabledPawns = null, // To be filled out later
                 ConfirmValidation = () => {
@@ -352,14 +352,14 @@ namespace EdB.PrepareCarefully {
                 }
             };
 
-            WidgetTable<CustomParentChildPawn>.RowGroup targetNewPawnGroup = null;
+            WidgetTable<CustomPawn>.RowGroup targetNewPawnGroup = null;
 
             sourcePawnDialog.CloseAction = () => {
                 List<PawnRelationDef> relationDefs = PrepareCarefully.Instance.RelationshipManager.AllowedRelationships.Select((PawnRelationDef def) => {
                     return def;
                 }).ToList();
                 relationDefs.Sort((PawnRelationDef a, PawnRelationDef b) => {
-                    return a.GetGenderSpecificLabelCap(sourceParentChildPawn.Pawn.Pawn).CompareTo(b.GetGenderSpecificLabelCap(sourceParentChildPawn.Pawn.Pawn));
+                    return a.GetGenderSpecificLabelCap(sourceParentChildPawn.Pawn).CompareTo(b.GetGenderSpecificLabelCap(sourceParentChildPawn.Pawn));
                 });
                 relationshipDialog.Options = relationDefs;
                 Find.WindowStack.Add(relationshipDialog);
@@ -368,27 +368,27 @@ namespace EdB.PrepareCarefully {
                 SetDisabledTargets(sourceParentChildPawn, selectedRelationship);
                 targetPawnDialog.DisabledPawns = disabledTargets;
 
-                List<WidgetTable<CustomParentChildPawn>.RowGroup> targetRowGroups = new List<WidgetTable<CustomParentChildPawn>.RowGroup>();
-                targetRowGroups.Add(new WidgetTable<CustomParentChildPawn>.RowGroup("EdB.PC.AddParentChild.Header.SelectColonist".Translate(),
-                    PrepareCarefully.Instance.RelationshipManager.ColonyAndWorldPawns.Where((CustomParentChildPawn pawn) => {
-                        return pawn.Pawn.Type == CustomPawnType.Colonist && pawn != sourceParentChildPawn;
+                List<WidgetTable<CustomPawn>.RowGroup> targetRowGroups = new List<WidgetTable<CustomPawn>.RowGroup>();
+                targetRowGroups.Add(new WidgetTable<CustomPawn>.RowGroup("EdB.PC.AddParentChild.Header.SelectColonist".Translate(),
+                    PrepareCarefully.Instance.RelationshipManager.ColonyAndWorldPawns.Where((CustomPawn pawn) => {
+                        return pawn.Type == CustomPawnType.Colonist && pawn != sourceParentChildPawn;
                     })));
-                List<CustomParentChildPawn> hiddenPawnsForTarget = PrepareCarefully.Instance.RelationshipManager.HiddenPawns.ToList();
+                List<CustomPawn> hiddenPawnsForTarget = PrepareCarefully.Instance.RelationshipManager.HiddenPawns.ToList();
                 hiddenPawnsForTarget.Sort((a, b) => {
-                    if (a.Pawn.Type != b.Pawn.Type) {
-                        return a.Pawn.Type == CustomPawnType.Hidden ? -1 : 1;
+                    if (a.Type != b.Type) {
+                        return a.Type == CustomPawnType.Hidden ? -1 : 1;
                     }
                     else {
-                        int aInt = a.Pawn.Index == null ? 0 : a.Pawn.Index.Value;
-                        int bInt = b.Pawn.Index == null ? 0 : b.Pawn.Index.Value;
+                        int aInt = a.Index == null ? 0 : a.Index.Value;
+                        int bInt = b.Index == null ? 0 : b.Index.Value;
                         return aInt.CompareTo(bInt);
                     }
                 });
-                targetRowGroups.Add(new WidgetTable<CustomParentChildPawn>.RowGroup("<b>" + "EdB.PC.AddParentChild.Header.SelectWorldPawn".Translate() + "</b>",
-                    PrepareCarefully.Instance.RelationshipManager.ColonyAndWorldPawns.Where((CustomParentChildPawn pawn) => {
-                        return pawn.Pawn.Type != CustomPawnType.Colonist && pawn != sourceParentChildPawn;
+                targetRowGroups.Add(new WidgetTable<CustomPawn>.RowGroup("<b>" + "EdB.PC.AddParentChild.Header.SelectWorldPawn".Translate() + "</b>",
+                    PrepareCarefully.Instance.RelationshipManager.ColonyAndWorldPawns.Where((CustomPawn pawn) => {
+                        return pawn.Type != CustomPawnType.Colonist && pawn != sourceParentChildPawn;
                     }).Concat(hiddenPawnsForTarget)));
-                targetNewPawnGroup = new WidgetTable<CustomParentChildPawn>.RowGroup("EdB.PC.AddParentChild.Header.CreateTemporaryPawn".Translate(), PrepareCarefully.Instance.RelationshipManager.TemporaryPawns);
+                targetNewPawnGroup = new WidgetTable<CustomPawn>.RowGroup("EdB.PC.AddParentChild.Header.CreateTemporaryPawn".Translate(), PrepareCarefully.Instance.RelationshipManager.TemporaryPawns);
                 targetRowGroups.Add(targetNewPawnGroup);
                 targetPawnDialog.RowGroups = targetRowGroups;
 
@@ -396,18 +396,18 @@ namespace EdB.PrepareCarefully {
             };
             targetPawnDialog.CloseAction = () => {
                 // If the user selected a new pawn, replace the pawn in the new pawn list with another one.
-                int index = targetNewPawnGroup.Rows.FirstIndexOf((CustomParentChildPawn p) => {
+                int index = targetNewPawnGroup.Rows.FirstIndexOf((CustomPawn p) => {
                     return p == targetParentChildPawn;
                 });
                 if (index > -1 && index < PrepareCarefully.Instance.RelationshipManager.TemporaryPawns.Count) {
                     targetParentChildPawn = PrepareCarefully.Instance.RelationshipManager.ReplaceNewTemporaryCharacter(index);
                 }
-                this.RelationshipAdded(PrepareCarefully.Instance.RelationshipManager.FindInverseRelationship(selectedRelationship), sourceParentChildPawn.Pawn, targetParentChildPawn.Pawn);
+                this.RelationshipAdded(PrepareCarefully.Instance.RelationshipManager.FindInverseRelationship(selectedRelationship), sourceParentChildPawn, targetParentChildPawn);
             };
             Find.WindowStack.Add(sourcePawnDialog);
         }
         
-        public void SetDisabledTargets(CustomParentChildPawn source, PawnRelationDef relationDef) {
+        public void SetDisabledTargets(CustomPawn source, PawnRelationDef relationDef) {
             disabledTargets.Clear();
             CarefullyPawnRelationDef extendedDef = DefDatabase<CarefullyPawnRelationDef>.GetNamedSilentFail(relationDef.defName);
             foreach (var pawn in PrepareCarefully.Instance.RelationshipManager.ColonyAndWorldPawns) {
@@ -417,7 +417,7 @@ namespace EdB.PrepareCarefully {
                 }
                 bool bloodRelation = relationDef.familyByBloodRelation;
                 foreach (CustomRelationship r in PrepareCarefully.Instance.RelationshipManager.Relationships) {
-                    if (r.source == source.Pawn && r.target == pawn.Pawn) {
+                    if (r.source == source && r.target == pawn) {
                         if (r.inverseDef == relationDef || r.def == relationDef) {
                             disabledTargets.Add(pawn);
                             break;
@@ -431,7 +431,7 @@ namespace EdB.PrepareCarefully {
                             break;
                         }
                     }
-                    else if (r.source == pawn.Pawn && r.target == source.Pawn) {
+                    else if (r.source == pawn && r.target == source) {
                         if (r.def == relationDef || r.inverseDef == relationDef) {
                             disabledTargets.Add(pawn);
                             break;

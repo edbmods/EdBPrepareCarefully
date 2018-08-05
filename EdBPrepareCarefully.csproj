@@ -59,8 +59,7 @@
     <Compile Include="Source\ControllerRelationships.cs" />
     <Compile Include="Source\CostCalculator.cs" />
     <Compile Include="Source\CustomFaction.cs" />
-    <Compile Include="Source\CustomParentChildGroup.cs" />
-    <Compile Include="Source\CustomParentChildPawn.cs" />
+    <Compile Include="Source\ParentChildGroup.cs" />
     <Compile Include="Source\CustomPawnType.cs" />
     <Compile Include="Source\DialogFactions.cs" />
     <Compile Include="Source\DialogInitializationError.cs" />
