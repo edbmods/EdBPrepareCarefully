@@ -124,6 +124,7 @@ namespace EdB.PrepareCarefully {
         public void PrepareGame() {
             PrepareColonists();
             PrepareWorldPawns();
+            PrepareRelatedPawns();
 
             // This needs some explaining.  We need custom scenario parts to handle animal spawning
             // and scattered things.  However, we don't want the scenario that gets saved with a game
