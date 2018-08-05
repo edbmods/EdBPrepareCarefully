@@ -50,11 +50,18 @@ namespace EdB.PrepareCarefully {
             float num = rect.height + 45f;
             Rect rect4 = new Rect(rect.x + rect.width / 2f - BottomButSize.x / 2f, num, BottomButSize.x, BottomButSize.y);
             if (Widgets.ButtonText(rect4, "EdB.PC.Page.Button.PrepareCarefully".Translate(), true, false, true)) {
-                PrepareCarefully.Instance.Initialize();
-                PrepareCarefully.Instance.OriginalPage = __instance;
-                Page_PrepareCarefully page = new Page_PrepareCarefully();
-                PrepareCarefully.Instance.State.Page = page;
-                Find.WindowStack.Add(page);
+                try {
+                    PrepareCarefully.Instance.Initialize();
+                    PrepareCarefully.Instance.OriginalPage = __instance;
+                    Page_PrepareCarefully page = new Page_PrepareCarefully();
+                    PrepareCarefully.Instance.State.Page = page;
+                    Find.WindowStack.Add(page);
+                }
+                catch (Exception e) {
+                    Find.WindowStack.Add(new DialogInitializationError());
+                    SoundDefOf.ClickReject.PlayOneShot(null);
+                    throw e;
+                }
             }
         }
     }

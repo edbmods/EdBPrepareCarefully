@@ -11,6 +11,7 @@
 <!-- NEW: EdB.PC.Dialog.Faction.RandomFaction -->
 <!-- NEW: EdB.PC.Dialog.Faction.SelectRandomFaction -->
 <!-- NEW: EdB.PC.Dialog.Faction.SelectSpecificFaction -->
+<!-- NEW: EdB.PC.Error.Initialization -->
 <!-- NEW: EdB.PC.Panel.Appearance.WorldPawnAlert -->
 <!-- NEW: EdB.PC.Panel.ColonyPawnList.Title -->
 <!-- NEW: EdB.PC.Panel.Health.PartWithInjury -->
@@ -94,8 +95,10 @@
   <EdB.PC.Dialog.Backstory.Filter.Add>Add Filter</EdB.PC.Dialog.Backstory.Filter.Add>
   <EdB.PC.Dialog.Backstory.Filter.NoDisabledWorkTypes>No Disabled Work Types</EdB.PC.Dialog.Backstory.Filter.NoDisabledWorkTypes>
   <EdB.PC.Dialog.Backstory.Filter.NoSkillPenalties>No Skill Penalties</EdB.PC.Dialog.Backstory.Filter.NoSkillPenalties>
-  <EdB.PC.Dialog.Backstory.Filter.SkillBonus>Bonus: {0}</EdB.PC.Dialog.Backstory.Filter.SkillBonus>
-  <EdB.PC.Dialog.Backstory.Filter.SkillPenalty>Penalty: {0}</EdB.PC.Dialog.Backstory.Filter.SkillPenalty>
+  <EdB.PC.Dialog.Backstory.Filter.SkillBonus>Bonus: {0} +{1}</EdB.PC.Dialog.Backstory.Filter.SkillBonus>
+  <EdB.PC.Dialog.Backstory.Filter.SkillPenalty>Penalty: {0} -{1}</EdB.PC.Dialog.Backstory.Filter.SkillPenalty>
+  <EdB.PC.Dialog.Backstory.Filter.SkillBonusFull>Skill Bonus: {0}, +{1} or better</EdB.PC.Dialog.Backstory.Filter.SkillBonusFull>
+  <EdB.PC.Dialog.Backstory.Filter.SkillPenaltyFull>Skill Penalty: {0} -{1} or worse</EdB.PC.Dialog.Backstory.Filter.SkillPenaltyFull>
 
   <EdB.PC.Dialog.BodyPart.Header>Select a location</EdB.PC.Dialog.BodyPart.Header>
   <EdB.PC.Dialog.BodyPart.Error.Required>You must select a location</EdB.PC.Dialog.BodyPart.Error.Required>
@@ -166,6 +169,11 @@
   <EdB.PC.Error.NotEnoughPoints>You've spent too many points.</EdB.PC.Error.NotEnoughPoints>
   <EdB.PC.Error.NotEnoughColonists1>You must have at least one colonist.</EdB.PC.Error.NotEnoughColonists1>
   <EdB.PC.Error.NotEnoughColonists>You must have at least {0} colonists.</EdB.PC.Error.NotEnoughColonists>
+  <EdB.PC.Error.Initialization>Prepare Carefully failed to initialize.
+
+This is almost always caused by another mod.  Mods do unexpected things, and sometimes Prepare Carefully breaks when loading custom items, factions, etc.  In some cases, Prepare Carefully will need to be fixed to make the mods work together.  In other cases, it's the other mod that needs to be fixed.  Unfortunately, there are a handful of mods that may never be compatible because they make significant changes to the game that just don't fit well with Prepare Carefully.
+
+Before reporting an error, please try to figure out which mod is causing the problem.  If you have a lot of mods, you can use a divide and conquer approach to disable mods until you find the one that's triggering the issue.</EdB.PC.Error.Initialization>
 
   <EdB.PC.Pawn.AgeWithChronological>{0} ({1})</EdB.PC.Pawn.AgeWithChronological>
   <EdB.PC.Pawn.AgeWithoutChronological>{0}</EdB.PC.Pawn.AgeWithoutChronological>

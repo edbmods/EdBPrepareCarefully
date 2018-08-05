@@ -63,6 +63,7 @@
     <Compile Include="Source\CustomParentChildPawn.cs" />
     <Compile Include="Source\CustomPawnType.cs" />
     <Compile Include="Source\DialogFactions.cs" />
+    <Compile Include="Source\DialogInitializationError.cs" />
     <Compile Include="Source\DialogManageImplants.cs" />
     <Compile Include="Source\DialogPawnKinds.cs" />
     <Compile Include="Source\DialogSelectPawn.cs" />
