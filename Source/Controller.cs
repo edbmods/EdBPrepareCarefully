@@ -176,7 +176,7 @@ namespace EdB.PrepareCarefully {
             // Add related pawns who are not already in the world to the starting pawns list
             foreach (var customPawn in relatedPawns) {
                 if (PrepareCarefully.Instance.RelationshipManager.TemporaryPawns.FirstOrDefault((pawn) => {
-                    return pawn.Pawn == customPawn;
+                    return pawn == customPawn;
                 }) != null) {
                     continue;
                 }

@@ -21,12 +21,12 @@ namespace EdB.PrepareCarefully {
                 }
                 foreach (var g in data.RelationshipManager.ParentChildGroups) {
                     foreach (var parent in g.Parents) {
-                        if (parent.Pawn != null && parent.Pawn.Id == null) {
-                            parent.Pawn.GenerateId();
+                        if (parent != null && parent.Id == null) {
+                            parent.GenerateId();
                         }
                         foreach (var child in g.Children) {
-                            if (child.Pawn != null && child.Pawn.Id == null) {
-                                child.Pawn.GenerateId();
+                            if (child != null && child.Id == null) {
+                                child.GenerateId();
                             }
                         }
                     }
@@ -40,9 +40,9 @@ namespace EdB.PrepareCarefully {
                 }
                 foreach (var g in data.RelationshipManager.ParentChildGroups) {
                     foreach (var parent in g.Parents) {
-                        if (parent.Pawn.Hidden) {
+                        if (parent.Hidden) {
                             if (parent.Pawn != null) {
-                                SaveRecordPawnV4 pawn = new SaveRecordPawnV4(parent.Pawn);
+                                SaveRecordPawnV4 pawn = new SaveRecordPawnV4(parent);
                                 preset.pawns.Add(pawn);
                             }
                             else {
@@ -50,9 +50,9 @@ namespace EdB.PrepareCarefully {
                             }
                         }
                         foreach (var child in g.Children) {
-                            if (child.Pawn.Hidden) {
+                            if (child.Hidden) {
                                 if (child.Pawn != null) {
-                                    SaveRecordPawnV4 pawn = new SaveRecordPawnV4(child.Pawn);
+                                    SaveRecordPawnV4 pawn = new SaveRecordPawnV4(child);
                                     preset.pawns.Add(pawn);
                                 }
                                 else {
@@ -92,7 +92,7 @@ namespace EdB.PrepareCarefully {
                             continue;
                         }
                         else {
-                            group.parents.Add(p.Pawn.Id);
+                            group.parents.Add(p.Id);
                         }
                     }
                     foreach (var p in g.Children) {
@@ -102,7 +102,7 @@ namespace EdB.PrepareCarefully {
                             continue;
                         }
                         else {
-                            group.children.Add(p.Pawn.Id);
+                            group.children.Add(p.Id);
                         }
                     }
                     preset.parentChildGroups.Add(group);

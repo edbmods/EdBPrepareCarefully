@@ -8,10 +8,10 @@ using Verse;
 using Verse.Sound;
 
 namespace EdB.PrepareCarefully {
-    public class CustomParentChildGroup {
-        private List<CustomParentChildPawn> parents = new List<CustomParentChildPawn>();
-        private List<CustomParentChildPawn> children = new List<CustomParentChildPawn>();
-        public List<CustomParentChildPawn> Parents {
+    public class ParentChildGroup {
+        private List<CustomPawn> parents = new List<CustomPawn>();
+        private List<CustomPawn> children = new List<CustomPawn>();
+        public List<CustomPawn> Parents {
             get {
                 return parents;
             }
@@ -19,7 +19,7 @@ namespace EdB.PrepareCarefully {
                 parents = value;
             }
         }
-        public List<CustomParentChildPawn> Children {
+        public List<CustomPawn> Children {
             get {
                 return children;
             }
@@ -33,14 +33,14 @@ namespace EdB.PrepareCarefully {
                 result += "null";
             }
             else {
-                result += "[" + string.Join(", ", parents.Select((CustomParentChildPawn pawn) => { return pawn == null ? "null" : pawn.ToString(); }).ToArray()) + "]";
+                result += "[" + string.Join(", ", parents.Select((CustomPawn pawn) => { return pawn == null ? "null" : pawn.ToString(); }).ToArray()) + "]";
             }
             result += ", " + (children != null ? children.Count.ToString() : "0") + " children = ";
             if (children == null) {
                 result += "null";
             }
             else {
-                result += "[" + string.Join(", ", children.Select((CustomParentChildPawn pawn) => { return pawn == null ? "null" : pawn.ToString(); }).ToArray()) + "]";
+                result += "[" + string.Join(", ", children.Select((CustomPawn pawn) => { return pawn == null ? "null" : pawn.ToString(); }).ToArray()) + "]";
             }
             result += " }";
             return result;

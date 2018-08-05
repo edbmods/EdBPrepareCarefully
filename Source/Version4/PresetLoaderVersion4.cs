@@ -244,12 +244,12 @@ namespace EdB.PrepareCarefully {
 
             if (preset.parentChildGroups != null) {
                 foreach (var groupRecord in preset.parentChildGroups) {
-                    CustomParentChildGroup group = new CustomParentChildGroup();
+                    ParentChildGroup group = new ParentChildGroup();
                     if (groupRecord.parents != null) {
                         foreach (var id in groupRecord.parents) {
                             CustomPawn parent = FindPawnById(id, colonistCustomPawns, hiddenCustomPawns);
                             if (parent != null) {
-                                var pawn = loadout.RelationshipManager.FindParentChildPawn(parent);
+                                var pawn = parent;
                                 if (pawn != null) {
                                     group.Parents.Add(pawn);
                                 }
@@ -266,7 +266,7 @@ namespace EdB.PrepareCarefully {
                         foreach (var id in groupRecord.children) {
                             CustomPawn child = FindPawnById(id, colonistCustomPawns, hiddenCustomPawns);
                             if (child != null) {
-                                var pawn = loadout.RelationshipManager.FindParentChildPawn(child);
+                                var pawn = child;
                                 if (pawn != null) {
                                     group.Children.Add(pawn);
                                 }
