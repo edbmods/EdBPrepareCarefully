@@ -222,7 +222,7 @@ namespace EdB.PrepareCarefully {
             }
             
             // Don't add pawns to the world if they have already been added.
-            if (Find.GameInitData.startingAndOptionalPawns.Contains(pawn.Pawn)) {
+            if (Find.World.worldPawns.Contains(pawn.Pawn) || Find.GameInitData.startingAndOptionalPawns.Contains(pawn.Pawn)) {
                 return;
             }
             else {
