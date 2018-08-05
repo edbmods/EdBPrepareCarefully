@@ -8,7 +8,7 @@ using Verse;
 namespace EdB.PrepareCarefully {
     class FilterBackstoryNoPenalties : Filter<Backstory> {
         public FilterBackstoryNoPenalties() {
-            this.Label = "EdB.PC.Dialog.Backstory.Filter.NoSkillPenalties".Translate();
+            this.LabelShort = this.LabelFull = "EdB.PC.Dialog.Backstory.Filter.NoSkillPenalties".Translate();
             this.FilterFunction = (backstory) => {
                 if (backstory.skillGainsResolved.Count == 0) {
                     return true;

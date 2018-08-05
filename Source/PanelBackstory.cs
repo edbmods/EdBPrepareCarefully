@@ -27,9 +27,8 @@ namespace EdB.PrepareCarefully {
             availableFilters.Add(new FilterBackstoryNoPenalties());
             foreach (var s in DefDatabase<SkillDef>.AllDefs) {
                 availableFilters.Add(new FilterBackstorySkillAdjustment(s, 1));
-            }
-            foreach (var s in DefDatabase<SkillDef>.AllDefs) {
-                availableFilters.Add(new FilterBackstorySkillAdjustment(s, -1));
+                availableFilters.Add(new FilterBackstorySkillAdjustment(s, 3));
+                availableFilters.Add(new FilterBackstorySkillAdjustment(s, 5));
             }
         }
         public override string PanelHeader {
@@ -148,8 +147,9 @@ namespace EdB.PrepareCarefully {
         protected void ShowBackstoryDialog(CustomPawn customPawn, BackstorySlot slot) {
             Backstory originalBackstory = (slot == BackstorySlot.Childhood) ? customPawn.Childhood : customPawn.Adulthood;
             Backstory selectedBackstory = originalBackstory;
-            bool filterListDirtyFlag = true;
             Filter<Backstory> filterToRemove = null;
+            Filter<Backstory> filterToAdd = null;
+            bool filterListDirtyFlag = true;
             List<Backstory> fullOptionsList = slot == BackstorySlot.Childhood ?
                     this.providerBackstories.ChildhoodBackstories : this.providerBackstories.AdulthoodBackstories;
             List<Backstory> filteredBackstories = new List<Backstory>(fullOptionsList.Count);
@@ -190,6 +190,7 @@ namespace EdB.PrepareCarefully {
 
                 float filterHeight = 18;
                 float filterPadding = 4;
+                float maxWidth = rect.width - 32;
                 Vector2 cursor = new Vector2(0, 0);
 
                 string addFilterLabel = "EdB.PC.Dialog.Backstory.Filter.Add".Translate();
@@ -209,8 +210,13 @@ namespace EdB.PrepareCarefully {
                 if (Widgets.ButtonInvisible(addFilterRect, true)) {
                     List<FloatMenuOption> list = new List<FloatMenuOption>();
                     foreach (var filter in availableFilters) {
-                        if (!activeFilters.Contains(filter)) {
-                            list.Add(new FloatMenuOption(filter.Label, () => {
+                        if (activeFilters.FirstOrDefault((f) => {
+                            if (f == filter || f.ConflictsWith(filter)) {
+                                return true;
+                            }
+                            return false;
+                        }) == null) {
+                            list.Add(new FloatMenuOption(filter.LabelFull, () => {
                                 activeFilters.Add(filter);
                                 filterListDirtyFlag = true;
                             }, MenuOptionPriority.Default, null, null, 0, null, null));
@@ -223,8 +229,8 @@ namespace EdB.PrepareCarefully {
                 Text.Font = GameFont.Tiny;
                 foreach (var filter in activeFilters) {
                     GUI.color = Style.ColorText;
-                    float labelWidth = Text.CalcSize(filter.Label).x;
-                    if (cursor.x + labelWidth > rect.width) {
+                    float labelWidth = Text.CalcSize(filter.LabelShort).x;
+                    if (cursor.x + labelWidth > maxWidth) {
                         cursor.x = 0;
                         cursor.y += filterHeight + filterPadding;
                     }
@@ -237,14 +243,13 @@ namespace EdB.PrepareCarefully {
                     else {
                         GUI.color = Style.ColorText;
                     }
-                    Widgets.Label(filterRect.InsetBy(10, 0, 20, 0).OffsetBy(0, 1), filter.Label);
+                    Widgets.Label(filterRect.InsetBy(10, 0, 20, 0).OffsetBy(0, 1), filter.LabelShort);
                     GUI.DrawTexture(closeButtonRect, Textures.TextureButtonCloseSmall);
                     if (Widgets.ButtonInvisible(filterRect)) {
                         filterToRemove = filter;
                         filterListDirtyFlag = true;
                         SoundDefOf.Tick_High.PlayOneShotOnCamera();
                     }
-
                     cursor.x += filterRect.width + filterPadding;
                 }
 
