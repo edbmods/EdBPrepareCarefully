@@ -238,9 +238,10 @@
     <None Include="Resources\Defs\Scenarios\ScenParts_Fixed.xml" />
     <None Include="Resources\Defs\ThingDefs\EdBPrepareCarefully.xml" />
   </ItemGroup>
+  <ItemGroup>
+    <None Include="ResourcesUnstable\About\About.xml">
+      <SubType>Designer</SubType>
+    </None>
+  </ItemGroup>
   <ItemGroup />
-  <PropertyGroup>
-    <PostBuildEvent>cd $(ProjectDir)
-deploy.bat</PostBuildEvent>
-  </PropertyGroup>
 </Project>

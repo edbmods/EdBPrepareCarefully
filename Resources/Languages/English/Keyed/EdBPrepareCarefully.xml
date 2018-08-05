@@ -1,5 +1,11 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
 <!-- CHANGE NOTES -->
+<!-- v1.0.6 -->
+<!-- NEW: EdB.PC.Dialog.Backstory.Filter.SkillBonusFull -->
+<!-- NEW: EdB.PC.Error.Initialization -->
+<!-- UPDATED: EdB.PC.Dialog.Backstory.Filter.SkillBonus -->
+<!-- REMOVED: EdB.PC.Dialog.Backstory.Filter.SkillPenalty -->
+
 <!-- v1.0.5 -->
 <!-- NEW: EdB.PC.AddParentChild.Header.CreateTemporaryPawn -->
 <!-- NEW: EdB.PC.AddParentChild.Header.SelectWorldPawn -->
@@ -11,7 +17,6 @@
 <!-- NEW: EdB.PC.Dialog.Faction.RandomFaction -->
 <!-- NEW: EdB.PC.Dialog.Faction.SelectRandomFaction -->
 <!-- NEW: EdB.PC.Dialog.Faction.SelectSpecificFaction -->
-<!-- NEW: EdB.PC.Error.Initialization -->
 <!-- NEW: EdB.PC.Panel.Appearance.WorldPawnAlert -->
 <!-- NEW: EdB.PC.Panel.ColonyPawnList.Title -->
 <!-- NEW: EdB.PC.Panel.Health.PartWithInjury -->
@@ -96,9 +101,7 @@
   <EdB.PC.Dialog.Backstory.Filter.NoDisabledWorkTypes>No Disabled Work Types</EdB.PC.Dialog.Backstory.Filter.NoDisabledWorkTypes>
   <EdB.PC.Dialog.Backstory.Filter.NoSkillPenalties>No Skill Penalties</EdB.PC.Dialog.Backstory.Filter.NoSkillPenalties>
   <EdB.PC.Dialog.Backstory.Filter.SkillBonus>Bonus: {0} +{1}</EdB.PC.Dialog.Backstory.Filter.SkillBonus>
-  <EdB.PC.Dialog.Backstory.Filter.SkillPenalty>Penalty: {0} -{1}</EdB.PC.Dialog.Backstory.Filter.SkillPenalty>
   <EdB.PC.Dialog.Backstory.Filter.SkillBonusFull>Skill Bonus: {0}, +{1} or better</EdB.PC.Dialog.Backstory.Filter.SkillBonusFull>
-  <EdB.PC.Dialog.Backstory.Filter.SkillPenaltyFull>Skill Penalty: {0} -{1} or worse</EdB.PC.Dialog.Backstory.Filter.SkillPenaltyFull>
 
   <EdB.PC.Dialog.BodyPart.Header>Select a location</EdB.PC.Dialog.BodyPart.Header>
   <EdB.PC.Dialog.BodyPart.Error.Required>You must select a location</EdB.PC.Dialog.BodyPart.Error.Required>
