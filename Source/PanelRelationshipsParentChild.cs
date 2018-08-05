@@ -306,7 +306,7 @@ namespace EdB.PrepareCarefully {
             }
             rowGroups.Clear();
             rowGroups.Add(new WidgetTable<CustomParentChildPawn>.RowGroup("<b>" + "EdB.PC.AddParentChild.Header.SelectColonist".Translate() + "</b>",
-                PrepareCarefully.Instance.RelationshipManager.ColonyPawns.Where((CustomParentChildPawn pawn) => {
+                PrepareCarefully.Instance.RelationshipManager.ColonyAndWorldPawns.Where((CustomParentChildPawn pawn) => {
                     return pawn.Pawn.Type == CustomPawnType.Colonist;
                 })));
             List<CustomParentChildPawn> sortedHiddenPawns = PrepareCarefully.Instance.RelationshipManager.HiddenPawns.ToList();
@@ -321,7 +321,7 @@ namespace EdB.PrepareCarefully {
                 }
             });
             rowGroups.Add(new WidgetTable<CustomParentChildPawn>.RowGroup("<b>" + "EdB.PC.AddParentChild.Header.SelectWorldPawn".Translate() + "</b>",
-                PrepareCarefully.Instance.RelationshipManager.ColonyPawns.Where((CustomParentChildPawn pawn) => {
+                PrepareCarefully.Instance.RelationshipManager.ColonyAndWorldPawns.Where((CustomParentChildPawn pawn) => {
                     return pawn.Pawn.Type != CustomPawnType.Colonist;
                 }).Concat(sortedHiddenPawns)));
             WidgetTable<CustomParentChildPawn>.RowGroup newPawnGroup = new WidgetTable<CustomParentChildPawn>.RowGroup("<b>" + "EdB.PC.AddParentChild.Header.CreateTemporaryPawn".Translate() + "</b>", PrepareCarefully.Instance.RelationshipManager.TemporaryPawns);
@@ -362,7 +362,7 @@ namespace EdB.PrepareCarefully {
             }
             rowGroups.Clear();
             rowGroups.Add(new WidgetTable<CustomParentChildPawn>.RowGroup("<b>" + "EdB.PC.AddParentChild.Header.SelectColonist".Translate() + "</b>",
-                PrepareCarefully.Instance.RelationshipManager.ColonyPawns.Where((CustomParentChildPawn pawn) => {
+                PrepareCarefully.Instance.RelationshipManager.ColonyAndWorldPawns.Where((CustomParentChildPawn pawn) => {
                     return pawn.Pawn.Type == CustomPawnType.Colonist;
                 })));
             List<CustomParentChildPawn> sortedHiddenPawns = PrepareCarefully.Instance.RelationshipManager.HiddenPawns.ToList();
@@ -377,7 +377,7 @@ namespace EdB.PrepareCarefully {
                 }
             });
             rowGroups.Add(new WidgetTable<CustomParentChildPawn>.RowGroup("<b>" + "EdB.PC.AddParentChild.Header.SelectWorldPawn".Translate() + "</b>",
-                PrepareCarefully.Instance.RelationshipManager.ColonyPawns.Where((CustomParentChildPawn pawn) => {
+                PrepareCarefully.Instance.RelationshipManager.ColonyAndWorldPawns.Where((CustomParentChildPawn pawn) => {
                     return pawn.Pawn.Type != CustomPawnType.Colonist;
                 }).Concat(sortedHiddenPawns)));
             WidgetTable<CustomParentChildPawn>.RowGroup newPawnGroup = new WidgetTable<CustomParentChildPawn>.RowGroup("EdB.PC.AddParentChild.Header.CreateTemporaryPawn".Translate(), PrepareCarefully.Instance.RelationshipManager.TemporaryPawns);

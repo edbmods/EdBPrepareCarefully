@@ -364,7 +364,6 @@ namespace EdB.PrepareCarefully {
 
             // Instrument the relationships tab view.
             ControllerRelationships relationships = controller.SubcontrollerRelationships;
-
             tabViewRelationships.PanelRelationshipsOther.RelationshipAdded += relationships.AddRelationship;
             tabViewRelationships.PanelRelationshipsOther.RelationshipRemoved += relationships.RemoveRelationship;
             tabViewRelationships.PanelRelationshipsParentChild.ParentAddedToGroup += relationships.AddParentToParentChildGroup;

@@ -302,10 +302,10 @@ namespace EdB.PrepareCarefully {
             }
         }
 
-        public IEnumerable<CustomParentChildPawn> ColonyPawns {
+        public IEnumerable<CustomParentChildPawn> ColonyAndWorldPawns {
             get {
                 return ParentChildPawns.Where((CustomParentChildPawn p) => {
-                    return !p.Pawn.Hidden && p.Pawn.Pawn.Faction == Faction.OfPlayer;
+                    return !p.Pawn.Hidden;
                 });
             }
         }
