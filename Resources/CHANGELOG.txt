@@ -5,6 +5,7 @@
 
  - Fixed a problem where added faction pawns could not be used to create a
    custom relationship.
+ - Compatibility with unstable build version 0.19.1987
 
  _____________________________________________________________________________
  
