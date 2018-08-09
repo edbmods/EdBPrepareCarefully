@@ -441,10 +441,28 @@ namespace EdB.PrepareCarefully {
             PawnKindDef kindDef = (from td in DefDatabase<PawnKindDef>.AllDefs
                                    where td.race == def
                                    select td).FirstOrDefault();
+
+            RulePackDef nameGenerator = kindDef.RaceProps.GetNameGenerator(gender);
+            if (nameGenerator == null) {
+                return null;
+            }
+
             if (kindDef != null) {
-                int messageCount = ReflectionUtil.GetNonPublicStatic<int>(typeof(Log), "messageCount");
-                Pawn pawn = PawnGenerator.GeneratePawn(kindDef, null);
+                int messageCount;
+                Faction faction = Faction.OfPlayer;
+                PawnGenerationRequest request = new PawnGenerationRequest(kindDef, faction, PawnGenerationContext.NonPlayer,
+                    -1, false, false, true, true, true, false, 1f, false, true, true, false, false, false,
+                    false, null, null, null, null, null, null, null, null);
+                messageCount = ReflectionUtil.GetNonPublicStatic<int>(typeof(Log), "messageCount");
+                Pawn pawn =  PawnGenerator.GeneratePawn(request);
+                if (ReflectionUtil.GetNonPublicStatic<int>(typeof(Log), "messageCount") > messageCount) {
+                    Log.Warning("Prepare Carefully failed to generate a pawn/animal for the equipment list: " + def.defName);
+                }
+                if (pawn.Dead || pawn.Downed) {
+                    return null;
+                }
                 pawn.gender = gender;
+                messageCount = ReflectionUtil.GetNonPublicStatic<int>(typeof(Log), "messageCount");
                 pawn.Drawer.renderer.graphics.ResolveAllGraphics();
                 if (ReflectionUtil.GetNonPublicStatic<int>(typeof(Log), "messageCount") > messageCount) {
                     Log.Warning("Prepare Carefully failed to load all graphics for equipment list pawn/animal: " + def.defName);

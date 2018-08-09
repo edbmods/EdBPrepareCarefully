@@ -111,7 +111,7 @@ namespace EdB.PrepareCarefully {
             this.Active = false;
             this.Providers = new Providers();
             this.equipmentDatabase = new EquipmentDatabase();
-            this.animalDatabase = new AnimalDatabase();
+            //this.animalDatabase = new AnimalDatabase();
             this.costCalculator = new CostCalculator();
             this.pawns.Clear();
             this.equipment.Clear();
