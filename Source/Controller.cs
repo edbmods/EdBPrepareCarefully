@@ -34,7 +34,7 @@ namespace EdB.PrepareCarefully {
             subcontrollerCharacters = new ControllerPawns(state);
             subcontrollerEquipment = new ControllerEquipment(state);
             subcontrollerRelationships = new ControllerRelationships(state);
-            CheckPawnCapabilities();
+            subcontrollerCharacters.CheckPawnCapabilities();
         }
 
         private AcceptanceReport CanStart() {
@@ -94,7 +94,7 @@ namespace EdB.PrepareCarefully {
                 state.CurrentColonyPawn = state.ColonyPawns.FirstOrDefault();
                 state.CurrentWorldPawn = state.WorldPawns.FirstOrDefault();
             }
-            CheckPawnCapabilities();
+            subcontrollerCharacters.CheckPawnCapabilities();
         }
 
         public void SavePreset(string name) {
@@ -473,37 +473,6 @@ namespace EdB.PrepareCarefully {
             else {
                 return false;
             }
-        }
-
-        // Copied from GameInitData.PrepForMapGen() to check if any pawns are missing required work types.
-        public void CheckPawnCapabilities() {
-            List<string> missingWorkTypes = null;
-            foreach (WorkTypeDef w in DefDatabase<WorkTypeDef>.AllDefs) {
-                if (!w.alwaysStartActive) {
-                    bool flag = false;
-                    foreach (CustomPawn current4 in PrepareCarefully.Instance.Pawns) {
-                        if (current4.Type != CustomPawnType.Colonist) {
-                            continue;
-                        }
-                        if (!current4.Pawn.story.WorkTypeIsDisabled(w)) {
-                            flag = true;
-                        }
-                    }
-                    if (!flag) {
-                        IEnumerable<CustomPawn> source = from col in PrepareCarefully.Instance.Pawns where !col.Pawn.story.WorkTypeIsDisabled(w) && col.Type == CustomPawnType.Colonist select col;
-                        if (source.Any<CustomPawn>()) {
-                            CustomPawn pawn = source.InRandomOrder(null).MaxBy((CustomPawn c) => c.Pawn.skills.AverageOfRelevantSkillsFor(w));
-                        }
-                        else if (w.requireCapableColonist) {
-                            if (missingWorkTypes == null) {
-                                missingWorkTypes = new List<string>();
-                            }
-                            missingWorkTypes.Add(w.gerundLabel);
-                        }
-                    }
-                }
-            }
-            state.MissingWorkTypes = missingWorkTypes;
         }
 
         public void PreparePawnForNewGame(Pawn pawn) {

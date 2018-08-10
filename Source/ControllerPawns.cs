@@ -24,6 +24,30 @@ namespace EdB.PrepareCarefully {
                 BindingFlags.Static | BindingFlags.NonPublic).GetValue(null) as Regex;
         }
 
+        public void CheckPawnCapabilities() {
+            List<string> missingWorkTypes = null;
+            foreach (WorkTypeDef w in DefDatabase<WorkTypeDef>.AllDefs) {
+                // If it's a required work type, then check to make sure at least one pawn can do it.
+                if (w.requireCapableColonist) {
+                    bool workTypeEnabledOnAtLeastOneColonist = false;
+                    foreach (CustomPawn pawn in PrepareCarefully.Instance.Pawns.Where((pawn) => { return pawn.Type == CustomPawnType.Colonist; })) {
+                        if (!pawn.Pawn.story.WorkTypeIsDisabled(w)) {
+                            workTypeEnabledOnAtLeastOneColonist = true;
+                            break;
+                        }
+                    }
+                    // If the work type is not enabled on at least one pawn, then add it to the missing work types list.
+                    if (!workTypeEnabledOnAtLeastOneColonist) {
+                        if (missingWorkTypes == null) {
+                            missingWorkTypes = new List<string>();
+                        }
+                        missingWorkTypes.Add(w.gerundLabel.CapitalizeFirst());
+                    }
+                }
+            }
+            state.MissingWorkTypes = missingWorkTypes;
+        }
+
         public void RandomizeAll() {
             // Start by picking a new pawn kind def from the faction.
             FactionDef factionDef = state.CurrentPawn.Pawn.kindDef.defaultFactionType;
