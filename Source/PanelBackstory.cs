@@ -151,7 +151,7 @@ namespace EdB.PrepareCarefully {
             Filter<Backstory> filterToAdd = null;
             bool filterListDirtyFlag = true;
             List<Backstory> fullOptionsList = slot == BackstorySlot.Childhood ?
-                    this.providerBackstories.ChildhoodBackstories : this.providerBackstories.AdulthoodBackstories;
+                    this.providerBackstories.GetChildhoodBackstoriesForPawn(customPawn) : this.providerBackstories.GetAdulthoodBackstoriesForPawn(customPawn);
             List<Backstory> filteredBackstories = new List<Backstory>(fullOptionsList.Count);
             Dialog_Options<Backstory> dialog = new Dialog_Options<Backstory>(filteredBackstories) {
                 NameFunc = (Backstory backstory) => {
@@ -287,8 +287,8 @@ namespace EdB.PrepareCarefully {
         protected void PopulateBackstoriesFromSlot(CustomPawn pawn, BackstorySlot slot, out List<Backstory> backstories,
                 out Backstory backstory) {
             backstory = (slot == BackstorySlot.Childhood) ? pawn.Childhood : pawn.Adulthood;
-            backstories = (slot == BackstorySlot.Childhood) ? providerBackstories.ChildhoodBackstories
-                : providerBackstories.AdulthoodBackstories;
+            backstories = (slot == BackstorySlot.Childhood) ? providerBackstories.GetChildhoodBackstoriesForPawn(pawn)
+                : providerBackstories.GetAdulthoodBackstoriesForPawn(pawn);
         }
     }
 }

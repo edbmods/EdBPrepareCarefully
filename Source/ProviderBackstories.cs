@@ -10,17 +10,21 @@ namespace EdB.PrepareCarefully {
         protected List<Backstory> sortedChildhoodBackstories;
         protected List<Backstory> sortedAdulthoodBackstories;
 
-        public List<Backstory> ChildhoodBackstories {
-            get {
-                return sortedChildhoodBackstories;
-            }
-        }
-        public List<Backstory> AdulthoodBackstories {
-            get {
-                return sortedAdulthoodBackstories;
-            }
-        }
+        protected Dictionary<string, List<Backstory>> childhoodBackstoryLookup = new Dictionary<string, List<Backstory>>();
+        protected Dictionary<string, List<Backstory>> adulthoodBackstoryLookup = new Dictionary<string, List<Backstory>>();
 
+        public List<Backstory> GetChildhoodBackstoriesForPawn(CustomPawn pawn) {
+            if (!childhoodBackstoryLookup.ContainsKey(pawn.Pawn.kindDef.defName)) {
+                InitializeBackstoriesForPawnKind(pawn.Pawn.kindDef);
+            }
+            return childhoodBackstoryLookup[pawn.Pawn.kindDef.defName];
+        }
+        public List<Backstory> GetAdulthoodBackstoriesForPawn(CustomPawn pawn) {
+            if (!adulthoodBackstoryLookup.ContainsKey(pawn.Pawn.kindDef.defName)) {
+                InitializeBackstoriesForPawnKind(pawn.Pawn.kindDef);
+            }
+            return adulthoodBackstoryLookup[pawn.Pawn.kindDef.defName];
+        }
         public ProviderBackstories() {
             // Go through all of the backstories and mark them as childhood or adult.
             List<Backstory> backstories = BackstoryDatabase.allBackstories.Values.ToList();
@@ -38,6 +42,20 @@ namespace EdB.PrepareCarefully {
             sortedChildhoodBackstories.Sort((b1, b2) => b1.TitleCapFor(Gender.Male).CompareTo(b2.TitleCapFor(Gender.Male)));
             sortedAdulthoodBackstories = new List<Backstory>(adulthoodBackstories);
             sortedAdulthoodBackstories.Sort((b1, b2) => b1.TitleCapFor(Gender.Male).CompareTo(b2.TitleCapFor(Gender.Male)));
+        }
+
+        private void InitializeBackstoriesForPawnKind(PawnKindDef def) {
+            List<Backstory> childhood = BackstoryDatabase.allBackstories.Values.Where((b) => {
+                return b.slot == BackstorySlot.Childhood && (def.backstoryCategory.NullOrEmpty() || b.spawnCategories.Contains(def.backstoryCategory));
+            }).ToList();
+            childhood.Sort((b1, b2) => b1.TitleCapFor(Gender.Male).CompareTo(b2.TitleCapFor(Gender.Male)));
+            childhoodBackstoryLookup[def.defName] = childhood;
+
+            List<Backstory> adulthood = BackstoryDatabase.allBackstories.Values.Where((b) => {
+                return b.slot == BackstorySlot.Adulthood && (def.backstoryCategory.NullOrEmpty() || b.spawnCategories.Contains(def.backstoryCategory));
+            }).ToList();
+            adulthood.Sort((b1, b2) => b1.TitleCapFor(Gender.Male).CompareTo(b2.TitleCapFor(Gender.Male)));
+            adulthoodBackstoryLookup[def.defName] = adulthood;
         }
     }
 }
