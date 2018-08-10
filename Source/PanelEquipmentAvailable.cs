@@ -113,7 +113,10 @@ namespace EdB.PrepareCarefully {
                             Style.SetGUIColorForButton(infoRect);
                             GUI.DrawTexture(infoRect, Textures.TextureButtonInfo);
                             if (Widgets.ButtonInvisible(infoRect)) {
-                                if (entry.stuffDef != null) {
+                                if (entry.animal) {
+                                    Find.WindowStack.Add((Window)new Dialog_InfoCard(entry.thing));
+                                }
+                                else if (entry.stuffDef != null) {
                                     Find.WindowStack.Add((Window)new Dialog_InfoCard(entry.def, entry.stuffDef));
                                 }
                                 else {
