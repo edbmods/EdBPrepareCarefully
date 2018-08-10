@@ -70,8 +70,7 @@ namespace EdB.PrepareCarefully {
                     }
                     layer.AlienAddon = addon;
                     layer.Options = InitializeAlienAddonOptions(race, addon);
-                    if (layer.Options == null) {
-                        Log.Warning("Alien add-on had no options");
+                    if (layer.Options == null || layer.Options.Count == 1) {
                         continue;
                     }
                     layers.Add(layer);
