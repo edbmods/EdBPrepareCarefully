@@ -32,6 +32,9 @@ namespace EdB.PrepareCarefully {
             else if ("3".Equals(version)) {
                 result = new PresetLoaderVersion3().Load(loadout, presetName);
             }
+            else if ("4".Equals(version)) {
+                result = new PresetLoaderVersion4().Load(loadout, presetName);
+            }
             else {
                 throw new Exception("Invalid preset version");
             }

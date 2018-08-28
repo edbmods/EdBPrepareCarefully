@@ -28,6 +28,9 @@ namespace EdB.PrepareCarefully {
             else if ("3".Equals(version)) {
                 return new ColonistLoaderVersion3().Load(loadout, name);
             }
+            else if ("4".Equals(version)) {
+                return new ColonistLoaderVersion4().Load(loadout, name);
+            }
             else {
                 throw new Exception("Invalid preset version");
             }

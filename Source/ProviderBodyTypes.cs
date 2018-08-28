@@ -11,30 +11,44 @@ using Verse.Sound;
 namespace EdB.PrepareCarefully {
     public class ProviderBodyTypes {
         protected Dictionary<ThingDef, OptionsBodyType> raceBodyTypeLookup = new Dictionary<ThingDef, OptionsBodyType>();
-        protected Dictionary<BodyType, string> bodyTypeLabels = new Dictionary<BodyType, string>();
+        protected Dictionary<string, string> labels = new Dictionary<string, string>();
         public ProviderBodyTypes() {
-            bodyTypeLabels.Add(BodyType.Fat, "EdB.PC.Pawn.BodyType.Fat".Translate());
-            bodyTypeLabels.Add(BodyType.Hulk, "EdB.PC.Pawn.BodyType.Hulk".Translate());
-            bodyTypeLabels.Add(BodyType.Thin, "EdB.PC.Pawn.BodyType.Thin".Translate());
-            bodyTypeLabels.Add(BodyType.Male, "EdB.PC.Pawn.BodyType.Average".Translate());
-            bodyTypeLabels.Add(BodyType.Female, "EdB.PC.Pawn.BodyType.Average".Translate());
+            labels.Add("Female", "EdB.PC.Pawn.BodyType.Average".Translate());
+            labels.Add("Male", "EdB.PC.Pawn.BodyType.Average".Translate());
+            labels.Add("Hulk", "EdB.PC.Pawn.BodyType.Hulking".Translate());
+            labels.Add("Thin", "EdB.PC.Pawn.BodyType.Thin".Translate());
+            labels.Add("Fat", "EdB.PC.Pawn.BodyType.Heavyset".Translate());
         }
         public ProviderAlienRaces AlienRaceProvider {
             get; set;
         }
-        public List<BodyType> GetBodyTypesForPawn(CustomPawn pawn) {
+        public List<BodyTypeDef> GetBodyTypesForPawn(CustomPawn pawn) {
             return GetBodyTypesForPawn(pawn.Pawn);
         }
-        public List<BodyType> GetBodyTypesForPawn(Pawn pawn) {
-            OptionsBodyType bodyTypes;
-            if (!raceBodyTypeLookup.TryGetValue(pawn.def, out bodyTypes)) {
-                bodyTypes = InitializeBodyTypes(pawn.def);
-                raceBodyTypeLookup.Add(pawn.def, bodyTypes);
-            }
-            return bodyTypes.GetBodyTypes(pawn.gender);
+        public List<BodyTypeDef> GetBodyTypesForPawn(Pawn pawn) {
+            return GetBodyTypesForPawn(pawn.def, pawn.gender);
         }
-        public string GetBodyTypeLabel(BodyType bodyType) {
-            return bodyTypeLabels[bodyType];
+        public List<BodyTypeDef> GetBodyTypesForPawn(ThingDef race, Gender gender) {
+            OptionsBodyType bodyTypes;
+            if (!raceBodyTypeLookup.TryGetValue(race, out bodyTypes)) {
+                bodyTypes = InitializeBodyTypes(race);
+                raceBodyTypeLookup.Add(race, bodyTypes);
+            }
+            return bodyTypes.GetBodyTypes(gender);
+        }
+        public string GetBodyTypeLabel(BodyTypeDef bodyType) {
+            if (bodyType.label.NullOrEmpty()) {
+                string label = null;
+                if (labels.TryGetValue(bodyType.defName, out label)) {
+                    return label;
+                }
+                else {
+                    return "EdB.PC.Pawn.BodyType.Unnamed".Translate();
+                }
+            }
+            else {
+                return bodyType.LabelCap;
+            }
         }
         protected OptionsBodyType InitializeBodyTypes(ThingDef def) {
             if (!ProviderAlienRaces.IsAlienRace(def)) {
@@ -56,18 +70,15 @@ namespace EdB.PrepareCarefully {
         }
         protected OptionsBodyType InitializeHumanlikeBodyTypes() {
             OptionsBodyType result = new OptionsBodyType();
-            result.MaleBodyTypes.Add(BodyType.Male);
-            result.MaleBodyTypes.Add(BodyType.Thin);
-            result.MaleBodyTypes.Add(BodyType.Fat);
-            result.MaleBodyTypes.Add(BodyType.Hulk);
-            result.FemaleBodyTypes.Add(BodyType.Female);
-            result.FemaleBodyTypes.Add(BodyType.Thin);
-            result.FemaleBodyTypes.Add(BodyType.Fat);
-            result.FemaleBodyTypes.Add(BodyType.Hulk);
-            result.NoGenderBodyTypes.Add(BodyType.Male);
-            result.NoGenderBodyTypes.Add(BodyType.Thin);
-            result.NoGenderBodyTypes.Add(BodyType.Fat);
-            result.NoGenderBodyTypes.Add(BodyType.Hulk);
+            foreach (BodyTypeDef d in DefDatabase<BodyTypeDef>.AllDefs) {
+                if (d != BodyTypeDefOf.Female) {
+                    result.MaleBodyTypes.Add(d);
+                }
+                if (d != BodyTypeDefOf.Male) {
+                    result.FemaleBodyTypes.Add(d);
+                }
+                result.NoGenderBodyTypes.Add(d);
+            }
             return result;
         }
         protected OptionsBodyType InitializeAlienRaceBodyTypes(ThingDef def) {
@@ -77,14 +88,14 @@ namespace EdB.PrepareCarefully {
                 return null;
             }
             if (alienRace.BodyTypes.Count > 0) {
-                bool containsMale = alienRace.BodyTypes.Contains(BodyType.Male);
-                bool containsFemale = alienRace.BodyTypes.Contains(BodyType.Female);
+                bool containsMale = alienRace.BodyTypes.Contains(BodyTypeDefOf.Male);
+                bool containsFemale = alienRace.BodyTypes.Contains(BodyTypeDefOf.Female);
                 bool containsBothMaleAndFemale = containsMale && containsFemale;
-                foreach (BodyType type in alienRace.BodyTypes) {
-                    if (type != BodyType.Male || !containsBothMaleAndFemale) {
+                foreach (BodyTypeDef type in alienRace.BodyTypes) {
+                    if (type != BodyTypeDefOf.Male || !containsBothMaleAndFemale) {
                         result.FemaleBodyTypes.Add(type);
                     }
-                    if (type != BodyType.Female || !containsBothMaleAndFemale) {
+                    if (type != BodyTypeDefOf.Female || !containsBothMaleAndFemale) {
                         result.MaleBodyTypes.Add(type);
                     }
                     result.NoGenderBodyTypes.Add(type);

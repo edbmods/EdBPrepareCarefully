@@ -10,6 +10,7 @@ using Verse.Sound;
 
 namespace EdB.PrepareCarefully {
     public class AlienRace {
+        public List<AlienRaceBodyAddon> addons = new List<AlienRaceBodyAddon>();
         public AlienRace() {
         }
         public bool UseMelaninLevels {
@@ -27,7 +28,7 @@ namespace EdB.PrepareCarefully {
         public List<Color> HairColors {
             get; set;
         }
-        public List<BodyType> BodyTypes {
+        public List<BodyTypeDef> BodyTypes {
             get; set;
         }
         public List<string> CrownTypes {
@@ -50,6 +51,14 @@ namespace EdB.PrepareCarefully {
         }
         public HashSet<string> RestrictedApparel {
             get; set;
+        }
+        public List<AlienRaceBodyAddon> Addons {
+            get {
+                return addons;
+            }
+            set {
+                addons = value;
+            }
         }
     }
 }

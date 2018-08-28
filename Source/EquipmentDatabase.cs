@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using UnityEngine;
 using Verse;
 
@@ -21,10 +22,12 @@ namespace EdB.PrepareCarefully {
         protected EquipmentType TypeMedical = new EquipmentType("Medical", "EdB.PC.Equipment.Type.Medical");
         protected EquipmentType TypeBuildings = new EquipmentType("Buildings", "EdB.PC.Equipment.Type.Buildings");
         protected EquipmentType TypeAnimals = new EquipmentType("Animals", "EdB.PC.Equipment.Type.Animals");
+        protected EquipmentType TypeDiscard = new EquipmentType("Discard", "");
         protected EquipmentType TypeUncategorized = new EquipmentType("Uncategorized", "");
 
         protected ThingCategoryDef thingCategorySweetMeals = null;
         protected ThingCategoryDef thingCategoryMeatRaw = null;
+        protected ThingCategoryDef thingCategoryBodyPartsArtificial = null;
 
         public EquipmentDatabase() {
             types.Add(TypeResources);
@@ -63,12 +66,13 @@ namespace EdB.PrepareCarefully {
 
             thingCategorySweetMeals = DefDatabase<ThingCategoryDef>.GetNamedSilentFail("SweetMeals");
             thingCategoryMeatRaw = DefDatabase<ThingCategoryDef>.GetNamedSilentFail("MeatRaw");
+            thingCategoryBodyPartsArtificial = DefDatabase<ThingCategoryDef>.GetNamedSilentFail("BodyPartsArtificial");
 
             foreach (var def in DefDatabase<ThingDef>.AllDefs) {
                 try {
                     if (def != null) {
                         EquipmentType type = ClassifyThingDef(def);
-                        if (type != null) {
+                        if (type != null && type != TypeDiscard) {
                             AddThingDef(def, type);
                         }
                     }
@@ -81,8 +85,26 @@ namespace EdB.PrepareCarefully {
         }
 
         public EquipmentType ClassifyThingDef(ThingDef def) {
+            if (def.mote != null) {
+                return TypeDiscard;
+            }
+            if (def.isUnfinishedThing) {
+                return TypeDiscard;
+            }
+            if (def.IsWithinCategory(ThingCategoryDefOf.Corpses)) {
+                return TypeDiscard;
+            }
+            if (def.IsWithinCategory(ThingCategoryDefOf.Chunks)) {
+                return TypeDiscard;
+            }
+            if (def.IsBlueprint) {
+                return TypeDiscard;
+            }
+            if (def.IsFrame) {
+                return TypeDiscard;
+            }
             if (def.weaponTags != null && def.weaponTags.Count > 0) {
-                if (def.equipmentType != Verse.EquipmentType.None && !def.destroyOnDrop && def.canBeSpawningInventory) {
+                if (def.IsWeapon) {
                     return TypeWeapons;
                 }
             }
@@ -93,7 +115,14 @@ namespace EdB.PrepareCarefully {
                 }
             }
 
+            if (def.defName.StartsWith("MechSerum")) {
+                return TypeMedical;
+            }
+
             if (def.CountAsResource) {
+                if (def.IsShell) {
+                    return TypeWeapons;
+                }
                 if (def.IsDrug || (def.statBases != null && def.IsMedicine)) {
                     if (def.ingestible != null) {
                         if (def.thingCategories != null) {
@@ -121,24 +150,18 @@ namespace EdB.PrepareCarefully {
                     }
                     return TypeFood;
                 }
-                if ("AIPersonaCore".Equals(def.defName)) {
-                    return TypeUncategorized;
-                }
-                if ("Neurotrainer".Equals(def.defName)) {
-                    return null;
-                }
 
                 return TypeResources;
+            }
+            
+            if (thingCategoryBodyPartsArtificial != null && def.thingCategories != null && def.thingCategories.Contains(thingCategoryBodyPartsArtificial)) {
+                return TypeMedical;
             }
 
             if (def.building != null) {
                 if (def.Minifiable) {
                     return TypeBuildings;
                 }
-            }
-
-            if (def.isBodyPartOrImplant) {
-                return TypeMedical;
             }
 
             if (def.race != null && def.race.Animal == true) {
@@ -418,10 +441,32 @@ namespace EdB.PrepareCarefully {
             PawnKindDef kindDef = (from td in DefDatabase<PawnKindDef>.AllDefs
                                    where td.race == def
                                    select td).FirstOrDefault();
+
+            RulePackDef nameGenerator = kindDef.RaceProps.GetNameGenerator(gender);
+            if (nameGenerator == null) {
+                return null;
+            }
+
             if (kindDef != null) {
-                Pawn pawn = PawnGenerator.GeneratePawn(kindDef, null);
+                int messageCount;
+                Faction faction = Faction.OfPlayer;
+                PawnGenerationRequest request = new PawnGenerationRequest(kindDef, faction, PawnGenerationContext.NonPlayer,
+                    -1, false, false, true, true, true, false, 1f, false, true, true, false, false, false,
+                    false, null, null, null, null, null, null, null, null);
+                messageCount = ReflectionUtil.GetNonPublicStatic<int>(typeof(Log), "messageCount");
+                Pawn pawn =  PawnGenerator.GeneratePawn(request);
+                if (ReflectionUtil.GetNonPublicStatic<int>(typeof(Log), "messageCount") > messageCount) {
+                    Log.Warning("Prepare Carefully failed to generate a pawn/animal for the equipment list: " + def.defName);
+                }
+                if (pawn.Dead || pawn.Downed) {
+                    return null;
+                }
                 pawn.gender = gender;
+                messageCount = ReflectionUtil.GetNonPublicStatic<int>(typeof(Log), "messageCount");
                 pawn.Drawer.renderer.graphics.ResolveAllGraphics();
+                if (ReflectionUtil.GetNonPublicStatic<int>(typeof(Log), "messageCount") > messageCount) {
+                    Log.Warning("Prepare Carefully failed to load all graphics for equipment list pawn/animal: " + def.defName);
+                }
                 return pawn;
             }
             else {

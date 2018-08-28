@@ -30,13 +30,11 @@ namespace EdB.PrepareCarefully {
         protected string incapable = null;
         protected Pawn pawn;
 
-        protected const int LayerCount = PawnLayers.Count;
+        protected Dictionary<PawnLayer, Color> colors = new Dictionary<PawnLayer, Color>();
 
-        protected List<Color> colors = new List<Color>(LayerCount);
-
-        protected List<ThingDef> selectedApparel = new List<ThingDef>(LayerCount);
-        protected List<ThingDef> acceptedApparel = new List<ThingDef>(LayerCount);
-        protected List<ThingDef> selectedStuff = new List<ThingDef>(LayerCount);
+        protected Dictionary<PawnLayer, ThingDef> selectedApparel = new Dictionary<PawnLayer, ThingDef>();
+        protected Dictionary<PawnLayer, ThingDef> acceptedApparel = new Dictionary<PawnLayer, ThingDef>();
+        protected Dictionary<PawnLayer, ThingDef> selectedStuff = new Dictionary<PawnLayer, ThingDef>();
         protected Dictionary<EquipmentKey, Color> colorCache = new Dictionary<EquipmentKey, Color>();
         protected string apparelConflictText = null;
         protected List<ApparelConflict> apparelConflicts = new List<ApparelConflict>();
@@ -57,6 +55,7 @@ namespace EdB.PrepareCarefully {
         protected ThingCache thingCache = new ThingCache();
         protected bool portraitDirty = true;
         protected AlienRace alienRace = null;
+        protected CustomFaction faction = null;
 
         public CustomPawn() {
             GenerateId();
@@ -76,7 +75,33 @@ namespace EdB.PrepareCarefully {
             }
         }
 
-        public BodyType BodyType {
+        public CustomPawnType Type {
+            get;
+            set;
+        }
+
+        // For hidden or temporary pawns, keep track of an index number.
+        public int? Index {
+            get;
+            set;
+        }
+
+        public bool Hidden {
+            get {
+                return Type == CustomPawnType.Hidden || Type == CustomPawnType.Temporary;
+            }
+        }
+        
+        public CustomFaction Faction {
+            get {
+                return faction;
+            }
+            set {
+                faction = value;
+            }
+        }
+
+        public BodyTypeDef BodyType {
             get {
                 return pawn.story.bodyType;
             }
@@ -106,6 +131,16 @@ namespace EdB.PrepareCarefully {
         public List<CustomBodyPart> BodyParts {
             get {
                 return bodyParts;
+            }
+        }
+
+        public Color HairColor {
+            get {
+                return pawn.story.hairColor;
+            }
+            set {
+                pawn.story.hairColor = value;
+                MarkPortraitAsDirty();
             }
         }
 
@@ -157,28 +192,27 @@ namespace EdB.PrepareCarefully {
             // Clear all of the pawn layer colors.  The apparel colors will be set a little later
             // when we initialize the apparel layer.
             colors.Clear();
-            colors.Add(pawn.story.SkinColor);
-            colors.Add(Color.white);
-            colors.Add(Color.white);
-            colors.Add(Color.white);
-            colors.Add(Color.white);
-            colors.Add(pawn.story.SkinColor);
-            colors.Add(pawn.story.hairColor);
-            colors.Add(Color.white);
-            colors.Add(Color.white);
+            foreach (var layer in PrepareCarefully.Instance.Providers.PawnLayers.GetLayersForPawn(this)) {
+                colors.Add(layer, Color.white);
+            }
 
-            // Clear all of the apparel layers that we're tracking in the CustomPawn.
-            for (int i = 0; i < PawnLayers.Count; i++) {
-                selectedApparel.Add(null);
-                acceptedApparel.Add(null);
-                selectedStuff.Add(null);
+            // Clear all of the apparel and alien addon layers that we're tracking in the CustomPawn.
+            selectedApparel.Clear();
+            acceptedApparel.Clear();
+            selectedStuff.Clear();
+            foreach (var layer in PrepareCarefully.Instance.Providers.PawnLayers.GetLayersForPawn(this)) {
+                if (layer.Apparel) {
+                    selectedApparel.Add(layer, null);
+                    acceptedApparel.Add(layer, null);
+                    selectedStuff.Add(layer, null);
+                }
             }
 
             // Store the current value of each apparel layer based on the apparel worn by the Pawn.
             foreach (Apparel current in this.pawn.apparel.WornApparel) {
                 Color color = current.DrawColor;
-                int layer = PawnLayers.ToPawnLayerIndex(current.def.apparel);
-                if (layer != -1) {
+                PawnLayer layer = PrepareCarefully.Instance.Providers.PawnLayers.FindLayerForApparel(current.def.apparel);
+                if (layer != null) {
                     SetSelectedApparelInternal(layer, current.def);
                     acceptedApparel[layer] = current.def;
                     SetSelectedStuffInternal(layer, current.Stuff);
@@ -194,8 +228,8 @@ namespace EdB.PrepareCarefully {
                 this.headType = headType;
             }
             else {
-                Log.Warning("Prepare Carefully could not find a head type the graphic path: "
-                    + pawn.story.HeadGraphicPath + ". Head type selection disabled for this pawn");
+                Log.Warning("Prepare Carefully could not find a head type for the graphic path: "
+                    + pawn.story.HeadGraphicPath + " for the pawn: " + pawn.def.defName + ". Head type selection disabled for this pawn");
                 this.headType = null;
             }
 
@@ -228,9 +262,9 @@ namespace EdB.PrepareCarefully {
                     injury.BodyPartRecord = hediff.Part;
                     injury.Option = option;
                     injury.Severity = hediff.Severity;
-                    HediffComp_GetsOld getsOld = hediff.TryGetComp<HediffComp_GetsOld>();
-                    if (getsOld != null) {
-                        injury.PainFactor = getsOld.painFactor;
+                    HediffComp_GetsPermanent getsPermanent = hediff.TryGetComp<HediffComp_GetsPermanent>();
+                    if (getsPermanent != null) {
+                        injury.PainFactor = getsPermanent.PainFactor;
                     }
                     injuries.Add(injury);
                 }
@@ -333,22 +367,24 @@ namespace EdB.PrepareCarefully {
 
         public void CopyAppearance(Pawn pawn) {
             this.HairDef = pawn.story.hairDef;
-            this.SetColor(PawnLayers.Hair, pawn.story.hairColor);
+            this.pawn.story.hairColor = pawn.story.hairColor;
+            this.pawn.story.bodyType = pawn.story.bodyType;
             this.HeadGraphicPath = pawn.story.HeadGraphicPath;
             this.MelaninLevel = pawn.story.melanin;
-            for (int i = 0; i < PawnLayers.Count; i++) {
-                if (PawnLayers.IsApparelLayer(i)) {
-                    this.SetSelectedStuff(i, null);
-                    this.SetSelectedApparel(i, null);
+            foreach (var layer in PrepareCarefully.Instance.Providers.PawnLayers.GetLayersForPawn(this)) {
+                if (layer.Apparel) {
+                    this.SetSelectedStuff(layer, null);
+                    this.SetSelectedApparel(layer, null);
                 }
             }
             foreach (Apparel current in pawn.apparel.WornApparel) {
-                int layer = PawnLayers.ToPawnLayerIndex(current.def.apparel);
-                if (layer != -1) {
+                PawnLayer layer = PrepareCarefully.Instance.Providers.PawnLayers.FindLayerForApparel(current.def.apparel);
+                if (layer != null) {
                     this.SetSelectedStuff(layer, current.Stuff);
                     this.SetSelectedApparel(layer, current.def);
                 }
             }
+            MarkPortraitAsDirty();
         }
 
         public void RestoreSkillLevelsAndPassions() {
@@ -469,6 +505,8 @@ namespace EdB.PrepareCarefully {
         public void CopySkillsAndPassionsToPawn() {
             foreach (var record in pawn.skills.skills) {
                 record.Level = GetSkillLevel(record.def);
+                // Reset the XP level based on the current value of the skill.
+                record.xpSinceLastLevel = Rand.Range(record.XpRequiredForLevelUp * 0.1f, record.XpRequiredForLevelUp * 0.9f);
                 if (!record.TotallyDisabled) {
                     record.passion = currentPassions[record.def];
                 }
@@ -591,6 +629,34 @@ namespace EdB.PrepareCarefully {
             }
         }
 
+        public string ShortName {
+            get {
+                if (Type == CustomPawnType.Hidden) {
+                    return "EdB.PC.Pawn.HiddenPawnNameShort".Translate(new object[] { Index });
+                }
+                else if (Type == CustomPawnType.Temporary) {
+                    return "EdB.PC.Pawn.TemporaryPawnNameShort".Translate(new object[] { Index });
+                }
+                else {
+                    return pawn.LabelShortCap;
+                }
+            }
+        }
+
+        public string FullName {
+            get {
+                if (Type == CustomPawnType.Hidden) {
+                    return "EdB.PC.Pawn.HiddenPawnNameFull".Translate(new object[] { Index });
+                }
+                else if (Type == CustomPawnType.Temporary) {
+                    return "EdB.PC.Pawn.TemporaryPawnNameFull".Translate(new object[] { Index });
+                }
+                else {
+                    return pawn.Name.ToStringFull;
+                }
+            }
+        }
+
         public Pawn Pawn {
             get {
                 return pawn;
@@ -603,7 +669,7 @@ namespace EdB.PrepareCarefully {
                 if (pawn.story.adulthood == null) {
                     return name.Nick;
                 }
-                return name.Nick + ", " + pawn.story.adulthood.TitleShort;
+                return name.Nick + ", " + pawn.story.adulthood.TitleShortFor(Gender);
             }
         }
 
@@ -680,8 +746,8 @@ namespace EdB.PrepareCarefully {
         public List<ThingDef> AllAcceptedApparel {
             get {
                 List<ThingDef> result = new List<ThingDef>();
-                for (int i = 0; i < PawnLayers.Count; i++) {
-                    ThingDef def = this.acceptedApparel[i];
+                foreach (var layer in PrepareCarefully.Instance.Providers.PawnLayers.GetLayersForPawn(this)) {
+                    ThingDef def = this.acceptedApparel[layer];
                     if (def != null) {
                         result.Add(def);
                     }
@@ -690,34 +756,38 @@ namespace EdB.PrepareCarefully {
             }
         }
 
-        public ThingDef GetAcceptedApparel(int layer) {
+        public ThingDef GetAcceptedApparel(PawnLayer layer) {
             return this.acceptedApparel[layer];
         }
 
-        public Color GetBlendedColor(int layer) {
-            Color color = this.colors[layer] * GetStuffColor(layer);
+        public Color GetBlendedColor(PawnLayer layer) {
+            Color color = GetColor(layer) * GetStuffColor(layer);
             return color;
         }
 
-        public Color GetColor(int layer) {
-            return this.colors[layer];
+        public Color GetColor(PawnLayer layer) {
+            Color color;
+            if (colors.TryGetValue(layer, out color)) {
+                return color;
+            }
+            else {
+                return Color.white;
+            }
         }
 
         public void ClearColorCache() {
             colorCache.Clear();
         }
 
-        public Color GetStuffColor(int layer) {
-            if (this.selectedApparel.Count > layer) {
-                ThingDef apparelDef = this.selectedApparel[layer];
-                if (apparelDef != null) {
-                    Color color = this.colors[layer];
-                    if (apparelDef.MadeFromStuff) {
-                        ThingDef stuffDef = this.selectedStuff[layer];
-                        if (stuffDef != null && stuffDef.stuffProps != null) {
-                            if (!stuffDef.stuffProps.allowColorGenerators) {
-                                return stuffDef.stuffProps.color;
-                            }
+        public Color GetStuffColor(PawnLayer layer) {
+            ThingDef apparelDef = this.selectedApparel[layer];
+            if (apparelDef != null) {
+                Color color = GetColor(layer);
+                if (apparelDef.MadeFromStuff) {
+                    ThingDef stuffDef = this.selectedStuff[layer];
+                    if (stuffDef != null && stuffDef.stuffProps != null) {
+                        if (!stuffDef.stuffProps.allowColorGenerators) {
+                            return stuffDef.stuffProps.color;
                         }
                     }
                 }
@@ -725,20 +795,17 @@ namespace EdB.PrepareCarefully {
             return Color.white;
         }
 
-        public void SetColor(int layer, Color color) {
+        public void SetColor(PawnLayer layer, Color color) {
             SetColorInternal(layer, color);
             ResetApparel();
         }
 
         // Separate method that can be called internally without clearing the graphics caches or copying
         // to the target pawn.
-        public void SetColorInternal(int layer, Color color) {
+        public void SetColorInternal(PawnLayer layer, Color color) {
             this.colors[layer] = color;
-            if (PawnLayers.IsApparelLayer(layer)) {
+            if (layer.Apparel) {
                 colorCache[new EquipmentKey(selectedApparel[layer], selectedStuff[layer])] = color;
-            }
-            if (layer == PawnLayers.Hair) {
-                pawn.story.hairColor = color;
             }
         }
 
@@ -758,19 +825,19 @@ namespace EdB.PrepareCarefully {
             MarkPortraitAsDirty();
         }
 
-        public ThingDef GetSelectedApparel(int layer) {
+        public ThingDef GetSelectedApparel(PawnLayer layer) {
             return this.selectedApparel[layer];
         }
 
-        public void SetSelectedApparel(int layer, ThingDef def) {
+        public void SetSelectedApparel(PawnLayer layer, ThingDef def) {
             SetSelectedApparelInternal(layer, def);
             ResetApparel();
         }
 
         // Separate method that can be called internally without clearing the graphics caches or copying
         // to the target pawn.
-        private void SetSelectedApparelInternal(int layer, ThingDef def) {
-            if (layer < 0) {
+        private void SetSelectedApparelInternal(PawnLayer layer, ThingDef def) {
+            if (layer == null) {
                 return;
             }
             this.selectedApparel[layer] = def;
@@ -805,11 +872,11 @@ namespace EdB.PrepareCarefully {
             ApparelAcceptanceTest();
         }
 
-        public ThingDef GetSelectedStuff(int layer) {
+        public ThingDef GetSelectedStuff(PawnLayer layer) {
             return this.selectedStuff[layer];
         }
 
-        public void SetSelectedStuff(int layer, ThingDef stuffDef) {
+        public void SetSelectedStuff(PawnLayer layer, ThingDef stuffDef) {
             SetSelectedStuffInternal(layer, stuffDef);
             ResetApparel();
         }
@@ -817,10 +884,10 @@ namespace EdB.PrepareCarefully {
         public string ProfessionLabel {
             get {
                 if (IsAdult) {
-                    return Adulthood.Title;
+                    return Adulthood.TitleCapFor(Gender);
                 }
                 else {
-                    return Childhood.Title;
+                    return Childhood.TitleCapFor(Gender);
                 }
             }
         }
@@ -828,16 +895,16 @@ namespace EdB.PrepareCarefully {
         public string ProfessionLabelShort {
             get {
                 if (IsAdult) {
-                    return Adulthood.TitleShort;
+                    return Adulthood.TitleShortCapFor(Gender);
                 }
                 else {
-                    return Childhood.TitleShort;
+                    return Childhood.TitleShortCapFor(Gender);
                 }
             }
         }
 
-        public void SetSelectedStuffInternal(int layer, ThingDef stuffDef) {
-            if (layer < 0) {
+        public void SetSelectedStuffInternal(PawnLayer layer, ThingDef stuffDef) {
+            if (layer == null) {
                 return;
             }
             if (selectedStuff[layer] == stuffDef) {
@@ -869,13 +936,10 @@ namespace EdB.PrepareCarefully {
             apparelConflicts.Clear();
 
             // Assume that each peice of apparel will be accepted.
-            for (int i = PawnLayers.TopClothingLayer; i >= PawnLayers.BottomClothingLayer; i--) {
-                this.acceptedApparel[i] = this.selectedApparel[i];
+            foreach (var layer in PrepareCarefully.Instance.Providers.PawnLayers.GetLayersForPawn(this).AsEnumerable().Where((layer) => { return layer.Apparel; }).Reverse()) {
+                this.acceptedApparel[layer] = selectedApparel[layer];
             }
-
-            // Go through each layer.
-            for (int i = PawnLayers.TopClothingLayer; i >= PawnLayers.BottomClothingLayer; i--) {
-
+            foreach (var i in PrepareCarefully.Instance.Providers.PawnLayers.GetLayersForPawn(this).AsEnumerable().Where((layer) => { return layer.Apparel; }).Reverse()) {
                 // If no apparel was selected for this layer, go to the next layer.
                 if (selectedApparel[i] == null) {
                     continue;
@@ -883,16 +947,16 @@ namespace EdB.PrepareCarefully {
 
                 ThingDef apparel = selectedApparel[i];
                 if (apparel.apparel != null && apparel.apparel.layers != null && apparel.apparel.layers.Count > 1) {
-                    foreach (ApparelLayer layer in apparel.apparel.layers) {
+                    foreach (ApparelLayerDef apparelLayer in apparel.apparel.layers) {
                         // If the apparel's layer matches the current layer, go to the apparel's next layer. 
-                        if (layer == PawnLayers.ToApparelLayer(i)) {
+                        if (apparelLayer == i.ApparelLayer) {
                             continue;
                         }
 
                         // If the apparel covers another layer as well as the current one, check to see
                         // if the user has selected another piece of apparel for that layer.  If so, check
                         // to see if it covers any of the same body parts.  If it does, it's a conflict.
-                        int disallowedLayer = PawnLayers.ToPawnLayerIndex(layer);
+                        PawnLayer disallowedLayer = PrepareCarefully.Instance.Providers.PawnLayers.FindLayerForApparelLayer(apparelLayer);
                         if (this.selectedApparel[disallowedLayer] != null) {
                             foreach (var group in this.selectedApparel[disallowedLayer].apparel.bodyPartGroups) {
                                 if (apparel.apparel.bodyPartGroups.Contains(group)) {
@@ -915,6 +979,7 @@ namespace EdB.PrepareCarefully {
                     defs.Add(conflict.def);
                 }
                 List<ThingDef> sortedDefs = new List<ThingDef>(defs);
+                /*
                 sortedDefs.Sort((ThingDef a, ThingDef b) => {
                     int c = PawnLayers.ToPawnLayerIndex(a.apparel);
                     int d = PawnLayers.ToPawnLayerIndex(b.apparel);
@@ -928,6 +993,7 @@ namespace EdB.PrepareCarefully {
                         return 0;
                     }
                 });
+                */
 
                 StringBuilder builder = new StringBuilder();
                 int index = 0;
@@ -1141,7 +1207,6 @@ namespace EdB.PrepareCarefully {
             }
             set {
                 pawn.story.melanin = value;
-                this.colors[PawnLayers.BodyType] = this.colors[PawnLayers.HeadType] = pawn.story.SkinColor;
                 if (alienRace != null) {
                     SkinColor = PawnSkinColors.GetSkinColor(value);
                 }
@@ -1204,16 +1269,16 @@ namespace EdB.PrepareCarefully {
         }
 
         protected void ResetGender() {
-            List<BodyType> bodyTypes = PrepareCarefully.Instance.Providers.BodyTypes.GetBodyTypesForPawn(this);
+            List<BodyTypeDef> bodyTypes = PrepareCarefully.Instance.Providers.BodyTypes.GetBodyTypesForPawn(this);
             if (pawn.gender == Gender.Female) {
                 if (HairDef.hairGender == HairGender.Male) {
                     HairDef = DefDatabase<HairDef>.AllDefsListForReading.Find((HairDef def) => {
                         return def.hairGender != HairGender.Male;
                     });
                 }
-                if (BodyType == BodyType.Male) {
-                    if (bodyTypes.Contains(BodyType.Female)) {
-                        BodyType = BodyType.Female;
+                if (BodyType == BodyTypeDefOf.Male) {
+                    if (bodyTypes.Contains(BodyTypeDefOf.Female)) {
+                        BodyType = BodyTypeDefOf.Female;
                     }
                 }
             }
@@ -1223,9 +1288,9 @@ namespace EdB.PrepareCarefully {
                         return def.hairGender != HairGender.Female;
                     });
                 }
-                if (BodyType == BodyType.Female) {
-                    if (bodyTypes.Contains(BodyType.Male)) {
-                        BodyType = BodyType.Male;
+                if (BodyType == BodyTypeDefOf.Female) {
+                    if (bodyTypes.Contains(BodyTypeDefOf.Male)) {
+                        BodyType = BodyTypeDefOf.Male;
                     }
                 }
             }
@@ -1266,15 +1331,14 @@ namespace EdB.PrepareCarefully {
             apparel.Clear();
 
             // Set each piece of apparel on the underlying Pawn from the CustomPawn.
-            AddApparelToPawn(pawn, PawnLayers.Pants);
-            AddApparelToPawn(pawn, PawnLayers.BottomClothingLayer);
-            AddApparelToPawn(pawn, PawnLayers.MiddleClothingLayer);
-            AddApparelToPawn(pawn, PawnLayers.TopClothingLayer);
-            AddApparelToPawn(pawn, PawnLayers.Accessory);
-            AddApparelToPawn(pawn, PawnLayers.Hat);
+            foreach (var layer in selectedApparel.Keys) {
+                if (layer.Apparel) {
+                    AddApparelToPawn(pawn, layer);
+                }
+            }
         }
         
-        public void AddApparelToPawn(Pawn targetPawn, int layer) {
+        public void AddApparelToPawn(Pawn targetPawn, PawnLayer layer) {
             if (acceptedApparel[layer] != null) {
                 Apparel a;
                 Color color = Color.white;

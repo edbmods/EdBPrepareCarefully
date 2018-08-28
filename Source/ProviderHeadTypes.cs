@@ -47,12 +47,25 @@ namespace EdB.PrepareCarefully {
             return headTypes;
         }
         protected OptionsHeadType InitializeHeadTypes(ThingDef race) {
+            OptionsHeadType result;
             if (race == ThingDefOf.Human) {
-                return InitializeHumanHeadTypes();
+                result = InitializeHumanHeadTypes();
             }
             else {
-                return InitializeAlienHeadTypes(race);
+                result = InitializeAlienHeadTypes(race);
             }
+            /*
+            Log.Warning("Head Types for " + race.defName + ":");
+            Log.Warning("  Male: ");
+            foreach (var h in result.GetHeadTypes(Gender.Male)) {
+                Log.Message("    " + h.ToString());
+            }
+            Log.Warning("  Female: ");
+            foreach (var h in result.GetHeadTypes(Gender.Female)) {
+                Log.Message("    " + h.ToString());
+            }
+            */
+            return result;
         }
         protected OptionsHeadType InitializeHumanHeadTypes() {
             MethodInfo headGraphicsMethod = typeof(GraphicDatabaseHeadRecords).GetMethod("BuildDatabaseIfNecessary", BindingFlags.Static | BindingFlags.NonPublic);
@@ -112,18 +125,20 @@ namespace EdB.PrepareCarefully {
                 pathValue += "/";
             }
             if (gender == Gender.Female) {
-                pathValue += "Female_";
+                pathValue += "Female/Female_";
             }
             else if (gender == Gender.Male) {
-                pathValue += "Male_";
+                pathValue += "Male/Male_";
             }
             else {
-                pathValue += "None_";
+                pathValue += "None/None_";
             }
             pathValue += crownType;
             try {
                 result.GraphicPath = pathValue;
-                result.CrownType = CrownType.Average;
+                string firstPart = crownType.Split('_')[0];
+                CrownType c = (CrownType)Enum.Parse(typeof(CrownType), firstPart);
+                result.CrownType = c;
                 result.Gender = gender;
                 return result;
             }
@@ -141,7 +156,8 @@ namespace EdB.PrepareCarefully {
             pathValue += crownType;
             try {
                 result.GraphicPath = pathValue;
-                result.CrownType = CrownType.Average;
+                string firstPart = crownType.Split('_')[0];
+                CrownType c = (CrownType)Enum.Parse(typeof(CrownType), firstPart);
                 result.Gender = null;
                 return result;
             }

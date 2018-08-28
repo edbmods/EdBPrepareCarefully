@@ -42,7 +42,7 @@ namespace EdB.PrepareCarefully {
         public override void Resize(Rect rect) {
             base.Resize(rect);
 
-            float panelPaddingLeft = 16;
+            float panelPaddingLeft = 12;
             float panelPaddingRight = 10;
             float panelPaddingBottom = 10;
             float panelPaddingTop = 4;
@@ -53,6 +53,8 @@ namespace EdB.PrepareCarefully {
             Vector2 maxLabelSize = new Vector2(float.MinValue, float.MinValue);
             foreach (SkillDef current in DefDatabase<SkillDef>.AllDefs) {
                 Vector2 labelSize = Text.CalcSize(current.skillLabel);
+                // Need to add some padding because the "n" at the end of "Construction" gets cut off if we don't.
+                labelSize += new Vector2(4, 0);
                 maxLabelSize.x = Mathf.Max(labelSize.x, maxLabelSize.x);
                 maxLabelSize.y = Mathf.Max(labelSize.y, maxLabelSize.y);
             }
@@ -92,7 +94,7 @@ namespace EdB.PrepareCarefully {
             Style.SetGUIColorForButton(RectButtonClearSkills);
             GUI.DrawTexture(RectButtonClearSkills, Textures.TextureButtonClearSkills);
             if (Widgets.ButtonInvisible(RectButtonClearSkills, false)) {
-                SoundDefOf.TickLow.PlayOneShotOnCamera();
+                SoundDefOf.Tick_Low.PlayOneShotOnCamera();
                 SkillsCleared();
             }
             TooltipHandler.TipRegion(RectButtonClearSkills, "EdB.PC.Panel.Skills.ClearTip".Translate());
@@ -101,7 +103,7 @@ namespace EdB.PrepareCarefully {
             Style.SetGUIColorForButton(RectButtonResetSkills);
             GUI.DrawTexture(RectButtonResetSkills, Textures.TextureButtonReset);
             if (Widgets.ButtonInvisible(RectButtonResetSkills, false)) {
-                SoundDefOf.TickLow.PlayOneShotOnCamera();
+                SoundDefOf.Tick_Low.PlayOneShotOnCamera();
                 SkillsReset();
             }
             TooltipHandler.TipRegion(RectButtonResetSkills, "EdB.PC.Panel.Skills.ResetTip".Translate());
@@ -146,7 +148,7 @@ namespace EdB.PrepareCarefully {
                         GUI.color = Color.white;
                         GUI.DrawTexture(rect, image);
                         if (Widgets.ButtonInvisible(rect, false)) {
-                            SoundDefOf.TickTiny.PlayOneShotOnCamera();
+                            SoundDefOf.Tick_Tiny.PlayOneShotOnCamera();
                             if (Event.current.button != 1) {
                                 IncreasePassion(skill);
                             }
@@ -182,7 +184,7 @@ namespace EdB.PrepareCarefully {
                         }
                         GUI.DrawTexture(rect, Textures.TextureButtonPrevious);
                         if (Widgets.ButtonInvisible(rect, false)) {
-                            SoundDefOf.TickTiny.PlayOneShotOnCamera();
+                            SoundDefOf.Tick_Tiny.PlayOneShotOnCamera();
                             DecreaseSkill(customPawn, skill);
                         }
 
@@ -198,7 +200,7 @@ namespace EdB.PrepareCarefully {
                         }
                         GUI.DrawTexture(rect, Textures.TextureButtonNext);
                         if (Widgets.ButtonInvisible(rect, false)) {
-                            SoundDefOf.TickTiny.PlayOneShotOnCamera();
+                            SoundDefOf.Tick_Tiny.PlayOneShotOnCamera();
                             IncreaseSkill(customPawn, skill);
                         }
                     }
@@ -250,7 +252,7 @@ namespace EdB.PrepareCarefully {
                     else {
                         value = Mathf.CeilToInt(x / rect.width * 20f);
                     }
-                    SoundDefOf.TickTiny.PlayOneShotOnCamera();
+                    SoundDefOf.Tick_Tiny.PlayOneShotOnCamera();
                     SetSkillLevel(customPawn, skill, value);
                 }
             }

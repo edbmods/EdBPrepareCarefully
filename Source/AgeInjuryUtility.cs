@@ -15,7 +15,7 @@ namespace EdB.PrepareCarefully {
         //
         // Static Fields
         //
-        private const int MaxOldInjuryAge = 100;
+        private const int MaxPermanentInjuryAge = 100;
 
         private static List<Thing> emptyIngredientsList = new List<Thing>();
 
@@ -23,42 +23,50 @@ namespace EdB.PrepareCarefully {
         // Static Methods
         //
         public static void GenerateRandomOldAgeInjuries(Pawn pawn, bool tryNotToKillPawn) {
-            int num = 0;
-            for (int i = 10; i < Mathf.Min(pawn.ageTracker.AgeBiologicalYears, 120); i += 10) {
-                if (Rand.Value < 0.15f) {
-                    num++;
+            float num = (!pawn.RaceProps.IsMechanoid) ? pawn.RaceProps.lifeExpectancy : 2500f;
+            float num2 = num / 8f;
+            float b = num * 1.5f;
+            float chance = (!pawn.RaceProps.Humanlike) ? 0.03f : 0.15f;
+            int num3 = 0;
+            for (float num4 = num2; num4 < Mathf.Min((float)pawn.ageTracker.AgeBiologicalYears, b); num4 += num2) {
+                if (Rand.Chance(chance)) {
+                    num3++;
                 }
             }
-            for (int j = 0; j < num; j++) {
-                IEnumerable<BodyPartRecord> source = from x in pawn.health.hediffSet.GetNotMissingParts(BodyPartHeight.Undefined, BodyPartDepth.Undefined)
-                                                     where x.depth == BodyPartDepth.Outside && !Mathf.Approximately(x.def.oldInjuryBaseChance, 0f) && !pawn.health.hediffSet.PartOrAnyAncestorHasDirectlyAddedParts(x)
+            for (int i = 0; i < num3; i++) {
+                IEnumerable<BodyPartRecord> source = from x in pawn.health.hediffSet.GetNotMissingParts(BodyPartHeight.Undefined, BodyPartDepth.Undefined, null)
+                                                     where x.depth == BodyPartDepth.Outside && (x.def.permanentInjuryChanceFactor != 0f || x.def.pawnGeneratorCanAmputate) && !pawn.health.hediffSet.PartOrAnyAncestorHasDirectlyAddedParts(x)
                                                      select x;
                 if (source.Any<BodyPartRecord>()) {
                     BodyPartRecord bodyPartRecord = source.RandomElementByWeight((BodyPartRecord x) => x.coverageAbs);
-                    DamageDef dam = AgeInjuryUtility.RandomOldInjuryDamageType(bodyPartRecord.def.frostbiteVulnerability > 0f && pawn.RaceProps.ToolUser);
+                    DamageDef dam = AgeInjuryUtility.RandomPermanentInjuryDamageType(bodyPartRecord.def.frostbiteVulnerability > 0f && pawn.RaceProps.ToolUser);
                     HediffDef hediffDefFromDamage = HealthUtility.GetHediffDefFromDamage(dam, pawn, bodyPartRecord);
-                    if (bodyPartRecord.def.oldInjuryBaseChance > 0f && hediffDefFromDamage.CompPropsFor(typeof(HediffComp_GetsOld)) != null) {
-                        if (Rand.Chance(bodyPartRecord.def.amputateIfGeneratedInjuredChance)) {
-                            Hediff_MissingPart hediff_MissingPart = (Hediff_MissingPart)HediffMaker.MakeHediff(HediffDefOf.MissingBodyPart, pawn, null);
-                            hediff_MissingPart.lastInjury = hediffDefFromDamage;
-                            hediff_MissingPart.TryGetComp<HediffComp_GetsOld>().IsOld = true;
-                            pawn.health.AddHediff(hediff_MissingPart, bodyPartRecord, null);
-                            if (pawn.RaceProps.Humanlike && (bodyPartRecord.def == BodyPartDefOf.LeftLeg || bodyPartRecord.def == BodyPartDefOf.RightLeg) && Rand.Chance(0.5f)) {
+                    if (bodyPartRecord.def.pawnGeneratorCanAmputate && Rand.Chance(0.3f)) {
+                        Hediff_MissingPart hediff_MissingPart = (Hediff_MissingPart)HediffMaker.MakeHediff(HediffDefOf.MissingBodyPart, pawn, null);
+                        hediff_MissingPart.lastInjury = hediffDefFromDamage;
+                        hediff_MissingPart.Part = bodyPartRecord;
+                        hediff_MissingPart.IsFresh = false;
+                        if (!tryNotToKillPawn || !pawn.health.WouldDieAfterAddingHediff(hediff_MissingPart)) {
+                            pawn.health.AddHediff(hediff_MissingPart, bodyPartRecord, null, null);
+                            if (pawn.RaceProps.Humanlike && bodyPartRecord.def == BodyPartDefOf.Leg && Rand.Chance(0.5f)) {
                                 RecipeDefOf.InstallPegLeg.Worker.ApplyOnPawn(pawn, bodyPartRecord, null, AgeInjuryUtility.emptyIngredientsList, null);
                             }
                         }
-                        else {
-                            Hediff_Injury hediff_Injury = (Hediff_Injury)HediffMaker.MakeHediff(hediffDefFromDamage, pawn, null);
-                            hediff_Injury.Severity = (float)Rand.RangeInclusive(2, 6);
-                            hediff_Injury.TryGetComp<HediffComp_GetsOld>().IsOld = true;
-                            pawn.health.AddHediff(hediff_Injury, bodyPartRecord, null);
+                    }
+                    else if (bodyPartRecord.def.permanentInjuryChanceFactor > 0f && hediffDefFromDamage.HasComp(typeof(HediffComp_GetsPermanent))) {
+                        Hediff_Injury hediff_Injury = (Hediff_Injury)HediffMaker.MakeHediff(hediffDefFromDamage, pawn, null);
+                        hediff_Injury.Severity = (float)Rand.RangeInclusive(2, 6);
+                        hediff_Injury.TryGetComp<HediffComp_GetsPermanent>().IsPermanent = true;
+                        hediff_Injury.Part = bodyPartRecord;
+                        if (!tryNotToKillPawn || !pawn.health.WouldDieAfterAddingHediff(hediff_Injury)) {
+                            pawn.health.AddHediff(hediff_Injury, bodyPartRecord, null, null);
                         }
                     }
                 }
             }
-            for (int k = 1; k < pawn.ageTracker.AgeBiologicalYears; k++) {
-                foreach (HediffGiver_Birthday current in AgeInjuryUtility.RandomHediffsToGainOnBirthday(pawn, k)) {
-                    current.TryApplyAndSimulateSeverityChange(pawn, (float)k, tryNotToKillPawn);
+            for (int j = 1; j < pawn.ageTracker.AgeBiologicalYears; j++) {
+                foreach (HediffGiver_Birthday current in AgeInjuryUtility.RandomHediffsToGainOnBirthday(pawn, j)) {
+                    current.TryApplyAndSimulateSeverityChange(pawn, (float)j, tryNotToKillPawn);
                     if (pawn.Dead) {
                         break;
                     }
@@ -69,7 +77,8 @@ namespace EdB.PrepareCarefully {
             }
         }
 
-        public static void LogOldInjuryCalculations() {
+        [DebugOutput]
+        public static void PermanentInjuryCalculations() {
             StringBuilder stringBuilder = new StringBuilder();
             stringBuilder.AppendLine("=======Theoretical injuries=========");
             for (int i = 0; i < 10; i++) {
@@ -89,7 +98,7 @@ namespace EdB.PrepareCarefully {
                     }
                 }
             }
-            Log.Message(stringBuilder.ToString());
+            Log.Message(stringBuilder.ToString(), false);
             stringBuilder = new StringBuilder();
             stringBuilder.AppendLine("=======Actual injuries=========");
             for (int k = 0; k < 200; k++) {
@@ -102,20 +111,20 @@ namespace EdB.PrepareCarefully {
                 }
                 Find.WorldPawns.PassToWorld(pawn, PawnDiscardDecideMode.Discard);
             }
-            Log.Message(stringBuilder.ToString());
+            Log.Message(stringBuilder.ToString(), false);
         }
 
         public static IEnumerable<HediffGiver_Birthday> RandomHediffsToGainOnBirthday(Pawn pawn, int age) {
             return AgeInjuryUtility.RandomHediffsToGainOnBirthday(pawn.def, age);
         }
 
-
         // EdB: Interpretation of bad decompilation
         //[DebuggerHidden]
         //private static IEnumerable<HediffGiver_Birthday> RandomHediffsToGainOnBirthday(ThingDef raceDef, int age) {
         //    AgeInjuryUtility.< RandomHediffsToGainOnBirthday > c__Iterator0 < RandomHediffsToGainOnBirthday > c__Iterator = new AgeInjuryUtility.< RandomHediffsToGainOnBirthday > c__Iterator0();
-//
+
         //    < RandomHediffsToGainOnBirthday > c__Iterator.raceDef = raceDef;
+
         //    < RandomHediffsToGainOnBirthday > c__Iterator.age = age;
         //    AgeInjuryUtility.< RandomHediffsToGainOnBirthday > c__Iterator0 expr_15 = < RandomHediffsToGainOnBirthday > c__Iterator;
         //    expr_15.$PC = -2;
@@ -139,6 +148,31 @@ namespace EdB.PrepareCarefully {
             return result;
         }
 
+        private static DamageDef RandomPermanentInjuryDamageType(bool allowFrostbite) {
+            DamageDef result;
+            switch (Rand.RangeInclusive(0, 3 + ((!allowFrostbite) ? 0 : 1))) {
+                case 0:
+                    result = DamageDefOf.Bullet;
+                    break;
+                case 1:
+                    result = DamageDefOf.Scratch;
+                    break;
+                case 2:
+                    result = DamageDefOf.Bite;
+                    break;
+                case 3:
+                    result = DamageDefOf.Stab;
+                    break;
+                case 4:
+                    result = DamageDefOf.Frostbite;
+                    break;
+                default:
+                    throw new Exception();
+            }
+            return result;
+        }
+
+        /*
         private static DamageDef RandomOldInjuryDamageType(bool allowFrostbite) {
             switch (Rand.RangeInclusive(0, 3 + ((!allowFrostbite) ? 0 : 1))) {
                 case 0:
@@ -155,5 +189,6 @@ namespace EdB.PrepareCarefully {
                     throw new Exception();
             }
         }
+        */
     }
 }

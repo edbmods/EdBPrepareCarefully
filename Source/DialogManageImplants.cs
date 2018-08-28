@@ -96,7 +96,7 @@ namespace EdB.PrepareCarefully {
         protected string cachedBlockedSelectionAlert = null;
 
         public DialogManageImplants(CustomPawn pawn) {
-            this.closeOnEscapeKey = true;
+            this.closeOnCancel = true;
             this.doCloseX = true;
             this.absorbInputAroundWindow = true;
             this.forcePause = true;
@@ -376,7 +376,7 @@ namespace EdB.PrepareCarefully {
             if (recipe.Disabled && !recipe.Selected) {
                 return;
             }
-            SoundDefOf.TickTiny.PlayOneShotOnCamera();
+            SoundDefOf.Tick_Tiny.PlayOneShotOnCamera();
             if (recipe.Selected) {
                 recipe.Selected = false;
                 foreach (var part in recipe.Parts) {
@@ -415,7 +415,7 @@ namespace EdB.PrepareCarefully {
             if (part.Disabled && !part.Selected) {
                 return;
             }
-            SoundDefOf.TickTiny.PlayOneShotOnCamera();
+            SoundDefOf.Tick_Tiny.PlayOneShotOnCamera();
             if (part.Selected) {
                 part.Selected = false;
                 RemoveImplant(recipe, part);
@@ -519,14 +519,14 @@ namespace EdB.PrepareCarefully {
                             ClickRecipeAction(recipe);
                         }
                         if (recipe.BlockingImplant != null) {
-                            TooltipHandler.TipRegion(labelRect, "EdB.PC.Dialog.Implant.Conflict".Translate(new object[] { recipe.BlockingImplant.recipe.LabelCap, recipe.BlockingImplant.BodyPartRecord.def.label }));
+                            TooltipHandler.TipRegion(labelRect, "EdB.PC.Dialog.Implant.Conflict".Translate(new object[] { recipe.BlockingImplant.recipe.LabelCap, recipe.BlockingImplant.BodyPartRecord.Label }));
                         }
                     }
                     if (recipe.Selected && recipe.RequiresPartSelection) {
                         float partInset = 32;
                         float cursor = labelRect.yMax;
                         foreach (var part in recipe.Parts) {
-                            string labelText = part.Part.def.LabelCap;
+                            string labelText = part.Part.LabelCap;
                             labelRect = new Rect(rect.x + partInset, cursor, rect.width - partInset * 2, LineHeight);
                             dottedLineRect = new Rect(labelRect.x, labelRect.y + 21, DottedLineSize.x, DottedLineSize.y);
                             checkboxRect = new Rect(labelRect.x + labelRect.width - 22 - 6, labelRect.MiddleY() - 12, 22, 22);
@@ -556,7 +556,7 @@ namespace EdB.PrepareCarefully {
                                     ClickPartAction(recipe, part);
                                 }
                                 if (part.BlockingImplant != null) {
-                                    TooltipHandler.TipRegion(labelRect, "EdB.PC.Dialog.Implant.Conflict".Translate(new object[] { part.BlockingImplant.recipe.LabelCap, part.BlockingImplant.BodyPartRecord.def.label }));
+                                    TooltipHandler.TipRegion(labelRect, "EdB.PC.Dialog.Implant.Conflict".Translate(new object[] { part.BlockingImplant.recipe.LabelCap, part.BlockingImplant.BodyPartRecord.Label }));
                                 }
                             }
                             cursor += labelRect.height;

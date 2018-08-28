@@ -3,11 +3,13 @@ using UnityEngine;
 using Verse;
 namespace EdB.PrepareCarefully {
     public class TabViewPawns : TabViewBase {
-        public PanelPawnList PanelPawnList { get; set; }
+        public PanelColonyPawnList PanelColonyPawns { get; set; }
+        public PanelWorldPawnList PanelWorldPawns { get; set; }
         public PanelRandomize PanelRandomize { get; set; }
         public PanelName PanelName { get; set; }
         public PanelAge PanelAge { get; set; }
         public PanelAppearance PanelAppearance { get; set; }
+        public PanelFaction PanelFaction { get; set; }
         public PanelBackstory PanelBackstory { get; set; }
         public PanelTraits PanelTraits { get; set; }
         public PanelHealth PanelHealth { get; set; }
@@ -16,11 +18,13 @@ namespace EdB.PrepareCarefully {
         public PanelLoadSave PanelSaveLoad { get; set; }
 
         public TabViewPawns() {
-            PanelPawnList = new PanelPawnList();
+            PanelColonyPawns = new PanelColonyPawnList();
+            PanelWorldPawns = new PanelWorldPawnList();
             PanelRandomize = new PanelRandomize();
             PanelName = new PanelName();
             PanelAge = new PanelAge();
             PanelAppearance = new PanelAppearance();
+            PanelFaction = new PanelFaction();
             PanelBackstory = new PanelBackstory();
             PanelTraits = new PanelTraits();
             PanelHealth = new PanelHealth();
@@ -39,13 +43,18 @@ namespace EdB.PrepareCarefully {
             base.Draw(state, rect);
 
             // Draw the panels.
-            PanelPawnList.Draw(state);
+            PawnListMode pawnListMode = PrepareCarefully.Instance.State.PawnListMode;
+            PanelColonyPawns.Draw(state);
+            PanelWorldPawns.Draw(state);
             if (state.CurrentPawn != null) {
                 PanelRandomize.Draw(state);
                 PanelName.Draw(state);
                 PanelSaveLoad.Draw(state);
                 PanelAge.Draw(state);
                 PanelAppearance.Draw(state);
+                if (pawnListMode == PawnListMode.WorldPawnsMaximized) {
+                    PanelFaction.Draw(state);
+                }
                 PanelBackstory.Draw(state);
                 PanelTraits.Draw(state);
                 PanelHealth.Draw(state);
@@ -58,31 +67,65 @@ namespace EdB.PrepareCarefully {
             base.Resize(rect);
 
             Vector2 panelMargin = Style.SizePanelMargin;
+            
+            // Pawn list
+            PawnListMode pawnListMode = PrepareCarefully.Instance.State.PawnListMode;
+            float pawnListWidth = 168;
+            float minimizedHeight = 36;
+            float maximizedHeight = rect.height - panelMargin.y - minimizedHeight;
+            if (pawnListMode == PawnListMode.ColonyPawnsMaximized) {
+                PanelColonyPawns.Resize(new Rect(rect.xMin, rect.yMin, pawnListWidth, maximizedHeight));
+                PanelWorldPawns.Resize(new Rect(PanelColonyPawns.PanelRect.x, PanelColonyPawns.PanelRect.yMax + panelMargin.y, pawnListWidth, minimizedHeight));
+            }
+            else if (pawnListMode == PawnListMode.WorldPawnsMaximized) {
+                PanelColonyPawns.Resize(new Rect(rect.xMin, rect.yMin, pawnListWidth, minimizedHeight));
+                PanelWorldPawns.Resize(new Rect(PanelColonyPawns.PanelRect.x, PanelColonyPawns.PanelRect.yMax + panelMargin.y, pawnListWidth, maximizedHeight));
+            }
+            else {
+                float listHeight = Mathf.Floor((rect.height - panelMargin.y) *0.5f);
+                PanelColonyPawns.Resize(new Rect(rect.xMin, rect.yMin, pawnListWidth, listHeight));
+                PanelWorldPawns.Resize(new Rect(PanelColonyPawns.PanelRect.x, PanelColonyPawns.PanelRect.yMax + panelMargin.y, pawnListWidth, listHeight));
+            }
 
-            PanelPawnList.Resize(new Rect(rect.xMin, rect.yMin, 110, 560));
-            PanelRandomize.Resize(new Rect(PanelPawnList.PanelRect.xMax + panelMargin.x,
-                PanelPawnList.PanelRect.yMin, 64, 64));
+            // Randomize, Age and Save/Load
+            PanelRandomize.Resize(new Rect(PanelColonyPawns.PanelRect.xMax + panelMargin.x,
+                PanelColonyPawns.PanelRect.yMin, 64, 64));
             PanelName.Resize(new Rect(PanelRandomize.PanelRect.xMax + panelMargin.x,
-                PanelRandomize.PanelRect.yMin, 460, 64));
+                PanelRandomize.PanelRect.yMin, 402, 64));
             PanelSaveLoad.Resize(new Rect(PanelName.PanelRect.xMax + panelMargin.x,
                 PanelName.PanelRect.yMin, 284, 64));
 
-            PanelAge.Resize(new Rect(PanelPawnList.PanelRect.xMax + panelMargin.x,
-                PanelRandomize.PanelRect.yMax + panelMargin.y, 226, 64));
+            // Age and Appearance
+            float columnSize1 = 226;
+            PanelAge.Resize(new Rect(PanelColonyPawns.PanelRect.xMax + panelMargin.x,
+                PanelRandomize.PanelRect.yMax + panelMargin.y, columnSize1, 64));
             PanelAppearance.Resize(new Rect(PanelAge.PanelRect.xMin, PanelAge.PanelRect.yMax + panelMargin.y,
-                226, 405));
+                columnSize1, 414));
 
-            PanelBackstory.Resize(new Rect(PanelAge.PanelRect.xMax + panelMargin.x, PanelAge.PanelRect.yMin,
-                320, 120));
+            // Faction, Backstory, Traits and Health
+            float columnSize2 = 304;
+            float factionPanelHeight = pawnListMode == PawnListMode.WorldPawnsMaximized ? 70 : 0;
+            PanelFaction.Resize(new Rect(PanelAge.PanelRect.xMax + panelMargin.x, PanelAge.PanelRect.yMin,
+                columnSize2, factionPanelHeight));
+            float backstoryTop = PanelFaction.PanelRect.yMax + (pawnListMode == PawnListMode.WorldPawnsMaximized ? panelMargin.y : 0);
+            PanelBackstory.Resize(new Rect(PanelFaction.PanelRect.xMin, backstoryTop,
+                columnSize2, 95));
             PanelTraits.Resize(new Rect(PanelBackstory.PanelRect.xMin, PanelBackstory.PanelRect.yMax + panelMargin.y,
-                320, 156));
+                columnSize2, 142));
+            float healthHeight = pawnListMode == PawnListMode.WorldPawnsMaximized ? 147 : 229;
             PanelHealth.Resize(new Rect(PanelBackstory.PanelRect.xMin, PanelTraits.PanelRect.yMax + panelMargin.y,
-                320, 180));
-
-            PanelSkills.Resize(new Rect(PanelBackstory.PanelRect.xMax + panelMargin.x, PanelBackstory.PanelRect.yMin,
-                262, 362));
+                columnSize2, healthHeight));
+            
+            // Skills and Incapable Of
+            float columnSize3 = 218;
+            PanelSkills.Resize(new Rect(PanelFaction.PanelRect.xMax + panelMargin.x, PanelFaction.PanelRect.yMin,
+                columnSize3, 362));
             PanelIncapable.Resize(new Rect(PanelSkills.PanelRect.xMin, PanelSkills.PanelRect.yMax + panelMargin.y,
-                260, 103));
+                columnSize3, 116));
+        }
+
+        public void ResizeTabView() {
+            Resize(TabViewRect);
         }
     }
 }

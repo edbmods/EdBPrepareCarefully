@@ -99,22 +99,23 @@ namespace EdB.PrepareCarefully {
                 if (nextAction != null) {
                     fieldRect.width -= 12;
                 }
-
-                // If the field is not enabled, draw the disabled background and then return.
-                if (!enabled) {
-                    GUI.color = Style.ColorControlDisabled;
-                    Widgets.DrawAtlas(fieldRect, Textures.TextureFieldAtlas);
-                    return;
-                }
-
+                
                 // Draw the field background.
-                GUI.color = Color.white;
+                if (enabled) {
+                    GUI.color = Color.white;
+                }
+                else {
+                    GUI.color = Style.ColorControlDisabled;
+                }
                 Widgets.DrawAtlas(fieldRect, Textures.TextureFieldAtlas);
 
                 // Draw the label.
                 Text.Anchor = TextAnchor.MiddleCenter;
                 Rect textRect = new Rect(rect.x, rect.y + 1, rect.width, rect.height);
-                if (clickAction != null && fieldRect.Contains(Event.current.mousePosition)) {
+                if (!enabled) {
+                    GUI.color = Style.ColorControlDisabled;
+                }
+                else if (clickAction != null && fieldRect.Contains(Event.current.mousePosition)) {
                     GUI.color = Color.white;
                 }
                 else {
@@ -124,6 +125,10 @@ namespace EdB.PrepareCarefully {
                     Widgets.Label(textRect, label);
                 }
                 GUI.color = Color.white;
+
+                if (!enabled) {
+                    return;
+                }
 
                 // Handle the tooltip.
                 if (tip != null) {
@@ -141,7 +146,7 @@ namespace EdB.PrepareCarefully {
                     }
                     GUI.DrawTexture(buttonRect, Textures.TextureButtonPrevious);
                     if (Widgets.ButtonInvisible(buttonRect, false)) {
-                        SoundDefOf.TickTiny.PlayOneShotOnCamera();
+                        SoundDefOf.Tick_Tiny.PlayOneShotOnCamera();
                         previousAction();
                     }
                 }
@@ -157,7 +162,7 @@ namespace EdB.PrepareCarefully {
                     }
                     GUI.DrawTexture(buttonRect, Textures.TextureButtonNext);
                     if (Widgets.ButtonInvisible(buttonRect, false)) {
-                        SoundDefOf.TickTiny.PlayOneShotOnCamera();
+                        SoundDefOf.Tick_Tiny.PlayOneShotOnCamera();
                         nextAction();
                     }
                 }

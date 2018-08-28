@@ -4,7 +4,7 @@
 
 The more translations, the better--they are a great contribution to the mod community.  However, while it is appreciated that people take the time to translate the mod to other languages, it's difficult to keep up with those contributions.  Every addition or change to a translation requires a new release of the mod, and taking on that additional effort is not possible.
 
-Therefore, translation pull requests will not be merged into the project.  Please consider creating a standalone translation mod for your language like [this one](http://steamcommunity.com/sharedfiles/filedetails/?id=737171991).  These mods don't include any code--they simply include the translation resources for a given language.  With this approach, you can make changes and additions at your own pace, and you can take on the responsibility of releases for the translation.
+Therefore, translation pull requests will not be merged into the project.  Please consider creating a standalone translation mod for your language like [this one](https://steamcommunity.com/sharedfiles/filedetails/?id=1205095547).  These mods don't include any code--they simply include the translation resources for a given language.  With this approach, you can make changes and additions at your own pace, and you can take on the responsibility of releases for the translation.
 
 ## Building Prepare Carefully
 
@@ -33,17 +33,11 @@ To automatically build the mod directory for your Release DLL, run the `dist.bat
 
 Prepare Carefully uses a versioning scheme inspired by [semantic versioning](http://semver.org/) that combines the major/minor version of RimWorld with the major/minor version of the mod to end up with the following format:
 
-`{RimWorld major version}.{RimWorld minor version}.{mod major version}.{mod minor version}`
+`{RimWorld major version}.{RimWorld minor version}.{mod version for this RimWorld version}`
 
 Other conventions used to determine the mod version numbers:
-- The mod only uses `0` for major versions that are considered unstable/beta releases (i.e. 0.15.0.1)
-- Minor version numbers always start at `1` and never start at `0`
-- The mod considers a major release to be a release that adds or removes features
-- The mod considers a minor release to be an incremental release that makes bug fixes or otherwise changes existing features.
+- Mod version numbers always start at `1` and never start at `0`
 
 Some examples:
-+ **0.14.0.5**: The fifth "beta"/unstable release of the mod for RimWorld Alpha 14
-+ **0.14.1.1**: The first stable release of the mod for RimWorld Alpha 14
-+ **0.14.2.1**: The second stable release of the mod for RimWorld Alpha 14.  The point system was re-enabled for this version.  Since this was a new feature that was not in the previous version, it needed a new major-version number.
-+ **0.14.2.2**: If we need one, this will be the version number for the first bug-fix release after the second stable release of the mod for RimwWorld Alpha 14
-+ **0.15.0.1**: The first "beta"/unstable version of the mod for RimWorld Alpha 15
++ **0.18.2**: The second release of the mod for the Beta 18 version of RimWorld
++ **1.0.1**: The first release of the mod for RimWorld 1.0

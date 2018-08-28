@@ -100,9 +100,22 @@ namespace EdB.PrepareCarefully {
             SortField = SortField.Name;
         }
 
-        public void NextPage() {
+        // Performs the logic from the Page.DoNext() method in the base Page class instead of calling the override
+        // in Page_ConfigureStartingPawns.  We want to prevent the missing required work type dialog from appearing
+        // in the context of the configure pawns page.  We're adding our own version here.
+        public void DoNextInBasePage() {
             if (OriginalPage != null) {
-                typeof(Page_ConfigureStartingPawns).GetMethod("DoNext", BindingFlags.NonPublic | BindingFlags.Instance).Invoke(OriginalPage, null);
+                Page next = OriginalPage.next;
+                Action nextAction = OriginalPage.nextAct;
+                if (next != null) {
+                    Verse.Find.WindowStack.Add(next);
+                }
+                if (nextAction != null) {
+                    nextAction();
+                }
+                TutorSystem.Notify_Event("PageClosed");
+                TutorSystem.Notify_Event("GoToNextPage");
+                OriginalPage.Close(true);
             }
         }
 
@@ -111,7 +124,7 @@ namespace EdB.PrepareCarefully {
             this.Active = false;
             this.Providers = new Providers();
             this.equipmentDatabase = new EquipmentDatabase();
-            this.animalDatabase = new AnimalDatabase();
+            //this.animalDatabase = new AnimalDatabase();
             this.costCalculator = new CostCalculator();
             this.pawns.Clear();
             this.equipment.Clear();
@@ -155,9 +168,10 @@ namespace EdB.PrepareCarefully {
             };
             Providers.Health = new ProviderHealthOptions();
             Providers.Factions = new ProviderFactions();
+            Providers.PawnLayers = new ProviderPawnLayers();
         }
 
-        // TODO: Alpha 18
+        // TODO:
         // Think about whether or not this is the best approach.  Might need to do a bug report for the vanilla game?
         // The tribal scenario adds a weapon with an invalid thing/stuff combination (jade knife).  The 
         // knife ThingDef should allow the jade material, but it does not.  We need this workaround to
@@ -325,6 +339,26 @@ namespace EdB.PrepareCarefully {
                 return pawns;
             }
         }
+        public List<CustomPawn> ColonyPawns {
+            get {
+                return pawns.FindAll((CustomPawn pawn) => { return pawn.Type == CustomPawnType.Colonist; });
+            }
+        }
+        public List<CustomPawn> WorldPawns {
+            get {
+                return pawns.FindAll((CustomPawn pawn) => { return pawn.Type == CustomPawnType.World; });
+            }
+        }
+        public List<CustomPawn> HiddenPawns {
+            get {
+                return pawns.FindAll((CustomPawn pawn) => { return pawn.Type == CustomPawnType.Hidden; });
+            }
+        }
+        public List<CustomPawn> TemporaryPawns {
+            get {
+                return pawns.FindAll((CustomPawn pawn) => { return pawn.Type == CustomPawnType.Temporary; });
+            }
+        }
         public EquipmentDatabase EquipmentDatabase {
             get {
                 if (equipmentDatabase == null) {
@@ -345,6 +379,8 @@ namespace EdB.PrepareCarefully {
         */
 
         protected List<Pawn> colonists = new List<Pawn>();
+        private Dictionary<CustomPawn, Pawn> pawnLookup = new Dictionary<CustomPawn, Pawn>();
+        private Dictionary<Pawn, CustomPawn> reversePawnLookup = new Dictionary<Pawn, CustomPawn>();
 
         public Pawn FindPawn(CustomPawn pawn) {
             Pawn result;
@@ -356,33 +392,13 @@ namespace EdB.PrepareCarefully {
             }
         }
 
-        private Dictionary<CustomPawn, Pawn> pawnLookup = new Dictionary<CustomPawn, Pawn>();
-
-        public void CreateColonists() {
-            colonists.Clear();
-            foreach (CustomPawn customPawn in pawns) {
-                customPawn.Pawn.SetFactionDirect(Faction.OfPlayer);
-                if (customPawn.Pawn.workSettings == null) {
-                    customPawn.Pawn.workSettings = new Pawn_WorkSettings(customPawn.Pawn);
-                }
-                customPawn.Pawn.workSettings.EnableAndInitialize();
-                colonists.Add(customPawn.Pawn);
+        public CustomPawn FindCustomPawn(Pawn pawn) {
+            CustomPawn result;
+            if (reversePawnLookup.TryGetValue(pawn, out result)) {
+                return result;
             }
-            
-            pawnLookup.Clear();
-            for (int i = 0; i < pawns.Count; i++) {
-                CustomPawn customPawn = pawns[i];
-                Pawn pawn = colonists[i];
-                pawnLookup[customPawn] = pawn;
-            }
-
-            RelationshipBuilder builder = new RelationshipBuilder(RelationshipManager.Relationships.ToList(), RelationshipManager.ParentChildGroups);
-            builder.Build();
-        }
-        
-        public List<Pawn> Colonists {
-            get {
-                return colonists;
+            else {
+                return null;
             }
         }
 
@@ -528,26 +544,28 @@ namespace EdB.PrepareCarefully {
         public void InitializePawns() {
             this.customPawnToOriginalPawnMap.Clear();
             this.originalPawnToCustomPawnMap.Clear();
-            int pawnCount = Verse.Find.GameInitData.startingPawnCount;
-            foreach (Pawn originalPawn in Verse.Find.GameInitData.startingPawns) {
+            int pawnCount = Verse.Find.GameInitData.startingAndOptionalPawns.Count;
+            int startingPawnCount = Verse.Find.GameInitData.startingPawnCount;
+            foreach (Pawn originalPawn in Verse.Find.GameInitData.startingAndOptionalPawns) {
                 Pawn copiedPawn = originalPawn.Copy();
                 CustomPawn customPawn = new CustomPawn(copiedPawn);
                 customPawnToOriginalPawnMap.Add(customPawn, originalPawn);
                 originalPawnToCustomPawnMap.Add(originalPawn, customPawn);
             }
             for (int i = 0; i < pawnCount; i++) {
-                Pawn originalPawn = Verse.Find.GameInitData.startingPawns[i];
+                Pawn originalPawn = Verse.Find.GameInitData.startingAndOptionalPawns[i];
                 CustomPawn customPawn = originalPawnToCustomPawnMap[originalPawn];
+                customPawn.Type = i < startingPawnCount ? CustomPawnType.Colonist : CustomPawnType.World;
                 this.pawns.Add(customPawn);
             }
         }
 
         public void InitializeRelationshipManager(List<CustomPawn> pawns) {
             List<CustomPawn> customPawns = new List<CustomPawn>();
-            foreach (Pawn pawn in Verse.Find.GameInitData.startingPawns) {
+            foreach (Pawn pawn in Verse.Find.GameInitData.startingAndOptionalPawns) {
                 customPawns.Add(originalPawnToCustomPawnMap[pawn]);
             }
-            relationshipManager = new RelationshipManager(Verse.Find.GameInitData.startingPawns.GetRange(0, Verse.Find.GameInitData.startingPawnCount).ToList(), customPawns);
+            relationshipManager = new RelationshipManager(Verse.Find.GameInitData.startingAndOptionalPawns, customPawns);
         }
 
     }

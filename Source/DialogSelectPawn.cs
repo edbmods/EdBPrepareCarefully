@@ -25,7 +25,7 @@ namespace EdB.PrepareCarefully {
         protected bool confirmed = false;
 
         public DialogSelectPawn() {
-            this.closeOnEscapeKey = true;
+            this.closeOnCancel = true;
             this.doCloseX = true;
             this.absorbInputAroundWindow = true;
             this.forcePause = true;
@@ -124,7 +124,7 @@ namespace EdB.PrepareCarefully {
             table.SupportSelection = true;
             table.SelectedAction = (CustomPawn pawn) => {
                 if (DisabledPawns == null || !DisabledPawns.Contains(pawn)) {
-                    SoundDefOf.TickTiny.PlayOneShotOnCamera();
+                    SoundDefOf.Tick_Tiny.PlayOneShotOnCamera();
                     Select(pawn);
                 }
             };
@@ -144,9 +144,9 @@ namespace EdB.PrepareCarefully {
                 DrawAction = (CustomPawn pawn, Rect rect, WidgetTable<CustomPawn>.Metadata metadata) => {
                     Text.Anchor = TextAnchor.LowerLeft;
                     Text.Font = GameFont.Small;
-                    Widgets.Label(new Rect(rect.x, rect.y + nameOffset, rect.width, nameSize.y), pawn.Pawn.LabelShort);
+                    Widgets.Label(new Rect(rect.x, rect.y + nameOffset, rect.width, nameSize.y), pawn.FullName);
                     Text.Anchor = TextAnchor.UpperLeft;
-                    string description = pawn.IsAdult ? pawn.Adulthood.TitleShort : pawn.Childhood.TitleShort;
+                    string description = pawn.IsAdult ? pawn.Adulthood.TitleShortFor(pawn.Gender) : pawn.Childhood.TitleShortFor(pawn.Gender);
                     description += ", " + pawn.Gender.GetLabel() + ", age " + pawn.BiologicalAge;
                     if (pawn.BiologicalAge != pawn.ChronologicalAge) {
                         description += " (" + pawn.ChronologicalAge + ")";

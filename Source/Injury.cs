@@ -82,7 +82,7 @@ namespace EdB.PrepareCarefully {
         override public Color LabelColor {
             get {
                 if (Option != null && Option.HediffDef != null) {
-                    return Option.HediffDef.defaultLabelColor;
+                    return Option.IsOldInjury ? Color.gray : Option.HediffDef.defaultLabelColor;
                 }
                 else {
                     return Style.ColorText;
@@ -101,10 +101,10 @@ namespace EdB.PrepareCarefully {
                 Hediff hediff = HediffMaker.MakeHediff(Option.HediffDef, pawn, null);
                 hediff.Severity = this.Severity;
 
-                HediffComp_GetsOld getsOld = hediff.TryGetComp<HediffComp_GetsOld>();
-                if (getsOld != null) {
-                    getsOld.IsOld = true;
-                    getsOld.painFactor = painFactor == null ? 0 : painFactor.Value;
+                HediffComp_GetsPermanent getsPermanent = hediff.TryGetComp<HediffComp_GetsPermanent>();
+                if (getsPermanent != null) {
+                    getsPermanent.IsPermanent = true;
+                    ReflectionUtil.SetNonPublicField(getsPermanent, "painFactor", painFactor == null ? 0 : painFactor.Value);
                 }
 
                 pawn.health.AddHediff(hediff, BodyPartRecord, null);

@@ -57,12 +57,12 @@ namespace EdB.PrepareCarefully {
                 if (!pawn.Drawer.renderer.graphics.AllResolved) {
                     pawn.Drawer.renderer.graphics.ResolveAllGraphics();
                 }
-                Material matSingle = pawn.Drawer.renderer.graphics.nakedGraphic.MatSide;
+                Material matSingle = pawn.Drawer.renderer.graphics.nakedGraphic.MatEast;
                 resolvedIcon = matSingle.mainTexture;
                 GUI.color = matSingle.color;
             }
             else {
-                resolvedIcon = thing.Graphic.ExtractInnerGraphicFor(thing).MatSide.mainTexture;
+                resolvedIcon = thing.Graphic.ExtractInnerGraphicFor(thing).MatEast.mainTexture;
             }
             // EdB: Inline copy of static private method.
             //Widgets.ThingIconWorker(rect, thing.def, resolvedIcon);

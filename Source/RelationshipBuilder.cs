@@ -11,12 +11,12 @@ using Verse.Sound;
 namespace EdB.PrepareCarefully {
     public class RelationshipBuilder {
         private List<CustomRelationship> relationships;
-        private List<CustomParentChildGroup> parentChildGroups;
+        private List<ParentChildGroup> parentChildGroups;
         FieldInfo directRelationsField;
         FieldInfo pawnsWithField;
         private List<int> compatibilityPool = new List<int>();
 
-        public RelationshipBuilder(List<CustomRelationship> relationships, List<CustomParentChildGroup> parentChildGroups) {
+        public RelationshipBuilder(List<CustomRelationship> relationships, List<ParentChildGroup> parentChildGroups) {
             directRelationsField = typeof(Pawn_RelationsTracker).GetField("directRelations", BindingFlags.Instance | BindingFlags.NonPublic);
             pawnsWithField = typeof(Pawn_RelationsTracker).GetField("pawnsWithDirectRelationsWithMe", BindingFlags.Instance | BindingFlags.NonPublic);
             this.relationships = relationships;
@@ -25,7 +25,7 @@ namespace EdB.PrepareCarefully {
             int compatibilityPoolSize = Mathf.Max(Mathf.Min(relationships.Count * 6, 12), 50);
             this.FillCompatibilityPool(compatibilityPoolSize);
         }
-        public void Build() {
+        public List<CustomPawn> Build() {
             // These include all the pawns that have relationships with them.
             HashSet<CustomPawn> relevantPawns = new HashSet<CustomPawn>();
             foreach (var rel in relationships) {
@@ -34,10 +34,10 @@ namespace EdB.PrepareCarefully {
             }
             foreach (var group in parentChildGroups) {
                 foreach (var parent in group.Parents) {
-                    relevantPawns.Add(parent.Pawn);
+                    relevantPawns.Add(parent);
                 }
                 foreach (var child in group.Children) {
-                    relevantPawns.Add(child.Pawn);
+                    relevantPawns.Add(child);
                 }
             }
             
@@ -59,18 +59,18 @@ namespace EdB.PrepareCarefully {
                 if (group.Children.Count > 1) {
                     // Siblings need to have 2 parents, or they will be considered half-siblings.
                     if (group.Parents.Count == 0) {
-                        CustomParentChildPawn parent1 = CreateParent(Gender.Female, group.Children);
-                        CustomParentChildPawn parent2 = CreateParent(Gender.Male, group.Children);
+                        CustomPawn parent1 = CreateParent(Gender.Female, group.Children);
+                        CustomPawn parent2 = CreateParent(Gender.Male, group.Children);
                         group.Parents.Add(parent1);
                         group.Parents.Add(parent2);
                     }
                     else if (group.Parents.Count == 1) {
                         if (group.Parents[0].Gender == Gender.Male) {
-                            CustomParentChildPawn parent = CreateParent(Gender.Female, group.Children);
+                            CustomPawn parent = CreateParent(Gender.Female, group.Children);
                             group.Parents.Add(parent);
                         }
                         else {
-                            CustomParentChildPawn parent = CreateParent(Gender.Male, group.Children);
+                            CustomPawn parent = CreateParent(Gender.Male, group.Children);
                             group.Parents.Add(parent);
                         }
                     }
@@ -85,9 +85,9 @@ namespace EdB.PrepareCarefully {
                 float age = 0;
                 CustomPawn oldestChild = null;
                 foreach (var child in group.Children) {
-                    if (child.Pawn.BiologicalAge > age) {
-                        age = child.Pawn.BiologicalAge;
-                        oldestChild = child.Pawn;
+                    if (child.BiologicalAge > age) {
+                        age = child.BiologicalAge;
+                        oldestChild = child;
                     }
                 }
                 if (oldestChild == null) {
@@ -95,11 +95,11 @@ namespace EdB.PrepareCarefully {
                 }
                 foreach (var parent in group.Parents) {
                     if (parent.Hidden) {
-                        int validAge = GetValidParentAge(parent.Pawn, oldestChild);
-                        if (validAge != parent.Pawn.BiologicalAge) {
-                            int diff = parent.Pawn.ChronologicalAge - parent.Pawn.BiologicalAge;
-                            parent.Pawn.BiologicalAge = validAge;
-                            parent.Pawn.ChronologicalAge = validAge + diff;
+                        int validAge = GetValidParentAge(parent, oldestChild);
+                        if (validAge != parent.BiologicalAge) {
+                            int diff = parent.ChronologicalAge - parent.BiologicalAge;
+                            parent.BiologicalAge = validAge;
+                            parent.ChronologicalAge = validAge + diff;
                         }
                     }
                 }
@@ -111,55 +111,33 @@ namespace EdB.PrepareCarefully {
             foreach (var group in parentChildGroups) {
                 foreach (var parent in group.Parents) {
                     foreach (var child in group.Children) {
-                        AddRelationship(child.Pawn.Pawn, parent.Pawn.Pawn, parentDef);
-                        AddRelationship(parent.Pawn.Pawn, child.Pawn.Pawn, childDef);
+                        AddRelationship(child.Pawn, parent.Pawn, parentDef);
+                        AddRelationship(parent.Pawn, child.Pawn, childDef);
                     }
                 }
             }
 
-            // Add pawns to the world.
-            // TODO: Killing a pawn adds it to the world and doesn't force us to figure out which
-            // faction we want to assign the pawn to (not sure that I understand why all relatives need
-            // to live on the planet or be available in a spacer faction).  Should revisit this to
-            // decide if that's really what we want to do.
-            // Start by assigning each hidden pawn to a random faction that's not the player faction.
-            // If the pawn ends up assigned to the player faction, the stats screen will count the pawn
-            // as a killed colonist--we don't want that to happen.
-            FactionManager factionManager = Find.World.factionManager;
-            Faction newPawnFaction = factionManager.FirstFactionOfDef(FactionDefOf.Spacer);
-            if (newPawnFaction == null) {
-                if (!factionManager.TryGetRandomNonColonyHumanlikeFaction(out newPawnFaction, false, true)) {
-                    newPawnFaction = factionManager.AllFactions.RandomElementWithFallback(Faction.OfPlayer);
-                }
-            }
-            // Kill the pawns (but only if they are not already in the world).
-            HashSet<Pawn> pawnsAddedToWorld = new HashSet<Pawn>();
+            // Get all of the pawns to add to the world.
+            HashSet<CustomPawn> worldPawns = new HashSet<CustomPawn>();
             foreach (var group in parentChildGroups) {
                 foreach (var parent in group.Parents) {
                     if (parent.Hidden) {
-                        Pawn newPawn = parent.Pawn.Pawn;
-                        if (!Find.World.worldPawns.Contains(newPawn)) {
-                            newPawn.SetFactionDirect(newPawnFaction);
-                            if (!pawnsAddedToWorld.Contains(newPawn)) {
-                                newPawn.Kill(null);
-                                pawnsAddedToWorld.Add(newPawn);
-                            }
+                        CustomPawn newPawn = parent;
+                        if (!worldPawns.Contains(newPawn)) {
+                            worldPawns.Add(newPawn);
                         }
                     }
                     foreach (var child in group.Children) {
                         if (child.Hidden) {
-                            Pawn newPawn = child.Pawn.Pawn;
-                            if (!Find.World.worldPawns.Contains(newPawn)) {
-                                newPawn.SetFactionDirect(newPawnFaction);
-                                if (!pawnsAddedToWorld.Contains(newPawn)) {
-                                    newPawn.Kill(null);
-                                    pawnsAddedToWorld.Add(newPawn);
-                                }
+                            CustomPawn newPawn = child;
+                            if (!worldPawns.Contains(newPawn)) {
+                                worldPawns.Add(newPawn);
                             }
                         }
                     }
                 }
             }
+            return worldPawns.ToList();
         }
 
         private int GetValidParentAge(CustomPawn parent, CustomPawn firstChild) {
@@ -180,14 +158,14 @@ namespace EdB.PrepareCarefully {
                 return parent.BiologicalAge;
             }
         }
-
-        private CustomParentChildPawn CreateParent(Gender? gender, List<CustomParentChildPawn> children) {
+        
+        private CustomPawn CreateParent(Gender? gender, List<CustomPawn> children) {
             int ageOfOldestChild = 0;
             CustomPawn firstChild = null;
             foreach (var child in children) {
-                if (child.Pawn.BiologicalAge > ageOfOldestChild) {
-                    ageOfOldestChild = child.Pawn.BiologicalAge;
-                    firstChild = child.Pawn;
+                if (child.BiologicalAge > ageOfOldestChild) {
+                    ageOfOldestChild = child.BiologicalAge;
+                    firstChild = child;
                 }
             }
             float lifeExpectancy = firstChild.Pawn.def.race.lifeExpectancy;
@@ -203,9 +181,9 @@ namespace EdB.PrepareCarefully {
                 FixedBiologicalAge = age,
                 FixedGender = gender
             }.Request));
-            CustomParentChildPawn result = new CustomParentChildPawn(parent);
-            result.Hidden = true;
-            return result;
+            parent.Pawn.Kill(null, null);
+            parent.Type = CustomPawnType.Temporary;
+            return parent;
         }
 
         private void AddRelationship(Pawn source, Pawn target, PawnRelationDef def) {

@@ -43,7 +43,7 @@ namespace EdB.PrepareCarefully {
             base.Resize(rect);
 
             float panelPadding = 10;
-            float fieldHeight = 28;
+            float fieldHeight = Style.FieldHeight;
             SizeTrait = new Vector2(PanelRect.width - panelPadding * 2, fieldHeight + SizeFieldPadding.y * 2);
             SizeField = new Vector2(SizeTrait.x - SizeFieldPadding.x * 2, SizeTrait.y - SizeFieldPadding.y * 2);
 
@@ -158,7 +158,7 @@ namespace EdB.PrepareCarefully {
                     }
                     GUI.DrawTexture(deleteRect, Textures.TextureButtonDelete);
                     if (Widgets.ButtonInvisible(deleteRect, false)) {
-                        SoundDefOf.TickTiny.PlayOneShotOnCamera();
+                        SoundDefOf.Tick_Tiny.PlayOneShotOnCamera();
                         traitsToRemove.Add(trait);
                     }
 
@@ -185,7 +185,7 @@ namespace EdB.PrepareCarefully {
             }
             GUI.DrawTexture(randomizeRect, Textures.TextureButtonRandom);
             if (Widgets.ButtonInvisible(randomizeRect, false)) {
-                SoundDefOf.TickLow.PlayOneShotOnCamera();
+                SoundDefOf.Tick_Low.PlayOneShotOnCamera();
                 TraitsRandomized();
             }
 
@@ -200,7 +200,7 @@ namespace EdB.PrepareCarefully {
             GUI.DrawTexture(addRect, Textures.TextureButtonAdd);
             if (addButtonEnabled && Widgets.ButtonInvisible(addRect, false)) {
                 ComputeDisallowedTraits(currentPawn, null);
-                SoundDefOf.TickLow.PlayOneShotOnCamera();
+                SoundDefOf.Tick_Low.PlayOneShotOnCamera();
                 Trait selectedTrait = null;
                 Dialog_Options<Trait> dialog = new Dialog_Options<Trait>(providerTraits.Traits) {
                     ConfirmButtonLabel = "EdB.PC.Common.Add".Translate(),

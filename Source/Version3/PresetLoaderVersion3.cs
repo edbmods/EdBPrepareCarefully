@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using System.Text.RegularExpressions;
 using Verse;
 
 namespace EdB.PrepareCarefully {
@@ -10,9 +11,68 @@ namespace EdB.PrepareCarefully {
         public bool Failed = false;
         public string ModString = "";
         public Dictionary<string, string> thingDefReplacements = new Dictionary<string, string>();
+        public Dictionary<string, string> traitReplacements = new Dictionary<string, string>();
+        public Dictionary<string, string> recipeReplacements = new Dictionary<string, string>();
+        public Dictionary<string, ReplacementBodyPart> bodyPartReplacements = new Dictionary<string, ReplacementBodyPart>();
+
+        public class ReplacementBodyPart {
+            public BodyPartDef def;
+            public int index = 0;
+            public ReplacementBodyPart(BodyPartDef def, int index = 0) {
+                this.def = def;
+                this.index = index;
+            }
+        }
 
         public PresetLoaderVersion3() {
             thingDefReplacements.Add("Gun_SurvivalRifle", "Gun_BoltActionRifle");
+            thingDefReplacements.Add("Gun_Pistol", "Gun_Revolver");
+            thingDefReplacements.Add("Medicine", "MedicineIndustrial");
+            thingDefReplacements.Add("Component", "ComponentIndustrial");
+            thingDefReplacements.Add("WolfTimber", "Wolf_Timber");
+            
+            traitReplacements.Add("Prosthophobe", "BodyPurist");
+            traitReplacements.Add("Prosthophile", "Transhumanist");
+            traitReplacements.Add("SuperImmune", "Immunity");
+
+            InitializeRecipeReplacements();
+            InitializeBodyPartReplacements();
+            InitializeSkillDefReplacements();
+        }
+
+        protected void InitializeRecipeReplacements() {
+            recipeReplacements.Add("InstallSyntheticHeart", "InstallSimpleProstheticHeart");
+            recipeReplacements.Add("InstallAdvancedBionicArm", "InstallArchtechBionicArm");
+            recipeReplacements.Add("InstallAdvancedBionicLeg", "InstallArchtechBionicLeg");
+            recipeReplacements.Add("InstallAdvancedBionicEye", "InstallArchtechBionicEye");
+        }
+
+        protected void InitializeBodyPartReplacements() {
+            AddBodyPartReplacement("LeftFoot", "Foot", 0);
+            AddBodyPartReplacement("LeftLeg", "Leg", 0);
+            AddBodyPartReplacement("LeftEye", "Eye", 0);
+            AddBodyPartReplacement("LeftEar", "Ear", 0);
+            AddBodyPartReplacement("LeftLung", "Lung", 0);
+            AddBodyPartReplacement("LeftArm", "Arm", 0);
+            AddBodyPartReplacement("LeftShoulder", "Shoulder", 0);
+            AddBodyPartReplacement("LeftKidney", "Kidney", 0);
+            AddBodyPartReplacement("RightFoot", "Foot", 1);
+            AddBodyPartReplacement("RightLeg", "Leg", 1);
+            AddBodyPartReplacement("RightEye", "Eye", 1);
+            AddBodyPartReplacement("RightEar", "Ear", 1);
+            AddBodyPartReplacement("RightLung", "Lung", 1);
+            AddBodyPartReplacement("RightArm", "Arm", 1);
+            AddBodyPartReplacement("RightShoulder", "Shoulder", 1);
+            AddBodyPartReplacement("RightKidney", "Kidney", 1);
+        }
+
+        public void AddBodyPartReplacement(string name, string newPart, int index) {
+            BodyPartDef def = DefDatabase<BodyPartDef>.GetNamedSilentFail(newPart);
+            if (def == null) {
+                Log.Warning("Could not find body part definition \"" + newPart + "\" to replace body part \"" + name + "\"");
+                return;
+            }
+            bodyPartReplacements.Add(name, new ReplacementBodyPart(def, index));
         }
 
         public bool Load(PrepareCarefully loadout, string presetName) {
@@ -70,8 +130,8 @@ namespace EdB.PrepareCarefully {
                     return false;
                 }
 
-                List<EquipmentSaveRecord> tempEquipment = new List<EquipmentSaveRecord>();
-                Scribe_Collections.Look<EquipmentSaveRecord>(ref tempEquipment, "equipment", LookMode.Deep, null);
+                List<SaveRecordEquipmentV3> tempEquipment = new List<SaveRecordEquipmentV3>();
+                Scribe_Collections.Look<SaveRecordEquipmentV3>(ref tempEquipment, "equipment", LookMode.Deep, null);
                 loadout.Equipment.Clear();
                 if (tempEquipment != null) {
                     List<EquipmentSelection> equipment = new List<EquipmentSelection>(tempEquipment.Count);
@@ -217,7 +277,7 @@ namespace EdB.PrepareCarefully {
                 loadout.AddPawn(p);
             }
             loadout.RelationshipManager.Clear();
-            loadout.RelationshipManager.InitializeWithParentChildPawns(colonistCustomPawns, hiddenCustomPawns);
+            loadout.RelationshipManager.InitializeWithCustomPawns(colonistCustomPawns.AsEnumerable().Concat(hiddenCustomPawns));
 
             bool atLeastOneRelationshipFailed = false;
             List<CustomRelationship> allRelationships = new List<CustomRelationship>();
@@ -253,12 +313,12 @@ namespace EdB.PrepareCarefully {
 
             if (parentChildGroups != null) {
                 foreach (var groupRecord in parentChildGroups) {
-                    CustomParentChildGroup group = new CustomParentChildGroup();
+                    ParentChildGroup group = new ParentChildGroup();
                     if (groupRecord.parents != null) {
                         foreach (var id in groupRecord.parents) {
                             CustomPawn parent = FindPawnById(id, colonistCustomPawns, hiddenCustomPawns);
                             if (parent != null) {
-                                var pawn = loadout.RelationshipManager.FindParentChildPawn(parent);
+                                var pawn = parent;
                                 if (pawn != null) {
                                     group.Parents.Add(pawn);
                                 }
@@ -275,7 +335,7 @@ namespace EdB.PrepareCarefully {
                         foreach (var id in groupRecord.children) {
                             CustomPawn child = FindPawnById(id, colonistCustomPawns, hiddenCustomPawns);
                             if (child != null) {
-                                var pawn = loadout.RelationshipManager.FindParentChildPawn(child);
+                                var pawn = child;
                                 if (pawn != null) {
                                     group.Children.Add(pawn);
                                 }
@@ -301,6 +361,14 @@ namespace EdB.PrepareCarefully {
             }
 
             return true;
+        }
+
+        protected UniqueBodyPart FindReplacementBodyPart(OptionsHealth healthOptions, string name) {
+            ReplacementBodyPart replacement = null;
+            if (bodyPartReplacements.TryGetValue(name, out replacement)) {
+                return healthOptions.FindBodyPart(replacement.def, replacement.index);
+            }
+            return null;
         }
 
         public CustomPawn LoadPawn(SaveRecordPawnV3 record) {
@@ -337,6 +405,8 @@ namespace EdB.PrepareCarefully {
             else {
                 pawn.Id = record.id;
             }
+            
+            pawn.Type = CustomPawnType.Colonist;
 
             pawn.Gender = record.gender;
             if (record.age > 0) {
@@ -349,11 +419,11 @@ namespace EdB.PrepareCarefully {
             if (record.biologicalAge > 0) {
                 pawn.BiologicalAge = record.biologicalAge;
             }
-            
+
             pawn.FirstName = record.firstName;
             pawn.NickName = record.nickName;
             pawn.LastName = record.lastName;
-            
+
             HairDef h = FindHairDef(record.hairDef);
             if (h != null) {
                 pawn.HairDef = h;
@@ -364,7 +434,7 @@ namespace EdB.PrepareCarefully {
             }
             
             pawn.HeadGraphicPath = record.headGraphicPath;
-            pawn.SetColor(PawnLayers.Hair, record.hairColor);
+            pawn.Pawn.story.hairColor = record.hairColor;
             
             if (record.melanin >= 0.0f) {
                 pawn.MelaninLevel = record.melanin;
@@ -395,9 +465,11 @@ namespace EdB.PrepareCarefully {
                     Failed = true;
                 }
             }
-            
+
             // Get the body type from the save record.  If there's no value in the save, then assign the 
             // default body type from the pawn's backstories.
+            // TODO: 1.0
+            /*
             BodyType? bodyType = null;
             try {
                 bodyType = (BodyType)Enum.Parse(typeof(BodyType), record.bodyType);
@@ -415,7 +487,25 @@ namespace EdB.PrepareCarefully {
             if (bodyType.HasValue) {
                 pawn.BodyType = bodyType.Value;
             }
-            
+            */
+            BodyTypeDef bodyType = null;
+            try {
+                bodyType = DefDatabase<BodyTypeDef>.GetNamedSilentFail(record.bodyType);
+            }
+            catch (Exception) {
+            }
+            if (bodyType == null) {
+                if (pawn.Adulthood != null) {
+                    bodyType = pawn.Adulthood.BodyTypeFor(pawn.Gender);
+                }
+                else {
+                    bodyType = pawn.Childhood.BodyTypeFor(pawn.Gender);
+                }
+            }
+            if (bodyType != null) {
+                pawn.BodyType = bodyType;
+            }
+
             pawn.ClearTraits();
             for (int i = 0; i < record.traitNames.Count; i++) {
                 string traitName = record.traitNames[i];
@@ -431,9 +521,6 @@ namespace EdB.PrepareCarefully {
             
             for (int i = 0; i < record.skillNames.Count; i++) {
                 string name = record.skillNames[i];
-                if (name == "Research") {
-                    name = "Intellectual";
-                }
                 SkillDef def = FindSkillDef(pawn.Pawn, name);
                 if (def == null) {
                     Log.Warning("Could not load skill definition \"" + name + "\"");
@@ -458,14 +545,20 @@ namespace EdB.PrepareCarefully {
                 }
             }
             
-            for (int i = 0; i < PawnLayers.Count; i++) {
-                if (PawnLayers.IsApparelLayer(i)) {
-                    pawn.SetSelectedApparel(i, null);
-                    pawn.SetSelectedStuff(i, null);
+            foreach (var layer in PrepareCarefully.Instance.Providers.PawnLayers.GetLayersForPawn(pawn)) {
+                if (layer.Apparel) {
+                    pawn.SetSelectedApparel(layer, null);
+                    pawn.SetSelectedStuff(layer, null);
                 }
             }
             for (int i = 0; i < record.apparelLayers.Count; i++) {
-                int layer = record.apparelLayers[i];
+                int layerIndex = record.apparelLayers[i];
+                PawnLayer layer = PrepareCarefully.Instance.Providers.PawnLayers.FindLayerFromDeprecatedIndex(layerIndex);
+                if (layer == null) {
+                    Log.Warning("Could not find pawn layer from saved pawn layer index: \"" + layerIndex + "\"");
+                    Failed = true;
+                    continue;
+                }
                 ThingDef def = DefDatabase<ThingDef>.GetNamedSilentFail(record.apparel[i]);
                 if (def == null) {
                     Log.Warning("Could not load thing definition for apparel \"" + record.apparel[i] + "\"");
@@ -490,6 +583,9 @@ namespace EdB.PrepareCarefully {
             for (int i = 0; i < record.implants.Count; i++) {
                 SaveRecordImplantV3 implantRecord = record.implants[i];
                 UniqueBodyPart uniqueBodyPart = healthOptions.FindBodyPartByName(implantRecord.bodyPart, implantRecord.bodyPartIndex != null ? implantRecord.bodyPartIndex.Value : 0);
+                if (uniqueBodyPart == null) {
+                    uniqueBodyPart = FindReplacementBodyPart(healthOptions, implantRecord.bodyPart);
+                }
                 if (uniqueBodyPart == null) {
                     Log.Warning("Prepare Carefully could not add the implant because it could not find the needed body part \"" + implantRecord.bodyPart + "\""
                         + (implantRecord.bodyPartIndex != null ? " with index " + implantRecord.bodyPartIndex : ""));
@@ -541,6 +637,9 @@ namespace EdB.PrepareCarefully {
                 if (injuryRecord.bodyPart != null) {
                     UniqueBodyPart uniquePart = healthOptions.FindBodyPartByName(injuryRecord.bodyPart,
                         injuryRecord.bodyPartIndex != null ? injuryRecord.bodyPartIndex.Value : 0);
+                    if (uniquePart == null) {
+                        uniquePart = FindReplacementBodyPart(healthOptions, injuryRecord.bodyPart);
+                    }
                     if (uniquePart == null) {
                         Log.Warning("Prepare Carefully could not add the injury because it could not find the needed body part \"" + injuryRecord.bodyPart + "\""
                             + (injuryRecord.bodyPartIndex != null ? " with index " + injuryRecord.bodyPartIndex : ""));
@@ -615,7 +714,21 @@ namespace EdB.PrepareCarefully {
         }
 
         public RecipeDef FindRecipeDef(string name) {
-            return DefDatabase<RecipeDef>.GetNamedSilentFail(name);
+            RecipeDef result = DefDatabase<RecipeDef>.GetNamedSilentFail(name);
+            if (result == null) {
+                return FindReplacementRecipe(name);
+            }
+            else {
+                return result;
+            }
+        }
+
+        protected RecipeDef FindReplacementRecipe(string name) {
+            String replacementName = null;
+            if (recipeReplacements.TryGetValue(name, out replacementName)) {
+                return DefDatabase<RecipeDef>.GetNamedSilentFail(replacementName);
+            }
+            return null;
         }
 
         public HairDef FindHairDef(string name) {
@@ -623,12 +736,37 @@ namespace EdB.PrepareCarefully {
         }
 
         public Backstory FindBackstory(string name) {
-            return BackstoryDatabase.allBackstories.Values.ToList().Find((Backstory b) => {
+            Backstory matchingBackstory = BackstoryDatabase.allBackstories.Values.ToList().Find((Backstory b) => {
                 return b.identifier.Equals(name);
             });
+            // If we couldn't find a matching backstory, look for one with the same identifier, but a different version number at the end.
+            if (matchingBackstory == null) {
+                Regex expression = new Regex("\\d+$");
+                string backstoryMinusVersioning = expression.Replace(name, "");
+                matchingBackstory = BackstoryDatabase.allBackstories.Values.ToList().Find((Backstory b) => {
+                    return b.identifier.StartsWith(backstoryMinusVersioning);
+                });
+                if (matchingBackstory != null) {
+                    Log.Message("Found replacement backstory.  Using " + matchingBackstory.identifier + " in place of " + name);
+                }
+            }
+            return matchingBackstory;
         }
 
         public Trait FindTrait(string name, int degree) {
+            Trait trait = LookupTrait(name, degree);
+            if (trait != null) {
+                return trait;
+            }
+            else {
+                if (traitReplacements.ContainsKey(name)) {
+                    return LookupTrait(traitReplacements[name], degree);
+                }
+            }
+            return null;
+        }
+
+        protected Trait LookupTrait(string name, int degree) {
             foreach (TraitDef def in DefDatabase<TraitDef>.AllDefs) {
                 if (!def.defName.Equals(name)) {
                     continue;
@@ -650,10 +788,38 @@ namespace EdB.PrepareCarefully {
             return null;
         }
 
+        // Maintains a list of skill definitions that were replaced in newer versions of the game.
+        Dictionary<string, List<string>> skillDefReplacementLookup = new Dictionary<string, List<string>>();
+
+        protected void InitializeSkillDefReplacements() {
+            AddSkillDefReplacement("Growing", "Plants");
+            AddSkillDefReplacement("Research", "Intellectual");
+        }
+
+        protected void AddSkillDefReplacement(String skill, String replacement) {
+            List<string> replacements = null;
+            if (!skillDefReplacementLookup.TryGetValue(skill, out replacements)) {
+                replacements = new List<string>();
+                skillDefReplacementLookup.Add(skill, replacements);
+            }
+            replacements.Add(replacement);
+        }
+
         public SkillDef FindSkillDef(Pawn pawn, string name) {
+            List<string> replacements = null;
+            if (skillDefReplacementLookup.ContainsKey(name)) {
+                replacements = skillDefReplacementLookup[name];
+            }
             foreach (var skill in pawn.skills.skills) {
                 if (skill.def.defName.Equals(name)) {
                     return skill.def;
+                }
+                if (replacements != null) {
+                    foreach (var r in replacements) {
+                        if (skill.def.defName.Equals(r)) {
+                            return skill.def;
+                        }
+                    }
                 }
             }
             return null;

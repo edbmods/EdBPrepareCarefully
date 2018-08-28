@@ -54,6 +54,18 @@ namespace EdB.PrepareCarefully {
                 return null;
             }
 
+            /*
+            Log.Message("GraphicsPaths for " + raceDef.defName + ":");
+            if (graphicPathsCollection.Count > 0) {
+                foreach (object o in graphicPathsCollection) {
+                    Log.Message("  GraphicsPath");
+                    Log.Message("    .body = " + GetFieldValueAsString(raceDef, o, "body"));
+                    Log.Message("    .head = " + GetFieldValueAsString(raceDef, o, "head"));
+                    System.Collections.ICollection lifeStagesCollections = GetFieldValueAsCollection(raceDef, o, "lifeStageDefs");
+                }
+            }
+            */
+
             // We have enough to start putting together the result object, so we instantiate it now.
             AlienRace result = new AlienRace();
 
@@ -62,18 +74,21 @@ namespace EdB.PrepareCarefully {
             if (alienBodyTypesCollection == null) {
                 return null;
             }
-            List<BodyType> bodyTypes = new List<BodyType>();
+            List<BodyTypeDef> bodyTypes = new List<BodyTypeDef>();
+            //Log.Message("Body Types for " + raceDef.defName + ":");
             if (alienBodyTypesCollection.Count > 0) {
                 foreach (object o in alienBodyTypesCollection) {
-                    if (o.GetType() == typeof(BodyType)) {
-                        bodyTypes.Add((BodyType)o);
+                    if (o.GetType() == typeof(BodyTypeDef)) {
+                        BodyTypeDef def = o as BodyTypeDef;
+                        //Log.Message("  " + def.defName + ", " + def.LabelCap);
+                        bodyTypes.Add((BodyTypeDef)o);
                     }
                 }
             }
             result.BodyTypes = bodyTypes;
 
             // Determine if the alien races uses gender-specific heads.
-            bool? useGenderedHeads = GetFieldValueAsBool(raceDef, alienPartGeneratorObject, "UseGenderedHeads");
+            bool? useGenderedHeads = GetFieldValueAsBool(raceDef, alienPartGeneratorObject, "useGenderedHeads");
             if (useGenderedHeads == null) {
                 return null;
             }
@@ -85,11 +100,13 @@ namespace EdB.PrepareCarefully {
                 return null;
             }
             List<string> crownTypes = new List<string>();
+            //Log.Message("Crown Types for " + raceDef.defName + ":");
             if (alienCrownTypesCollection.Count > 0) {
                 foreach (object o in alienCrownTypesCollection) {
                     string crownTypeString = o as string;
                     if (crownTypeString != null) {
                         crownTypes.Add(crownTypeString);
+                        //Log.Message("  " + crownTypeString);
                     }
                 }
             }
@@ -135,7 +152,7 @@ namespace EdB.PrepareCarefully {
             object hairSettingsValue = GetFieldValue(raceDef, alienRaceObject, "hairSettings", true);
             result.HasHair = true;
             if (hairSettingsValue != null) {
-                bool? hasHair = GetFieldValueAsBool(raceDef, hairSettingsValue, "HasHair");
+                bool? hasHair = GetFieldValueAsBool(raceDef, hairSettingsValue, "hasHair");
                 if (hasHair != null) {
                     result.HasHair = hasHair.Value;
                 }
@@ -185,7 +202,48 @@ namespace EdB.PrepareCarefully {
                 }
             }
 
+            var bodyAddonsCollection = GetFieldValueAsCollection(raceDef, alienPartGeneratorObject, "bodyAddons");
+            if (bodyAddonsCollection != null ) {
+                var addons = new List<AlienRaceBodyAddon>();
+                AlienRaceBodyAddon addon = new AlienRaceBodyAddon();
+                int index = -1;
+                foreach (var o in bodyAddonsCollection) {
+                    index++;
+                    string path = GetFieldValueAsString(raceDef, o, "path");
+                    if (path == null) {
+                        Log.Warning("Failed to get path for body add-on for alien race: " + raceDef.defName);
+                        continue;
+                    }
+                    addon.Path = path;
+                    int? variantCount = GetFieldValueAsInt(raceDef, o, "variantCount");
+                    if (variantCount == null) {
+                        Log.Warning("Failed to get variant count for body add-on for alien race: " + raceDef.defName);
+                        continue;
+                    }
+                    addon.OptionCount = variantCount.Value;
+                    string name = ParseAddonName(path);
+                    if (name == null) {
+                        Log.Warning("Failed to parse a name from its path for body add-on for alien race: " + raceDef.defName);
+                        continue;
+                    }
+                    addon.Name = name;
+                    addon.VariantIndex = index;
+                    addons.Add(addon);
+                }
+                result.addons = addons;
+            }
+
             return result;
+        }
+        protected string ParseAddonName(string path) {
+            string trimmedPath = path.TrimEnd('/').TrimStart('/');
+            string[] items = trimmedPath.Split('/');
+            if (items.Length > 0) {
+                return items[items.Length - 1];
+            }
+            else {
+                return null;
+            }
         }
         protected object GetFieldValue(ThingDef raceDef, object source, string name, bool allowNull = false) {
             try {
@@ -248,6 +306,19 @@ namespace EdB.PrepareCarefully {
             }
             else {
                 Log.Warning("Prepare carefully could not convert " + name + " field value into a string for " + raceDef.defName + ".");
+                return null;
+            }
+        }
+        protected int? GetFieldValueAsInt(ThingDef raceDef, object source, string name) {
+            object value = GetFieldValue(raceDef, source, name, true);
+            if (value == null) {
+                return null;
+            }
+            try {
+                return (int)value;
+            }
+            catch (Exception) {
+                Log.Warning("Prepare carefully could not convert " + name + " field value into an int for " + raceDef.defName + ".");
                 return null;
             }
         }

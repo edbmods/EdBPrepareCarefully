@@ -35,9 +35,9 @@ namespace EdB.PrepareCarefully {
 
             float availableSpace = PanelRect.width - (panelPadding * 2) - RectInfo.width - RectRandomize.width - fieldPadding;
 
-            float firstMinWidth = 100;
-            float nickMinWidth = 80;
-            float lastMinWidth = 100;
+            float firstMinWidth = 80;
+            float nickMinWidth = 90;
+            float lastMinWidth = 90;
             float fieldsMinWidth = firstMinWidth + nickMinWidth + lastMinWidth + (fieldPadding * 2);
             float extraSpace = availableSpace - fieldsMinWidth;
             float extraForField = Mathf.Floor(extraSpace / 3);
@@ -93,7 +93,7 @@ namespace EdB.PrepareCarefully {
             Style.SetGUIColorForButton(RectRandomize);
             GUI.DrawTexture(RectRandomize, Textures.TextureButtonRandom);
             if (Widgets.ButtonInvisible(RectRandomize, false)) {
-                SoundDefOf.TickLow.PlayOneShotOnCamera();
+                SoundDefOf.Tick_Low.PlayOneShotOnCamera();
                 GUI.FocusControl(null);
                 NameRandomized();
             }

@@ -15,6 +15,7 @@ namespace EdB.PrepareCarefully {
         private PawnGenerationContext context = PawnGenerationContext.PlayerStarter;
         private float? fixedBiologicalAge = null;
         private Gender? fixedGender = null;
+        private bool worldPawnFactionDoesntMatter = false;
         public PawnGenerationRequestWrapper() {
         }
         private PawnGenerationRequest CreateRequest() {
@@ -36,8 +37,9 @@ namespace EdB.PrepareCarefully {
                 false, // bool inhabitant = false
                 false, // bool certainlyBeenInCryptosleep = false
                 false, // bool forceRedressWorldPawnIfFormerColonist = false
-                false, // bool worldPawnFactionDoesntMatter = false
-                null, // Predicate < Pawn > validator = null
+                worldPawnFactionDoesntMatter, // bool worldPawnFactionDoesntMatter = false
+                null, // Predicate < Pawn > validatorPreGear = null
+                null, // Predicate < Pawn > validatorPostGear = null
                 null, // float ? minChanceToRedressWorldPawn = null
                 fixedBiologicalAge, // float ? fixedBiologicalAge = null
                 null, // float ? fixedChronologicalAge = null
@@ -64,6 +66,11 @@ namespace EdB.PrepareCarefully {
         public PawnGenerationContext Context {
             set {
                 context = value;
+            }
+        }
+        public bool WorldPawnFactionDoesntMatter {
+            set {
+                worldPawnFactionDoesntMatter = value;
             }
         }
         public float? FixedBiologicalAge {

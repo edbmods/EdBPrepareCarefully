@@ -30,6 +30,8 @@ namespace EdB.PrepareCarefully {
 
         public static Vector2 SizeTextFieldArrowMargin = new Vector2(4, 0);
 
+        public static float FieldHeight = 22;
+
         public static void SetGUIColorForButton(Rect rect) {
             if (rect.Contains(Event.current.mousePosition)) {
                 GUI.color = Style.ColorButtonHighlight;

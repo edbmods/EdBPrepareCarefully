@@ -37,8 +37,8 @@ namespace EdB.PrepareCarefully {
             int partIndex = options.CountOfMatchingBodyParts(record.def);
             FieldInfo skinCoveredField = typeof(BodyPartDef).GetField("skinCovered", BindingFlags.Instance | BindingFlags.NonPublic);
             bool skinCoveredValue = (bool)skinCoveredField.GetValue(record.def);
-            FieldInfo isSolidField = typeof(BodyPartDef).GetField("isSolid", BindingFlags.Instance | BindingFlags.NonPublic);
-            bool isSolidValue = (bool)isSolidField.GetValue(record.def);
+            FieldInfo solidField = typeof(BodyPartDef).GetField("solid", BindingFlags.Instance | BindingFlags.NonPublic);
+            bool isSolidValue = (bool)solidField.GetValue(record.def);
             UniqueBodyPart part = new UniqueBodyPart() {
                 Index = partIndex,
                 Record = record,
@@ -179,12 +179,12 @@ namespace EdB.PrepareCarefully {
                 }
 
                 // If it's an old injury, use the old injury properties to get the label.
-                HediffCompProperties p = hd.CompPropsFor(typeof(HediffComp_GetsOld));
-                HediffCompProperties_GetsOld getsOldProperties = p as HediffCompProperties_GetsOld;
+                HediffCompProperties p = hd.CompPropsFor(typeof(HediffComp_GetsPermanent));
+                HediffCompProperties_GetsPermanent getsPermanentProperties = p as HediffCompProperties_GetsPermanent;
                 String label;
-                if (getsOldProperties != null) {
-                    if (getsOldProperties.oldLabel != null) {
-                        label = getsOldProperties.oldLabel.CapitalizeFirst();
+                if (getsPermanentProperties != null) {
+                    if (getsPermanentProperties.permanentLabel != null) {
+                        label = getsPermanentProperties.permanentLabel.CapitalizeFirst();
                     }
                     else {
                         Log.Warning("Prepare Carefully could not find label for old injury: " + hd.defName);
@@ -204,7 +204,7 @@ namespace EdB.PrepareCarefully {
                 InjuryOption option = new InjuryOption();
                 option.HediffDef = hd;
                 option.Label = label;
-                if (getsOldProperties != null) {
+                if (getsPermanentProperties != null) {
                     option.IsOldInjury = true;
                 }
                 else {
@@ -225,12 +225,12 @@ namespace EdB.PrepareCarefully {
                 }
             }
             foreach (var option in options.InjuryOptions) {
-                HediffCompProperties p = option.HediffDef.CompPropsFor(typeof(HediffComp_GetsOld));
-                HediffCompProperties_GetsOld props = p as HediffCompProperties_GetsOld;
+                HediffCompProperties p = option.HediffDef.CompPropsFor(typeof(HediffComp_GetsPermanent));
+                HediffCompProperties_GetsPermanent props = p as HediffCompProperties_GetsPermanent;
                 if (props != null) {
                     if (duplicateLabels.Contains(option.Label)) {
                         string label = "EdB.PC.Dialog.Injury.OldInjury.Label".Translate(new string[] {
-                                    props.oldLabel.CapitalizeFirst(), option.HediffDef.LabelCap
+                                    props.permanentLabel.CapitalizeFirst(), option.HediffDef.LabelCap
                                 });
                         option.Label = label;
                     }

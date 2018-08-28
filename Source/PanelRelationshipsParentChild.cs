@@ -8,12 +8,12 @@ using Verse;
 using Verse.Sound;
 namespace EdB.PrepareCarefully {
     public class PanelRelationshipsParentChild : PanelBase {
-        public delegate void AddParentToGroupHandler(CustomParentChildGroup group, CustomParentChildPawn pawn);
-        public delegate void RemoveParentFromGroupHandler(CustomParentChildGroup group, CustomParentChildPawn pawn);
-        public delegate void AddChildToGroupHandler(CustomParentChildGroup group, CustomParentChildPawn pawn);
-        public delegate void RemoveChildFromGroupHandler(CustomParentChildGroup group, CustomParentChildPawn pawn);
-        public delegate void RemoveGroupHandler(CustomParentChildGroup group);
-        public delegate void AddGroupHandler(CustomParentChildGroup group);
+        public delegate void AddParentToGroupHandler(ParentChildGroup group, CustomPawn pawn);
+        public delegate void RemoveParentFromGroupHandler(ParentChildGroup group, CustomPawn pawn);
+        public delegate void AddChildToGroupHandler(ParentChildGroup group, CustomPawn pawn);
+        public delegate void RemoveChildFromGroupHandler(ParentChildGroup group, CustomPawn pawn);
+        public delegate void RemoveGroupHandler(ParentChildGroup group);
+        public delegate void AddGroupHandler(ParentChildGroup group);
 
         public event AddParentToGroupHandler ParentAddedToGroup;
         public event RemoveParentFromGroupHandler ParentRemovedFromGroup;
@@ -44,7 +44,6 @@ namespace EdB.PrepareCarefully {
         private Color ColorChildEmpty = new Color(22f / 255f, 22f / 255f, 23f / 255f, 0.40f);
 
         private HashSet<Backstory> visibleBackstories = new HashSet<Backstory>();
-        private List<CustomParentChildPawn> newPawns = new List<CustomParentChildPawn>();
 
         public PanelRelationshipsParentChild() {
             // TODO: Pull this out and put it in a utility somewhere, i.e. ProviderBackstory.
@@ -53,9 +52,6 @@ namespace EdB.PrepareCarefully {
                     visibleBackstories.Add(backstory);
                 }
             }
-            // Add a male and a female pawn to the new hidden pawn list.
-            newPawns.Add(CreateNewHiddenPawn(Gender.Female));
-            newPawns.Add(CreateNewHiddenPawn(Gender.Male));
         }
         public override string PanelHeader {
             get {
@@ -100,37 +96,20 @@ namespace EdB.PrepareCarefully {
                 childrenToRemove.Clear();
             }
         }
-
-        protected CustomParentChildPawn ReplaceNewHiddenCharacter(int index) {
-            var pawn = newPawns[index];
-            newPawns[index] = CreateNewHiddenPawn(pawn.Pawn.Gender);
-            CustomParentChildPawn result = PrepareCarefully.Instance.RelationshipManager.AddHiddenParentChildPawn(pawn.Pawn);
-            result.Index = PrepareCarefully.Instance.RelationshipManager.NextHiddenParentChildIndex;
-            return result;
-        }
-
-        protected CustomParentChildPawn CreateNewHiddenPawn(Gender gender) {
-            CustomPawn pawn = new CustomPawn(new Randomizer().GeneratePawn(new PawnGenerationRequestWrapper() {
-                FixedGender = gender
-            }.Request));
-            CustomParentChildPawn result = new CustomParentChildPawn(pawn, true);
-            result.Name = "EdB.PC.AddParentChild.NewHiddenCharacter".Translate();
-            return result;
-        }
-
+        
         protected struct PawnGroupPair {
-            public CustomParentChildPawn Pawn;
-            public CustomParentChildGroup Group;
-            public PawnGroupPair(CustomParentChildPawn Pawn, CustomParentChildGroup Group) {
+            public CustomPawn Pawn;
+            public ParentChildGroup Group;
+            public PawnGroupPair(CustomPawn Pawn, ParentChildGroup Group) {
                 this.Pawn = Pawn;
                 this.Group = Group;
             }
         }
 
-        private List<CustomParentChildGroup> groupsToRemove = new List<CustomParentChildGroup>();
+        private List<ParentChildGroup> groupsToRemove = new List<ParentChildGroup>();
         private List<PawnGroupPair> parentsToRemove = new List<PawnGroupPair>();
         private List<PawnGroupPair> childrenToRemove = new List<PawnGroupPair>();
-        protected float DrawGroup(float cursor, CustomParentChildGroup group) {
+        protected float DrawGroup(float cursor, ParentChildGroup group) {
             int parentBoxCount = group.Parents.Count + 1;
             int childBoxCount = group.Children.Count + 1;
             float widthOfParents = parentBoxCount * SizePawn.x + (SpacingPawn * (parentBoxCount - 1)) + (PaddingBox * 2);
@@ -186,7 +165,7 @@ namespace EdB.PrepareCarefully {
                 Style.SetGUIColorForButton(parentPawnRect);
                 GUI.DrawTexture(addParentRect, Textures.TextureButtonAdd);
                 if (Widgets.ButtonInvisible(parentPawnRect)) {
-                    ShowParentDialogForGroup(group, null, (CustomParentChildPawn pawn) => {
+                    ShowParentDialogForGroup(group, null, (CustomPawn pawn) => {
                         ParentAddedToGroup(group, pawn);
                     });
                 }
@@ -238,7 +217,7 @@ namespace EdB.PrepareCarefully {
                 Style.SetGUIColorForButton(childPawnRect);
                 GUI.DrawTexture(addChildRect, Textures.TextureButtonAdd);
                 if (Widgets.ButtonInvisible(childPawnRect)) {
-                    ShowChildDialogForGroup(group, null, (CustomParentChildPawn pawn) => {
+                    ShowChildDialogForGroup(group, null, (CustomPawn pawn) => {
                         ChildAddedToGroup(group, pawn);
                     });
                 }
@@ -257,12 +236,12 @@ namespace EdB.PrepareCarefully {
 
             return cursor;
         }
-        protected void DrawPortrait(CustomParentChildPawn pawn, Rect rect) {
+        protected void DrawPortrait(CustomPawn pawn, Rect rect) {
             Rect parentNameRect = new Rect(rect.x, rect.yMax - 34, rect.width, 26);
             Text.Font = GameFont.Small;
             Text.Anchor = TextAnchor.UpperCenter;
             GUI.color = Style.ColorText;
-            Widgets.Label(parentNameRect, pawn.Name);
+            Widgets.Label(parentNameRect, pawn.ShortName);
             GUI.color = Color.white;
 
             Rect parentProfessionRect = new Rect(rect.x, rect.yMax - 18, rect.width, 18);
@@ -274,19 +253,20 @@ namespace EdB.PrepareCarefully {
             Text.Font = GameFont.Small;
             Text.Anchor = TextAnchor.UpperLeft;
 
-            if (!pawn.Hidden) {
+            bool hidden = pawn.Hidden;
+            if (!hidden) {
                 Rect parentPortraitRect = rect.InsetBy(6);
                 parentPortraitRect.y -= 8;
-                var parentPortraitTexture = pawn.Pawn.GetPortrait(parentPortraitRect.size);
+                var parentPortraitTexture = pawn.GetPortrait(parentPortraitRect.size);
                 GUI.DrawTexture(parentPortraitRect.OffsetBy(0, -4), parentPortraitTexture);
             }
             else {
                 GUI.color = Style.ColorButton;
                 Rect parentPortraitRect = new Rect(rect.MiddleX() - SizeGender.HalfX(), rect.y + SpacingGender, SizeGender.x, SizeGender.y);
-                if (pawn.Pawn.Gender == Gender.Female) {
+                if (pawn.Gender == Gender.Female) {
                     GUI.DrawTexture(parentPortraitRect, Textures.TextureGenderFemaleLarge);
                 }
-                else if (pawn.Pawn.Gender == Gender.Male) {
+                else if (pawn.Gender == Gender.Male) {
                     GUI.DrawTexture(parentPortraitRect, Textures.TextureGenderMaleLarge);
                 }
                 else {
@@ -296,10 +276,10 @@ namespace EdB.PrepareCarefully {
             
             TooltipHandler.TipRegion(rect, GetTooltipText(pawn));
         }
-        protected string GetTooltipText(CustomParentChildPawn parentChildPawn) {
-            CustomPawn pawn = parentChildPawn.Pawn;
+        protected string GetTooltipText(CustomPawn pawn) {
             string description;
-            if (!parentChildPawn.Hidden) {
+            bool hidden = pawn.Hidden;
+            if (!hidden) {
                 string age = pawn.BiologicalAge != pawn.ChronologicalAge ?
                     "EdB.PC.Pawn.AgeWithChronological".Translate(new object[] { pawn.BiologicalAge, pawn.ChronologicalAge }) :
                     "EdB.PC.Pawn.AgeWithoutChronological".Translate(new object[] { pawn.BiologicalAge });
@@ -313,24 +293,41 @@ namespace EdB.PrepareCarefully {
                     "EdB.PC.Pawn.HiddenPawnDescriptionWithGender".Translate(new object[] { profession, pawn.Gender.GetLabel() }) :
                     "EdB.PC.Pawn.HiddenPawnDescriptionNoGender".Translate(new object[] { profession });
             }
-            return parentChildPawn.FullName + "\n" + description;
+            return pawn.FullName + "\n" + description;
         }
-        protected List<WidgetTable<CustomParentChildPawn>.RowGroup> rowGroups = new List<WidgetTable<CustomParentChildPawn>.RowGroup>();
-        protected void ShowParentDialogForGroup(CustomParentChildGroup group, CustomParentChildPawn selected, Action<CustomParentChildPawn> action) {
-            CustomParentChildPawn selectedPawn = selected;
-            HashSet<CustomParentChildPawn> disabled = new HashSet<CustomParentChildPawn>();
+        protected List<WidgetTable<CustomPawn>.RowGroup> rowGroups = new List<WidgetTable<CustomPawn>.RowGroup>();
+        protected void ShowParentDialogForGroup(ParentChildGroup group, CustomPawn selected, Action<CustomPawn> action) {
+            CustomPawn selectedPawn = selected;
+            HashSet<CustomPawn> disabled = new HashSet<CustomPawn>();
             if (group != null) {
                 disabled.AddRange(group.Parents);
                 disabled.AddRange(group.Children);
             }
             rowGroups.Clear();
-            rowGroups.Add(new WidgetTable<CustomParentChildPawn>.RowGroup("EdB.PC.AddParentChild.Header.SelectColonist".Translate(), PrepareCarefully.Instance.RelationshipManager.ColonyPawns));
-            rowGroups.Add(new WidgetTable<CustomParentChildPawn>.RowGroup("EdB.PC.AddParentChild.Header.SelectHidden".Translate(), PrepareCarefully.Instance.RelationshipManager.HiddenPawns));
-            WidgetTable<CustomParentChildPawn>.RowGroup newPawnGroup = new WidgetTable<CustomParentChildPawn>.RowGroup(null, newPawns);
+            rowGroups.Add(new WidgetTable<CustomPawn>.RowGroup("<b>" + "EdB.PC.AddParentChild.Header.SelectColonist".Translate() + "</b>",
+                PrepareCarefully.Instance.RelationshipManager.ColonyAndWorldPawns.Where((CustomPawn pawn) => {
+                    return pawn.Type == CustomPawnType.Colonist;
+                })));
+            List<CustomPawn> sortedHiddenPawns = PrepareCarefully.Instance.RelationshipManager.HiddenPawns.ToList();
+            sortedHiddenPawns.Sort((a, b) => {
+                if (a.Type != b.Type) {
+                    return a.Type == CustomPawnType.Hidden ? -1 : 1;
+                }
+                else {
+                    int aInt = a.Index == null ? 0 : a.Index.Value;
+                    int bInt = b.Index == null ? 0 : b.Index.Value;
+                    return aInt.CompareTo(bInt);
+                }
+            });
+            rowGroups.Add(new WidgetTable<CustomPawn>.RowGroup("<b>" + "EdB.PC.AddParentChild.Header.SelectWorldPawn".Translate() + "</b>",
+                PrepareCarefully.Instance.RelationshipManager.ColonyAndWorldPawns.Where((CustomPawn pawn) => {
+                    return pawn.Type != CustomPawnType.Colonist;
+                }).Concat(sortedHiddenPawns)));
+            WidgetTable<CustomPawn>.RowGroup newPawnGroup = new WidgetTable<CustomPawn>.RowGroup("<b>" + "EdB.PC.AddParentChild.Header.CreateTemporaryPawn".Translate() + "</b>", PrepareCarefully.Instance.RelationshipManager.TemporaryPawns);
             rowGroups.Add(newPawnGroup);
             DialogSelectParentChildPawn pawnDialog = new DialogSelectParentChildPawn() {
                 HeaderLabel = "EdB.PC.AddParentChild.Header.AddParent".Translate(),
-                SelectAction = (CustomParentChildPawn pawn) => { selectedPawn = pawn; },
+                SelectAction = (CustomPawn pawn) => { selectedPawn = pawn; },
                 RowGroups = rowGroups,
                 DisabledPawns = disabled,
                 ConfirmValidation = () => {
@@ -343,32 +340,50 @@ namespace EdB.PrepareCarefully {
                 },
                 CloseAction = () => {
                     // If the user selected a new pawn, replace the pawn in the new pawn list with another one.
-                    int index = newPawnGroup.Rows.FirstIndexOf((CustomParentChildPawn p) => {
+                    int index = newPawnGroup.Rows.FirstIndexOf((CustomPawn p) => {
                         return p == selectedPawn;
                     });
-                    if (index > -1 && index < newPawns.Count) {
-                        selectedPawn = ReplaceNewHiddenCharacter(index);
+                    if (index > -1 && index < PrepareCarefully.Instance.RelationshipManager.TemporaryPawns.Count) {
+                        selectedPawn = PrepareCarefully.Instance.RelationshipManager.ReplaceNewTemporaryCharacter(index);
                     }
                     action(selectedPawn);
                 }
             };
             Find.WindowStack.Add(pawnDialog);
         }
-        protected void ShowChildDialogForGroup(CustomParentChildGroup group, CustomParentChildPawn selected, Action<CustomParentChildPawn> action) {
-            CustomParentChildPawn selectedPawn = selected;
-            HashSet<CustomParentChildPawn> disabled = new HashSet<CustomParentChildPawn>();
+
+        protected void ShowChildDialogForGroup(ParentChildGroup group, CustomPawn selected, Action<CustomPawn> action) {
+            CustomPawn selectedPawn = selected;
+            HashSet<CustomPawn> disabled = new HashSet<CustomPawn>();
             if (group != null) {
                 disabled.AddRange(group.Parents);
                 disabled.AddRange(group.Children);
             }
             rowGroups.Clear();
-            rowGroups.Add(new WidgetTable<CustomParentChildPawn>.RowGroup("EdB.PC.AddParentChild.Header.SelectColonist".Translate(), PrepareCarefully.Instance.RelationshipManager.ColonyPawns));
-            rowGroups.Add(new WidgetTable<CustomParentChildPawn>.RowGroup("EdB.PC.AddParentChild.Header.SelectHidden".Translate(), PrepareCarefully.Instance.RelationshipManager.HiddenPawns));
-            WidgetTable<CustomParentChildPawn>.RowGroup newPawnGroup = new WidgetTable<CustomParentChildPawn>.RowGroup(null, newPawns);
+            rowGroups.Add(new WidgetTable<CustomPawn>.RowGroup("<b>" + "EdB.PC.AddParentChild.Header.SelectColonist".Translate() + "</b>",
+                PrepareCarefully.Instance.RelationshipManager.ColonyAndWorldPawns.Where((CustomPawn pawn) => {
+                    return pawn.Type == CustomPawnType.Colonist;
+                })));
+            List<CustomPawn> sortedHiddenPawns = PrepareCarefully.Instance.RelationshipManager.HiddenPawns.ToList();
+            sortedHiddenPawns.Sort((a, b) => {
+                if (a.Type != b.Type) {
+                    return a.Type == CustomPawnType.Hidden ? -1 : 1;
+                }
+                else {
+                    int aInt = a.Index == null ? 0 : a.Index.Value;
+                    int bInt = b.Index == null ? 0 : b.Index.Value;
+                    return aInt.CompareTo(bInt);
+                }
+            });
+            rowGroups.Add(new WidgetTable<CustomPawn>.RowGroup("<b>" + "EdB.PC.AddParentChild.Header.SelectWorldPawn".Translate() + "</b>",
+                PrepareCarefully.Instance.RelationshipManager.ColonyAndWorldPawns.Where((CustomPawn pawn) => {
+                    return pawn.Type != CustomPawnType.Colonist;
+                }).Concat(sortedHiddenPawns)));
+            WidgetTable<CustomPawn>.RowGroup newPawnGroup = new WidgetTable<CustomPawn>.RowGroup("EdB.PC.AddParentChild.Header.CreateTemporaryPawn".Translate(), PrepareCarefully.Instance.RelationshipManager.TemporaryPawns);
             rowGroups.Add(newPawnGroup);
             DialogSelectParentChildPawn pawnDialog = new DialogSelectParentChildPawn() {
                 HeaderLabel = "EdB.PC.AddParentChild.Header.AddChild".Translate(),
-                SelectAction = (CustomParentChildPawn pawn) => { selectedPawn = pawn; },
+                SelectAction = (CustomPawn pawn) => { selectedPawn = pawn; },
                 RowGroups = rowGroups,
                 DisabledPawns = disabled,
                 ConfirmValidation = () => {
@@ -381,11 +396,11 @@ namespace EdB.PrepareCarefully {
                 },
                 CloseAction = () => {
                     // If the user selected a new pawn, replace the pawn in the new pawn list with another one.
-                    int index = newPawnGroup.Rows.FirstIndexOf((CustomParentChildPawn p) => {
+                    int index = newPawnGroup.Rows.FirstIndexOf((CustomPawn p) => {
                         return p == selectedPawn;
                     });
-                    if (index > -1 && index < newPawns.Count) {
-                        selectedPawn = ReplaceNewHiddenCharacter(index);
+                    if (index > -1 && index < PrepareCarefully.Instance.RelationshipManager.TemporaryPawns.Count) {
+                        selectedPawn = PrepareCarefully.Instance.RelationshipManager.ReplaceNewTemporaryCharacter(index);
                     }
                     action(selectedPawn);
                 }
@@ -414,8 +429,8 @@ namespace EdB.PrepareCarefully {
                 Style.SetGUIColorForButton(parentPawnRect);
                 GUI.DrawTexture(addParentRect, Textures.TextureButtonAdd);
                 if (Widgets.ButtonInvisible(parentPawnRect)) {
-                    ShowParentDialogForGroup(null, null, (CustomParentChildPawn pawn) => {
-                        CustomParentChildGroup group = new CustomParentChildGroup();
+                    ShowParentDialogForGroup(null, null, (CustomPawn pawn) => {
+                        ParentChildGroup group = new ParentChildGroup();
                         group.Parents.Add(pawn);
                         GroupAdded(group);
                     });
@@ -433,8 +448,8 @@ namespace EdB.PrepareCarefully {
                 Style.SetGUIColorForButton(childPawnRect);
                 GUI.DrawTexture(addChildRect, Textures.TextureButtonAdd);
                 if (Widgets.ButtonInvisible(childPawnRect)) {
-                    ShowChildDialogForGroup(null, null, (CustomParentChildPawn pawn) => {
-                        CustomParentChildGroup group = new CustomParentChildGroup();
+                    ShowChildDialogForGroup(null, null, (CustomPawn pawn) => {
+                        ParentChildGroup group = new ParentChildGroup();
                         group.Children.Add(pawn);
                         GroupAdded(group);
                     });
@@ -460,18 +475,13 @@ namespace EdB.PrepareCarefully {
 
             return cursor;
         }
-        private string GetProfessionLabel(CustomParentChildPawn pawn) {
-            if (!pawn.Hidden) {
-                return pawn.Pawn.ProfessionLabelShort;
-            }
-            if (pawn.Pawn.IsAdult && visibleBackstories.Contains(pawn.Pawn.Adulthood)) {
-                return pawn.Pawn.ProfessionLabelShort;
-            }
-            else if (!pawn.Pawn.IsAdult && visibleBackstories.Contains(pawn.Pawn.Childhood)) {
-                return pawn.Pawn.ProfessionLabelShort;
+        private string GetProfessionLabel(CustomPawn pawn) {
+            bool hidden = pawn.Hidden;
+            if (!hidden) {
+                return pawn.Type == CustomPawnType.Colonist ? "EdB.PC.AddParentChild.Colony".Translate() : "EdB.PC.AddParentChild.World".Translate();
             }
             else {
-                return "Unknown";
+                return pawn.Type == CustomPawnType.Temporary ? "EdB.PC.AddParentChild.Temporary".Translate() : "EdB.PC.AddParentChild.World".Translate();
             }
         }
     }

@@ -20,6 +20,9 @@ namespace EdB.PrepareCarefully {
         public ProviderFactions Factions {
             get; set;
         }
+        public ProviderPawnLayers PawnLayers {
+            get; set;
+        }
         public ProviderHair Hair {
             get; set;
         }
