@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 using UnityEngine;
 using Verse;
 using Verse.Sound;
@@ -123,7 +124,7 @@ namespace EdB.PrepareCarefully {
             DrawPoints(mainRect);
             DoNextBackButtons(inRect, "Start".Translate(),
                 delegate {
-                    if (controller.ValidateStartGame()) {
+                    if (controller.CanDoNext()) {
                         ShowStartConfirmation();
                     }
                 },
@@ -159,9 +160,27 @@ namespace EdB.PrepareCarefully {
         }
 
         public void ShowStartConfirmation() {
-            Find.WindowStack.Add(new Dialog_Confirm("EdB.PC.Page.ConfirmStart".Translate(), delegate {
-                GameStarted();
-            }, true, null, true));
+            // Show the missing required work dialog if necessary.  Otherwise, just show the standard confirmation.
+            if (State.MissingWorkTypes != null && State.MissingWorkTypes.Count > 0) {
+                StringBuilder stringBuilder = new StringBuilder();
+                foreach (string current in State.MissingWorkTypes) {
+                    if (stringBuilder.Length > 0) {
+                        stringBuilder.AppendLine();
+                    }
+                    stringBuilder.Append("  - " + current.CapitalizeFirst());
+                }
+                string text = "ConfirmRequiredWorkTypeDisabledForEveryone".Translate(new object[] {
+                    stringBuilder.ToString ()
+                });
+                Find.WindowStack.Add(Dialog_MessageBox.CreateConfirmation(text, delegate {
+                    GameStarted();
+                }, false, null));
+            }
+            else {
+                Find.WindowStack.Add(new Dialog_Confirm("EdB.PC.Page.ConfirmStart".Translate(), delegate {
+                    GameStarted();
+                }, false, null, true));
+            }
         }
 
         protected void DrawPresetButtons() {

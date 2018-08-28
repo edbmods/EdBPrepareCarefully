@@ -37,47 +37,47 @@ namespace EdB.PrepareCarefully {
             subcontrollerCharacters.CheckPawnCapabilities();
         }
 
-        private AcceptanceReport CanStart() {
+        public bool CanDoNext() {
             Configuration config = PrepareCarefully.Instance.Config;
             if (config.pointsEnabled) {
                 if (PrepareCarefully.Instance.PointsRemaining < 0) {
-                    return new AcceptanceReport("EdB.PC.Error.NotEnoughPoints".Translate());
+                    Messages.Message("EdB.PC.Error.NotEnoughPoints".Translate(), MessageTypeDefOf.RejectInput, false);
+                    return false;
                 }
             }
             int pawnCount = PrepareCarefully.Instance.Pawns.Count;
             if (pawnCount < config.minColonists) {
                 if (config.minColonists == 1) {
-                    return new AcceptanceReport("EdB.PC.Error.NotEnoughColonists1".Translate(
-                        new object[] { config.minColonists }));
+                    Messages.Message("EdB.PC.Error.NotEnoughColonists1".Translate(
+                        new object[] { config.minColonists }), MessageTypeDefOf.RejectInput, false);
+                    return false;
                 }
                 else {
-                    return new AcceptanceReport("EdB.PC.Error.NotEnoughColonists".Translate(
-                        new object[] { config.minColonists }));
+                    Messages.Message("EdB.PC.Error.NotEnoughColonists".Translate(
+                        new object[] { config.minColonists }), MessageTypeDefOf.RejectInput, false);
+                    return false;
                 }
             }
-
-            return AcceptanceReport.WasAccepted;
-        }
-
-        public bool ValidateStartGame() {
-            AcceptanceReport acceptanceReport = this.CanStart();
-            if (!acceptanceReport.Accepted) {
-                state.AddError(acceptanceReport.Reason);
-                return false;
-            }
-            else {
-                return true;
-            }
+            // TODO: This is no good as it is.  In vanilla, if the player only has a nickname, it copies that nickname into the
+            // first and last names.  We need to do something similar and adjust this validation accordingly.
+            //foreach (CustomPawn current in PrepareCarefully.Instance.Pawns) {
+            //    if (!current.Name.IsValid) {
+            //        Messages.Message("EveryoneNeedsValidName".Translate(), MessageTypeDefOf.RejectInput, false);
+            //        return false;
+            //    }
+            //}
+            return true;
         }
 
         public void StartGame() {
-            if (ValidateStartGame()) {
+            if (CanDoNext()) {
                 PrepareCarefully.Instance.Active = true;
                 PrepareCarefully.Instance.State.Page.Close(false);
                 PrepareCarefully.Instance.State.Page = null;
                 PrepareGame();
-                PrepareCarefully.Instance.NextPage();
+                PrepareCarefully.Instance.DoNextInBasePage();
                 PrepareCarefully.RemoveInstance();
+                PortraitsCache.Clear();
             }
         }
 

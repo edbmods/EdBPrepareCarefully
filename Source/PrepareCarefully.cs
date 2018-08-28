@@ -100,9 +100,22 @@ namespace EdB.PrepareCarefully {
             SortField = SortField.Name;
         }
 
-        public void NextPage() {
+        // Performs the logic from the Page.DoNext() method in the base Page class instead of calling the override
+        // in Page_ConfigureStartingPawns.  We want to prevent the missing required work type dialog from appearing
+        // in the context of the configure pawns page.  We're adding our own version here.
+        public void DoNextInBasePage() {
             if (OriginalPage != null) {
-                typeof(Page_ConfigureStartingPawns).GetMethod("DoNext", BindingFlags.NonPublic | BindingFlags.Instance).Invoke(OriginalPage, null);
+                Page next = OriginalPage.next;
+                Action nextAction = OriginalPage.nextAct;
+                if (next != null) {
+                    Verse.Find.WindowStack.Add(next);
+                }
+                if (nextAction != null) {
+                    nextAction();
+                }
+                TutorSystem.Notify_Event("PageClosed");
+                TutorSystem.Notify_Event("GoToNextPage");
+                OriginalPage.Close(true);
             }
         }
 
