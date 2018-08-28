@@ -1,12 +1,15 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
 <!-- CHANGE NOTES -->
-<!-- v1.0.6 -->
+<!-- v0.19.8 -->
+<!-- UPDATED: EdB.PC.Panel.Incapable.Warning -->
+
+<!-- v0.19.6 -->
 <!-- NEW: EdB.PC.Dialog.Backstory.Filter.SkillBonusFull -->
 <!-- NEW: EdB.PC.Error.Initialization -->
 <!-- UPDATED: EdB.PC.Dialog.Backstory.Filter.SkillBonus -->
 <!-- REMOVED: EdB.PC.Dialog.Backstory.Filter.SkillPenalty -->
 
-<!-- v1.0.5 -->
+<!-- v0.19.5 -->
 <!-- NEW: EdB.PC.AddParentChild.Header.CreateTemporaryPawn -->
 <!-- NEW: EdB.PC.AddParentChild.Header.SelectWorldPawn -->
 <!-- NEW: EdB.PC.Common.Select -->
@@ -262,7 +265,7 @@ This is not the case for faction leaders.  If you make this character a faction 
 
 {0}
 
-You can play the game with your colonists as they are, but you may see an error message when you start the scenario.</EdB.PC.Panel.Incapable.Warning>
+You can play the game with your colonists as they are, but you will be asked to confirm before starting the scenario.</EdB.PC.Panel.Incapable.Warning>
   <EdB.PC.Panel.Incapable.WarningItem> - {0}</EdB.PC.Panel.Incapable.WarningItem>
 
   <EdB.PC.Panel.LoadSave.Load>Load Character</EdB.PC.Panel.LoadSave.Load>
