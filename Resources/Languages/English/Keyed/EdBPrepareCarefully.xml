@@ -1,5 +1,8 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
 <!-- CHANGE NOTES -->
+<!-- v0.19.9 -->
+<!-- NEW: EdB.PC.Dialog.Backstory.Filter.MatchesFaction -->
+
 <!-- v0.19.8 -->
 <!-- UPDATED: EdB.PC.Panel.Incapable.Warning -->
 
@@ -105,6 +108,7 @@
   <EdB.PC.Dialog.Backstory.Filter.NoSkillPenalties>No Skill Penalties</EdB.PC.Dialog.Backstory.Filter.NoSkillPenalties>
   <EdB.PC.Dialog.Backstory.Filter.SkillBonus>Bonus: {0} +{1}</EdB.PC.Dialog.Backstory.Filter.SkillBonus>
   <EdB.PC.Dialog.Backstory.Filter.SkillBonusFull>Skill Bonus: {0}, +{1} or better</EdB.PC.Dialog.Backstory.Filter.SkillBonusFull>
+  <EdB.PC.Dialog.Backstory.Filter.MatchesFaction>Faction backstories only</EdB.PC.Dialog.Backstory.Filter.MatchesFaction>
 
   <EdB.PC.Dialog.BodyPart.Header>Select a location</EdB.PC.Dialog.BodyPart.Header>
   <EdB.PC.Dialog.BodyPart.Error.Required>You must select a location</EdB.PC.Dialog.BodyPart.Error.Required>
