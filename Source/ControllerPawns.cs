@@ -104,10 +104,10 @@ namespace EdB.PrepareCarefully {
                 factionDef = Faction.OfPlayer.def;
             }
             MethodInfo method = typeof(PawnBioAndNameGenerator).GetMethod("FillBackstorySlotShuffled", BindingFlags.Static | BindingFlags.NonPublic);
-            object[] arguments = new object[] { currentPawn.Pawn, BackstorySlot.Childhood, null, factionDef };
+            object[] arguments = new object[] { currentPawn.Pawn, BackstorySlot.Childhood, null, kindDef.backstoryCategories, factionDef };
             method.Invoke(null, arguments);
             currentPawn.Childhood = arguments[2] as Backstory;
-            arguments = new object[] { currentPawn.Pawn, BackstorySlot.Adulthood, null, factionDef };
+            arguments = new object[] { currentPawn.Pawn, BackstorySlot.Adulthood, null, kindDef.backstoryCategories, factionDef };
             method.Invoke(null, arguments);
             currentPawn.Adulthood = arguments[2] as Backstory;
         }
