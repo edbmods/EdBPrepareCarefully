@@ -1,0 +1,14 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<ModSyncNinjaData>
+  <ID>fbd8f5ea-6378-41e4-a87c-1b6693724ab4</ID>
+  <ModName>EdB Prepare Carefully</ModName>
+  <Version>0.19.8</Version>
+  <SaveBreaking>False</SaveBreaking>
+  <Host name="Github">
+    <Owner>edbmods</Owner>
+    <Project>EdBPrepareCarefully</Project>
+    <AboutDir>ResourcesUnstable/About</AboutDir>
+    <DownloadFrom>ModSyncMainPage</DownloadFrom>
+    <Branch>develop</Branch>
+  </Host>
+</ModSyncNinjaData>
