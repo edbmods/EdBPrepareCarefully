@@ -23,6 +23,7 @@ namespace EdB.PrepareCarefully {
         private List<Filter<Backstory>> availableFilters = new List<Filter<Backstory>>();
         private List<Filter<Backstory>> activeFilters = new List<Filter<Backstory>>();
         public PanelBackstory() {
+            availableFilters.Add(new FilterBackstoryMatchesFaction());
             availableFilters.Add(new FilterBackstoryNoDisabledWorkTypes());
             availableFilters.Add(new FilterBackstoryNoPenalties());
             foreach (var s in DefDatabase<SkillDef>.AllDefs) {
@@ -148,7 +149,6 @@ namespace EdB.PrepareCarefully {
             Backstory originalBackstory = (slot == BackstorySlot.Childhood) ? customPawn.Childhood : customPawn.Adulthood;
             Backstory selectedBackstory = originalBackstory;
             Filter<Backstory> filterToRemove = null;
-            Filter<Backstory> filterToAdd = null;
             bool filterListDirtyFlag = true;
             List<Backstory> fullOptionsList = slot == BackstorySlot.Childhood ?
                     this.providerBackstories.GetChildhoodBackstoriesForPawn(customPawn) : this.providerBackstories.GetAdulthoodBackstoriesForPawn(customPawn);

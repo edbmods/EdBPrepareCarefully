@@ -45,38 +45,15 @@ namespace EdB.PrepareCarefully {
         }
 
         private void InitializeBackstoriesForPawnKind(PawnKindDef def) {
-
             HashSet<string> pawnKindBackstoryCategories = new HashSet<string>(def.backstoryCategories);
             List<Backstory> childhood = BackstoryDatabase.allBackstories.Values.Where((b) => {
-                if (b.slot != BackstorySlot.Childhood) {
-                    return false;
-                }
-                if (def.backstoryCategories == null || def.backstoryCategories.Count == 0) {
-                    return true;
-                }
-                foreach (var c in b.spawnCategories) {
-                    if (pawnKindBackstoryCategories.Contains(c)) {
-                        return true;
-                    }
-                }
-                return false;
+                return (b.slot == BackstorySlot.Childhood);
             }).ToList();
             childhood.Sort((b1, b2) => b1.TitleCapFor(Gender.Male).CompareTo(b2.TitleCapFor(Gender.Male)));
             childhoodBackstoryLookup[def.defName] = childhood;
 
             List<Backstory> adulthood = BackstoryDatabase.allBackstories.Values.Where((b) => {
-                if (b.slot != BackstorySlot.Adulthood) {
-                    return false;
-                }
-                if (def.backstoryCategories == null || def.backstoryCategories.Count == 0) {
-                    return true;
-                }
-                foreach (var c in b.spawnCategories) {
-                    if (pawnKindBackstoryCategories.Contains(c)) {
-                        return true;
-                    }
-                }
-                return false;
+                return (b.slot == BackstorySlot.Adulthood);
             }).ToList();
             adulthood.Sort((b1, b2) => b1.TitleCapFor(Gender.Male).CompareTo(b2.TitleCapFor(Gender.Male)));
             adulthoodBackstoryLookup[def.defName] = adulthood;

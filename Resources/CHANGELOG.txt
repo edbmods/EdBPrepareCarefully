@@ -1,5 +1,16 @@
  _____________________________________________________________________________
  
+   Version 0.19.9
+ _____________________________________________________________________________
+
+ - Fixed a problem when randomizing backstories.
+ - Added missing backstories back to the backstory dialogs.
+ - Added a "matching faction only" backstory filter.
+ - Fixed a problem where hair selections were being removed due to specific
+   alien races.  Now all hairs are available for "humanlike" pawns.
+
+ _____________________________________________________________________________
+ 
    Version 0.19.8
  _____________________________________________________________________________
 
