@@ -98,6 +98,13 @@ namespace EdB.PrepareCarefully {
         }
         protected OptionsHair InitializeHumanlikeHairs() {
             HashSet<string> nonHumanHairTags = new HashSet<string>();
+            // This was meant to remove alien race-specific hair defs from those available when customizing non-aliens.
+            // However, there's no way to distinguish between hair tags that are ONLY for aliens vs. the non-alien
+            // hair defs that are also allow for aliens.  This makes the logic below fail.  Instead, we'll include
+            // all hair def (both alien and non-alien) in the list of available hairs for non-aliens.
+            // TODO: Implement filtering in the hair selection to make it easier to find appropriate hairs when there
+            // are a lot of mods that add hairs.
+            /*
             IEnumerable<ThingDef> alienRaces = DefDatabase<ThingDef>.AllDefs.Where((ThingDef def) => {
                 return def.race != null && ProviderAlienRaces.IsAlienRace(def);
             });
@@ -112,6 +119,7 @@ namespace EdB.PrepareCarefully {
                     }
                 }
             }
+            */
             OptionsHair result = new OptionsHair();
             foreach (HairDef hairDef in DefDatabase<HairDef>.AllDefs.Where((HairDef def) => {
                 foreach (var tag in def.hairTags) {
