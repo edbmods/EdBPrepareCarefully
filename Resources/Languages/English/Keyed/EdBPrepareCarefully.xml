@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8" ?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <!-- CHANGE NOTES -->
 <!-- v0.19.9 -->
 <!-- NEW: EdB.PC.Dialog.Backstory.Filter.MatchesFaction -->
@@ -69,241 +69,243 @@
 <!-- UPDATED: EdB.PC.Panel.RelationshipsParentChild.Title -->
 
 <LanguageData>
-  <EdB.PC.AddParentChild.Header.AddParent>Add a Parent</EdB.PC.AddParentChild.Header.AddParent>
-  <EdB.PC.AddParentChild.Error.ParentRequired>You must select a parent</EdB.PC.AddParentChild.Error.ParentRequired>
-  <EdB.PC.AddParentChild.Header.AddChild>Add a Child</EdB.PC.AddParentChild.Header.AddChild>
-  <EdB.PC.AddParentChild.Error.ChildRequired>You must select a child</EdB.PC.AddParentChild.Error.ChildRequired>
-  <EdB.PC.AddParentChild.Header.SelectColonist>Select a colonist</EdB.PC.AddParentChild.Header.SelectColonist>
-  <EdB.PC.AddParentChild.Header.SelectWorldPawn>Select another character from the world</EdB.PC.AddParentChild.Header.SelectWorldPawn>
-  <EdB.PC.AddParentChild.Header.CreateTemporaryPawn>Create a temporary character to link together two other characters</EdB.PC.AddParentChild.Header.CreateTemporaryPawn>
-  <EdB.PC.AddParentChild.NewHiddenCharacter>New Temporary Character</EdB.PC.AddParentChild.NewHiddenCharacter>
-  <EdB.PC.AddParentChild.Temporary>Temporary</EdB.PC.AddParentChild.Temporary>
-  <EdB.PC.AddParentChild.Colony>Colony</EdB.PC.AddParentChild.Colony>
-  <EdB.PC.AddParentChild.World>World</EdB.PC.AddParentChild.World>
+  <EdB.PC.AddParentChild.Header.AddParent>添加一个父亲或母亲</EdB.PC.AddParentChild.Header.AddParent>
+  <EdB.PC.AddParentChild.Error.ParentRequired>你必须选择一个父亲或母亲。</EdB.PC.AddParentChild.Error.ParentRequired>
+  <EdB.PC.AddParentChild.Header.AddChild>添加一个孩子</EdB.PC.AddParentChild.Header.AddChild>
+  <EdB.PC.AddParentChild.Error.ChildRequired>你必须选择一个孩子。</EdB.PC.AddParentChild.Error.ChildRequired>
+  <EdB.PC.AddParentChild.Header.SelectColonist>选择一个殖民者</EdB.PC.AddParentChild.Header.SelectColonist>
+  <EdB.PC.AddParentChild.Header.SelectWorldPawn>选择其他殖民者</EdB.PC.AddParentChild.Header.SelectWorldPawn>
+  <EdB.PC.AddParentChild.Header.CreateTemporaryPawn>创建一个联系另外两名殖民者的隐藏角色</EdB.PC.AddParentChild.Header.CreateTemporaryPawn>
+  <EdB.PC.AddParentChild.NewHiddenCharacter>新隐藏角色</EdB.PC.AddParentChild.NewHiddenCharacter>
+  <EdB.PC.AddParentChild.Temporary>临时</EdB.PC.AddParentChild.Temporary>
+  <EdB.PC.AddParentChild.Colony>殖民地</EdB.PC.AddParentChild.Colony>
+  <EdB.PC.AddParentChild.World>世界</EdB.PC.AddParentChild.World>
 
-  <EdB.PC.AddRelationship.Header.Relationship>Select The Relationship</EdB.PC.AddRelationship.Header.Relationship>
-  <EdB.PC.AddRelationship.Header.Source>Select a Character</EdB.PC.AddRelationship.Header.Source>
-  <EdB.PC.AddRelationship.Header.Target>Select a Target Character</EdB.PC.AddRelationship.Header.Target>
-  <EdB.PC.AddRelationship.Error.RelationshipRequired>You must select a relationship</EdB.PC.AddRelationship.Error.RelationshipRequired>
-  <EdB.PC.AddRelationship.Error.SourceRequired>You must select a character</EdB.PC.AddRelationship.Error.SourceRequired>
-  <EdB.PC.AddRelationship.Error.TargetRequired>You must select a character</EdB.PC.AddRelationship.Error.TargetRequired>
+  <EdB.PC.AddRelationship.Header.Relationship>选择关系</EdB.PC.AddRelationship.Header.Relationship>
+  <EdB.PC.AddRelationship.Header.Source>选择一个殖民者</EdB.PC.AddRelationship.Header.Source>
+  <EdB.PC.AddRelationship.Header.Target>选择一个目标殖民者</EdB.PC.AddRelationship.Header.Target>
+  <EdB.PC.AddRelationship.Error.RelationshipRequired>你必须选择一段关系。</EdB.PC.AddRelationship.Error.RelationshipRequired>
+  <EdB.PC.AddRelationship.Error.SourceRequired>你必须选择一个角色。</EdB.PC.AddRelationship.Error.SourceRequired>
+  <EdB.PC.AddRelationship.Error.TargetRequired>你必须选择一个角色。</EdB.PC.AddRelationship.Error.TargetRequired>
 
   <EdB.PC.Animals.LabelWithGender>{0}, {1}</EdB.PC.Animals.LabelWithGender>
   <EdB.PC.Animals.LabelWithoutGender>{0}</EdB.PC.Animals.LabelWithoutGender>
 
-  <EdB.PC.BodyParts.WholeBody>Whole Body</EdB.PC.BodyParts.WholeBody>
+  <EdB.PC.BodyParts.WholeBody>全身</EdB.PC.BodyParts.WholeBody>
 
-  <EdB.PC.Common.Add>Add</EdB.PC.Common.Add>
-  <EdB.PC.Common.Next>Next</EdB.PC.Common.Next>
-  <EdB.PC.Common.NoOptionSelected>None</EdB.PC.Common.NoOptionSelected>
-  <EdB.PC.Common.NoOptionAvailable>None</EdB.PC.Common.NoOptionAvailable>
-  <EdB.PC.Common.Cancel>Cancel</EdB.PC.Common.Cancel>
-  <EdB.PC.Common.Close>Close</EdB.PC.Common.Close>
-  <EdB.PC.Common.Confirm>Confirm</EdB.PC.Common.Confirm>
-  <EdB.PC.Common.Default>Default</EdB.PC.Common.Default>
-  <EdB.PC.Common.Select>Select</EdB.PC.Common.Select>
+  <EdB.PC.Common.Add>新增</EdB.PC.Common.Add>
+  <EdB.PC.Common.Next>下一步</EdB.PC.Common.Next>
+  <EdB.PC.Common.NoOptionSelected>无</EdB.PC.Common.NoOptionSelected>
+  <EdB.PC.Common.NoOptionAvailable>无</EdB.PC.Common.NoOptionAvailable>
+  <EdB.PC.Common.Cancel>取消</EdB.PC.Common.Cancel>
+  <EdB.PC.Common.Close>关闭</EdB.PC.Common.Close>
+  <EdB.PC.Common.Confirm>确认</EdB.PC.Common.Confirm>
+  <EdB.PC.Common.Default>默认</EdB.PC.Common.Default>
+  <EdB.PC.Common.Select>选择</EdB.PC.Common.Select>
 
-  <EdB.PC.Dialog.Backstory.Filter.Add>Add Filter</EdB.PC.Dialog.Backstory.Filter.Add>
-  <EdB.PC.Dialog.Backstory.Filter.NoDisabledWorkTypes>No Disabled Work Types</EdB.PC.Dialog.Backstory.Filter.NoDisabledWorkTypes>
-  <EdB.PC.Dialog.Backstory.Filter.NoSkillPenalties>No Skill Penalties</EdB.PC.Dialog.Backstory.Filter.NoSkillPenalties>
-  <EdB.PC.Dialog.Backstory.Filter.SkillBonus>Bonus: {0} +{1}</EdB.PC.Dialog.Backstory.Filter.SkillBonus>
-  <EdB.PC.Dialog.Backstory.Filter.SkillBonusFull>Skill Bonus: {0}, +{1} or better</EdB.PC.Dialog.Backstory.Filter.SkillBonusFull>
-  <EdB.PC.Dialog.Backstory.Filter.MatchesFaction>Faction backstories only</EdB.PC.Dialog.Backstory.Filter.MatchesFaction>
+  <EdB.PC.Dialog.Backstory.Filter.Add>增加过滤器</EdB.PC.Dialog.Backstory.Filter.Add>
+  <EdB.PC.Dialog.Backstory.Filter.NoDisabledWorkTypes>无禁用工作类型</EdB.PC.Dialog.Backstory.Filter.NoDisabledWorkTypes>
+  <EdB.PC.Dialog.Backstory.Filter.NoSkillPenalties>无技能削弱</EdB.PC.Dialog.Backstory.Filter.NoSkillPenalties>
+  <EdB.PC.Dialog.Backstory.Filter.SkillBonus>增强: {0} +{1}</EdB.PC.Dialog.Backstory.Filter.SkillBonus>
+  <EdB.PC.Dialog.Backstory.Filter.SkillBonusFull>技能增强: {0}, +{1} or better</EdB.PC.Dialog.Backstory.Filter.SkillBonusFull>
+  <EdB.PC.Dialog.Backstory.Filter.MatchesFaction>有派系背景故事的</EdB.PC.Dialog.Backstory.Filter.MatchesFaction>
 
-  <EdB.PC.Dialog.BodyPart.Header>Select a location</EdB.PC.Dialog.BodyPart.Header>
-  <EdB.PC.Dialog.BodyPart.Error.Required>You must select a location</EdB.PC.Dialog.BodyPart.Error.Required>
+  <EdB.PC.Dialog.BodyPart.Header>选择位置</EdB.PC.Dialog.BodyPart.Header>
+  <EdB.PC.Dialog.BodyPart.Error.Required>你必须选择一个位置</EdB.PC.Dialog.BodyPart.Error.Required>
 
-  <EdB.PC.Dialog.Faction.ChooseFaction>Choose a Faction</EdB.PC.Dialog.Faction.ChooseFaction>
-  <EdB.PC.Dialog.Faction.LeaderFaction>Leader: {0}</EdB.PC.Dialog.Faction.LeaderFaction>
+  <EdB.PC.Dialog.Faction.ChooseFaction>选择一个派系</EdB.PC.Dialog.Faction.ChooseFaction>
+  <EdB.PC.Dialog.Faction.LeaderFaction>首领: {0}</EdB.PC.Dialog.Faction.LeaderFaction>
   <EdB.PC.Dialog.Faction.NumberedFaction>{1}: {0}</EdB.PC.Dialog.Faction.NumberedFaction>
-  <EdB.PC.Dialog.Faction.Random>Random</EdB.PC.Dialog.Faction.Random>
-  <EdB.PC.Dialog.Faction.RandomFaction>Random: {0}</EdB.PC.Dialog.Faction.RandomFaction>
-  <EdB.PC.Dialog.Faction.SelectLeaderFaction>Make this character the leader of a specific faction</EdB.PC.Dialog.Faction.SelectLeaderFaction>
-  <EdB.PC.Dialog.Faction.SelectRandomFaction>Place this character in a random faction</EdB.PC.Dialog.Faction.SelectRandomFaction>
-  <EdB.PC.Dialog.Faction.SelectSpecificFaction>Choose a specific faction for this character</EdB.PC.Dialog.Faction.SelectSpecificFaction>
+  <EdB.PC.Dialog.Faction.Random>随机</EdB.PC.Dialog.Faction.Random>
+  <EdB.PC.Dialog.Faction.RandomFaction>随机: {0}</EdB.PC.Dialog.Faction.RandomFaction>
+  <EdB.PC.Dialog.Faction.SelectLeaderFaction>让这个角色成为某个派系的首领</EdB.PC.Dialog.Faction.SelectLeaderFaction>
+  <EdB.PC.Dialog.Faction.SelectRandomFaction>让这个角色的派系随机</EdB.PC.Dialog.Faction.SelectRandomFaction>
+  <EdB.PC.Dialog.Faction.SelectSpecificFaction>为角色选择派系</EdB.PC.Dialog.Faction.SelectSpecificFaction>
 
-  <EdB.PC.Dialog.Implant.Alert>You've selected at least one implant that will not be installed because it conflicts with another selection:\n{0}</EdB.PC.Dialog.Implant.Alert>
+  <EdB.PC.Dialog.Implant.Alert>你所选的植入物至少有一个无法被安装，因为与所选的另一个冲突：\n{0}</EdB.PC.Dialog.Implant.Alert>
   <EdB.PC.Dialog.Implant.Alert.Item>- {0}, {1}</EdB.PC.Dialog.Implant.Alert.Item>
-  <EdB.PC.Dialog.Implant.Button.Confirm>Apply</EdB.PC.Dialog.Implant.Button.Confirm>
-  <EdB.PC.Dialog.Implant.Conflict>This implant cannot be installed because it conflicts with the following:\n\n- {0}, {1}</EdB.PC.Dialog.Implant.Conflict>
-  <EdB.PC.Dialog.Implant.Header>Select Implants and Bionics</EdB.PC.Dialog.Implant.Header>
+  <EdB.PC.Dialog.Implant.Button.Confirm>应用</EdB.PC.Dialog.Implant.Button.Confirm>
+  <EdB.PC.Dialog.Implant.Conflict>此植入物不会被安装，因为有以下冲突：\n\n- {0}, {1}</EdB.PC.Dialog.Implant.Conflict>
+  <EdB.PC.Dialog.Implant.Header>选择一个植入物或仿生体</EdB.PC.Dialog.Implant.Header>
 
-  <EdB.PC.Dialog.Injury.Header>Select a condition</EdB.PC.Dialog.Injury.Header>
-  <EdB.PC.Dialog.Injury.Error.Required>You must select a condition</EdB.PC.Dialog.Injury.Error.Required>
+  <EdB.PC.Dialog.Injury.Header>选择一个状态</EdB.PC.Dialog.Injury.Header>
+  <EdB.PC.Dialog.Injury.Error.Required>你必须选择一个状态</EdB.PC.Dialog.Injury.Error.Required>
   <EdB.PC.Dialog.Injury.OldInjury.Label>{0} ({1})</EdB.PC.Dialog.Injury.OldInjury.Label>
 
-  <EdB.PC.Dialog.PawnPreset.Button.Load>Load</EdB.PC.Dialog.PawnPreset.Button.Load>
-  <EdB.PC.Dialog.PawnPreset.Button.Save>Save</EdB.PC.Dialog.PawnPreset.Button.Save>
-  <EdB.PC.Dialog.PawnPreset.DeleteTooltip>Delete this Colonist</EdB.PC.Dialog.PawnPreset.DeleteTooltip>
-  <EdB.PC.Dialog.PawnPreset.ConfirmDelete>Are you sure that you want to delete this colonist?</EdB.PC.Dialog.PawnPreset.ConfirmDelete>
-  <EdB.PC.Dialog.PawnPreset.Loaded>Loaded character {0}</EdB.PC.Dialog.PawnPreset.Loaded>
-  <EdB.PC.Dialog.PawnPreset.Error.Failed>Failed to load character.  Check that all required mods are enabled.</EdB.PC.Dialog.PawnPreset.Error.Failed>
-  <EdB.PC.Dialog.PawnPreset.Error.PreAlpha13NotSupported>Pre-alpha 13 versions of saved colonists are not supported.</EdB.PC.Dialog.PawnPreset.Error.PreAlpha13NotSupported>
+  <EdB.PC.Dialog.PawnPreset.Button.Load>载入</EdB.PC.Dialog.PawnPreset.Button.Load>
+  <EdB.PC.Dialog.PawnPreset.Button.Save>保存</EdB.PC.Dialog.PawnPreset.Button.Save>
+  <EdB.PC.Dialog.PawnPreset.DeleteTooltip>删除这个殖民者</EdB.PC.Dialog.PawnPreset.DeleteTooltip>
+  <EdB.PC.Dialog.PawnPreset.ConfirmDelete>你确定要删除这个殖民者？</EdB.PC.Dialog.PawnPreset.ConfirmDelete>
+  <EdB.PC.Dialog.PawnPreset.Loaded>已载入角色 {0}</EdB.PC.Dialog.PawnPreset.Loaded>
+  <EdB.PC.Dialog.PawnPreset.Error.Failed>载入角色失败，请检查是否启用所有需要的mod。</EdB.PC.Dialog.PawnPreset.Error.Failed>
+  <EdB.PC.Dialog.PawnPreset.Error.PreAlpha13NotSupported>不支持在A13版本之前保存的角色。</EdB.PC.Dialog.PawnPreset.Error.PreAlpha13NotSupported>
 
-  <EdB.PC.Dialog.Preset.Button.Load>Load Preset</EdB.PC.Dialog.Preset.Button.Load>
-  <EdB.PC.Dialog.Preset.Button.Save>Save Preset</EdB.PC.Dialog.Preset.Button.Save>
-  <EdB.PC.Dialog.Preset.ConfirmDelete>Are you sure that you want to delete this preset?</EdB.PC.Dialog.Preset.ConfirmDelete>
-  <EdB.PC.Dialog.Preset.DeleteTooltip>Delete this Preset</EdB.PC.Dialog.Preset.DeleteTooltip>
-  <EdB.PC.Dialog.Preset.Error.EquipmentFailed>Could not load equipment from the preset.</EdB.PC.Dialog.Preset.Error.EquipmentFailed>
-  <EdB.PC.Dialog.Preset.Error.Failed>Failed to load colonists from the preset.  Check that all required mods are enabled.</EdB.PC.Dialog.Preset.Error.Failed>
-  <EdB.PC.Dialog.Preset.Error.PartialSaveFailure>There were problems saving the preset. Some customizations were not included.</EdB.PC.Dialog.Preset.Error.PartialSaveFailure>
-  <EdB.PC.Dialog.Preset.Error.PreAlpha13NotSupported>Pre-alpha 13 versions of presets are not supported.</EdB.PC.Dialog.Preset.Error.PreAlpha13NotSupported>
-  <EdB.PC.Dialog.Preset.Error.RelationshipFailed>Could not load a custom relationship from the preset.</EdB.PC.Dialog.Preset.Error.RelationshipFailed>
-  <EdB.PC.Dialog.Preset.Error.SaveFailed>There was a problem while saving.  You may not be able to load the preset.</EdB.PC.Dialog.Preset.Error.SaveFailed>
-  <EdB.PC.Dialog.Preset.Error.ThingDefFailed>Could not fully load preset.  Check that all required mods are enabled.</EdB.PC.Dialog.Preset.Error.ThingDefFailed>
-  <EdB.PC.Dialog.Preset.Error.NoCharacter>Could not load saved character.  Check that all required mods are enabled.</EdB.PC.Dialog.Preset.Error.NoCharacter>
+  <EdB.PC.Dialog.Preset.Button.Load>载入预设</EdB.PC.Dialog.Preset.Button.Load>
+  <EdB.PC.Dialog.Preset.Button.Save>保存预设</EdB.PC.Dialog.Preset.Button.Save>
+  <EdB.PC.Dialog.Preset.ConfirmDelete>你确定要删除这个预设？</EdB.PC.Dialog.Preset.ConfirmDelete>
+  <EdB.PC.Dialog.Preset.DeleteTooltip>删除这个预设</EdB.PC.Dialog.Preset.DeleteTooltip>
+  <EdB.PC.Dialog.Preset.Error.EquipmentFailed>无法从预设中载入物资。</EdB.PC.Dialog.Preset.Error.EquipmentFailed>
+  <EdB.PC.Dialog.Preset.Error.Failed>从预设中载入角色失败。请检查是否启用所有需要的mod。</EdB.PC.Dialog.Preset.Error.Failed>
+  <EdB.PC.Dialog.Preset.Error.PartialSaveFailure>保存预设时出现问题。不包括某些自定义内容。</EdB.PC.Dialog.Preset.Error.PartialSaveFailure>
+  <EdB.PC.Dialog.Preset.Error.PreAlpha13NotSupported>不支持在A13版本之前保存的预设。</EdB.PC.Dialog.Preset.Error.PreAlpha13NotSupported>
+  <EdB.PC.Dialog.Preset.Error.RelationshipFailed>无法从预设中加载自定义关系。</EdB.PC.Dialog.Preset.Error.RelationshipFailed>
+  <EdB.PC.Dialog.Preset.Error.SaveFailed>保存时出现问题。你可能无法载入此预设。.</EdB.PC.Dialog.Preset.Error.SaveFailed>
+  <EdB.PC.Dialog.Preset.Error.ThingDefFailed>无法完全载入预设。请检查是否已启用所有需要的mod。</EdB.PC.Dialog.Preset.Error.ThingDefFailed>
+  <EdB.PC.Dialog.Preset.Error.NoCharacter>无法载入保存的角色。请检查是否已启用所有需要的mod。</EdB.PC.Dialog.Preset.Error.NoCharacter>
   <EdB.PC.Dialog.Preset.Loaded>Loaded preset {0}</EdB.PC.Dialog.Preset.Loaded>
 
-  <EdB.PC.Dialog.Severity.Header>Select a severity level</EdB.PC.Dialog.Severity.Header>
-  <EdB.PC.Dialog.Severity.Error.Required>You must select a severity level</EdB.PC.Dialog.Severity.Error.Required>
-  <EdB.PC.Dialog.Severity.OldInjury.Label.2>2 Damage</EdB.PC.Dialog.Severity.OldInjury.Label.2>
-  <EdB.PC.Dialog.Severity.OldInjury.Label.3>3 Damage</EdB.PC.Dialog.Severity.OldInjury.Label.3>
-  <EdB.PC.Dialog.Severity.OldInjury.Label.4>4 Damage</EdB.PC.Dialog.Severity.OldInjury.Label.4>
-  <EdB.PC.Dialog.Severity.OldInjury.Label.5>5 Damage</EdB.PC.Dialog.Severity.OldInjury.Label.5>
-  <EdB.PC.Dialog.Severity.OldInjury.Label.6>6 Damage</EdB.PC.Dialog.Severity.OldInjury.Label.6>
+  <EdB.PC.Dialog.Severity.Header>选择一个严重等级</EdB.PC.Dialog.Severity.Header>
+  <EdB.PC.Dialog.Severity.Error.Required>你必须选择一个严重等级</EdB.PC.Dialog.Severity.Error.Required>
+  <EdB.PC.Dialog.Severity.OldInjury.Label.2>2点伤害</EdB.PC.Dialog.Severity.OldInjury.Label.2>
+  <EdB.PC.Dialog.Severity.OldInjury.Label.3>3点伤害</EdB.PC.Dialog.Severity.OldInjury.Label.3>
+  <EdB.PC.Dialog.Severity.OldInjury.Label.4>4点伤害</EdB.PC.Dialog.Severity.OldInjury.Label.4>
+  <EdB.PC.Dialog.Severity.OldInjury.Label.5>5点伤害</EdB.PC.Dialog.Severity.OldInjury.Label.5>
+  <EdB.PC.Dialog.Severity.OldInjury.Label.6>6点伤害</EdB.PC.Dialog.Severity.OldInjury.Label.6>
   <EdB.PC.Dialog.Severity.Stage.Label.>{0} {1}</EdB.PC.Dialog.Severity.Stage.Label.>
 
-  <EdB.PC.Dialog.UnrecoverableError.Header>Unrecoverable Error</EdB.PC.Dialog.UnrecoverableError.Header>
-  <EdB.PC.Dialog.UnrecoverableError.Message>Something went wrong, and Prepare Carefully was not able to recover.  The following error message may help identify the problem:
+  <EdB.PC.Dialog.UnrecoverableError.Header>不可恢复的错误</EdB.PC.Dialog.UnrecoverableError.Header>
+  <EdB.PC.Dialog.UnrecoverableError.Message>出现了一个精心准备不可恢复的错误，以下错误信息可以帮助你找出问题：
 
-"{0}"</EdB.PC.Dialog.UnrecoverableError.Message>
+    "{0}"</EdB.PC.Dialog.UnrecoverableError.Message>
 
-  <EdB.PC.Equipment.Type.Animals>Animals</EdB.PC.Equipment.Type.Animals>
-  <EdB.PC.Equipment.Type.Apparel>Apparel</EdB.PC.Equipment.Type.Apparel>
-  <EdB.PC.Equipment.Type.Buildings>Furniture</EdB.PC.Equipment.Type.Buildings>
-  <EdB.PC.Equipment.Type.Food>Food</EdB.PC.Equipment.Type.Food>
-  <EdB.PC.Equipment.Type.Medical>Medical</EdB.PC.Equipment.Type.Medical>
-  <EdB.PC.Equipment.Type.Resources>Resources</EdB.PC.Equipment.Type.Resources>
-  <EdB.PC.Equipment.Type.Weapons>Weapons</EdB.PC.Equipment.Type.Weapons>
+  <EdB.PC.Equipment.Type.Animals>动物</EdB.PC.Equipment.Type.Animals>
+  <EdB.PC.Equipment.Type.Apparel>服装</EdB.PC.Equipment.Type.Apparel>
+  <EdB.PC.Equipment.Type.Buildings>家具</EdB.PC.Equipment.Type.Buildings>
+  <EdB.PC.Equipment.Type.Food>食物</EdB.PC.Equipment.Type.Food>
+  <EdB.PC.Equipment.Type.Medical>药物</EdB.PC.Equipment.Type.Medical>
+  <EdB.PC.Equipment.Type.Resources>资源</EdB.PC.Equipment.Type.Resources>
+  <EdB.PC.Equipment.Type.Weapons>武器</EdB.PC.Equipment.Type.Weapons>
 
-  <EdB.PC.Error.NotEnoughPoints>You've spent too many points.</EdB.PC.Error.NotEnoughPoints>
-  <EdB.PC.Error.NotEnoughColonists1>You must have at least one colonist.</EdB.PC.Error.NotEnoughColonists1>
-  <EdB.PC.Error.NotEnoughColonists>You must have at least {0} colonists.</EdB.PC.Error.NotEnoughColonists>
-  <EdB.PC.Error.Initialization>Prepare Carefully failed to initialize.
+  <EdB.PC.Error.NotEnoughPoints>你消耗了过多的点数。</EdB.PC.Error.NotEnoughPoints>
+  <EdB.PC.Error.NotEnoughColonists1>你必须至少有一个殖民者。</EdB.PC.Error.NotEnoughColonists1>
+  <EdB.PC.Error.NotEnoughColonists>你必须至少有{0}个殖民者。</EdB.PC.Error.NotEnoughColonists>
+  <EdB.PC.Error.Initialization>精心准备初始化失败。
 
-This is almost always caused by another mod.  Mods do unexpected things, and sometimes Prepare Carefully breaks when loading custom items, factions, etc.  In some cases, Prepare Carefully will need to be fixed to make the mods work together.  In other cases, it's the other mod that needs to be fixed.  Unfortunately, there are a handful of mods that may never be compatible because they make significant changes to the game that just don't fit well with Prepare Carefully.
+一般来说是其他MOD引起的。精心准备有时在加载自定义项目、派系等时会意外崩溃。这样的情况下，精心准备或者其他MOD需要被修复。不幸的是，少数MOD注定与精心准备相冲突，因为它们修改游戏本体过多。
 
-Before reporting an error, please try to figure out which mod is causing the problem.  If you have a lot of mods, you can use a divide and conquer approach to disable mods until you find the one that's triggering the issue.</EdB.PC.Error.Initialization>
+上报错误前，请通过禁用逐个排查引起错误的MOD。</EdB.PC.Error.Initialization>
 
   <EdB.PC.Pawn.AgeWithChronological>{0} ({1})</EdB.PC.Pawn.AgeWithChronological>
   <EdB.PC.Pawn.AgeWithoutChronological>{0}</EdB.PC.Pawn.AgeWithoutChronological>
-  <EdB.PC.Pawn.BodyType.Average>Average</EdB.PC.Pawn.BodyType.Average>
-  <EdB.PC.Pawn.BodyType.Heavyset>Heavyset</EdB.PC.Pawn.BodyType.Heavyset>
-  <EdB.PC.Pawn.BodyType.Hulking>Hulking</EdB.PC.Pawn.BodyType.Hulking>
-  <EdB.PC.Pawn.BodyType.Thin>Thin</EdB.PC.Pawn.BodyType.Thin>
-  <EdB.PC.Pawn.BodyType.Unnamed>Unnamed</EdB.PC.Pawn.BodyType.Unnamed>
+  <EdB.PC.Pawn.BodyType.Average>标准</EdB.PC.Pawn.BodyType.Average>
+  <EdB.PC.Pawn.BodyType.Heavyset>超重</EdB.PC.Pawn.BodyType.Heavyset>
+  <EdB.PC.Pawn.BodyType.Hulking>强壮</EdB.PC.Pawn.BodyType.Hulking>
+  <EdB.PC.Pawn.BodyType.Thin>纤瘦</EdB.PC.Pawn.BodyType.Thin>
+  <EdB.PC.Pawn.BodyType.Unnamed>未命名</EdB.PC.Pawn.BodyType.Unnamed>
   <EdB.PC.Pawn.HiddenPawnDescriptionWithGender>{0}, {1}</EdB.PC.Pawn.HiddenPawnDescriptionWithGender>
   <EdB.PC.Pawn.HiddenPawnDescriptionNoGender>{0}</EdB.PC.Pawn.HiddenPawnDescriptionNoGender>
-  <EdB.PC.Pawn.HiddenPawnNameFull>Hidden {0}</EdB.PC.Pawn.HiddenPawnNameFull>
-  <EdB.PC.Pawn.HiddenPawnNameShort>Hidden {0}</EdB.PC.Pawn.HiddenPawnNameShort>
-  <EdB.PC.Pawn.HiddenPawnProfession>Unknown</EdB.PC.Pawn.HiddenPawnProfession>
-  <EdB.PC.Pawn.PawnDescriptionWithGender>{0}, {1}, age {2}</EdB.PC.Pawn.PawnDescriptionWithGender>
-  <EdB.PC.Pawn.PawnDescriptionNoGender>{0}, age {1}</EdB.PC.Pawn.PawnDescriptionNoGender>
-  <EdB.PC.Pawn.PawnLayer.Accessory>Accessory</EdB.PC.Pawn.PawnLayer.Accessory>
-  <EdB.PC.Pawn.PawnLayer.AlienAddonOption>Option {0}</EdB.PC.Pawn.PawnLayer.AlienAddonOption>
-  <EdB.PC.Pawn.PawnLayer.BodyType>Body Type</EdB.PC.Pawn.PawnLayer.BodyType>
-  <EdB.PC.Pawn.PawnLayer.BottomClothingLayer>Bottom Clothing Layer</EdB.PC.Pawn.PawnLayer.BottomClothingLayer>
-  <EdB.PC.Pawn.PawnLayer.Hair>Hair</EdB.PC.Pawn.PawnLayer.Hair>
-  <EdB.PC.Pawn.PawnLayer.Hat>Hat</EdB.PC.Pawn.PawnLayer.Hat>
-  <EdB.PC.Pawn.PawnLayer.HeadType>Head Type</EdB.PC.Pawn.PawnLayer.HeadType>
-  <EdB.PC.Pawn.PawnLayer.MiddleClothingLayer>Middle Clothing Layer</EdB.PC.Pawn.PawnLayer.MiddleClothingLayer>
-  <EdB.PC.Pawn.PawnLayer.Pants>Pants</EdB.PC.Pawn.PawnLayer.Pants>
-  <EdB.PC.Pawn.PawnLayer.TopClothingLayer>Top Clothing Layer</EdB.PC.Pawn.PawnLayer.TopClothingLayer>
-  <EdB.PC.Pawn.TemporaryPawnNameFull>Temporary {0}</EdB.PC.Pawn.TemporaryPawnNameFull>
-  <EdB.PC.Pawn.TemporaryPawnNameShort>Temp {0}</EdB.PC.Pawn.TemporaryPawnNameShort>
+  <EdB.PC.Pawn.HiddenPawnNameFull>隐藏角色 {0}</EdB.PC.Pawn.HiddenPawnNameFull>
+  <EdB.PC.Pawn.HiddenPawnNameShort>隐藏角色 {0}</EdB.PC.Pawn.HiddenPawnNameShort>
+  <EdB.PC.Pawn.HiddenPawnProfession>未知</EdB.PC.Pawn.HiddenPawnProfession>
+  <EdB.PC.Pawn.PawnDescriptionWithGender>{0}, {1}, 年龄 {2}</EdB.PC.Pawn.PawnDescriptionWithGender>
+  <EdB.PC.Pawn.PawnDescriptionNoGender>{0}, 年龄 {1}</EdB.PC.Pawn.PawnDescriptionNoGender>
+  <EdB.PC.Pawn.PawnLayer.Accessory>配件</EdB.PC.Pawn.PawnLayer.Accessory>
+  <EdB.PC.Pawn.PawnLayer.AlienAddonOption>选项 {0}</EdB.PC.Pawn.PawnLayer.AlienAddonOption>
+  <EdB.PC.Pawn.PawnLayer.BodyType>体型</EdB.PC.Pawn.PawnLayer.BodyType>
+  <EdB.PC.Pawn.PawnLayer.BottomClothingLayer>底部服装层</EdB.PC.Pawn.PawnLayer.BottomClothingLayer>
+  <EdB.PC.Pawn.PawnLayer.Hair>发型</EdB.PC.Pawn.PawnLayer.Hair>
+  <EdB.PC.Pawn.PawnLayer.Hat>帽子</EdB.PC.Pawn.PawnLayer.Hat>
+  <EdB.PC.Pawn.PawnLayer.HeadType>脸型</EdB.PC.Pawn.PawnLayer.HeadType>
+  <EdB.PC.Pawn.PawnLayer.MiddleClothingLayer>中部服装层</EdB.PC.Pawn.PawnLayer.MiddleClothingLayer>
+  <EdB.PC.Pawn.PawnLayer.Pants>裤子</EdB.PC.Pawn.PawnLayer.Pants>
+  <EdB.PC.Pawn.PawnLayer.TopClothingLayer>顶部服装层</EdB.PC.Pawn.PawnLayer.TopClothingLayer>
+  <EdB.PC.Pawn.TemporaryPawnNameFull>临时 {0}</EdB.PC.Pawn.TemporaryPawnNameFull>
+  <EdB.PC.Pawn.TemporaryPawnNameShort>临时 {0}</EdB.PC.Pawn.TemporaryPawnNameShort>
 
-  <EdB.PC.Page.Button.LoadPreset>Load Preset</EdB.PC.Page.Button.LoadPreset>
-  <EdB.PC.Page.Button.PrepareCarefully>Prepare Carefully</EdB.PC.Page.Button.PrepareCarefully>
-  <EdB.PC.Page.Button.SavePreset>Save Preset</EdB.PC.Page.Button.SavePreset>
-  <EdB.PC.Page.ConfirmExit>Are you sure that you do not want to Prepare Carefully?  Any changes that you made will be lost.</EdB.PC.Page.ConfirmExit>
-  <EdB.PC.Page.ConfirmStart>Are you sure that you are finished with your customizations?  Confirm that you're ready to start!</EdB.PC.Page.ConfirmStart>
-  <EdB.PC.Page.Points.CostSummary.Total>Total Spent: {0}</EdB.PC.Page.Points.CostSummary.Total>
-  <EdB.PC.Page.Points.CostSummary.Equipment>Equipment: {0}</EdB.PC.Page.Points.CostSummary.Equipment>
-  <EdB.PC.Page.Points.CostSummary.Apparel>Apparel: {0}</EdB.PC.Page.Points.CostSummary.Apparel>
+  <EdB.PC.Page.Button.LoadPreset>载入预设</EdB.PC.Page.Button.LoadPreset>
+  <EdB.PC.Page.Button.PrepareCarefully>精心准备</EdB.PC.Page.Button.PrepareCarefully>
+  <EdB.PC.Page.Button.SavePreset>保存预设</EdB.PC.Page.Button.SavePreset>
+  <EdB.PC.Page.ConfirmExit>你确定要关闭精心准备吗？所有修改都将丢失。</EdB.PC.Page.ConfirmExit>
+  <EdB.PC.Page.ConfirmStart>你确定完成所有自定义了吗？点击确认开始游戏！</EdB.PC.Page.ConfirmStart>
+  <EdB.PC.Page.Points.CostSummary.Total>总消耗点数: {0}</EdB.PC.Page.Points.CostSummary.Total>
+  <EdB.PC.Page.Points.CostSummary.Equipment>物资: {0}</EdB.PC.Page.Points.CostSummary.Equipment>
+  <EdB.PC.Page.Points.CostSummary.Apparel>服装: {0}</EdB.PC.Page.Points.CostSummary.Apparel>
   <EdB.PC.Page.Points.CostSummary.Colonist>{0}: {1}</EdB.PC.Page.Points.CostSummary.Colonist>
-  <EdB.PC.Page.Points.CostSummary.Implants>Implants: {0}</EdB.PC.Page.Points.CostSummary.Implants>
-  <EdB.PC.Page.Points.NotEnoughPoints>You've spent too many points.</EdB.PC.Page.Points.NotEnoughPoints>
-  <EdB.PC.Page.Points.Remaining>Points Remaining: {0}</EdB.PC.Page.Points.Remaining>
-  <EdB.PC.Page.Points.ScenarioPoints>The starting colonists and resources that were randomly generated for this scenario were worth {0} points.</EdB.PC.Page.Points.ScenarioPoints>
-  <EdB.PC.Page.Points.Spent>Points Spent: {0}</EdB.PC.Page.Points.Spent>
-  <EdB.PC.Page.Points.Unlimited>Unlimited</EdB.PC.Page.Points.Unlimited>
-  <EdB.PC.Page.Points.UsePoints>Use Point Limits</EdB.PC.Page.Points.UsePoints>
+  <EdB.PC.Page.Points.CostSummary.Implants>植入物: {0}</EdB.PC.Page.Points.CostSummary.Implants>
+  <EdB.PC.Page.Points.NotEnoughPoints>你消耗了过多点数。</EdB.PC.Page.Points.NotEnoughPoints>
+  <EdB.PC.Page.Points.Remaining>剩余点数: {0}</EdB.PC.Page.Points.Remaining>
+  <EdB.PC.Page.Points.ScenarioPoints>为该剧本随机生成的殖民者和物资点数为{0}。</EdB.PC.Page.Points.ScenarioPoints>
+  <EdB.PC.Page.Points.Spent>点数消耗: {0}</EdB.PC.Page.Points.Spent>
+  <EdB.PC.Page.Points.Unlimited>无限制</EdB.PC.Page.Points.Unlimited>
+  <EdB.PC.Page.Points.UsePoints>启用点数限制</EdB.PC.Page.Points.UsePoints>
   <EdB.PC.Page.Points.UsePoints.Tip>
-    Enable point limits if you want to maintain a balanced start by paying for skills, additional colonists and equipment from a fixed number of available points.  Your starting points will match the point cost of the characters and resources that were randomly generated for your chosen scenario.
+    如果你想有平衡的开局，就启用点数限制，用固定的可用点数选择技能、殖民者、物资。你的起始点数取决于所选剧本生成的角色和物资点数总量。
 
-    Disable point limits to prepare your starting colonists with no limitations.
+    禁用点数限制来进行无限制的开局准备。
   </EdB.PC.Page.Points.UsePoints.Tip>
-  <EdB.PC.Page.Title>Prepare Carefully</EdB.PC.Page.Title>
-  
-  <EdB.PC.Panel.Age.Biological>Biological Age</EdB.PC.Panel.Age.Biological>
-  <EdB.PC.Panel.Age.Chronological>Chronological Age</EdB.PC.Panel.Age.Chronological>
+  <EdB.PC.Page.Title>精心准备</EdB.PC.Page.Title>
 
-  <EdB.PC.Panel.Appearance.ApparelConflict.Description>Cannot wear the selected {0} with the following apparel:</EdB.PC.Panel.Appearance.ApparelConflict.Description>
+  <EdB.PC.Panel.Age.Biological>生理年龄</EdB.PC.Panel.Age.Biological>
+  <EdB.PC.Panel.Age.Chronological>实际年龄</EdB.PC.Panel.Age.Chronological>
+
+  <EdB.PC.Panel.Appearance.ApparelConflict.Description>你选择的{0}无法与下列服装同时穿上:</EdB.PC.Panel.Appearance.ApparelConflict.Description>
   <EdB.PC.Panel.Appearance.ApparelConflict.LineItem> - {0}</EdB.PC.Panel.Appearance.ApparelConflict.LineItem>
-  <EdB.PC.Panel.Appearance.NoneSelected>None</EdB.PC.Panel.Appearance.NoneSelected>
-  <EdB.PC.Panel.Appearance.WorldPawnAlert>The game will often "redress" world characters, giving them new apparel and equipment before spawning them on the map.  If you select a custom apparel option, those customizations will likely be lost if you eventually encounter the character.
+  <EdB.PC.Panel.Appearance.NoneSelected>无</EdB.PC.Panel.Appearance.NoneSelected>
+  <EdB.PC.Panel.Appearance.WorldPawnAlert>殖民地外的角色在出现在你的殖民地前，经常会更换新的服装与物资。如果你选择自定义服装选项，最终遇到这些角色时自定义设置可能会消失。
   
-This is not the case for faction leaders.  If you make this character a faction leader, your apparel customizations will be preserved.</EdB.PC.Panel.Appearance.WorldPawnAlert>
+派系首领则不一样，如果你把这名角色设为派系首领，你的服装设置将被保留下来。</EdB.PC.Panel.Appearance.WorldPawnAlert>
 
-  <EdB.PC.Panel.AvailableEquipment.Add>Add Equipment</EdB.PC.Panel.AvailableEquipment.Add>
-  <EdB.PC.Panel.AvailableEquipment.Materials.All>All Materials</EdB.PC.Panel.AvailableEquipment.Materials.All>
-  <EdB.PC.Panel.AvailableEquipment.Materials.None>No Materials</EdB.PC.Panel.AvailableEquipment.Materials.None>
+  <EdB.PC.Panel.AvailableEquipment.Add>添加物资</EdB.PC.Panel.AvailableEquipment.Add>
+  <EdB.PC.Panel.AvailableEquipment.Materials.All>所有材料</EdB.PC.Panel.AvailableEquipment.Materials.All>
+  <EdB.PC.Panel.AvailableEquipment.Materials.None>无材料</EdB.PC.Panel.AvailableEquipment.Materials.None>
 
-  <EdB.PC.Panel.ColonyPawnList.Title>Colony</EdB.PC.Panel.ColonyPawnList.Title>
-  
-  <EdB.PC.Panel.Health.Error.MustSelectBodyPart>You must select a location</EdB.PC.Panel.Health.Error.MustSelectBodyPart>
-  <EdB.PC.Panel.Health.Error.MustSelectImplant>You must select an implant procedure</EdB.PC.Panel.Health.Error.MustSelectImplant>
-  <EdB.PC.Panel.Health.Error.MustSelectOption>You must select an option</EdB.PC.Panel.Health.Error.MustSelectOption>
-  <EdB.PC.Panel.Health.Error.MustSelectSeverity>You must select a severity level</EdB.PC.Panel.Health.Error.MustSelectSeverity>
-  <EdB.PC.Panel.Health.HediffTypeInjury>Add an injury or health condition</EdB.PC.Panel.Health.HediffTypeInjury>
-  <EdB.PC.Panel.Health.HediffTypeImplant>Manage implants and bionics</EdB.PC.Panel.Health.HediffTypeImplant>
+  <EdB.PC.Panel.ColonyPawnList.Title>殖民地</EdB.PC.Panel.ColonyPawnList.Title>
+
+  <EdB.PC.Panel.Health.Error.MustSelectBodyPart>你必须选择一个位置</EdB.PC.Panel.Health.Error.MustSelectBodyPart>
+  <EdB.PC.Panel.Health.Error.MustSelectImplant>你必须选择一个植入物</EdB.PC.Panel.Health.Error.MustSelectImplant>
+  <EdB.PC.Panel.Health.Error.MustSelectOption>你必须选择一个选项</EdB.PC.Panel.Health.Error.MustSelectOption>
+  <EdB.PC.Panel.Health.Error.MustSelectSeverity>你必须选择一个严重等级</EdB.PC.Panel.Health.Error.MustSelectSeverity>
+  <EdB.PC.Panel.Health.HediffTypeInjury>添加受伤或健康状况</EdB.PC.Panel.Health.HediffTypeInjury>
+  <EdB.PC.Panel.Health.HediffTypeImplant>管理植入物或仿生体</EdB.PC.Panel.Health.HediffTypeImplant>
   <EdB.PC.Panel.Health.InjuryLabel.Stage>{0}, {1}</EdB.PC.Panel.Health.InjuryLabel.Stage>
   <EdB.PC.Panel.Health.InjuryLabel.Severity>{0}</EdB.PC.Panel.Health.InjuryLabel.Severity>
-  <EdB.PC.Panel.Health.None>No injuries, conditions or implants</EdB.PC.Panel.Health.None>
-  <EdB.PC.Panel.Health.SelectBodyPart>Select a location</EdB.PC.Panel.Health.SelectBodyPart>
-  <EdB.PC.Panel.Health.SelectSeverity>Select a severity level</EdB.PC.Panel.Health.SelectSeverity>
+  <EdB.PC.Panel.Health.None>没有伤痕，健康状态或植入物。</EdB.PC.Panel.Health.None>
+  <EdB.PC.Panel.Health.SelectBodyPart>选择一个位置</EdB.PC.Panel.Health.SelectBodyPart>
+  <EdB.PC.Panel.Health.SelectSeverity>选择一个严重等级</EdB.PC.Panel.Health.SelectSeverity>
   <EdB.PC.Panel.Health.PartWithInjury>{0}: &lt;color={2}&gt;{1}&lt;/color&gt;</EdB.PC.Panel.Health.PartWithInjury>
 
-  <EdB.PC.Panel.Incapable.None>None</EdB.PC.Panel.Incapable.None>
-  <EdB.PC.Panel.Incapable.Warning>None of your pawns are capable of the following work types that are considered to be required by the vanilla game.
+  <EdB.PC.Panel.Incapable.None>无</EdB.PC.Panel.Incapable.None>
+  <EdB.PC.Panel.Incapable.Warning>
+    所有的角色都无法从事以下的工作，这些工作在原版游戏里很有必要。
 
-{0}
+    {0}
 
-You can play the game with your colonists as they are, but you will be asked to confirm before starting the scenario.</EdB.PC.Panel.Incapable.Warning>
+    你可以用这些角色进行游戏，但开始这个存档时可能会看到错误信息。
+  </EdB.PC.Panel.Incapable.Warning>
   <EdB.PC.Panel.Incapable.WarningItem> - {0}</EdB.PC.Panel.Incapable.WarningItem>
 
-  <EdB.PC.Panel.LoadSave.Load>Load Character</EdB.PC.Panel.LoadSave.Load>
-  <EdB.PC.Panel.LoadSave.Save>Save Character</EdB.PC.Panel.LoadSave.Save>
+  <EdB.PC.Panel.LoadSave.Load>载入角色</EdB.PC.Panel.LoadSave.Load>
+  <EdB.PC.Panel.LoadSave.Save>保存角色</EdB.PC.Panel.LoadSave.Save>
 
-  <EdB.PC.Panel.PawnList.Delete.Confirm>Are you sure that you want to remove this character?</EdB.PC.Panel.PawnList.Delete.Confirm>
-  <EdB.PC.Panel.PawnList.Error.MustSelectFaction>Must select a faction</EdB.PC.Panel.PawnList.Error.MustSelectFaction>
-  <EdB.PC.Panel.PawnList.SelectFaction>Select From a Faction Template</EdB.PC.Panel.PawnList.SelectFaction>
-  <EdB.PC.Panel.PawnList.Error.FactionPawnFailed>There was an unexpected error when trying to create the new character</EdB.PC.Panel.PawnList.Error.FactionPawnFailed>
+  <EdB.PC.Panel.PawnList.Delete.Confirm>你确定要删除这个角色？</EdB.PC.Panel.PawnList.Delete.Confirm>
+  <EdB.PC.Panel.PawnList.Error.MustSelectFaction>必须选择一个派系</EdB.PC.Panel.PawnList.Error.MustSelectFaction>
+  <EdB.PC.Panel.PawnList.SelectFaction>从派系板块中选择</EdB.PC.Panel.PawnList.SelectFaction>
+  <EdB.PC.Panel.PawnList.Error.FactionPawnFailed>尝试创建角色时出现了意外的错误。</EdB.PC.Panel.PawnList.Error.FactionPawnFailed>
   <EdB.PC.Panel.PawnList.PawnCount>({0})</EdB.PC.Panel.PawnList.PawnCount>
 
-  <EdB.PC.Panel.RelationshipsOther.Title>Other Relationships</EdB.PC.Panel.RelationshipsOther.Title>
+  <EdB.PC.Panel.RelationshipsOther.Title>其他关系</EdB.PC.Panel.RelationshipsOther.Title>
 
-  <EdB.PC.Panel.RelationshipsParentChild.Title>Parent, Child and Sibling Relationships</EdB.PC.Panel.RelationshipsParentChild.Title>
+  <EdB.PC.Panel.RelationshipsParentChild.Title>父母，子女和兄弟姐妹关系</EdB.PC.Panel.RelationshipsParentChild.Title>
 
-  <EdB.PC.Panel.SelectedEquipment.Remove>Remove Equipment</EdB.PC.Panel.SelectedEquipment.Remove>
+  <EdB.PC.Panel.SelectedEquipment.Remove>移除物资</EdB.PC.Panel.SelectedEquipment.Remove>
 
-  <EdB.PC.Panel.Skills.ResetTip>Reset all skills and passions to their original values</EdB.PC.Panel.Skills.ResetTip>
-  <EdB.PC.Panel.Skills.ClearTip>Clear all skills and passions by setting them to their lowest possible levels</EdB.PC.Panel.Skills.ClearTip>
-  
-  <EdB.PC.Panel.Traits.None>No traits</EdB.PC.Panel.Traits.None>
-  <EdB.PC.Panel.Traits.Warning.TooManyTraits>Normally, three traits is the maximum allowed per character.  You can add more here, but those traits may not be displayed properly in all of the character information screens in the game.</EdB.PC.Panel.Traits.Warning.TooManyTraits>
+  <EdB.PC.Panel.Skills.ResetTip>将所有技能和兴趣重置为初始值。</EdB.PC.Panel.Skills.ResetTip>
+  <EdB.PC.Panel.Skills.ClearTip>将所有技能和兴趣设置为最低等级。</EdB.PC.Panel.Skills.ClearTip>
+
+  <EdB.PC.Panel.Traits.None>无特性</EdB.PC.Panel.Traits.None>
+  <EdB.PC.Panel.Traits.Warning.TooManyTraits>通常来说，每个人物最多允许有三个特性。你可以添加更多特性，但游戏中的某些窗口不会正常显示。</EdB.PC.Panel.Traits.Warning.TooManyTraits>
   <EdB.PC.Panel.Traits.Tip.Conflict>{0}\n\nConflicts with:\n{1}</EdB.PC.Panel.Traits.Tip.Conflict>
   <EdB.PC.Panel.Traits.Tip.Conflict.List.1> - {0}</EdB.PC.Panel.Traits.Tip.Conflict.List.1>
   <EdB.PC.Panel.Traits.Tip.Conflict.List.2> - {0}\n - {1}</EdB.PC.Panel.Traits.Tip.Conflict.List.2>
   <EdB.PC.Panel.Traits.Tip.Conflict.List.Many> - {0}\n{1}</EdB.PC.Panel.Traits.Tip.Conflict.List.Many>
   <EdB.PC.Panel.Traits.Tip.Conflict.List.Last> - {0}\n - {1}</EdB.PC.Panel.Traits.Tip.Conflict.List.Last>
-  
-  <EdB.PC.TabView.Animals.Title>Animals</EdB.PC.TabView.Animals.Title>
-  <EdB.PC.TabView.Equipment.Title>Equipment</EdB.PC.TabView.Equipment.Title>
-  <EdB.PC.TabView.Pawns.Title>Characters</EdB.PC.TabView.Pawns.Title>
-  <EdB.PC.TabView.Relationships.Title>Relationships</EdB.PC.TabView.Relationships.Title>
 
-  <EdB.PC.Panel.WorldPawnList.Title>World</EdB.PC.Panel.WorldPawnList.Title>
-  
+  <EdB.PC.TabView.Animals.Title>动物</EdB.PC.TabView.Animals.Title>
+  <EdB.PC.TabView.Equipment.Title>物资</EdB.PC.TabView.Equipment.Title>
+  <EdB.PC.TabView.Pawns.Title>角色</EdB.PC.TabView.Pawns.Title>
+  <EdB.PC.TabView.Relationships.Title>关系</EdB.PC.TabView.Relationships.Title>
+
+  <EdB.PC.Panel.WorldPawnList.Title>世界</EdB.PC.Panel.WorldPawnList.Title>
+
 
 </LanguageData>
