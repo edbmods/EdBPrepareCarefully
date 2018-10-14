@@ -29,10 +29,10 @@ namespace EdB.PrepareCarefully {
                     return label;
                 }
                 if (Gender == Gender.None) {
-                    return "EdB.PC.Animals.LabelWithoutGender".Translate(new object[] { ThingDef.LabelCap });
+                    return "EdB.PC.Animals.LabelWithoutGender".Translate(ThingDef.LabelCap);
                 }
                 else {
-                    return "EdB.PC.Animals.LabelWithGender".Translate(new object[] { ThingDef.LabelCap, Gender.GetLabel() });
+                    return "EdB.PC.Animals.LabelWithGender".Translate(ThingDef.LabelCap, Gender.GetLabel());
                 }
             }
         }

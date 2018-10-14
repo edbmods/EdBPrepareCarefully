@@ -75,7 +75,7 @@ namespace EdB.PrepareCarefully {
                 StringBuilder label = new StringBuilder();
                 List<string> entries = new List<string>();
                 if (this.KindDef.RaceProps.hasGenders) {
-                    label.Append("PawnMainDescGendered".Translate(new object[] { this.gender.GetLabel(), this.KindDef.label }).CapitalizeFirst());
+                    label.Append("PawnMainDescGendered".Translate(this.gender.GetLabel(), this.KindDef.label).CapitalizeFirst());
                 }
                 else {
                     label.Append(this.KindDef.label.CapitalizeFirst());

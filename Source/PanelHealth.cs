@@ -121,9 +121,7 @@ namespace EdB.PrepareCarefully {
                             return stage.label.CapitalizeFirst();
                         }
                         else {
-                            return "EdB.PC.Dialog.Severity.Stage.Label.".Translate(new object[] {
-                                        stage.label.CapitalizeFirst(), variant
-                                    });
+                            return "EdB.PC.Dialog.Severity.Stage.Label.".Translate(stage.label.CapitalizeFirst(), variant.Value);
                         }
                     }
                     else {
@@ -534,7 +532,7 @@ namespace EdB.PrepareCarefully {
             field.Rect = fieldRect;
             string label;
             if (customPart.BodyPartRecord != null) {
-                label = "EdB.PC.Panel.Health.PartWithInjury".Translate(new object[] { customPart.PartName, customPart.ChangeName, "#" + ColorUtility.ToHtmlStringRGBA(customPart.LabelColor) });
+                label = "EdB.PC.Panel.Health.PartWithInjury".Translate(customPart.PartName, customPart.ChangeName, "#" + ColorUtility.ToHtmlStringRGBA(customPart.LabelColor));
                 field.Color = Color.white;
             }
             else {

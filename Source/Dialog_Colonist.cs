@@ -89,9 +89,7 @@ namespace EdB.PrepareCarefully {
                 Rect rect4 = new Rect(num4 + vector2.x + 5, 0, vector2.y, vector2.y);
                 if (Widgets.ButtonImage(rect4, Textures.TextureDeleteX)) {
                     FileInfo localFile = current;
-                    Find.UIRoot.windows.Add(new Dialog_Confirm("EdB.PC.Dialog.PawnPreset.ConfirmDelete".Translate(new object[] {
-                        localFile.Name
-                    }), delegate {
+                    Find.UIRoot.windows.Add(new Dialog_Confirm("EdB.PC.Dialog.PawnPreset.ConfirmDelete".Translate(localFile.Name), delegate {
                         localFile.Delete();
                     }, true, null, true));
                 }
