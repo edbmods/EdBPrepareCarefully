@@ -258,7 +258,7 @@ namespace EdB.PrepareCarefully {
             }
             CustomPawn pawn = ColonistLoader.LoadFromFile(PrepareCarefully.Instance, name);
             if (pawn != null) {
-                state.AddMessage("EdB.PC.Dialog.PawnPreset.Loaded".Translate(new object[] { name }));
+                state.AddMessage("EdB.PC.Dialog.PawnPreset.Loaded".Translate(name));
             }
             bool colonyPawn = state.PawnListMode == PawnListMode.ColonyPawnsMaximized;
             pawn.Type = colonyPawn ? CustomPawnType.Colonist : CustomPawnType.World;
@@ -272,9 +272,7 @@ namespace EdB.PrepareCarefully {
                 return;
             }
             ColonistSaver.SaveToFile(pawn, filename);
-            state.AddMessage("SavedAs".Translate(new object[] {
-                filename
-            }));
+            state.AddMessage("SavedAs".Translate(filename));
         }
         public void AddFactionPawn(PawnKindDef kindDef, bool startingPawn) {
             FactionDef factionDef = kindDef.defaultFactionType;

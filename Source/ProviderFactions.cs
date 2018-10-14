@@ -159,15 +159,15 @@ namespace EdB.PrepareCarefully {
                     faction.Name = faction.Name.CapitalizeFirst();
                     if (faction.Faction.Name.ToLower() == faction.Def.label.ToLower()) {
                         if (faction.SimilarFactionCount > 1) {
-                            faction.Name = "EdB.PC.Dialog.Faction.NumberedFaction".Translate(new object[] { faction.Def.LabelCap, (faction.Index.Value + 1) });
+                            faction.Name = "EdB.PC.Dialog.Faction.NumberedFaction".Translate(faction.Def.LabelCap, (faction.Index.Value + 1));
                         }
                     }
                     if (faction.Leader) {
-                        faction.Name = "EdB.PC.Dialog.Faction.LeaderFaction".Translate(new object[] { faction.Name });
+                        faction.Name = "EdB.PC.Dialog.Faction.LeaderFaction".Translate(faction.Name);
                     }
                 }
                 else if (faction.Def != null) {
-                    faction.Name = "EdB.PC.Dialog.Faction.RandomFaction".Translate(new object[] { faction.Def.LabelCap });
+                    faction.Name = "EdB.PC.Dialog.Faction.RandomFaction".Translate(faction.Def.LabelCap);
                 }
                 else {
                     faction.Name = "EdB.PC.Dialog.Faction.Random".Translate();

@@ -169,9 +169,7 @@ namespace EdB.PrepareCarefully {
                     }
                     stringBuilder.Append("  - " + current.CapitalizeFirst());
                 }
-                string text = "ConfirmRequiredWorkTypeDisabledForEveryone".Translate(new object[] {
-                    stringBuilder.ToString ()
-                });
+                string text = "ConfirmRequiredWorkTypeDisabledForEveryone".Translate(stringBuilder.ToString ());
                 Find.WindowStack.Add(Dialog_MessageBox.CreateConfirmation(text, delegate {
                     GameStarted();
                 }, false, null));
@@ -216,25 +214,25 @@ namespace EdB.PrepareCarefully {
                 else {
                     GUI.color = Style.ColorText;
                 }
-                label = "EdB.PC.Page.Points.Remaining".Translate(new string[] { "" + points });
+                label = "EdB.PC.Page.Points.Remaining".Translate(points);
             }
             else {
                 double points = cost.total;
                 GUI.color = Style.ColorText;
-                label = "EdB.PC.Page.Points.Spent".Translate(new string[] { "" + points });
+                label = "EdB.PC.Page.Points.Spent".Translate(points);
             }
             Widgets.Label(rect, label);
 
             string tooltipText = "";
-            tooltipText += "EdB.PC.Page.Points.ScenarioPoints".Translate(new object[] { PrepareCarefully.Instance.StartingPoints });
+            tooltipText += "EdB.PC.Page.Points.ScenarioPoints".Translate(PrepareCarefully.Instance.StartingPoints);
             tooltipText += "\n\n";
             foreach (var c in cost.colonistDetails) {
-                tooltipText += "EdB.PC.Page.Points.CostSummary.Colonist".Translate(new object[] { c.name, (c.total - c.apparel - c.bionics) }) + "\n";
+                tooltipText += "EdB.PC.Page.Points.CostSummary.Colonist".Translate(c.name, (c.total - c.apparel - c.bionics)) + "\n";
             }
-            tooltipText += "\n" + "EdB.PC.Page.Points.CostSummary.Apparel".Translate(new object[] { cost.colonistApparel }) + "\n"
-                + "EdB.PC.Page.Points.CostSummary.Implants".Translate(new object[] { cost.colonistBionics }) + "\n"
-                + "EdB.PC.Page.Points.CostSummary.Equipment".Translate(new object[] { cost.equipment }) + "\n\n"
-                + "EdB.PC.Page.Points.CostSummary.Total".Translate(new object[] { cost.total });
+            tooltipText += "\n" + "EdB.PC.Page.Points.CostSummary.Apparel".Translate(cost.colonistApparel) + "\n"
+                + "EdB.PC.Page.Points.CostSummary.Implants".Translate(cost.colonistBionics) + "\n"
+                + "EdB.PC.Page.Points.CostSummary.Equipment".Translate(cost.equipment) + "\n\n"
+                + "EdB.PC.Page.Points.CostSummary.Total".Translate(cost.total);
             TipSignal tip = new TipSignal(() => tooltipText, tooltipText.GetHashCode());
             TooltipHandler.TipRegion(rect, tip);
 

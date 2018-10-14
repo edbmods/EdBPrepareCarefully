@@ -290,19 +290,13 @@ namespace EdB.PrepareCarefully {
                 stringBuilder.Append("Passion".Translate() + ": ");
                 switch (sk.passion) {
                     case Passion.None:
-                        stringBuilder.Append("PassionNone".Translate(new object[] {
-                                    "0.3"
-                                }));
+                        stringBuilder.Append("PassionNone".Translate("0.3"));
                         break;
                     case Passion.Minor:
-                        stringBuilder.Append("PassionMinor".Translate(new object[] {
-                                    "1.0"
-                                }));
+                        stringBuilder.Append("PassionMinor".Translate("1.0"));
                         break;
                     case Passion.Major:
-                        stringBuilder.Append("PassionMajor".Translate(new object[] {
-                                    "1.5"
-                                }));
+                        stringBuilder.Append("PassionMajor".Translate("1.5"));
                         break;
                 }
             }

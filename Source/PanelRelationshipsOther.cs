@@ -217,10 +217,10 @@ namespace EdB.PrepareCarefully {
         protected string GetTooltipText(CustomPawn pawn) {
             bool hidden = pawn.Type == CustomPawnType.Hidden || pawn.Type == CustomPawnType.Temporary;
             if (!hidden) {
-                string age = (pawn.ChronologicalAge == pawn.BiologicalAge) ? "EdB.PC.Pawn.AgeWithoutChronological".Translate(new object[] { pawn.BiologicalAge })
-                    : "EdB.PC.Pawn.AgeWithChronological".Translate(new object[] { pawn.BiologicalAge, pawn.ChronologicalAge });
-                string description = (pawn.Gender != Gender.None) ? "EdB.PC.Pawn.PawnDescriptionWithGender".Translate(new object[] { pawn.ProfessionLabel, pawn.Gender.GetLabel(), age })
-                    : "EdB.PC.AddParentChild.PawnDescriptionWithNoGender".Translate(new object[] { pawn.ProfessionLabel, age });
+                string age = (pawn.ChronologicalAge == pawn.BiologicalAge) ? "EdB.PC.Pawn.AgeWithoutChronological".Translate(pawn.BiologicalAge)
+                    : "EdB.PC.Pawn.AgeWithChronological".Translate(pawn.BiologicalAge, pawn.ChronologicalAge);
+                string description = (pawn.Gender != Gender.None) ? "EdB.PC.Pawn.PawnDescriptionWithGender".Translate(pawn.ProfessionLabel, pawn.Gender.GetLabel(), age)
+                    : "EdB.PC.AddParentChild.PawnDescriptionWithNoGender".Translate(pawn.ProfessionLabel, age);
                 return pawn.Pawn.Name.ToStringFull + "\n" + description;
             }
             else {

@@ -229,9 +229,7 @@ namespace EdB.PrepareCarefully {
                 HediffCompProperties_GetsPermanent props = p as HediffCompProperties_GetsPermanent;
                 if (props != null) {
                     if (duplicateLabels.Contains(option.Label)) {
-                        string label = "EdB.PC.Dialog.Injury.OldInjury.Label".Translate(new string[] {
-                                    props.permanentLabel.CapitalizeFirst(), option.HediffDef.LabelCap
-                                });
+                        string label = "EdB.PC.Dialog.Injury.OldInjury.Label".Translate(props.permanentLabel.CapitalizeFirst(), option.HediffDef.LabelCap);
                         option.Label = label;
                     }
                 }

@@ -121,14 +121,10 @@ namespace EdB.PrepareCarefully {
 
         protected string ComputeStageLabel() {
             if (Option.HasStageLabel) {
-                return "EdB.PC.Panel.Health.InjuryLabel.Stage".Translate(new object[] {
-                    this.option.Label, CurStage.label
-                });
+                return "EdB.PC.Panel.Health.InjuryLabel.Stage".Translate(this.option.Label, CurStage.label);
             }
             else if (Option.IsOldInjury) {
-                return "EdB.PC.Panel.Health.InjuryLabel.Severity".Translate(new object[] {
-                    this.option.Label, (int)severity
-                });
+                return "EdB.PC.Panel.Health.InjuryLabel.Severity".Translate(this.option.Label, (int)severity);
             }
             else {
                 return null;

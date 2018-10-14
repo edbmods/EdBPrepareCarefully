@@ -322,9 +322,9 @@ namespace EdB.PrepareCarefully {
             }
             string listItems = "";
             foreach (var item in blockedSelections) {
-                listItems += "\n" + "EdB.PC.Dialog.Implant.Alert.Item".Translate(new object[] { item.recipe.LabelCap, item.BodyPartRecord.def.label });
+                listItems += "\n" + "EdB.PC.Dialog.Implant.Alert.Item".Translate(item.recipe.LabelCap, item.BodyPartRecord.def.label);
             }
-            cachedBlockedSelectionAlert = "EdB.PC.Dialog.Implant.Alert".Translate(new object[] { listItems });
+            cachedBlockedSelectionAlert = "EdB.PC.Dialog.Implant.Alert".Translate(listItems);
         }
 
         protected void MarkDisabledOptionsAsDirty() {
@@ -519,7 +519,7 @@ namespace EdB.PrepareCarefully {
                             ClickRecipeAction(recipe);
                         }
                         if (recipe.BlockingImplant != null) {
-                            TooltipHandler.TipRegion(labelRect, "EdB.PC.Dialog.Implant.Conflict".Translate(new object[] { recipe.BlockingImplant.recipe.LabelCap, recipe.BlockingImplant.BodyPartRecord.Label }));
+                            TooltipHandler.TipRegion(labelRect, "EdB.PC.Dialog.Implant.Conflict".Translate(recipe.BlockingImplant.recipe.LabelCap, recipe.BlockingImplant.BodyPartRecord.Label));
                         }
                     }
                     if (recipe.Selected && recipe.RequiresPartSelection) {
@@ -556,7 +556,7 @@ namespace EdB.PrepareCarefully {
                                     ClickPartAction(recipe, part);
                                 }
                                 if (part.BlockingImplant != null) {
-                                    TooltipHandler.TipRegion(labelRect, "EdB.PC.Dialog.Implant.Conflict".Translate(new object[] { part.BlockingImplant.recipe.LabelCap, part.BlockingImplant.BodyPartRecord.Label }));
+                                    TooltipHandler.TipRegion(labelRect, "EdB.PC.Dialog.Implant.Conflict".Translate(part.BlockingImplant.recipe.LabelCap, part.BlockingImplant.BodyPartRecord.Label));
                                 }
                             }
                             cursor += labelRect.height;
