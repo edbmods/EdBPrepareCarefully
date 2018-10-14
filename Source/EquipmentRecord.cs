@@ -61,7 +61,7 @@ namespace EdB.PrepareCarefully {
             get {
                 Pawn pawn = thing as Pawn;
                 if (pawn.def.race.hasGenders) {
-                    return "PawnMainDescGendered".Translate(pawn.gender.GetLabel(), pawn.kindDef.label).CapitalizeFirst();
+                    return "EdB.PC.Equipment.AnimalLabel".Translate(pawn.gender.GetLabel(), pawn.kindDef.label).CapitalizeFirst();
                 }
                 else {
                     return pawn.LabelCap;

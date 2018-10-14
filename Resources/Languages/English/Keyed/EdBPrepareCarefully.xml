@@ -1,5 +1,8 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
 <!-- CHANGE NOTES -->
+<!-- v1.0.10 -->
+<!-- NEW: EdB.PC.Equipment.AnimalLabel -->
+
 <!-- v0.19.9 -->
 <!-- NEW: EdB.PC.Dialog.Backstory.Filter.MatchesFaction -->
 
@@ -168,6 +171,7 @@
 
 "{0}"</EdB.PC.Dialog.UnrecoverableError.Message>
 
+  <EdB.PC.Equipment.AnimalLabel>{0} {1}</EdB.PC.Equipment.AnimalLabel>
   <EdB.PC.Equipment.Type.Animals>Animals</EdB.PC.Equipment.Type.Animals>
   <EdB.PC.Equipment.Type.Apparel>Apparel</EdB.PC.Equipment.Type.Apparel>
   <EdB.PC.Equipment.Type.Buildings>Furniture</EdB.PC.Equipment.Type.Buildings>

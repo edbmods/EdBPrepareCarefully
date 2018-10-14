@@ -284,7 +284,7 @@ namespace EdB.PrepareCarefully {
                     "EdB.PC.Pawn.AgeWithChronological".Translate(pawn.BiologicalAge, pawn.ChronologicalAge) :
                     "EdB.PC.Pawn.AgeWithoutChronological".Translate(pawn.BiologicalAge);
                 description = pawn.Gender != Gender.None ?
-                    "EdB.PC.Pawn.PawnDescriptionWithGender".Translate(pawn.ProfessionLabel, pawn.Gender.GetLabel()) :
+                    "EdB.PC.Pawn.PawnDescriptionWithGender".Translate(pawn.ProfessionLabel, pawn.Gender.GetLabel(), age) :
                     "EdB.PC.Pawn.PawnDescriptionNoGender".Translate(pawn.ProfessionLabel, age);
             }
             else {

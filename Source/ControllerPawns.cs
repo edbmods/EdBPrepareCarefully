@@ -17,11 +17,8 @@ namespace EdB.PrepareCarefully {
 
         private State state;
         private Randomizer randomizer = new Randomizer();
-        private Regex validNameRegex;
         public ControllerPawns(State state) {
             this.state = state;
-            validNameRegex = typeof(CharacterCardUtility).GetField("validNameRegex",
-                BindingFlags.Static | BindingFlags.NonPublic).GetValue(null) as Regex;
         }
 
         public void CheckPawnCapabilities() {
@@ -65,17 +62,17 @@ namespace EdB.PrepareCarefully {
 
         // Name-related actions.
         public void UpdateFirstName(string name) {
-            if (name.Length <= 12 && validNameRegex.IsMatch(name)) {
+            if (name.Length <= 12 && CharacterCardUtility.ValidNameRegex.IsMatch(name)) {
                 state.CurrentPawn.FirstName = name;
             }
         }
         public void UpdateNickName(string name) {
-            if (name.Length <= 9 && validNameRegex.IsMatch(name)) {
+            if (name.Length <= 9 && CharacterCardUtility.ValidNameRegex.IsMatch(name)) {
                 state.CurrentPawn.NickName = name;
             }
         }
         public void UpdateLastName(string name) {
-            if (name.Length <= 12 && validNameRegex.IsMatch(name)) {
+            if (name.Length <= 12 && CharacterCardUtility.ValidNameRegex.IsMatch(name)) {
                 state.CurrentPawn.LastName = name;
             }
         }
