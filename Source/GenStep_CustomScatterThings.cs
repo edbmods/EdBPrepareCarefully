@@ -87,9 +87,11 @@ namespace EdB.PrepareCarefully {
                             int num4 = (int)((float)(list[num2] - list[num3]) * Rand.Value);
                             List<int> list2;
                             int index;
-                            (list2 = list)[index = num2] = list2[index] - num4;
-                            int index2;
-                            (list2 = list)[index2 = num3] = list2[index2] + num4;
+                            list2 = list;
+                            index = num2;
+                            list2[index] = list2[index] - num4;
+                            int index2 = num3;
+                            list2[index2] = list2[index2] + num4;
                         }
                     }
                 }
