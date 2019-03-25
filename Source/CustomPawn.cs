@@ -646,10 +646,20 @@ namespace EdB.PrepareCarefully {
         public string FullName {
             get {
                 if (Type == CustomPawnType.Hidden) {
-                    return "EdB.PC.Pawn.HiddenPawnNameFull".Translate(Index.Value);
+                    if (Index.HasValue) {
+                        return "EdB.PC.Pawn.HiddenPawnNameFull".Translate(Index.Value);
+                    }
+                    else {
+                        return "EdB.PC.Pawn.HiddenPawnNameFull".Translate();
+                    }
                 }
                 else if (Type == CustomPawnType.Temporary) {
-                    return "EdB.PC.Pawn.TemporaryPawnNameFull".Translate(Index.Value);
+                    if (Index.HasValue) {
+                        return "EdB.PC.Pawn.TemporaryPawnNameFull".Translate(Index.Value);
+                    }
+                    else {
+                        return "EdB.PC.Pawn.TemporaryPawnNameFull".Translate();
+                    }
                 }
                 else {
                     return pawn.Name.ToStringFull;
