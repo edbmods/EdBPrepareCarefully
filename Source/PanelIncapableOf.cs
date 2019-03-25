@@ -29,11 +29,11 @@ namespace EdB.PrepareCarefully {
                     cachedMissingWorkTypes = state.MissingWorkTypes;
                     missingWorkTypeString = "";
                     foreach (var type in state.MissingWorkTypes) {
-                        missingWorkTypeString += "EdB.PC.Panel.Incapable.WarningItem".Translate(new object[] { type }) + "\n";
+                        missingWorkTypeString += "EdB.PC.Panel.Incapable.WarningItem".Translate(type ) + "\n";
                     }
                     missingWorkTypeString = missingWorkTypeString.TrimEndNewlines();
                 }
-                Warning = "EdB.PC.Panel.Incapable.Warning".Translate(new object[] { missingWorkTypeString });
+                Warning = "EdB.PC.Panel.Incapable.Warning".Translate(missingWorkTypeString);
             }
             else {
                 Warning = null;

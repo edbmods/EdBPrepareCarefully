@@ -249,16 +249,16 @@ namespace EdB.PrepareCarefully {
                 else {
                     conflictingNames = "";
                     if (conflictingTraits.Count == 1) {
-                        conflictingNames = "EdB.PC.Panel.Traits.Tip.Conflict.List.1".Translate(new object[] { conflictingTraits[0].LabelCap });
+                        conflictingNames = "EdB.PC.Panel.Traits.Tip.Conflict.List.1".Translate(conflictingTraits[0].LabelCap);
                     }
                     else if (conflictingTraits.Count == 2) {
-                        conflictingNames = "EdB.PC.Panel.Traits.Tip.Conflict.List.2".Translate(new object[] { conflictingTraits[0].LabelCap, conflictingTraits[1].LabelCap });
+                        conflictingNames = "EdB.PC.Panel.Traits.Tip.Conflict.List.2".Translate(conflictingTraits[0].LabelCap, conflictingTraits[1].LabelCap);
                     }
                     else {
                         int c = conflictingTraits.Count;
-                        conflictingNames = "EdB.PC.Panel.Traits.Tip.Conflict.List.Last".Translate(new object[] { conflictingTraits[c - 2].LabelCap, conflictingTraits[c - 1].LabelCap });
+                        conflictingNames = "EdB.PC.Panel.Traits.Tip.Conflict.List.Last".Translate(conflictingTraits[c - 2].LabelCap, conflictingTraits[c - 1].LabelCap);
                         for (int i = c - 3; i >= 0; i--) {
-                            conflictingNames = "EdB.PC.Panel.Traits.Tip.Conflict.List.Many".Translate(new object[] { conflictingTraits[i].LabelCap, conflictingNames });
+                            conflictingNames = "EdB.PC.Panel.Traits.Tip.Conflict.List.Many".Translate(conflictingTraits[i].LabelCap, conflictingNames);
                         }
                     }
                     conflictingTraitList.Add(trait, conflictingNames);
@@ -268,7 +268,7 @@ namespace EdB.PrepareCarefully {
                 return baseTip;
             }
             else {
-                return "EdB.PC.Panel.Traits.Tip.Conflict".Translate(new object[] { baseTip, conflictingNames });
+                return "EdB.PC.Panel.Traits.Tip.Conflict".Translate(baseTip, conflictingNames);
             }
         }
 

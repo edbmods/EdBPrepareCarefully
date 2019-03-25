@@ -172,17 +172,17 @@ namespace EdB.PrepareCarefully {
                     string description;
                     if (!pawn.Hidden) {
                         string age = pawn.BiologicalAge != pawn.ChronologicalAge ?
-                            "EdB.PC.Pawn.AgeWithChronological".Translate(new object[] { pawn.BiologicalAge, pawn.ChronologicalAge }) :
-                            "EdB.PC.Pawn.AgeWithoutChronological".Translate(new object[] { pawn.BiologicalAge });
+                            "EdB.PC.Pawn.AgeWithChronological".Translate(pawn.BiologicalAge, pawn.ChronologicalAge) :
+                            "EdB.PC.Pawn.AgeWithoutChronological".Translate(pawn.BiologicalAge);
                         description = pawn.Gender != Gender.None ?
-                            "EdB.PC.Pawn.PawnDescriptionWithGender".Translate(new object[] { pawn.ProfessionLabelShort, pawn.Gender.GetLabel(), age }) :
-                            "EdB.PC.Pawn.PawnDescriptionNoGender".Translate(new object[] { pawn.ProfessionLabelShort, age });
+                            "EdB.PC.Pawn.PawnDescriptionWithGender".Translate(pawn.ProfessionLabelShort, pawn.Gender.GetLabel(), age) :
+                            "EdB.PC.Pawn.PawnDescriptionNoGender".Translate(pawn.ProfessionLabelShort, age);
                     }
                     else {
                         string profession = "EdB.PC.Pawn.HiddenPawnProfession".Translate();
                         description = pawn.Gender != Gender.None ?
-                            "EdB.PC.Pawn.HiddenPawnDescriptionWithGender".Translate(new object[] { profession, pawn.Gender.GetLabel() }) :
-                            "EdB.PC.Pawn.HiddenPawnDescriptionNoGender".Translate(new object[] { profession });
+                            "EdB.PC.Pawn.HiddenPawnDescriptionWithGender".Translate(profession, pawn.Gender.GetLabel()) :
+                            "EdB.PC.Pawn.HiddenPawnDescriptionNoGender".Translate(profession);
                     }
                     Text.Font = GameFont.Tiny;
                     Widgets.Label(new Rect(rect.x, rect.y + nameSize.y + descriptionOffset, rect.width, nameSize.y), description);

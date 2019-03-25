@@ -48,13 +48,11 @@ namespace EdB.PrepareCarefully {
             int pawnCount = PrepareCarefully.Instance.Pawns.Count;
             if (pawnCount < config.minColonists) {
                 if (config.minColonists == 1) {
-                    Messages.Message("EdB.PC.Error.NotEnoughColonists1".Translate(
-                        new object[] { config.minColonists }), MessageTypeDefOf.RejectInput, false);
+                    Messages.Message("EdB.PC.Error.NotEnoughColonists1".Translate(config.minColonists), MessageTypeDefOf.RejectInput, false);
                     return false;
                 }
                 else {
-                    Messages.Message("EdB.PC.Error.NotEnoughColonists".Translate(
-                        new object[] { config.minColonists }), MessageTypeDefOf.RejectInput, false);
+                    Messages.Message("EdB.PC.Error.NotEnoughColonists".Translate(config.minColonists), MessageTypeDefOf.RejectInput, false);
                     return false;
                 }
             }
@@ -88,9 +86,7 @@ namespace EdB.PrepareCarefully {
             }
             bool result = PresetLoader.LoadFromFile(PrepareCarefully.Instance, name);
             if (result) {
-                state.AddMessage("EdB.PC.Dialog.Preset.Loaded".Translate(new object[] {
-                    name
-                }));
+                state.AddMessage("EdB.PC.Dialog.Preset.Loaded".Translate(name));
                 state.CurrentColonyPawn = state.ColonyPawns.FirstOrDefault();
                 state.CurrentWorldPawn = state.WorldPawns.FirstOrDefault();
             }
@@ -104,9 +100,7 @@ namespace EdB.PrepareCarefully {
                 return;
             }
             PresetSaver.SaveToFile(PrepareCarefully.Instance, PrepareCarefully.Instance.Filename);
-            state.AddMessage("SavedAs".Translate(new object[] {
-                PrepareCarefully.Instance.Filename
-            }));
+            state.AddMessage("SavedAs".Translate(PrepareCarefully.Instance.Filename));
         }
         
         private Pawn ConvertPawn(CustomPawn customPawn) {

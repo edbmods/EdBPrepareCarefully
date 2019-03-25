@@ -138,7 +138,7 @@ namespace EdB.PrepareCarefully {
             List<PawnLayerOption> result = new List<PawnLayerOption>();
             for (int i=0; i<addon.OptionCount; i++) {
                 PawnLayerOptionAlienAddon option = new PawnLayerOptionAlienAddon();
-                option.Label = "EdB.PC.Pawn.PawnLayer.AlienAddonOption".Translate(new object[] { i + 1 });
+                option.Label = "EdB.PC.Pawn.PawnLayer.AlienAddonOption".Translate(i + 1);
                 option.Index = i;
                 result.Add(option);
             }

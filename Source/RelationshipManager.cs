@@ -536,8 +536,7 @@ namespace EdB.PrepareCarefully {
         public CustomPawn ReplaceNewTemporaryCharacter(int index) {
             var pawn = temporaryPawns[index];
             temporaryPawns[index] = CreateNewTemporaryPawn(pawn.Gender);
-            CustomPawn result = PrepareCarefully.Instance.RelationshipManager.AddTemporaryParentChildPawn(pawn);
-            result.Index = PrepareCarefully.Instance.RelationshipManager.NextTemporaryParentChildIndex;
+            CustomPawn result = AddTemporaryParentChildPawn(pawn);
             return result;
         }
 
@@ -555,6 +554,7 @@ namespace EdB.PrepareCarefully {
             }
             pawn.Pawn.Kill(null, null);
             pawn.Type = CustomPawnType.Temporary;
+            pawn.Index = NextTemporaryParentChildIndex;
             return pawn;
         }
     }

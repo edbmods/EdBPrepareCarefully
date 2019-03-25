@@ -19,12 +19,12 @@ namespace EdB.PrepareCarefully {
             this.BonusOrPenalty = bonusOrPenalty;
             this.SkillDef = skillDef;
             if (this.BonusOrPenalty < 0) {
-                this.LabelShort = "EdB.PC.Dialog.Backstory.Filter.SkillPenalty".Translate(new object[] { this.SkillDef.LabelCap, bonusOrPenalty });
-                this.LabelFull = "EdB.PC.Dialog.Backstory.Filter.SkillPenaltyFull".Translate(new object[] { this.SkillDef.LabelCap, bonusOrPenalty });
+                this.LabelShort = "EdB.PC.Dialog.Backstory.Filter.SkillPenalty".Translate(this.SkillDef.LabelCap, bonusOrPenalty);
+                this.LabelFull = "EdB.PC.Dialog.Backstory.Filter.SkillPenaltyFull".Translate(this.SkillDef.LabelCap, bonusOrPenalty);
             }
             else {
-                this.LabelShort = "EdB.PC.Dialog.Backstory.Filter.SkillBonus".Translate(new object[] { this.SkillDef.LabelCap, bonusOrPenalty });
-                this.LabelFull = "EdB.PC.Dialog.Backstory.Filter.SkillBonusFull".Translate(new object[] { this.SkillDef.LabelCap, bonusOrPenalty });
+                this.LabelShort = "EdB.PC.Dialog.Backstory.Filter.SkillBonus".Translate(this.SkillDef.LabelCap, bonusOrPenalty);
+                this.LabelFull = "EdB.PC.Dialog.Backstory.Filter.SkillBonusFull".Translate(this.SkillDef.LabelCap, bonusOrPenalty);
             }
             this.FilterFunction = (Backstory backstory) => {
                 if (this.SkillDef != null && backstory.skillGainsResolved.ContainsKey(this.SkillDef)) {

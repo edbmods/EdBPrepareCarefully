@@ -154,7 +154,7 @@ namespace EdB.PrepareCarefully {
                 GUI.color = Style.ColorTextPanelHeader;
                 Text.Font = GameFont.Small;
                 Text.Anchor = TextAnchor.LowerLeft;
-                Widgets.Label(countRect, "EdB.PC.Panel.PawnList.PawnCount".Translate(new object[] { colonistCount }));
+                Widgets.Label(countRect, "EdB.PC.Panel.PawnList.PawnCount".Translate(colonistCount ));
                 GUI.color = Color.white;
 
                 // Maximize button.

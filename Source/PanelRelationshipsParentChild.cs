@@ -281,17 +281,17 @@ namespace EdB.PrepareCarefully {
             bool hidden = pawn.Hidden;
             if (!hidden) {
                 string age = pawn.BiologicalAge != pawn.ChronologicalAge ?
-                    "EdB.PC.Pawn.AgeWithChronological".Translate(new object[] { pawn.BiologicalAge, pawn.ChronologicalAge }) :
-                    "EdB.PC.Pawn.AgeWithoutChronological".Translate(new object[] { pawn.BiologicalAge });
+                    "EdB.PC.Pawn.AgeWithChronological".Translate(pawn.BiologicalAge, pawn.ChronologicalAge) :
+                    "EdB.PC.Pawn.AgeWithoutChronological".Translate(pawn.BiologicalAge);
                 description = pawn.Gender != Gender.None ?
-                    "EdB.PC.Pawn.PawnDescriptionWithGender".Translate(new object[] { pawn.ProfessionLabel, pawn.Gender.GetLabel(), age }) :
-                    "EdB.PC.Pawn.PawnDescriptionNoGender".Translate(new object[] { pawn.ProfessionLabel, age });
+                    "EdB.PC.Pawn.PawnDescriptionWithGender".Translate(pawn.ProfessionLabel, pawn.Gender.GetLabel(), age) :
+                    "EdB.PC.Pawn.PawnDescriptionNoGender".Translate(pawn.ProfessionLabel, age);
             }
             else {
                 string profession = "EdB.PC.Pawn.HiddenPawnProfession".Translate();
                 description = pawn.Gender != Gender.None ?
-                    "EdB.PC.Pawn.HiddenPawnDescriptionWithGender".Translate(new object[] { profession, pawn.Gender.GetLabel() }) :
-                    "EdB.PC.Pawn.HiddenPawnDescriptionNoGender".Translate(new object[] { profession });
+                    "EdB.PC.Pawn.HiddenPawnDescriptionWithGender".Translate(profession, pawn.Gender.GetLabel()) :
+                    "EdB.PC.Pawn.HiddenPawnDescriptionNoGender".Translate(profession);
             }
             return pawn.FullName + "\n" + description;
         }

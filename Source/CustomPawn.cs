@@ -632,10 +632,10 @@ namespace EdB.PrepareCarefully {
         public string ShortName {
             get {
                 if (Type == CustomPawnType.Hidden) {
-                    return "EdB.PC.Pawn.HiddenPawnNameShort".Translate(new object[] { Index });
+                    return "EdB.PC.Pawn.HiddenPawnNameShort".Translate(Index.Value);
                 }
                 else if (Type == CustomPawnType.Temporary) {
-                    return "EdB.PC.Pawn.TemporaryPawnNameShort".Translate(new object[] { Index });
+                    return "EdB.PC.Pawn.TemporaryPawnNameShort".Translate(Index.Value);
                 }
                 else {
                     return pawn.LabelShortCap;
@@ -646,10 +646,20 @@ namespace EdB.PrepareCarefully {
         public string FullName {
             get {
                 if (Type == CustomPawnType.Hidden) {
-                    return "EdB.PC.Pawn.HiddenPawnNameFull".Translate(new object[] { Index });
+                    if (Index.HasValue) {
+                        return "EdB.PC.Pawn.HiddenPawnNameFull".Translate(Index.Value);
+                    }
+                    else {
+                        return "EdB.PC.Pawn.HiddenPawnNameFull".Translate();
+                    }
                 }
                 else if (Type == CustomPawnType.Temporary) {
-                    return "EdB.PC.Pawn.TemporaryPawnNameFull".Translate(new object[] { Index });
+                    if (Index.HasValue) {
+                        return "EdB.PC.Pawn.TemporaryPawnNameFull".Translate(Index.Value);
+                    }
+                    else {
+                        return "EdB.PC.Pawn.TemporaryPawnNameFull".Translate();
+                    }
                 }
                 else {
                     return pawn.Name.ToStringFull;
