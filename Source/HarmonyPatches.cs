@@ -14,16 +14,39 @@ namespace EdB.PrepareCarefully {
     [StaticConstructorOnStartup]
     internal class HarmonyPatches {
         static HarmonyPatches() {
-            HarmonyInstance harmony = HarmonyInstance.Create("EdB.PrepareCarefully");
-            harmony.Patch(typeof(Page_ConfigureStartingPawns).GetMethod("PreOpen"),
-                new HarmonyMethod(null),
-                new HarmonyMethod(typeof(HarmonyPatches).GetMethod("PreOpenPostfix")));
-            harmony.Patch(typeof(Page_ConfigureStartingPawns).GetMethod("DoWindowContents"),
-                new HarmonyMethod(null),
-                new HarmonyMethod(typeof(HarmonyPatches).GetMethod("DoWindowContentsPostfix")));
-            harmony.Patch(typeof(Game).GetMethod("InitNewGame"),
-                new HarmonyMethod(null),
-                new HarmonyMethod(typeof(HarmonyPatches).GetMethod("InitNewGamePostfix")));
+            try {
+                Type pageConfigureStartingPawnsType = AccessTools.TypeByName("RimWorld.Page_ConfigureStartingPawns");
+                Type gameType = AccessTools.TypeByName("Verse.Game");
+                HarmonyInstance harmony = HarmonyInstance.Create("EdB.PrepareCarefully");
+                if (pageConfigureStartingPawnsType != null) {
+                    if (harmony.Patch(pageConfigureStartingPawnsType.GetMethod("PreOpen"),
+                        new HarmonyMethod(null),
+                        new HarmonyMethod(typeof(HarmonyPatches).GetMethod("PreOpenPostfix"))) == null) {
+                        Log.Warning("Prepare Carefully did not successfully patch the Page_ConfigureStartingPawns.PreOpen method. The Prepare Carefully button may not appear properly.");
+                    }
+                    if (harmony.Patch(pageConfigureStartingPawnsType.GetMethod("DoWindowContents"),
+                        new HarmonyMethod(null),
+                        new HarmonyMethod(typeof(HarmonyPatches).GetMethod("DoWindowContentsPostfix"))) == null) {
+                        Log.Warning("Prepare Carefully did not successfully patch the Page_ConfigureStartingPawns.DoWindowContentsPostfix method. The Prepare Carefully button may not appear properly.");
+                    }
+                }
+                else {
+                    Log.Warning("Could not add the Prepare Carefully button to the configure pawns page.  Could not find the required type.");
+                }
+                if (gameType != null) {
+                    if (harmony.Patch(gameType.GetMethod("InitNewGame"),
+                        new HarmonyMethod(null),
+                        new HarmonyMethod(typeof(HarmonyPatches).GetMethod("InitNewGamePostfix"))) == null) {
+                        Log.Warning("Prepare Carefully did not successfully patch the Game.InitNewGame method. Prepare Carefully may not properly spawn pawns and items onto the map.");
+                    }
+                }
+                else {
+                    Log.Warning("Could not modify the game initilization routine as needed for Prepare Carefully.  Could not find the required type.");
+                }
+            }
+            catch (Exception e) {
+                Log.Warning("Failed to patch the game code as needed for Prepare Carefully.  There was an unexpected exception. \n" + e.StackTrace);
+            }
         }
 
         // Clear the original scenario when opening the Configure Starting Pawns page.  This makes
