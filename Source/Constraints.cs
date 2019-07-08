@@ -5,6 +5,6 @@ namespace EdB.PrepareCarefully {
         public static int AgeChronologicalMax = 3200;
         public static float MaxAgeMultiplier = 1.375f;
         public static int MaxVanillaTraits = 3;
-        public static int MaxTraits = 10;
+        public static int MaxTraits = int.MaxValue;
     }
 }
