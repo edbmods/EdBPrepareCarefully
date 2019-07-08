@@ -1,5 +1,22 @@
  _____________________________________________________________________________
  
+   Version 1.0.12
+ _____________________________________________________________________________
+
+ - Removed the limit on the number of allowed traits.
+ - Characters created from faction templates are no longer re-assigned to
+   the default player colony "pawn kind" definition.
+ - Equipment definitions are not loaded until afer the user interface is
+   displayed.  When you have a ton of other mods enabled, this should make it
+   feel less like the mod is "hanging" after clicking the "Prepare Carefully"
+   button.
+ - Bug fixes for and improved compatibility with Alien Races mod:
+   - Fixed duplicate add-ons
+   - Fixed issues with head types and body types
+   - Fixed issues with mixed up hair and skin colors
+
+ _____________________________________________________________________________
+ 
    Version 1.0.11
  _____________________________________________________________________________
 

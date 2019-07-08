@@ -1,5 +1,8 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
 <!-- CHANGE NOTES -->
+<!-- v1.0.11 -->
+<!-- NEW: EdB.PC.Pawn.BodyType.Oval -->
+
 <!-- v1.0.10 -->
 <!-- NEW: EdB.PC.Equipment.AnimalLabel -->
 
@@ -194,6 +197,7 @@ Before reporting an error, please try to figure out which mod is causing the pro
   <EdB.PC.Pawn.BodyType.Average>Average</EdB.PC.Pawn.BodyType.Average>
   <EdB.PC.Pawn.BodyType.Heavyset>Heavyset</EdB.PC.Pawn.BodyType.Heavyset>
   <EdB.PC.Pawn.BodyType.Hulking>Hulking</EdB.PC.Pawn.BodyType.Hulking>
+  <EdB.PC.Pawn.BodyType.Oval>Rotund</EdB.PC.Pawn.BodyType.Oval>
   <EdB.PC.Pawn.BodyType.Thin>Thin</EdB.PC.Pawn.BodyType.Thin>
   <EdB.PC.Pawn.BodyType.Unnamed>Unnamed</EdB.PC.Pawn.BodyType.Unnamed>
   <EdB.PC.Pawn.HiddenPawnDescriptionWithGender>{0}, {1}</EdB.PC.Pawn.HiddenPawnDescriptionWithGender>
