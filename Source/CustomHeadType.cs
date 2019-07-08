@@ -11,7 +11,9 @@ namespace EdB.PrepareCarefully {
     public class CustomHeadType {
         private CrownType crownType;
         private string graphicsPath;
-        private string label;
+        public string AlienCrownType {
+            get; set;
+        }
         private Gender? gender;
         public CrownType CrownType {
             get {
@@ -27,7 +29,6 @@ namespace EdB.PrepareCarefully {
             }
             set {
                 graphicsPath = value;
-                label = GetHeadLabel(graphicsPath);
             }
         }
         public Gender? Gender {
@@ -39,9 +40,7 @@ namespace EdB.PrepareCarefully {
             }
         }
         public string Label {
-            get {
-                return label;
-            }
+            get; set;
         }
         public CustomHeadType() {
 
@@ -59,7 +58,7 @@ namespace EdB.PrepareCarefully {
             }
         }
         public override string ToString() {
-            return "{ label = \"" + label + "\", graphicsPath = \"" + graphicsPath + "\", crownType = " + crownType + ", gender = " + gender + "}";
+            return "{ label = \"" + Label + "\", graphicsPath = \"" + graphicsPath + "\", crownType = " + crownType + "\", AlienCrownType = " + AlienCrownType + ", gender = " + gender + "}";
         }
     }
 }

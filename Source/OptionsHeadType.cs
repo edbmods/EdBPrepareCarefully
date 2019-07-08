@@ -26,12 +26,30 @@ namespace EdB.PrepareCarefully {
             headTypes.Add(headType);
             pathDictionary.Add(headType.GraphicPath, headType);
         }
-        public IEnumerable<CustomHeadType> GetHeadTypes(Gender gender) {
+        public IEnumerable<CustomHeadType> GetHeadTypesForGender(Gender gender) {
             return headTypes.Where((CustomHeadType headType) => {
                 return (headType.Gender == gender || headType.Gender == null);
             });
         }
-        public CustomHeadType FindHeadType(string graphicsPath) {
+        public CustomHeadType FindHeadTypeForPawn(Pawn pawn) {
+            var alienComp = ProviderAlienRaces.FindAlienCompForPawn(pawn);
+            if (alienComp == null) {
+                var result = FindHeadTypeByGraphicsPath(pawn.story.HeadGraphicPath);
+                if (result == null) {
+                    Log.Warning("Did not find head type for path: " + pawn.story.HeadGraphicPath);
+                }
+                return result;
+            }
+            else {
+                string crownType = ProviderAlienRaces.GetCrownTypeFromComp(alienComp);
+                var result = FindHeadTypeByCrownTypeAndGender(crownType, pawn.gender);
+                if (result == null) {
+                    Log.Warning("Did not find head type for alien crown type: " + crownType);
+                }
+                return result;
+            }
+        }
+        public CustomHeadType FindHeadTypeByGraphicsPath(string graphicsPath) {
             CustomHeadType result;
             if (pathDictionary.TryGetValue(graphicsPath, out result)) {
                 return result;
@@ -40,27 +58,59 @@ namespace EdB.PrepareCarefully {
                 return null;
             }
         }
+        public CustomHeadType FindHeadTypeByCrownType(string crownType) {
+            return headTypes.Where(t => {
+                return t.AlienCrownType == crownType;
+            }).FirstOrDefault();
+        }
+        public CustomHeadType FindHeadTypeByCrownTypeAndGender(string crownType, Gender gender) {
+            return headTypes.Where(t => {
+                return t.AlienCrownType == crownType && (t.Gender == null || t.Gender == gender);
+            }).FirstOrDefault();
+        }
         public CustomHeadType FindHeadTypeForGender(CustomHeadType headType, Gender gender) {
             if (headType.Gender == null || headType.Gender == gender) {
                 return headType;
             }
-            string graphicsPath = headType.GraphicPath;
-            string prefixReplacementString = "/" + gender.ToString() + "_";
-            string directoryReplacementString = "/" + gender.ToString() + "/";
-            if (headType.Gender == Gender.Male) {
-                graphicsPath = graphicsPath.Replace("/Male/", directoryReplacementString);
-                graphicsPath = graphicsPath.Replace("/Male_", prefixReplacementString);
-            }
-            if (headType.Gender == Gender.Female) {
-                graphicsPath = graphicsPath.Replace("/Female/", directoryReplacementString);
-                graphicsPath = graphicsPath.Replace("/Female_", prefixReplacementString);
+
+            if (headType.AlienCrownType.NullOrEmpty()) {
+                string graphicsPath = headType.GraphicPath;
+                string prefixReplacementString = "/" + gender.ToString() + "_";
+                string directoryReplacementString = "/" + gender.ToString() + "/";
+                if (headType.Gender == Gender.Male) {
+                    graphicsPath = graphicsPath.Replace("/Male/", directoryReplacementString);
+                    graphicsPath = graphicsPath.Replace("/Male_", prefixReplacementString);
+                }
+                if (headType.Gender == Gender.Female) {
+                    graphicsPath = graphicsPath.Replace("/Female/", directoryReplacementString);
+                    graphicsPath = graphicsPath.Replace("/Female_", prefixReplacementString);
+                }
+                else {
+                    graphicsPath = graphicsPath.Replace("/None/", directoryReplacementString);
+                    graphicsPath = graphicsPath.Replace("/None_", prefixReplacementString);
+                }
+                CustomHeadType result = FindHeadTypeByGraphicsPath(graphicsPath);
+                if (result == null) {
+                    Log.Warning("Could not find head type for gender: " + graphicsPath);
+                }
+                return result != null ? result : headType;
             }
             else {
-                graphicsPath = graphicsPath.Replace("/None/", directoryReplacementString);
-                graphicsPath = graphicsPath.Replace("/None_", prefixReplacementString);
+                Gender targetGender = gender;
+                if (headType.Gender == Gender.Male) {
+                    targetGender = Gender.Female;
+                }
+                if (headType.Gender == Gender.Female) {
+                    targetGender = Gender.Male;
+                }
+                else {
+                    return headType;
+                }
+                var result = headTypes.Where(h => {
+                    return h.AlienCrownType == headType.AlienCrownType && h.Gender == targetGender;
+                }).FirstOrDefault();
+                return result != null ? result : headType;
             }
-            CustomHeadType result = FindHeadType(graphicsPath);
-            return result != null ? result : headType;
         }
     }
 }

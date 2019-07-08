@@ -161,7 +161,7 @@ namespace EdB.PrepareCarefully {
                         if (thingDef != null) {
                             if (string.IsNullOrEmpty(e.stuffDef)) {
                                 EquipmentKey key = new EquipmentKey(thingDef, null, gender);
-                                EquipmentRecord record = PrepareCarefully.Instance.EquipmentDatabase[key];
+                                EquipmentRecord record = PrepareCarefully.Instance.EquipmentDatabase.LookupEquipmentRecord(key);
                                 if (record != null) {
                                     equipment.Add(new EquipmentSelection(record, e.count));
                                 }
@@ -174,7 +174,7 @@ namespace EdB.PrepareCarefully {
                             else {
                                 if (stuffDef != null) {
                                     EquipmentKey key = new EquipmentKey(thingDef, stuffDef, gender);
-                                    EquipmentRecord record = PrepareCarefully.Instance.EquipmentDatabase[key];
+                                    EquipmentRecord record = PrepareCarefully.Instance.EquipmentDatabase.LookupEquipmentRecord(key);
                                     if (record == null) {
                                         string thing = thingDef != null ? thingDef.defName : "null";
                                         string stuff = stuffDef != null ? stuffDef.defName : "null";

@@ -32,6 +32,43 @@ namespace EdB.PrepareCarefully {
                 }
             }
         }
+        public static ThingComp FindAlienCompForPawn(Pawn pawn) {
+            return pawn.AllComps.FirstOrDefault((ThingComp comp) => {
+                return (comp.GetType().Name == "AlienComp");
+            });
+        }
+        public static string GetCrownTypeFromComp(ThingComp alienComp) {
+            return ReflectionUtil.GetPublicField(alienComp, "crownType").GetValue(alienComp) as string;
+        }
+        public static void SetCrownTypeOnComp(ThingComp alienComp, string value) {
+            ReflectionUtil.GetPublicField(alienComp, "crownType").SetValue(alienComp, value);
+        }
+        public static Color GetSkinColorFromComp(ThingComp alienComp) {
+            return (Color)ReflectionUtil.GetPublicField(alienComp, "skinColor").GetValue(alienComp);
+        }
+        public static void SetSkinColorOnComp(ThingComp alienComp, Color value) {
+            ReflectionUtil.GetPublicField(alienComp, "skinColor").SetValue(alienComp, value);
+        }
+        public static Color GetSkinColorSecondFromComp(ThingComp alienComp) {
+            return (Color)ReflectionUtil.GetPublicField(alienComp, "skinColorSecond").GetValue(alienComp);
+        }
+        public static void SetSkinColorSecondOnComp(ThingComp alienComp, Color value) {
+            ReflectionUtil.GetPublicField(alienComp, "skinColorSecond").SetValue(alienComp, value);
+        }
+        public static Color GetHairColorSecondFromComp(ThingComp alienComp) {
+            return (Color)ReflectionUtil.GetPublicField(alienComp, "hairColorSecond").GetValue(alienComp);
+        }
+        public static void SetHairColorSecondOnComp(ThingComp alienComp, Color value) {
+            ReflectionUtil.GetPublicField(alienComp, "hairColorSecond").SetValue(alienComp, value);
+        }
+        public static string GetCrownTypeFromPawn(Pawn pawn) {
+            var alienComp = FindAlienCompForPawn(pawn);
+            if (alienComp == null) {
+                return null;
+            }
+            return GetCrownTypeFromComp(alienComp);
+        }
+
         public static bool IsAlienRace(ThingDef raceDef) {
             FieldInfo alienRaceField = raceDef.GetType().GetField("alienRace", BindingFlags.Public | BindingFlags.Instance);
             return (alienRaceField != null);
@@ -68,6 +105,7 @@ namespace EdB.PrepareCarefully {
 
             // We have enough to start putting together the result object, so we instantiate it now.
             AlienRace result = new AlienRace();
+            result.ThingDef = raceDef;
 
             // Get the list of body types.
             System.Collections.ICollection alienBodyTypesCollection = GetFieldValueAsCollection(raceDef, alienPartGeneratorObject, "alienbodytypes");
@@ -113,18 +151,24 @@ namespace EdB.PrepareCarefully {
             result.CrownTypes = crownTypes;
 
             // Go through the graphics paths and find the heads path.
+            // TODO: What is this?  
             string graphicsPathForHeads = null;
+            string graphicsPathForBodyTypes = null;
             foreach (var graphicsPath in graphicPathsCollection) {
                 System.Collections.ICollection lifeStageCollection = GetFieldValueAsCollection(raceDef, graphicsPath, "lifeStageDefs");
                 if (lifeStageCollection == null || lifeStageCollection.Count == 0) {
-                    string path = GetFieldValueAsString(raceDef, graphicsPath, "head");
-                    if (path != null) {
-                        graphicsPathForHeads = path;
-                        break;
+                    string headsPath = GetFieldValueAsString(raceDef, graphicsPath, "head");
+                    string bodyTypesPath = GetFieldValueAsString(raceDef, graphicsPath, "body");
+                    if (headsPath != null) {
+                        graphicsPathForHeads = headsPath;
+                    }
+                    if (bodyTypesPath != null) {
+                        graphicsPathForBodyTypes = bodyTypesPath;
                     }
                 }
             }
             result.GraphicsPathForHeads = graphicsPathForHeads;
+            result.GraphicsPathForBodyTypes = graphicsPathForBodyTypes;
 
             // Figure out colors.
             object primaryColorGeneratorValue = GetFieldValue(raceDef, alienPartGeneratorObject, "alienskincolorgen", true);
@@ -205,10 +249,10 @@ namespace EdB.PrepareCarefully {
             var bodyAddonsCollection = GetFieldValueAsCollection(raceDef, alienPartGeneratorObject, "bodyAddons");
             if (bodyAddonsCollection != null ) {
                 var addons = new List<AlienRaceBodyAddon>();
-                AlienRaceBodyAddon addon = new AlienRaceBodyAddon();
                 int index = -1;
                 foreach (var o in bodyAddonsCollection) {
                     index++;
+                    AlienRaceBodyAddon addon = new AlienRaceBodyAddon();
                     string path = GetFieldValueAsString(raceDef, o, "path");
                     if (path == null) {
                         Log.Warning("Failed to get path for body add-on for alien race: " + raceDef.defName);
@@ -239,7 +283,7 @@ namespace EdB.PrepareCarefully {
             string trimmedPath = path.TrimEnd('/').TrimStart('/');
             string[] items = trimmedPath.Split('/');
             if (items.Length > 0) {
-                return items[items.Length - 1];
+                return items[items.Length - 1].Replace("_", " ");
             }
             else {
                 return null;

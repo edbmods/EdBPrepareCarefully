@@ -6,6 +6,7 @@ using System.Reflection;
 using UnityEngine;
 using Verse;
 using Verse.Sound;
+
 namespace EdB.PrepareCarefully {
     public class PanelEquipmentSelected : PanelBase {
         public delegate void RemoveEquipmentHandler(EquipmentSelection entry);
@@ -24,6 +25,7 @@ namespace EdB.PrepareCarefully {
 
         public PanelEquipmentSelected() {
         }
+
         public override void Resize(Rect rect) {
             base.Resize(rect);
 
@@ -133,12 +135,16 @@ namespace EdB.PrepareCarefully {
                 }
             });
         }
+
         protected override void DrawPanelContent(State state) {
             base.DrawPanelContent(state);
 
-            IEnumerable<EquipmentSelection> entries = PrepareCarefully.Instance.Equipment.Select((EquipmentSelection equipment) => {
-                return FindEntry(equipment);
-            }).Where((EquipmentSelection equipment) => { return equipment != null; });
+            // TODO: Why were we doing it this way?
+            //IEnumerable<EquipmentSelection> entries = PrepareCarefully.Instance.Equipment.Select((EquipmentSelection equipment) => {
+            //    return FindEntry(equipment);
+            //}).Where((EquipmentSelection equipment) => { return equipment != null; });
+
+            IEnumerable<EquipmentSelection> entries = SelectedEquipment;
 
             if (table.Selected == null) {
                 table.Selected = entries.FirstOrDefault();
@@ -158,15 +164,22 @@ namespace EdB.PrepareCarefully {
             }
         }
 
-        protected IEnumerable<EquipmentSelection> GetEquipment() {
-            IEnumerable<EquipmentSelection> list = PrepareCarefully.Instance.Equipment.Select((EquipmentSelection equipment) => {
-                return FindEntry(equipment);
-            }).Where((EquipmentSelection equipment) => { return equipment != null; });
-            return list;
+        // Goes through all selected equipment entries and tries to make sure that they each have a non-null equipment record.
+        // Not sure that this is still necessary.  See FindEntry() below--don't remember why we needed that method.
+        protected IEnumerable<EquipmentSelection> SelectedEquipment {
+            get {
+                IEnumerable<EquipmentSelection> entries = PrepareCarefully.Instance.Equipment;
+                foreach (var e in entries) {
+                    if (e.record == null) {
+                        e.record = PrepareCarefully.Instance.EquipmentDatabase.LookupEquipmentRecord(e.Key);
+                    }
+                }
+                return entries;
+            }
         }
 
         protected void ScrollTo(EquipmentRecord entry) {
-            var equipment = GetEquipment();
+            var equipment = SelectedEquipment;
             int count = equipment.TakeWhile((EquipmentSelection e) => {
                 return e.Record.def != entry.def || e.Record.stuffDef != entry.stuffDef;
             }).Count();
@@ -188,18 +201,20 @@ namespace EdB.PrepareCarefully {
                 }
             }
         }
-        protected EquipmentSelection FindEntry(EquipmentSelection equipment) {
-            ThingDef def = equipment.ThingDef;
-            EquipmentRecord entry = PrepareCarefully.Instance.EquipmentDatabase[equipment.Key];
-            if (entry == null) {
-                string thing = def != null ? def.defName : "null";
-                string stuff = equipment.StuffDef != null ? equipment.StuffDef.defName : "null";
-                Log.Warning(string.Format("Could not draw unrecognized resource/equipment.  Invalid item was removed.  This may have been caused by an invalid thing/stuff combination. (thing = {0}, stuff={1})", thing, stuff));
-                PrepareCarefully.Instance.RemoveEquipment(equipment);
-                return null;
-            }
-            return PrepareCarefully.Instance.Find(entry);
-        }
+
+        // TODO: Why did we need this?
+        //protected EquipmentSelection FindEntry(EquipmentSelection equipment) {
+        //    ThingDef def = equipment.ThingDef;
+        //    EquipmentRecord entry = PrepareCarefully.Instance.EquipmentDatabase.LookupEquipmentRecord(equipment.Key);
+        //    if (entry == null) {
+        //        string thing = def != null ? def.defName : "null";
+        //        string stuff = equipment.StuffDef != null ? equipment.StuffDef.defName : "null";
+        //        Log.Warning(string.Format("Could not draw unrecognized resource/equipment.  Invalid item was removed.  This may have been caused by an invalid thing/stuff combination. (thing = {0}, stuff={1})", thing, stuff));
+        //        PrepareCarefully.Instance.RemoveEquipment(equipment);
+        //        return null;
+        //    }
+        //    return PrepareCarefully.Instance.Find(entry);
+        //}
 
         public void EquipmentAdded(EquipmentRecord entry) {
             EquipmentSelection loadoutRecord = PrepareCarefully.Instance.Find(entry);
@@ -211,6 +226,6 @@ namespace EdB.PrepareCarefully {
                 ScrollToEntry = loadoutRecord.Record;
             }
         }
-
     }
+
 }

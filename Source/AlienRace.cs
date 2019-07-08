@@ -13,6 +13,9 @@ namespace EdB.PrepareCarefully {
         public List<AlienRaceBodyAddon> addons = new List<AlienRaceBodyAddon>();
         public AlienRace() {
         }
+        public ThingDef ThingDef {
+            get; set;
+        }
         public bool UseMelaninLevels {
             get; set;
         }
@@ -38,6 +41,9 @@ namespace EdB.PrepareCarefully {
             get; set;
         }
         public string GraphicsPathForHeads {
+            get; set;
+        }
+        public string GraphicsPathForBodyTypes {
             get; set;
         }
         public bool HasHair {

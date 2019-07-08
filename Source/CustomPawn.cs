@@ -223,13 +223,11 @@ namespace EdB.PrepareCarefully {
             }
 
             // Initialize head type.
-            CustomHeadType headType = PrepareCarefully.Instance.Providers.HeadTypes.FindHeadType(pawn.def, pawn.story.HeadGraphicPath);
+            CustomHeadType headType = PrepareCarefully.Instance.Providers.HeadTypes.FindHeadTypeForPawn(pawn);
             if (headType != null) {
                 this.headType = headType;
             }
             else {
-                Log.Warning("Prepare Carefully could not find a head type for the graphic path: "
-                    + pawn.story.HeadGraphicPath + " for the pawn: " + pawn.def.defName + ". Head type selection disabled for this pawn");
                 this.headType = null;
             }
 
@@ -1071,8 +1069,12 @@ namespace EdB.PrepareCarefully {
                 return headType;
             }
             set {
-                this.headType = value;
+                this.headType = value; 
                 this.pawn.story.crownType = value.CrownType;
+                ThingComp alienComp = ProviderAlienRaces.FindAlienCompForPawn(pawn);
+                if (alienComp != null) {
+                    ReflectionUtil.GetPublicField(alienComp, "crownType").SetValue(alienComp, headType.AlienCrownType);
+                }
                 ResetCachedHead();
                 MarkPortraitAsDirty();
             }
@@ -1089,11 +1091,18 @@ namespace EdB.PrepareCarefully {
                 }
                 else {
                     // Set the graphic path on the pawn directly if no head type was found.
-                    pawn.story.GetType().GetField("headGraphicPath", BindingFlags.Instance | BindingFlags.NonPublic).SetValue(pawn.story, value);
+                    SetHeadGraphicPathOnPawn(pawn, value);
                     Log.Warning("Prepare Carefully could not find a head type the graphic path: "
                         + value + ". Head type selection disabled for this pawn");
                 }
+                MarkPortraitAsDirty();
             }
+        }
+
+        protected void SetHeadGraphicPathOnPawn(Pawn pawn, string value) {
+            // Need to use reflection to set the private field.
+            typeof(Pawn_StoryTracker).GetField("headGraphicPath", BindingFlags.Instance | BindingFlags.NonPublic)
+                .SetValue(pawn.story, value);
         }
 
         protected string FilterHeadPathForGender(string path) {
@@ -1188,9 +1197,7 @@ namespace EdB.PrepareCarefully {
             }
             set {
                 if (alienRace != null) {
-                    ThingComp alienComp = pawn.AllComps.FirstOrDefault((ThingComp comp) => {
-                        return (comp.GetType().Name == "AlienComp");
-                    });
+                    ThingComp alienComp = ProviderAlienRaces.FindAlienCompForPawn(pawn);
                     if (alienComp == null) {
                         return;
                     }
@@ -1273,8 +1280,10 @@ namespace EdB.PrepareCarefully {
                 // Get the matching head type for the pawn's current gender.  We do this in case the user switches the
                 // gender, swapping to the correct head type if necessary.
                 CustomHeadType filteredHeadType = PrepareCarefully.Instance.Providers.HeadTypes.FindHeadTypeForGender(pawn.def, headType, Gender);
-                // Need to use reflection to set the private field.
-                typeof(Pawn_StoryTracker).GetField("headGraphicPath", BindingFlags.Instance | BindingFlags.NonPublic).SetValue(pawn.story, filteredHeadType.GraphicPath);
+                if (filteredHeadType == null) {
+                    Log.Warning("No filtered head type found"); //TODO
+                }
+                SetHeadGraphicPathOnPawn(pawn, filteredHeadType.GraphicPath);
             }
         }
 

@@ -43,9 +43,9 @@ namespace EdB.PrepareCarefully {
         private HashSet<ThingDef> stuffFilterSet = new HashSet<ThingDef>();
         private ThingDef filterStuff = null;
         private bool filterMadeFromStuff = true;
+        private bool loading = true;
 
         public PanelEquipmentAvailable() {
-            providerEquipment = new ProviderEquipmentTypes();
         }
         public override void Resize(Rect rect) {
             base.Resize(rect);
@@ -86,6 +86,12 @@ namespace EdB.PrepareCarefully {
             float columnWidthCost = 100;
             float columnWidthName = RectRow.width - columnWidthInfo - columnWidthIcon - columnWidthCost - 10;
 
+            if (providerEquipment == null) {
+                providerEquipment = new ProviderEquipmentTypes();
+            }
+            if (!providerEquipment.DatabaseReady) {
+                return;
+            }
             foreach (var type in providerEquipment.Types) {
                 if (!equipmentViews.ContainsKey(type)) {
                     WidgetTable<EquipmentRecord> table = new WidgetTable<EquipmentRecord>();
@@ -179,6 +185,17 @@ namespace EdB.PrepareCarefully {
         protected override void DrawPanelContent(State state) {
             base.DrawPanelContent(state);
 
+            if (loading) {
+                if (providerEquipment != null && providerEquipment.DatabaseReady) {
+                    loading = false;
+                    Resize(this.PanelRect);
+                }
+                else {
+                    DrawLoadingProgress();
+                    return;
+                }
+            }
+
             // Find the view.  Select the first row in the equipment list if none is selected.
             var view = CurrentView;
             if (view.Table.Selected == null) {
@@ -205,6 +222,37 @@ namespace EdB.PrepareCarefully {
             if (filterStuff != null && !stuffFilterSet.Contains(filterStuff)) {
                 filterStuff = null;
             }
+        }
+
+        protected readonly Vector2 ProgressBarSize = new Vector2(250, 18);
+        protected void DrawLoadingProgress() {
+            Rect progressBarRect = new Rect(PanelRect.HalfWidth() - ProgressBarSize.x * 0.5f, PanelRect.HalfHeight() - ProgressBarSize.y * 0.5f,
+                ProgressBarSize.x, ProgressBarSize.y);
+            var progress = providerEquipment.LoadingProgress;
+            GUI.color = Color.gray;
+            Widgets.DrawBox(progressBarRect);
+            if (progress.defCount > 0) {
+                int totalCount = progress.defCount * 2;
+                int processed = progress.stuffProcessed + progress.thingsProcessed;
+                float percent = (float)processed / (float)totalCount;
+                float barWidth = progressBarRect.width * percent;
+                Widgets.DrawRectFast(new Rect(progressBarRect.x, progressBarRect.y, barWidth, progressBarRect.height), Color.green);
+            }
+            GUI.color = Style.ColorText;
+            Text.Font = GameFont.Tiny;
+            string label = "Initializing equipment database...";
+            if (progress.phase == EquipmentDatabase.LoadingPhase.ProcessingStuff) {
+                label = "Processing materials...";
+            }
+            else if (progress.phase == EquipmentDatabase.LoadingPhase.ProcessingThings) {
+                label = "Processing equipment...";
+            }
+            else if (progress.phase == EquipmentDatabase.LoadingPhase.Loaded) {
+                label = "Finished";
+            }
+            Widgets.Label(new Rect(progressBarRect.x, progressBarRect.yMax + 2, progressBarRect.width, 20), label) ;
+            Text.Font = GameFont.Small;
+            GUI.color = Color.white;
         }
 
         protected void DrawFilters(ViewEquipmentList view) {

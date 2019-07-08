@@ -1,4 +1,4 @@
-using RimWorld;
+﻿using RimWorld;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -105,11 +105,6 @@ namespace EdB.PrepareCarefully {
             foreach (var e in equipment) {
                 cost.equipment += CalculateEquipmentCost(e);
             }
-            /*
-            foreach (var a in animals) {
-                cost.animals += CalculateAnimalCost(a);
-            }
-            */
             cost.ComputeTotal();
         }
 
@@ -219,7 +214,7 @@ namespace EdB.PrepareCarefully {
                                 break;
                             }
                             count++;
-                            EquipmentRecord entry = PrepareCarefully.Instance.EquipmentDatabase[new EquipmentKey(ingredientDef, null)];
+                            EquipmentRecord entry = PrepareCarefully.Instance.EquipmentDatabase.LookupEquipmentRecord(new EquipmentKey(ingredientDef, null));
                             if (entry != null) {
                                 totalCost += entry.cost * (double)amount.GetBaseCount();
                             }
@@ -243,7 +238,7 @@ namespace EdB.PrepareCarefully {
         }
 
         public double CalculateEquipmentCost(EquipmentSelection equipment) {
-            EquipmentRecord entry = PrepareCarefully.Instance.EquipmentDatabase[equipment.Key];
+            EquipmentRecord entry = PrepareCarefully.Instance.EquipmentDatabase.LookupEquipmentRecord(equipment.Key);
             if (entry != null) {
                 return (double)equipment.Count * entry.cost;
             }

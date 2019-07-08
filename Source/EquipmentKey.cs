@@ -57,11 +57,11 @@ namespace EdB.PrepareCarefully {
             }
         }
         public override string ToString() {
-            return string.Format("[EquipmentRecordKey: def = {0}, stuffDef = {1}, gender = {2}]",
+            return string.Format("[EquipmentKey: def = {0}, stuffDef = {1}, gender = {2}]",
                 (thingDef != null ? thingDef.defName : "null"),
                 (stuffDef != null ? stuffDef.defName : "null"),
                 gender);
-            }
         }
     }
+}
 
