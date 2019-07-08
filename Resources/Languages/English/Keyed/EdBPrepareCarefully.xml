@@ -1,8 +1,12 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
 <!-- CHANGE NOTES -->
-<!-- v1.0.11 -->
+<!-- v1.0.12 -->
 <!-- NEW: EdB.PC.Pawn.BodyType.Oval -->
-
+<!-- NEW: EdB.PC.Equipment.LoadingProgress.Initializing -->
+<!-- NEW: EdB.PC.Equipment.LoadingProgress.StuffDefs -->
+<!-- NEW: EdB.PC.Equipment.LoadingProgress.ThingDefs -->
+<!-- NEW: EdB.PC.Equipment.LoadingProgress.Finished -->
+  
 <!-- v1.0.10 -->
 <!-- NEW: EdB.PC.Equipment.AnimalLabel -->
 
@@ -182,6 +186,10 @@
   <EdB.PC.Equipment.Type.Medical>Medical</EdB.PC.Equipment.Type.Medical>
   <EdB.PC.Equipment.Type.Resources>Resources</EdB.PC.Equipment.Type.Resources>
   <EdB.PC.Equipment.Type.Weapons>Weapons</EdB.PC.Equipment.Type.Weapons>
+  <EdB.PC.Equipment.LoadingProgress.Initializing>Initializing...</EdB.PC.Equipment.LoadingProgress.Initializing>
+  <EdB.PC.Equipment.LoadingProgress.StuffDefs>Processing materials...</EdB.PC.Equipment.LoadingProgress.StuffDefs>
+  <EdB.PC.Equipment.LoadingProgress.ThingDefs>Processing items...</EdB.PC.Equipment.LoadingProgress.ThingDefs>
+  <EdB.PC.Equipment.LoadingProgress.Finished>Finished</EdB.PC.Equipment.LoadingProgress.Finished>
 
   <EdB.PC.Error.NotEnoughPoints>You've spent too many points.</EdB.PC.Error.NotEnoughPoints>
   <EdB.PC.Error.NotEnoughColonists1>You must have at least one colonist.</EdB.PC.Error.NotEnoughColonists1>

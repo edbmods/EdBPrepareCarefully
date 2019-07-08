@@ -240,15 +240,15 @@ namespace EdB.PrepareCarefully {
             }
             GUI.color = Style.ColorText;
             Text.Font = GameFont.Tiny;
-            string label = "Initializing equipment database...";
+            string label = "EdB.PC.Equipment.LoadingProgress.Initializing".Translate();
             if (progress.phase == EquipmentDatabase.LoadingPhase.ProcessingStuff) {
-                label = "Processing materials...";
+                label = "EdB.PC.Equipment.LoadingProgress.StuffDefs".Translate();
             }
             else if (progress.phase == EquipmentDatabase.LoadingPhase.ProcessingThings) {
-                label = "Processing equipment...";
+                label = "EdB.PC.Equipment.LoadingProgress.ThingDefs".Translate();
             }
             else if (progress.phase == EquipmentDatabase.LoadingPhase.Loaded) {
-                label = "Finished";
+                label = "EdB.PC.Equipment.LoadingProgress.Finished".Translate();
             }
             Widgets.Label(new Rect(progressBarRect.x, progressBarRect.yMax + 2, progressBarRect.width, 20), label) ;
             Text.Font = GameFont.Small;
