@@ -144,17 +144,6 @@ namespace EdB.PrepareCarefully {
             }
         }
 
-        public int MinAge {
-            get {
-                return Constraints.AgeBiologicalMin;
-            }
-        }
-        public int MaxAge {
-            get {
-                return Mathf.FloorToInt(pawn.RaceProps.lifeExpectancy * Constraints.MaxAgeMultiplier);
-            }
-        }
-
         public void GenerateId() {
             this.id = Guid.NewGuid().ToStringSafe();
         }
@@ -1272,6 +1261,7 @@ namespace EdB.PrepareCarefully {
                 }
                 pawn.ClearCachedLifeStage();
                 pawn.ClearCachedHealth();
+                MarkPortraitAsDirty();
             }
         }
 

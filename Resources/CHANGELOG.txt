@@ -14,6 +14,9 @@
    - Fixed duplicate add-ons
    - Fixed issues with head types and body types
    - Fixed issues with mixed up hair and skin colors
+ - The age generation curve in a race's thing definition now determines the
+   minimum and maximum age allowed for a starting character. This provides
+   better compatibility with the Baby and Children mod.
 
  _____________________________________________________________________________
  

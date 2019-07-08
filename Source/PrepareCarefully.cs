@@ -169,6 +169,7 @@ namespace EdB.PrepareCarefully {
             Providers.Health = new ProviderHealthOptions();
             Providers.Factions = new ProviderFactions();
             Providers.PawnLayers = new ProviderPawnLayers();
+            Providers.AgeLimits = new ProviderAgeLimits();
         }
 
         // TODO:

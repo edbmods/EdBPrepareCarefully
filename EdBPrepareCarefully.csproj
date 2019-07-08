@@ -113,6 +113,7 @@
     <Compile Include="Source\PresetFiles.cs" />
     <Compile Include="Source\PresetLoader.cs" />
     <Compile Include="Source\PresetSaver.cs" />
+    <Compile Include="Source\ProviderAgeLimits.cs" />
     <Compile Include="Source\ProviderAlienRaces.cs" />
     <Compile Include="Source\ProviderApparel.cs" />
     <Compile Include="Source\ProviderHealthOptions.cs" />

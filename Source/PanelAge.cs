@@ -1,4 +1,4 @@
-using RimWorld;
+﻿using RimWorld;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -11,6 +11,8 @@ namespace EdB.PrepareCarefully {
 
         public event UpdateAgeHandler BiologicalAgeUpdated;
         public event UpdateAgeHandler ChronologicalAgeUpdated;
+
+        private ProviderAgeLimits providerAgeLimits = PrepareCarefully.Instance.Providers.AgeLimits;
 
         protected static Rect RectBiologicalAgeLabel;
         protected static Rect RectBiologicalAgeField;
@@ -103,8 +105,8 @@ namespace EdB.PrepareCarefully {
 
             // Update field values.
             CustomPawn customPawn = state.CurrentPawn;
-            int maxAge = customPawn.MaxAge;
-            int minAge = customPawn.MinAge;
+            int maxAge = providerAgeLimits.MaxAgeForPawn(customPawn.Pawn);
+            int minAge = providerAgeLimits.MinAgeForPawn(customPawn.Pawn);
             chronologicalField.MinValue = customPawn.BiologicalAge;
             biologicalField.MinValue = minAge;
             biologicalField.MaxValue = customPawn.ChronologicalAge < maxAge ? customPawn.ChronologicalAge : maxAge;
