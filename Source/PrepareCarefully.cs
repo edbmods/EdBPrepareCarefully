@@ -36,6 +36,7 @@ namespace EdB.PrepareCarefully {
         protected CostCalculator costCalculator = null;
 
         protected List<CustomPawn> pawns = new List<CustomPawn>();
+
         protected List<EquipmentSelection> equipment = new List<EquipmentSelection>();
         protected List<EquipmentSelection> equipmentToRemove = new List<EquipmentSelection>();
         protected List<SelectedAnimal> animals = new List<SelectedAnimal>();
@@ -124,7 +125,6 @@ namespace EdB.PrepareCarefully {
             this.Active = false;
             this.Providers = new Providers();
             this.equipmentDatabase = new EquipmentDatabase();
-            //this.animalDatabase = new AnimalDatabase();
             this.costCalculator = new CostCalculator();
             this.pawns.Clear();
             this.equipment.Clear();
@@ -169,6 +169,7 @@ namespace EdB.PrepareCarefully {
             Providers.Health = new ProviderHealthOptions();
             Providers.Factions = new ProviderFactions();
             Providers.PawnLayers = new ProviderPawnLayers();
+            Providers.AgeLimits = new ProviderAgeLimits();
         }
 
         // TODO:
@@ -192,14 +193,17 @@ namespace EdB.PrepareCarefully {
                     FieldInfo countField = typeof(ScenPart_ScatterThingsNearPlayerStart).GetField("count", BindingFlags.Instance | BindingFlags.NonPublic);
                     ThingDef thingDef = (ThingDef)thingDefField.GetValue(nearPlayerStart);
                     ThingDef stuffDef = (ThingDef)stuffDefField.GetValue(nearPlayerStart);
+                    equipmentDatabase.PreloadDefinition(stuffDef);
+                    equipmentDatabase.PreloadDefinition(thingDef);
                     int count = (int)countField.GetValue(nearPlayerStart);
                     EquipmentKey key = new EquipmentKey(thingDef, stuffDef);
-                    EquipmentRecord entry = equipmentDatabase[key];
-                    if (entry == null) {
-                        entry = AddNonStandardScenarioEquipmentEntry(key);
+                    EquipmentRecord record = equipmentDatabase.LookupEquipmentRecord(key);
+                    if (record == null) {
+                        Log.Warning("Prepare Carefully couldn't initialize all scenario equipment.  Didn't find an equipment entry for " + thingDef.defName);
+                        record = AddNonStandardScenarioEquipmentEntry(key);
                     }
-                    if (entry != null) {
-                        AddEquipment(entry, count);
+                    if (record != null) {
+                        AddEquipment(record, count);
                     }
                 }
 
@@ -212,31 +216,19 @@ namespace EdB.PrepareCarefully {
                     FieldInfo countField = typeof(ScenPart_StartingThing_Defined).GetField("count", BindingFlags.Instance | BindingFlags.NonPublic);
                     ThingDef thingDef = (ThingDef)thingDefField.GetValue(startingThing);
                     ThingDef stuffDef = (ThingDef)stuffDefField.GetValue(startingThing);
+                    equipmentDatabase.PreloadDefinition(stuffDef);
+                    equipmentDatabase.PreloadDefinition(thingDef);
                     int count = (int)countField.GetValue(startingThing);
                     EquipmentKey key = new EquipmentKey(thingDef, stuffDef);
-                    EquipmentRecord entry = equipmentDatabase[key];
+                    EquipmentRecord entry = equipmentDatabase.LookupEquipmentRecord(key);
                     if (entry == null) {
+                        Log.Warning("Prepare Carefully couldn't initialize all scenario equipment.  Didn't find an equipment entry for " + thingDef.defName);
                         entry = AddNonStandardScenarioEquipmentEntry(key);
                     }
                     if (entry != null) {
                         AddEquipment(entry, count);
                     }
                 }
-
-                // Go through all of the scenario steps that spawn a pet and add the pet to the pets list.
-                /*
-                ScenPart_StartingAnimal animal = part as ScenPart_StartingAnimal;
-                if (animal != null) {
-                    FieldInfo animalCountField = typeof(ScenPart_StartingAnimal).GetField("count", BindingFlags.Instance | BindingFlags.NonPublic);
-                    int count = (int)animalCountField.GetValue(animal);
-                    for (int i = 0; i < count; i++) {
-                        SelectedPet pet = RandomPet(animal);
-                        if (pet != null) {
-                            AddPet(pet);
-                        }
-                    }
-                }
-                */
 
                 // Go through all of the scenario steps that spawn a pet and add the pet to the equipment/resource
                 // list.
@@ -245,14 +237,28 @@ namespace EdB.PrepareCarefully {
                     FieldInfo animalCountField = typeof(ScenPart_StartingAnimal).GetField("count", BindingFlags.Instance | BindingFlags.NonPublic);
                     int count = (int)animalCountField.GetValue(animal);
                     for (int i = 0; i < count; i++) {
-                        AddEquipment(RandomPet(animal));
+                        PawnKindDef animalKindDef = RandomPet(animal);
+                        equipmentDatabase.PreloadDefinition(animalKindDef.race);
+
+                        List<EquipmentRecord> entries = PrepareCarefully.Instance.EquipmentDatabase.Animals.FindAll((EquipmentRecord e) => {
+                            return e.def == animalKindDef.race;
+                        });
+                        EquipmentRecord entry = null;
+                        if (entries.Count > 0) {
+                            entry = entries.RandomElement();
+                        }
+                        if (entry != null) {
+                            AddEquipment(entry);
+                        }
+                        else {
+                            Log.Warning("Prepare Carefully failed to add the expected scenario animal to list of selected equipment");
+                        }
                     }
                 }
             }
         }
 
-        /*
-        private SelectedPet RandomPet(ScenPart_StartingAnimal startingAnimal) {
+        private static PawnKindDef RandomPet(ScenPart_StartingAnimal startingAnimal) {
             FieldInfo animalKindField = typeof(ScenPart_StartingAnimal).GetField("animalKind", BindingFlags.Instance | BindingFlags.NonPublic);
             MethodInfo randomPetsMethod = typeof(ScenPart_StartingAnimal).GetMethod("RandomPets", BindingFlags.Instance | BindingFlags.NonPublic);
 
@@ -261,52 +267,7 @@ namespace EdB.PrepareCarefully {
                 IEnumerable<PawnKindDef> animalKindDefs = (IEnumerable<PawnKindDef>)randomPetsMethod.Invoke(startingAnimal, null);
                 animalKindDef = animalKindDefs.RandomElementByWeight((PawnKindDef td) => td.RaceProps.petness);
             }
-            
-            List<AnimalRecord> records = PrepareCarefully.Instance.AnimalDatabase.AllAnimals.Where((AnimalRecord r) => {
-                return r.ThingDef == animalKindDef.race;
-            }).ToList();
-            if (records.Count > 0) {
-                AnimalRecord record = records.RandomElement();
-                SelectedPet pet = new SelectedPet();
-                pet.Record = record;
-
-                pet.BondedPawn = randomizer.PickBondedPawnForPet(Pawns);
-
-                // TODO: We're making an assumption that all pets have single-name names.  Is that a fair assumption?
-                pet.Pawn = PawnGenerator.GeneratePawn(animalKindDef, Faction.OfPlayer);
-                pet.Pawn.gender = pet.Record.Gender;
-                pet.Pawn.Name= PawnBioAndNameGenerator.GeneratePawnName(pet.Pawn, NameStyle.Full, null);
-                pet.Name = pet.Pawn.Name.ToStringFull;
-
-                pet.Id = System.Guid.NewGuid().ToString();
-                return pet;
-            }
-            else {
-                return null;
-            }
-        }
-        */
-
-        private static EquipmentRecord RandomPet(ScenPart_StartingAnimal startingAnimal) {
-            FieldInfo animalKindField = typeof(ScenPart_StartingAnimal).GetField("animalKind", BindingFlags.Instance | BindingFlags.NonPublic);
-            MethodInfo randomPetsMethod = typeof(ScenPart_StartingAnimal).GetMethod("RandomPets", BindingFlags.Instance | BindingFlags.NonPublic);
-
-            PawnKindDef animalKindDef = (PawnKindDef)animalKindField.GetValue(startingAnimal);
-            if (animalKindDef == null) {
-                IEnumerable<PawnKindDef> animalKindDefs = (IEnumerable<PawnKindDef>)randomPetsMethod.Invoke(startingAnimal, null);
-                animalKindDef = animalKindDefs.RandomElementByWeight((PawnKindDef td) => td.RaceProps.petness);
-            }
-
-            List<EquipmentRecord> entries = PrepareCarefully.Instance.EquipmentDatabase.Animals.FindAll((EquipmentRecord e) => {
-                return e.def == animalKindDef.race;
-            });
-            if (entries.Count > 0) {
-                EquipmentRecord entry = entries.RandomElement();
-                return entry;
-            }
-            else {
-                return null;
-            }
+            return animalKindDef;
         }
 
         public bool Active {
@@ -367,16 +328,6 @@ namespace EdB.PrepareCarefully {
                 return equipmentDatabase;
             }
         }
-        /*
-        public AnimalDatabase AnimalDatabase {
-            get {
-                if (animalDatabase == null) {
-                    animalDatabase = new AnimalDatabase();
-                }
-                return animalDatabase;
-            }
-        }
-        */
 
         protected List<Pawn> colonists = new List<Pawn>();
         private Dictionary<CustomPawn, Pawn> pawnLookup = new Dictionary<CustomPawn, Pawn>();
@@ -410,6 +361,9 @@ namespace EdB.PrepareCarefully {
         }
 
         public bool AddEquipment(EquipmentRecord entry) {
+            if (entry == null) {
+                return false;
+            }
             SyncEquipmentRemovals();
             EquipmentSelection e = Find(entry);
             if (e == null) {
@@ -422,11 +376,14 @@ namespace EdB.PrepareCarefully {
             }
         }
 
-        public bool AddEquipment(EquipmentRecord entry, int count) {
+        public bool AddEquipment(EquipmentRecord record, int count) {
+            if (record == null) {
+                return false;
+            }
             SyncEquipmentRemovals();
-            EquipmentSelection e = Find(entry);
+            EquipmentSelection e = Find(record);
             if (e == null) {
-                equipment.Add(new EquipmentSelection(entry, count));
+                equipment.Add(new EquipmentSelection(record, count));
                 return true;
             }
             else {

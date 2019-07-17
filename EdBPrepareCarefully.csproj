@@ -113,6 +113,7 @@
     <Compile Include="Source\PresetFiles.cs" />
     <Compile Include="Source\PresetLoader.cs" />
     <Compile Include="Source\PresetSaver.cs" />
+    <Compile Include="Source\ProviderAgeLimits.cs" />
     <Compile Include="Source\ProviderAlienRaces.cs" />
     <Compile Include="Source\ProviderApparel.cs" />
     <Compile Include="Source\ProviderHealthOptions.cs" />
@@ -155,6 +156,7 @@
     <Compile Include="Source\ExtensionsObject.cs" />
     <Compile Include="Source\Version4\ColonistLoaderVersion4.cs" />
     <Compile Include="Source\Version4\PresetLoaderVersion4.cs" />
+    <Compile Include="Source\Version4\SaveRecordAlienV4.cs" />
     <Compile Include="Source\Version4\SaveRecordFactionV4.cs" />
     <Compile Include="Source\Version3\PresetLoaderVersion3.cs" />
     <Compile Include="Source\Version3\SaveRecordParentChildGroupV3.cs" />
@@ -216,6 +218,7 @@
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup />
   <ItemGroup>
+    <None Include=".editorconfig" />
     <None Include="Resources\CHANGELOG.txt" />
     <None Include="Resources\About\About.xml">
       <SubType>Designer</SubType>

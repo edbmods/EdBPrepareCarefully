@@ -14,6 +14,7 @@ namespace EdB.PrepareCarefully {
         private Faction faction = Faction.OfPlayer;
         private PawnGenerationContext context = PawnGenerationContext.PlayerStarter;
         private float? fixedBiologicalAge = null;
+        private float? fixedChronologicalAge = null;
         private Gender? fixedGender = null;
         private bool worldPawnFactionDoesntMatter = false;
         public PawnGenerationRequestWrapper() {
@@ -76,6 +77,11 @@ namespace EdB.PrepareCarefully {
         public float? FixedBiologicalAge {
             set {
                 fixedBiologicalAge = value;
+            }
+        }
+        public float? FixedChronologicalAge {
+            set {
+                fixedChronologicalAge = value;
             }
         }
         public Gender? FixedGender {

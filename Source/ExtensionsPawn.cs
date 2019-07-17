@@ -40,6 +40,16 @@ namespace EdB.PrepareCarefully {
             result.health = UtilityCopy.CopyExposable(source.health, constructorArgs);
             result.apparel = UtilityCopy.CopyExposable(source.apparel, constructorArgs);
 
+            // Copy alien comps
+            ThingComp sourceAlienComp = ProviderAlienRaces.FindAlienCompForPawn(source);
+            ThingComp resultAlienComp = ProviderAlienRaces.FindAlienCompForPawn(result);
+            if (sourceAlienComp != null && resultAlienComp != null) {
+                ProviderAlienRaces.SetCrownTypeOnComp(resultAlienComp, ProviderAlienRaces.GetCrownTypeFromComp(sourceAlienComp));
+                ProviderAlienRaces.SetSkinColorOnComp(resultAlienComp, ProviderAlienRaces.GetSkinColorFromComp(sourceAlienComp));
+                ProviderAlienRaces.SetSkinColorSecondOnComp(resultAlienComp, ProviderAlienRaces.GetSkinColorSecondFromComp(sourceAlienComp));
+                ProviderAlienRaces.SetHairColorSecondOnComp(resultAlienComp, ProviderAlienRaces.GetHairColorSecondFromComp(sourceAlienComp));
+            }
+
             // Copy properties added to pawns by mods.
             CopyModdedProperties(source, result);
 

@@ -17,6 +17,7 @@ namespace EdB.PrepareCarefully {
 
         private State state;
         private Randomizer randomizer = new Randomizer();
+        private ProviderAgeLimits ProviderAgeLimits = PrepareCarefully.Instance.Providers.AgeLimits;
         public ControllerPawns(State state) {
             this.state = state;
         }
@@ -133,8 +134,8 @@ namespace EdB.PrepareCarefully {
 
         // Age-related actions.
         public void UpdateBiologicalAge(int age) {
-            int min = state.CurrentPawn.MinAge;
-            int max = state.CurrentPawn.MaxAge;
+            int min = ProviderAgeLimits.MinAgeForPawn(state.CurrentPawn.Pawn);
+            int max = ProviderAgeLimits.MaxAgeForPawn(state.CurrentPawn.Pawn);
             if (age < min) {
                 age = min;
             }
@@ -148,6 +149,7 @@ namespace EdB.PrepareCarefully {
             }
             state.CurrentPawn.BiologicalAge = age;
         }
+
         public void UpdateChronologicalAge(int age) {
             if (age < state.CurrentPawn.BiologicalAge) {
                 age = state.CurrentPawn.BiologicalAge;

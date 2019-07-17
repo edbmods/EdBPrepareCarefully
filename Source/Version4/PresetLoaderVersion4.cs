@@ -110,7 +110,7 @@ namespace EdB.PrepareCarefully {
                         if (thingDef != null) {
                             if (string.IsNullOrEmpty(e.stuffDef)) {
                                 EquipmentKey key = new EquipmentKey(thingDef, null, gender);
-                                EquipmentRecord record = PrepareCarefully.Instance.EquipmentDatabase[key];
+                                EquipmentRecord record = PrepareCarefully.Instance.EquipmentDatabase.LookupEquipmentRecord(key);
                                 if (record != null) {
                                     equipment.Add(new EquipmentSelection(record, e.count));
                                 }
@@ -123,7 +123,7 @@ namespace EdB.PrepareCarefully {
                             else {
                                 if (stuffDef != null) {
                                     EquipmentKey key = new EquipmentKey(thingDef, stuffDef, gender);
-                                    EquipmentRecord record = PrepareCarefully.Instance.EquipmentDatabase[key];
+                                    EquipmentRecord record = PrepareCarefully.Instance.EquipmentDatabase.LookupEquipmentRecord(key);
                                     if (record == null) {
                                         string thing = thingDef != null ? thingDef.defName : "null";
                                         string stuff = stuffDef != null ? stuffDef.defName : "null";
@@ -319,14 +319,17 @@ namespace EdB.PrepareCarefully {
                     pawnThingDef = thingDef;
                 }
             }
-            
-            Pawn source;
+
+            PawnGenerationRequestWrapper generationRequest = new PawnGenerationRequestWrapper() {
+                FixedBiologicalAge = record.biologicalAge,
+                FixedChronologicalAge = record.chronologicalAge,
+                FixedGender = record.gender
+            };
+
             if (pawnKindDef != null) {
-                source = new Randomizer().GenerateKindOfColonist(pawnKindDef);
+                generationRequest.KindDef = pawnKindDef;
             }
-            else {
-                source = new Randomizer().GenerateColonist();
-            }
+            Pawn source = PawnGenerator.GeneratePawn(generationRequest.Request);
             source.health.Reset();
             
             CustomPawn pawn = new CustomPawn(source);
@@ -422,9 +425,18 @@ namespace EdB.PrepareCarefully {
             else {
                 pawn.MelaninLevel = PawnColorUtils.FindMelaninValueFromColor(record.skinColor);
             }
-            // Set the skin color (only for Alien Races).
+            // Set the skin color for Alien Races and alien comp values.
             if (pawn.AlienRace != null) {
                 pawn.SkinColor = record.skinColor;
+                if (record.alien != null) {
+                    ThingComp alienComp = ProviderAlienRaces.FindAlienCompForPawn(pawn.Pawn);
+                    if (alienComp != null) {
+                        ProviderAlienRaces.SetCrownTypeOnComp(alienComp, record.alien.crownType);
+                        ProviderAlienRaces.SetSkinColorOnComp(alienComp, record.alien.skinColor);
+                        ProviderAlienRaces.SetSkinColorSecondOnComp(alienComp, record.alien.skinColorSecond);
+                        ProviderAlienRaces.SetHairColorSecondOnComp(alienComp, record.alien.hairColorSecond);
+                    }
+                }
             }
             
             Backstory backstory = FindBackstory(record.childhood);

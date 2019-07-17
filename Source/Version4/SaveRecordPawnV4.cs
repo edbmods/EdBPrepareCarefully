@@ -38,6 +38,7 @@ namespace EdB.PrepareCarefully {
         public bool randomRelations = false;
         public List<SaveRecordImplantV3> implants = new List<SaveRecordImplantV3>();
         public List<SaveRecordInjuryV3> injuries = new List<SaveRecordInjuryV3>();
+        public SaveRecordAlienV4 alien;
 
         public SaveRecordPawnV4() {
 
@@ -123,6 +124,15 @@ namespace EdB.PrepareCarefully {
                 }
                 this.injuries.Add(saveRecord);
             }
+
+            ThingComp alienComp = ProviderAlienRaces.FindAlienCompForPawn(pawn.Pawn);
+            if (alienComp != null) {
+                alien = new SaveRecordAlienV4();
+                alien.crownType = ProviderAlienRaces.GetCrownTypeFromComp(alienComp);
+                alien.skinColor = ProviderAlienRaces.GetSkinColorFromComp(alienComp);
+                alien.skinColorSecond = ProviderAlienRaces.GetSkinColorSecondFromComp(alienComp);
+                alien.hairColorSecond = ProviderAlienRaces.GetHairColorSecondFromComp(alienComp);
+            }
         }
 
         public void ExposeData() {
@@ -152,6 +162,7 @@ namespace EdB.PrepareCarefully {
             Scribe_Values.Look<int>(ref this.chronologicalAge, "chronologicalAge", 0, false);
             Scribe_Collections.Look<SaveRecordSkillV4>(ref this.skills, "skills", LookMode.Deep, null);
             Scribe_Collections.Look<SaveRecordApparelV4>(ref this.apparel, "apparel", LookMode.Deep, null);
+            Scribe_Deep.Look<SaveRecordAlienV4>(ref this.alien, "alien");
 
             if (Scribe.mode == LoadSaveMode.Saving) {
                 Scribe_Collections.Look<SaveRecordImplantV3>(ref this.implants, "implants", LookMode.Deep, null);

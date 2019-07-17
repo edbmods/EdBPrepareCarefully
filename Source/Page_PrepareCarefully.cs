@@ -132,6 +132,8 @@ namespace EdB.PrepareCarefully {
                     ConfirmExit();
                 }
             );
+
+            PrepareCarefully.Instance.EquipmentDatabase.LoadFrame();
         }
 
         protected void ConfirmExit() {

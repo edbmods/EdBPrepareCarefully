@@ -5,6 +5,7 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Text;
+using System.Text.RegularExpressions;
 using UnityEngine;
 using Verse;
 using Verse.Sound;
@@ -25,11 +26,19 @@ namespace EdB.PrepareCarefully {
         }
         public IEnumerable<CustomHeadType> GetHeadTypes(ThingDef race, Gender gender) {
             OptionsHeadType headTypes = GetHeadTypesForRace(race);
-            return headTypes.GetHeadTypes(gender);
+            return headTypes.GetHeadTypesForGender(gender);
+        }
+        public CustomHeadType FindHeadTypeForPawn(Pawn pawn) {
+            OptionsHeadType headTypes = GetHeadTypesForRace(pawn.def);
+            var result = headTypes.FindHeadTypeForPawn(pawn);
+            if (result == null) {
+                Log.Warning("Prepare Carefully could not find a head type for the pawn: " + pawn.def.defName + ". Head type selection disabled for this pawn");
+            }
+            return result;
         }
         public CustomHeadType FindHeadType(ThingDef race, string graphicsPath) {
             OptionsHeadType headTypes = GetHeadTypesForRace(race);
-            return headTypes.FindHeadType(graphicsPath);
+            return headTypes.FindHeadTypeByGraphicsPath(graphicsPath);
         }
         public CustomHeadType FindHeadTypeForGender(ThingDef race, CustomHeadType headType, Gender gender) {
             OptionsHeadType headTypes = GetHeadTypesForRace(race);
@@ -54,17 +63,15 @@ namespace EdB.PrepareCarefully {
             else {
                 result = InitializeAlienHeadTypes(race);
             }
-            /*
-            Log.Warning("Head Types for " + race.defName + ":");
-            Log.Warning("  Male: ");
-            foreach (var h in result.GetHeadTypes(Gender.Male)) {
-                Log.Message("    " + h.ToString());
-            }
-            Log.Warning("  Female: ");
-            foreach (var h in result.GetHeadTypes(Gender.Female)) {
-                Log.Message("    " + h.ToString());
-            }
-            */
+            //Log.Warning("Head Types for " + race.defName + ":");
+            //Log.Warning("  Male: ");
+            //foreach (var h in result.GetHeadTypesForGender(Gender.Male)) {
+            //    Log.Message("    " + h.ToString());
+            //}
+            //Log.Warning("  Female: ");
+            //foreach (var h in result.GetHeadTypesForGender(Gender.Female)) {
+            //    Log.Message("    " + h.ToString());
+            //}
             return result;
         }
         protected OptionsHeadType InitializeHumanHeadTypes() {
@@ -80,7 +87,7 @@ namespace EdB.PrepareCarefully {
                 IEnumerable<string> graphicsInFolder = GraphicDatabaseUtility.GraphicNamesInFolder(text);
                 foreach (string current in GraphicDatabaseUtility.GraphicNamesInFolder(text)) {
                     string fullPath = text + "/" + current;
-                    CustomHeadType headType = CreateHeadTypeFromGenderedGraphicPath(fullPath);
+                    CustomHeadType headType = CreateHumanHeadTypeFromGenderedGraphicPath(fullPath);
                     result.AddHeadType(headType);
                     pathDictionary.Add(fullPath, headType);
                 }
@@ -118,35 +125,45 @@ namespace EdB.PrepareCarefully {
             }
             return result;
         }
+
+        protected CrownType FindCrownTypeEnumValue(string crownType) {
+            if (crownType.Contains(CrownType.Average.ToString() + "_")) {
+                return CrownType.Average;
+            }
+            else if (crownType.Contains(CrownType.Narrow.ToString() + "_")) {
+                return CrownType.Narrow;
+            }
+            else {
+                return CrownType.Undefined;
+            }
+        }
+
         protected CustomHeadType CreateGenderedAlienHeadTypeFromCrownType(string graphicsPath, string crownType, Gender gender) {
             CustomHeadType result = new CustomHeadType();
+            result.Gender = gender;
+            result.Label = LabelFromCrownType(crownType);
+
+            // Build the full graphics path for this head type
             string pathValue = string.Copy(graphicsPath);
             if (!pathValue.EndsWith("/")) {
                 pathValue += "/";
             }
             if (gender == Gender.Female) {
-                pathValue += "Female/Female_";
+                pathValue += "Female_";
             }
             else if (gender == Gender.Male) {
-                pathValue += "Male/Male_";
+                pathValue += "Male_";
             }
             else {
-                pathValue += "None/None_";
+                pathValue += "None_";
             }
             pathValue += crownType;
-            try {
-                result.GraphicPath = pathValue;
-                string firstPart = crownType.Split('_')[0];
-                CrownType c = (CrownType)Enum.Parse(typeof(CrownType), firstPart);
-                result.CrownType = c;
-                result.Gender = gender;
-                return result;
-            }
-            catch (Exception ex) {
-                Log.Warning("Prepare carefully failed to create a head type when trying to parse crown type value: " + crownType + ": " + ex.Message);
-                return null;
-            }
+            result.GraphicPath = pathValue;
+            result.CrownType = FindCrownTypeEnumValue(crownType);
+            result.AlienCrownType = crownType;
+            return result;
         }
+
         protected CustomHeadType CreateMultiGenderAlienHeadTypeFromCrownType(string graphicsPath, string crownType) {
             CustomHeadType result = new CustomHeadType();
             string pathValue = string.Copy(graphicsPath);
@@ -154,21 +171,18 @@ namespace EdB.PrepareCarefully {
                 pathValue += "/";
             }
             pathValue += crownType;
-            try {
-                result.GraphicPath = pathValue;
-                string firstPart = crownType.Split('_')[0];
-                CrownType c = (CrownType)Enum.Parse(typeof(CrownType), firstPart);
-                result.Gender = null;
-                return result;
-            }
-            catch (Exception ex) {
-                Log.Warning("Prepare carefully failed to create a head type when trying to parse crown type value: " + crownType + ": " + ex.Message);
-                return null;
-            }
+            result.GraphicPath = pathValue;
+            result.Label = LabelFromCrownType(crownType);
+            result.Gender = null;
+            result.CrownType = FindCrownTypeEnumValue(crownType);
+            result.AlienCrownType = crownType;
+            return result;
         }
-        protected CustomHeadType CreateHeadTypeFromGenderedGraphicPath(string graphicPath) {
+
+        protected CustomHeadType CreateHumanHeadTypeFromGenderedGraphicPath(string graphicPath) {
             CustomHeadType result = new CustomHeadType();
             result.GraphicPath = graphicPath;
+            result.Label = LabelFromGraphicsPath(graphicPath);
             string[] strArray = Path.GetFileNameWithoutExtension(graphicPath).Split('_');
             try {
                 result.CrownType = (CrownType)ParseHelper.FromString(strArray[strArray.Length - 2], typeof(CrownType));
@@ -181,5 +195,27 @@ namespace EdB.PrepareCarefully {
             }
             return result;
         }
+
+        protected string LabelFromGraphicsPath(string path) {
+            try {
+                string[] pathValues = path.Split('/');
+                string crownType = pathValues[pathValues.Length - 1];
+                string[] values = crownType.Split('_');
+                return values[values.Count() - 2] + ", " + values[values.Count() - 1];
+            }
+            catch (Exception) {
+                Log.Warning("Prepare Carefully could not determine head type label from graphics path: " + path);
+                return "EdB.PC.Common.Default".Translate();
+            }
+        }
+
+        protected string LabelFromCrownType(string crownType) {
+            string value;
+            value = Regex.Replace(crownType, "(\\B[A-Z]+?(?=[A-Z][^A-Z])|\\B[A-Z]+?(?=[^A-Z]))", " $1");
+            value = value.Replace("_", " ");
+            value = Regex.Replace(value, "\\s+", " ");
+            return value;
+        }
+
     }
 }

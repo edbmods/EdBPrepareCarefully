@@ -1,5 +1,12 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
 <!-- CHANGE NOTES -->
+<!-- v1.0.12 -->
+<!-- NEW: EdB.PC.Pawn.BodyType.Oval -->
+<!-- NEW: EdB.PC.Equipment.LoadingProgress.Initializing -->
+<!-- NEW: EdB.PC.Equipment.LoadingProgress.StuffDefs -->
+<!-- NEW: EdB.PC.Equipment.LoadingProgress.ThingDefs -->
+<!-- NEW: EdB.PC.Equipment.LoadingProgress.Finished -->
+  
 <!-- v1.0.10 -->
 <!-- NEW: EdB.PC.Equipment.AnimalLabel -->
 
@@ -179,6 +186,10 @@
   <EdB.PC.Equipment.Type.Medical>Medical</EdB.PC.Equipment.Type.Medical>
   <EdB.PC.Equipment.Type.Resources>Resources</EdB.PC.Equipment.Type.Resources>
   <EdB.PC.Equipment.Type.Weapons>Weapons</EdB.PC.Equipment.Type.Weapons>
+  <EdB.PC.Equipment.LoadingProgress.Initializing>Initializing...</EdB.PC.Equipment.LoadingProgress.Initializing>
+  <EdB.PC.Equipment.LoadingProgress.StuffDefs>Processing materials...</EdB.PC.Equipment.LoadingProgress.StuffDefs>
+  <EdB.PC.Equipment.LoadingProgress.ThingDefs>Processing items...</EdB.PC.Equipment.LoadingProgress.ThingDefs>
+  <EdB.PC.Equipment.LoadingProgress.Finished>Finished</EdB.PC.Equipment.LoadingProgress.Finished>
 
   <EdB.PC.Error.NotEnoughPoints>You've spent too many points.</EdB.PC.Error.NotEnoughPoints>
   <EdB.PC.Error.NotEnoughColonists1>You must have at least one colonist.</EdB.PC.Error.NotEnoughColonists1>
@@ -194,6 +205,7 @@ Before reporting an error, please try to figure out which mod is causing the pro
   <EdB.PC.Pawn.BodyType.Average>Average</EdB.PC.Pawn.BodyType.Average>
   <EdB.PC.Pawn.BodyType.Heavyset>Heavyset</EdB.PC.Pawn.BodyType.Heavyset>
   <EdB.PC.Pawn.BodyType.Hulking>Hulking</EdB.PC.Pawn.BodyType.Hulking>
+  <EdB.PC.Pawn.BodyType.Oval>Rotund</EdB.PC.Pawn.BodyType.Oval>
   <EdB.PC.Pawn.BodyType.Thin>Thin</EdB.PC.Pawn.BodyType.Thin>
   <EdB.PC.Pawn.BodyType.Unnamed>Unnamed</EdB.PC.Pawn.BodyType.Unnamed>
   <EdB.PC.Pawn.HiddenPawnDescriptionWithGender>{0}, {1}</EdB.PC.Pawn.HiddenPawnDescriptionWithGender>

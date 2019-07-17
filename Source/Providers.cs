@@ -29,5 +29,8 @@ namespace EdB.PrepareCarefully {
         public ProviderHealthOptions Health {
             get; set;
         }
+        public ProviderAgeLimits AgeLimits {
+            get; set;
+        }
     }
 }

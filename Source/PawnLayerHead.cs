@@ -37,7 +37,7 @@ namespace EdB.PrepareCarefully {
         }
 
         public override bool IsOptionSelected(CustomPawn pawn, PawnLayerOption option) {
-            PawnLayerOptionHead headOption = option as PawnLayerOptionHead;
+            var headOption = option as PawnLayerOptionHead;
             if (headOption == null) {
                 return false;
             }

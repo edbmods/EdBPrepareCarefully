@@ -24,6 +24,9 @@ namespace EdB.PrepareCarefully {
         }
         public ThingDef ThingDef {
             get {
+                if (record == null) {
+                    return null;
+                }
                 return record.def;
             }
         }
@@ -39,6 +42,9 @@ namespace EdB.PrepareCarefully {
         }
         public EquipmentKey Key {
             get {
+                if (record == null) {
+                    return new EquipmentKey();
+                }
                 return record.EquipmentKey;
             }
         }
