@@ -13,9 +13,6 @@ namespace EdB.PrepareCarefully {
 
         public int MinAgeForPawn(Pawn pawn) {
             if (!minAgeLookup.TryGetValue(pawn.def, out int age)) {
-                foreach (var p in pawn.def.race.ageGenerationCurve) {
-                    Log.Message(" age generation: " + p.x + ", " + p.y);
-                }
                 CurvePoint point = pawn.def.race.ageGenerationCurve.First();
                 age = (int)point.x;
                 minAgeLookup.Add(pawn.def, age);

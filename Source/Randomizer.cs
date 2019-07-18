@@ -8,25 +8,39 @@ using System.Reflection;
 
 namespace EdB.PrepareCarefully {
     public class Randomizer {
+        public static readonly int MaxAttempts = 10;
         private System.Random random = new System.Random();
         public System.Random Random {
             get {
                 return random;
             }
         }
+
+        protected Pawn AttemptToGeneratePawn(PawnGenerationRequest request) {
+            Exception lastException = null;
+            for (int i = 0; i < MaxAttempts; i++) {
+                try {
+                    return PawnGenerator.GeneratePawn(request);
+                }
+                catch (Exception e) {
+                    lastException = e;
+                }
+            }
+            throw lastException;
+        }
+
         public Pawn GenerateColonist() {
-            Pawn result = PawnGenerator.GeneratePawn(new PawnGenerationRequestWrapper() {
-            }.Request);
+            Pawn result = AttemptToGeneratePawn(new PawnGenerationRequestWrapper() { }.Request);
             return result;
         }
 
         public Pawn GeneratePawn(PawnGenerationRequest request) {
-            Pawn result = PawnGenerator.GeneratePawn(request);
+            Pawn result = AttemptToGeneratePawn(request);
             return result;
         }
 
         public Pawn GenerateKindOfColonist(PawnKindDef kindDef) {
-            Pawn result = PawnGenerator.GeneratePawn(new PawnGenerationRequestWrapper() {
+            Pawn result = AttemptToGeneratePawn(new PawnGenerationRequestWrapper() {
                 KindDef = kindDef
             }.Request);
             return result;
@@ -42,7 +56,7 @@ namespace EdB.PrepareCarefully {
                 Faction = faction,
                 KindDef = kindDef
             }.Request;
-            Pawn result = PawnGenerator.GeneratePawn(req);
+            Pawn result = AttemptToGeneratePawn(req);
             return result;
         }
 
@@ -57,7 +71,7 @@ namespace EdB.PrepareCarefully {
                 KindDef = kindDef,
                 FixedGender = gender
             }.Request;
-            Pawn result = PawnGenerator.GeneratePawn(req);
+            Pawn result = AttemptToGeneratePawn(req);
             return result;
         }
 
