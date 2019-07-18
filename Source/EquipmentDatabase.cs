@@ -199,7 +199,7 @@ namespace EdB.PrepareCarefully {
             }
             catch (Exception e) {
                 Log.Warning("Prepare Carefully failed to process thing definition while building equipment lists: " + def.defName);
-                Log.Message("  Exception: " + e.Message);
+                Log.Message("  Exception: " + e);
             }
             return false;
         }
@@ -242,16 +242,12 @@ namespace EdB.PrepareCarefully {
             if (def.IsFrame) {
                 return TypeDiscard;
             }
-            if (def.weaponTags != null && def.weaponTags.Count > 0) {
-                if (def.IsWeapon) {
-                    return TypeWeapons;
-                }
+            if (def.weaponTags != null && def.weaponTags.Count > 0 && def.IsWeapon) {
+                return TypeWeapons;
             }
 
-            if (def.IsApparel) {
-                if (!def.destroyOnDrop) {
-                    return TypeApparel;
-                }
+            if (def.IsApparel && !def.destroyOnDrop) {
+                return TypeApparel;
             }
 
             if (def.defName.StartsWith("MechSerum")) {
@@ -278,7 +274,7 @@ namespace EdB.PrepareCarefully {
                     return TypeMedical;
                 }
                 if (def.ingestible != null) {
-                    if (thingCategoryMeatRaw != null && def.thingCategories.Contains(thingCategoryMeatRaw)) {
+                    if (thingCategoryMeatRaw != null && def.thingCategories != null && def.thingCategories.Contains(thingCategoryMeatRaw)) {
                         return TypeFood;
                     }
                     if (def.ingestible.drugCategory == DrugCategory.Medical) {
@@ -297,10 +293,8 @@ namespace EdB.PrepareCarefully {
                 return TypeMedical;
             }
 
-            if (def.building != null) {
-                if (def.Minifiable) {
-                    return TypeBuildings;
-                }
+            if (def.building != null && def.Minifiable) {
+                return TypeBuildings;
             }
 
             if (def.race != null && def.race.Animal == true) {

@@ -290,7 +290,26 @@ namespace EdB.PrepareCarefully {
             pawns.Clear();
         }
         public void AddPawn(CustomPawn customPawn) {
+            PreloadPawnEquipment(customPawn.Pawn);
             pawns.Add(customPawn);
+        }
+        protected void PreloadPawnEquipment(Pawn pawn) {
+            if (pawn.equipment != null) {
+                foreach (var e in pawn.equipment.AllEquipmentListForReading) {
+                    if (e.Stuff != null) {
+                        equipmentDatabase.PreloadDefinition(e.Stuff);
+                    }
+                    equipmentDatabase.PreloadDefinition(e.def);
+                }
+            }
+            if (pawn.apparel != null) {
+                foreach (var e in pawn.apparel.WornApparel) {
+                    if (e.Stuff != null) {
+                        equipmentDatabase.PreloadDefinition(e.Stuff);
+                    }
+                    equipmentDatabase.PreloadDefinition(e.def);
+                }
+            }
         }
         public void RemovePawn(CustomPawn customPawn) {
             pawns.Remove(customPawn);
@@ -513,7 +532,7 @@ namespace EdB.PrepareCarefully {
                 Pawn originalPawn = Verse.Find.GameInitData.startingAndOptionalPawns[i];
                 CustomPawn customPawn = originalPawnToCustomPawnMap[originalPawn];
                 customPawn.Type = i < startingPawnCount ? CustomPawnType.Colonist : CustomPawnType.World;
-                this.pawns.Add(customPawn);
+                this.AddPawn(customPawn);
             }
         }
 

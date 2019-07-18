@@ -1,0 +1,5 @@
+* text=auto
+*.cs text eol=lf
+*.dll binary
+*.png binary
+
