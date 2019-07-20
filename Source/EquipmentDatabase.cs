@@ -29,7 +29,6 @@ namespace EdB.PrepareCarefully {
 
         protected ThingCategoryDef thingCategorySweetMeals = null;
         protected ThingCategoryDef thingCategoryMeatRaw = null;
-        protected ThingCategoryDef thingCategoryBodyPartsArtificial = null;
 
         public EquipmentDatabase() {
             types.Add(TypeResources);
@@ -42,7 +41,6 @@ namespace EdB.PrepareCarefully {
 
             thingCategorySweetMeals = DefDatabase<ThingCategoryDef>.GetNamedSilentFail("SweetMeals");
             thingCategoryMeatRaw = DefDatabase<ThingCategoryDef>.GetNamedSilentFail("MeatRaw");
-            thingCategoryBodyPartsArtificial = DefDatabase<ThingCategoryDef>.GetNamedSilentFail("BodyPartsArtificial");
         }
 
         public LoadingState LoadingProgress { get; protected set; } = new LoadingState();
@@ -115,7 +113,7 @@ namespace EdB.PrepareCarefully {
         protected void CountDefs() {
             for (int i = 0; i < LoadingProgress.defsToCountPerFrame; i++) {
                 if (!LoadingProgress.enumerator.MoveNext()) {
-                    Log.Message("Prepare Carefully finished counting " + LoadingProgress.defCount + " thing definition(s)");
+                    //Log.Message("Prepare Carefully finished counting " + LoadingProgress.defCount + " thing definition(s)");
                     NextPhase();
                     return;
                 }
@@ -223,6 +221,8 @@ namespace EdB.PrepareCarefully {
         }
         */
 
+           
+
         public EquipmentType ClassifyThingDef(ThingDef def) {
             if (def.mote != null) {
                 return TypeDiscard;
@@ -260,10 +260,8 @@ namespace EdB.PrepareCarefully {
                 }
                 if (def.IsDrug || (def.statBases != null && def.IsMedicine)) {
                     if (def.ingestible != null) {
-                        if (def.thingCategories != null) {
-                            if (thingCategorySweetMeals != null && def.thingCategories.Contains(thingCategorySweetMeals)) {
-                                return TypeFood;
-                            }
+                        if (BelongsToCategory(def, thingCategorySweetMeals)) {
+                            return TypeFood;
                         }
                         int foodTypes = (int) def.ingestible.foodType;
                         bool isFood = ((foodTypes & (int)FoodTypeFlags.Liquor) > 0) | ((foodTypes & (int)FoodTypeFlags.Meal) > 0);
@@ -274,7 +272,7 @@ namespace EdB.PrepareCarefully {
                     return TypeMedical;
                 }
                 if (def.ingestible != null) {
-                    if (thingCategoryMeatRaw != null && def.thingCategories != null && def.thingCategories.Contains(thingCategoryMeatRaw)) {
+                    if (BelongsToCategory(def, thingCategoryMeatRaw)) {
                         return TypeFood;
                     }
                     if (def.ingestible.drugCategory == DrugCategory.Medical) {
@@ -289,10 +287,6 @@ namespace EdB.PrepareCarefully {
                 return TypeResources;
             }
             
-            if (thingCategoryBodyPartsArtificial != null && def.thingCategories != null && def.thingCategories.Contains(thingCategoryBodyPartsArtificial)) {
-                return TypeMedical;
-            }
-
             if (def.building != null && def.Minifiable) {
                 return TypeBuildings;
             }
@@ -301,7 +295,41 @@ namespace EdB.PrepareCarefully {
                 return TypeAnimals;
             }
 
+            if (def.category == ThingCategory.Item) {
+                if (BelongsToCategoryStartingWith(def, "BodyParts")) {
+                    return TypeMedical;
+                }
+                return TypeResources;
+            }
+
             return null;
+        }
+
+        public bool BelongsToCategory(ThingDef def, ThingCategoryDef categoryDef) {
+            if (categoryDef == null || def.thingCategories == null) {
+                return false;
+            }
+            return def.thingCategories.FirstOrDefault(d => {
+                return categoryDef == d;
+            }) != null;
+        }
+
+        public bool BelongsToCategoryStartingWith(ThingDef def, string categoryNamePrefix) {
+            if (categoryNamePrefix.NullOrEmpty() || def.thingCategories == null) {
+                return false;
+            }
+            return def.thingCategories.FirstOrDefault(d => {
+                return d.defName.StartsWith(categoryNamePrefix);
+            }) != null;
+        }
+
+        public bool BelongsToCategory(ThingDef def, string categoryName) {
+            if (categoryName.NullOrEmpty() || def.thingCategories == null) {
+                return false;
+            }
+            return def.thingCategories.FirstOrDefault(d => {
+                return categoryName == d.defName;
+            }) != null;
         }
 
         public IEnumerable<EquipmentRecord> AllEquipmentOfType(EquipmentType type) {

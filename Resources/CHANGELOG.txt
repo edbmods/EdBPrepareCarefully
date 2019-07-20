@@ -18,6 +18,7 @@
    minimum and maximum age allowed for a starting character. This provides
    better compatibility with the Baby and Children mod.
  - Shift-click to skip the confirmation dialog when deleting a pawn.
+ - Added support for more modded items in the equipment selection view.
 
  _____________________________________________________________________________
  
