@@ -94,7 +94,7 @@ namespace EdB.PrepareCarefully {
         }
 
         public void Calculate(CostDetails cost, List<CustomPawn> pawns, List<EquipmentSelection> equipment, List<SelectedAnimal> animals) {
-            cost.Clear(pawns.Count);
+            cost.Clear(pawns.Where(pawn => pawn.Type == CustomPawnType.Colonist).Count());
 
             int i = 0;
             foreach (var pawn in pawns) {
