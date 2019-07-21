@@ -29,7 +29,6 @@ namespace EdB.PrepareCarefully {
 
         protected ThingCategoryDef thingCategorySweetMeals = null;
         protected ThingCategoryDef thingCategoryMeatRaw = null;
-        protected ThingCategoryDef thingCategoryBodyPartsArtificial = null;
 
         public EquipmentDatabase() {
             types.Add(TypeResources);
@@ -42,7 +41,6 @@ namespace EdB.PrepareCarefully {
 
             thingCategorySweetMeals = DefDatabase<ThingCategoryDef>.GetNamedSilentFail("SweetMeals");
             thingCategoryMeatRaw = DefDatabase<ThingCategoryDef>.GetNamedSilentFail("MeatRaw");
-            thingCategoryBodyPartsArtificial = DefDatabase<ThingCategoryDef>.GetNamedSilentFail("BodyPartsArtificial");
         }
 
         public LoadingState LoadingProgress { get; protected set; } = new LoadingState();
@@ -115,7 +113,7 @@ namespace EdB.PrepareCarefully {
         protected void CountDefs() {
             for (int i = 0; i < LoadingProgress.defsToCountPerFrame; i++) {
                 if (!LoadingProgress.enumerator.MoveNext()) {
-                    Log.Message("Prepare Carefully finished counting " + LoadingProgress.defCount + " thing definition(s)");
+                    //Log.Message("Prepare Carefully finished counting " + LoadingProgress.defCount + " thing definition(s)");
                     NextPhase();
                     return;
                 }
@@ -223,6 +221,20 @@ namespace EdB.PrepareCarefully {
         }
         */
 
+        private bool FoodTypeIsClassifiedAsFood(ThingDef def) {
+            int foodTypes = (int)def.ingestible.foodType;
+            if ((foodTypes & (int)FoodTypeFlags.Liquor) > 0) {
+                return true;
+            }
+            if ((foodTypes & (int)FoodTypeFlags.Meal) > 0) {
+                return true;
+            }
+            if ((foodTypes & (int)FoodTypeFlags.VegetableOrFruit) > 0) {
+                return true;
+            }
+            return false;
+        }
+
         public EquipmentType ClassifyThingDef(ThingDef def) {
             if (def.mote != null) {
                 return TypeDiscard;
@@ -245,54 +257,51 @@ namespace EdB.PrepareCarefully {
             if (def.weaponTags != null && def.weaponTags.Count > 0 && def.IsWeapon) {
                 return TypeWeapons;
             }
+            if (BelongsToCategoryContaining(def, "Weapon")) {
+                return TypeWeapons;
+            }
 
             if (def.IsApparel && !def.destroyOnDrop) {
                 return TypeApparel;
             }
 
-            if (def.defName.StartsWith("MechSerum")) {
+            if (BelongsToCategory(def, "Foods")) {
+                return TypeFood;
+            }
+
+            // Ingestibles
+            if (def.IsDrug || (def.statBases != null && def.IsMedicine)) {
+                if (def.ingestible != null) {
+                    if (BelongsToCategory(def, thingCategorySweetMeals)) {
+                        return TypeFood;
+                    }
+                    if (FoodTypeIsClassifiedAsFood(def)) {
+                        return TypeFood;
+                    }
+                }
                 return TypeMedical;
+            }
+            if (def.ingestible != null) {
+                if (BelongsToCategory(def, thingCategoryMeatRaw)) {
+                    return TypeFood;
+                }
+                if (def.ingestible.drugCategory == DrugCategory.Medical) {
+                    return TypeMedical;
+                }
+                if (def.ingestible.preferability == FoodPreferability.DesperateOnly) {
+                    return TypeResources;
+                }
+                return TypeFood;
             }
 
             if (def.CountAsResource) {
                 if (def.IsShell) {
                     return TypeWeapons;
                 }
-                if (def.IsDrug || (def.statBases != null && def.IsMedicine)) {
-                    if (def.ingestible != null) {
-                        if (def.thingCategories != null) {
-                            if (thingCategorySweetMeals != null && def.thingCategories.Contains(thingCategorySweetMeals)) {
-                                return TypeFood;
-                            }
-                        }
-                        int foodTypes = (int) def.ingestible.foodType;
-                        bool isFood = ((foodTypes & (int)FoodTypeFlags.Liquor) > 0) | ((foodTypes & (int)FoodTypeFlags.Meal) > 0);
-                        if (isFood) {
-                            return TypeFood;
-                        }
-                    }
-                    return TypeMedical;
-                }
-                if (def.ingestible != null) {
-                    if (thingCategoryMeatRaw != null && def.thingCategories != null && def.thingCategories.Contains(thingCategoryMeatRaw)) {
-                        return TypeFood;
-                    }
-                    if (def.ingestible.drugCategory == DrugCategory.Medical) {
-                        return TypeMedical;
-                    }
-                    if (def.ingestible.preferability == FoodPreferability.DesperateOnly || def.ingestible.preferability == FoodPreferability.NeverForNutrition) {
-                        return TypeResources;
-                    }
-                    return TypeFood;
-                }
 
                 return TypeResources;
             }
             
-            if (thingCategoryBodyPartsArtificial != null && def.thingCategories != null && def.thingCategories.Contains(thingCategoryBodyPartsArtificial)) {
-                return TypeMedical;
-            }
-
             if (def.building != null && def.Minifiable) {
                 return TypeBuildings;
             }
@@ -301,7 +310,73 @@ namespace EdB.PrepareCarefully {
                 return TypeAnimals;
             }
 
+            if (def.category == ThingCategory.Item) {
+                if (def.defName.StartsWith("MechSerum")) {
+                    return TypeMedical;
+                }
+                // Body parts should be medical
+                if (BelongsToCategoryStartingWith(def, "BodyParts")) {
+                    return TypeMedical;
+                }
+                // EPOE parts should be medical
+                if (BelongsToCategoryContaining(def, "Prostheses")) {
+                    return TypeMedical;
+                }
+                if (BelongsToCategory(def, "GlitterworldParts")) {
+                    return TypeMedical;
+                }
+                if (BelongsToCategoryEndingWith(def, "Organs")) {
+                    return TypeMedical;
+                }
+                return TypeResources;
+            }
+
             return null;
+        }
+
+        public bool BelongsToCategory(ThingDef def, ThingCategoryDef categoryDef) {
+            if (categoryDef == null || def.thingCategories == null) {
+                return false;
+            }
+            return def.thingCategories.FirstOrDefault(d => {
+                return categoryDef == d;
+            }) != null;
+        }
+
+        public bool BelongsToCategoryStartingWith(ThingDef def, string categoryNamePrefix) {
+            if (categoryNamePrefix.NullOrEmpty() || def.thingCategories == null) {
+                return false;
+            }
+            return def.thingCategories.FirstOrDefault(d => {
+                return d.defName.StartsWith(categoryNamePrefix);
+            }) != null;
+        }
+
+        public bool BelongsToCategoryEndingWith(ThingDef def, string categoryNameSuffix) {
+            if (categoryNameSuffix.NullOrEmpty() || def.thingCategories == null) {
+                return false;
+            }
+            return def.thingCategories.FirstOrDefault(d => {
+                return d.defName.EndsWith(categoryNameSuffix);
+            }) != null;
+        }
+
+        public bool BelongsToCategoryContaining(ThingDef def, string categoryNameSubstring) {
+            if (categoryNameSubstring.NullOrEmpty() || def.thingCategories == null) {
+                return false;
+            }
+            return def.thingCategories.FirstOrDefault(d => {
+                return d.defName.Contains(categoryNameSubstring);
+            }) != null;
+        }
+
+        public bool BelongsToCategory(ThingDef def, string categoryName) {
+            if (categoryName.NullOrEmpty() || def.thingCategories == null) {
+                return false;
+            }
+            return def.thingCategories.FirstOrDefault(d => {
+                return categoryName == d.defName;
+            }) != null;
         }
 
         public IEnumerable<EquipmentRecord> AllEquipmentOfType(EquipmentType type) {

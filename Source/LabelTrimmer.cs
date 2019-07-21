@@ -5,6 +5,46 @@ using UnityEngine;
 using Verse;
 namespace EdB.PrepareCarefully {
     public class LabelTrimmer {
+
+        public interface LabelProvider {
+            string Trim();
+            string Current {
+                get;
+            }
+            string CurrentWithSuffix(string suffix);
+        }
+
+        public struct DefaultLabelProvider : LabelProvider {
+            private string label;
+            private bool trimmed;
+            public DefaultLabelProvider(string label) {
+                this.label = label;
+                this.trimmed = false;
+            }
+            public string Trim() {
+                int length = label.Length;
+                if (length == 0) {
+                    return "";
+                }
+                label = label.Substring(0, length - 1).TrimEnd();
+                trimmed = true;
+                return label;
+            }
+            public string Current {
+                get {
+                    return label;
+                }
+            }
+            public string CurrentWithSuffix(string suffix) {
+                if (trimmed) {
+                    return label + suffix;
+                }
+                else {
+                    return label;
+                }
+            }
+        }
+
         private Dictionary<string, string> cache = new Dictionary<string, string>();
         private string suffix = "...";
         private float width;
@@ -21,30 +61,43 @@ namespace EdB.PrepareCarefully {
                 return width;
             }
             set {
+                if (width != value) {
+                    cache.Clear();
+                }
                 width = value;
             }
         }
         public string TrimLabelIfNeeded(string name) {
-            if (Text.CalcSize(name).x <= width) {
-                return name;
+            return TrimLabelIfNeeded(new DefaultLabelProvider(name));
+        }
+        public string TrimLabelIfNeeded(LabelProvider provider) {
+            string label = provider.Current;
+            if (Text.CalcSize(label).x <= width) {
+                return label;
             }
-            string shorter;
-            if (cache.TryGetValue(name, out shorter)) {
-                return shorter + suffix;
+            if (cache.TryGetValue(label, out string shorter)) {
+                return shorter;
             }
-            shorter = name;
+            return TrimLabel(provider);
+        }
+        public string TrimLabel(LabelProvider provider) {
+            string original = provider.Current;
+            string shorter = original;
             while (!shorter.NullOrEmpty()) {
-                shorter = shorter.Substring(0, shorter.Length - 1);
-                if (shorter.EndsWith(" ")) {
-                    continue;
+                int length = shorter.Length;
+                shorter = provider.Trim();
+                // The trimmer should always return a shorter length.  If it doesn't we bail--it's a bad implementation.
+                if (shorter.Length >= length) {
+                    break;
                 }
-                Vector2 size = Text.CalcSize(shorter + suffix);
+                string withSuffix = provider.CurrentWithSuffix(suffix);
+                Vector2 size = Text.CalcSize(withSuffix);
                 if (size.x <= width) {
-                    cache.Add(name, shorter);
-                    return shorter + suffix;
+                    cache.Add(original, withSuffix);
+                    return shorter;
                 }
             }
-            return name;
+            return original;
         }
     }
 }

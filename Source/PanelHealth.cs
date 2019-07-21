@@ -1,4 +1,4 @@
-using RimWorld;
+﻿using RimWorld;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -77,7 +77,7 @@ namespace EdB.PrepareCarefully {
             RectButtonDelete = new Rect(RectField.xMax - buttonPadding - buttonSize.x,
                 RectField.y + RectField.height * 0.5f - buttonSize.y * 0.5f,
                 buttonSize.x, buttonSize.y);
-            labelTrimmer.Width = RectField.width - (RectField.xMax - RectButtonDelete.xMin) * 2;
+            labelTrimmer.Width = RectField.width - (RectField.xMax - RectButtonDelete.xMin) * 2 - 10;
 
             RectScrollFrame = new Rect(panelPadding, BodyRect.y, contentSize.x, contentSize.y);
             RectScrollView = new Rect(0, 0, RectScrollFrame.width, RectScrollFrame.height);
@@ -135,6 +135,8 @@ namespace EdB.PrepareCarefully {
             base.DrawPanelContent(state);
             CustomPawn customPawn = state.CurrentPawn;
 
+            bool wasScrolling = scrollView.ScrollbarsVisible;
+
             float cursor = 0;
             GUI.BeginGroup(RectScrollFrame);
 
@@ -158,6 +160,15 @@ namespace EdB.PrepareCarefully {
                     customPawn.RemoveCustomBodyParts(x);
                 }
                 partRemovalList.Clear();
+            }
+
+            // If the addition or removal of an item changed whether or not the scrollbars are visible, then we
+            // need to resize the label trimmer.
+            if (wasScrolling && !scrollView.ScrollbarsVisible) {
+                labelTrimmer.Width += 16;
+            }
+            else if (!wasScrolling && scrollView.ScrollbarsVisible) {
+                labelTrimmer.Width -= 16;
             }
         }
 
@@ -515,6 +526,68 @@ namespace EdB.PrepareCarefully {
             return cursor;
         }
 
+        // Custom label provider for health diffs that properly maintains the rich text/html tags while trimming.
+        public struct HealthPanelLabelProvider : LabelTrimmer.LabelProvider {
+            private static readonly int PART_NAME = 0;
+            private static readonly int CHANGE_NAME = 1;
+            private int elementToTrim;
+            private string partName;
+            private string changeName;
+            private readonly string color;
+            public HealthPanelLabelProvider(string partName, string changeName, Color color) {
+                this.partName = partName;
+                this.changeName = changeName;
+                this.color = ColorUtility.ToHtmlStringRGBA(color);
+                this.elementToTrim = CHANGE_NAME;
+            }
+            public string Current {
+                get {
+                    if (elementToTrim == CHANGE_NAME) {
+                        return partName + ": <color=#" + color + ">" + changeName + "</color>";
+                    }
+                    else {
+                        return partName;
+                    }
+                }
+            }
+            public string CurrentWithSuffix(string suffix) {
+                if (elementToTrim == CHANGE_NAME) {
+                    return partName + ": <color=#" + color + ">" + changeName + suffix + "</color>";
+                }
+                else {
+                    return partName + suffix;
+                }
+            }
+            public string Trim() {
+                if (elementToTrim == CHANGE_NAME) {
+                    if (!TrimChangeName()) {
+                        elementToTrim = PART_NAME;
+                    }
+                }
+                else {
+                    TrimPartName();
+                }
+                return Current;
+            }
+            private bool TrimString(ref string value) {
+                int length = value.Length;
+                if (length == 0) {
+                    return false;
+                }
+                value = value.Substring(0, length - 1).TrimEnd();
+                if (length == 0) {
+                    return false;
+                }
+                return true;
+            }
+            private bool TrimChangeName() {
+                return TrimString(ref changeName);
+            }
+            private bool TrimPartName() {
+                return TrimString(ref partName);
+            }
+        }
+
         public float DrawCustomBodyPart(float cursor, CustomBodyPart customPart, Field field) {
             bool willScroll = scrollView.ScrollbarsVisible;
             Rect entryRect = RectItem;
@@ -530,16 +603,14 @@ namespace EdB.PrepareCarefully {
             Rect fieldRect = RectField;
             fieldRect.width = fieldRect.width - (willScroll ? 16 : 0);
             field.Rect = fieldRect;
-            string label;
             if (customPart.BodyPartRecord != null) {
-                label = "EdB.PC.Panel.Health.PartWithInjury".Translate(customPart.PartName, customPart.ChangeName, "#" + ColorUtility.ToHtmlStringRGBA(customPart.LabelColor));
+                field.Label = labelTrimmer.TrimLabelIfNeeded(new HealthPanelLabelProvider(customPart.PartName, customPart.ChangeName, customPart.LabelColor));
                 field.Color = Color.white;
             }
             else {
-                label = customPart.ChangeName;
+                field.Label = labelTrimmer.TrimLabelIfNeeded(customPart.ChangeName);
                 field.Color = customPart.LabelColor;
             }
-            field.Label = labelTrimmer.TrimLabelIfNeeded(label);
             
             if (customPart.HasTooltip) {
                 field.Tip = customPart.Tooltip;

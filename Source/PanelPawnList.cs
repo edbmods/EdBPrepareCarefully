@@ -141,8 +141,9 @@ namespace EdB.PrepareCarefully {
             base.DrawPanelContent(state);
 
             CustomPawn currentPawn = state.CurrentPawn;
-            CustomPawn newPawnSelection = null;
-            CustomPawn swapSelection = null;
+            CustomPawn pawnToSelect = null;
+            CustomPawn pawnToSwap = null;
+            CustomPawn pawnToDelete = null;
             List<CustomPawn> pawns = GetPawnListFromState(state);
             int colonistCount = pawns.Count();
 
@@ -181,8 +182,8 @@ namespace EdB.PrepareCarefully {
                 foreach (var pawn in pawns) {
                     bool selected = pawn == currentPawn;
                     Rect rect = RectEntry;
-                    rect.y = rect.y + cursor;
-                    rect.width = rect.width - (scrollView.ScrollbarsVisible ? 16 : 0);
+                    rect.y += cursor;
+                    rect.width -= (scrollView.ScrollbarsVisible ? 16 : 0);
 
                     GUI.color = Style.ColorPanelBackground;
                     GUI.DrawTexture(rect, BaseContent.WhiteTex);
@@ -204,25 +205,32 @@ namespace EdB.PrepareCarefully {
                             // Replacing it with a mousedown event check fixes it for some reason.
                             //if (GUI.Button(deleteRect, string.Empty, Widgets.EmptyStyle)) {
                             if (Event.current.type == EventType.MouseDown && deleteRect.Contains(Event.current.mousePosition)) {
-                                CustomPawn localPawn = pawn;
-                                Find.WindowStack.Add(
-                                    new Dialog_Confirm("EdB.PC.Panel.PawnList.Delete.Confirm".Translate(),
-                                    delegate {
-                                        PawnDeleted(localPawn);
-                                    },
-                                    true, null, true)
-                                );
+                                // Shift-click skips the confirmation dialog
+                                if (Event.current.shift) {
+                                    // Delete after we've iterated and drawn everything
+                                    pawnToDelete = pawn;
+                                }
+                                else {
+                                    CustomPawn localPawn = pawn;
+                                    Find.WindowStack.Add(
+                                        new Dialog_Confirm("EdB.PC.Panel.PawnList.Delete.Confirm".Translate(),
+                                        delegate {
+                                            PawnDeleted(localPawn);
+                                        },
+                                        true, null, true)
+                                    );
+                                }
                             }
                             GUI.color = Color.white;
                         }
                         if (rect.Contains(Event.current.mousePosition)) {
                             Rect swapRect = RectButtonSwap.OffsetBy(rect.position);
-                            swapRect.x = swapRect.x - (scrollView.ScrollbarsVisible ? 16 : 0);
+                            swapRect.x -= (scrollView.ScrollbarsVisible ? 16 : 0);
                             if (CanDeleteLastPawn || colonistCount > 1) {
                                 Style.SetGUIColorForButton(swapRect);
                                 GUI.DrawTexture(swapRect, pawn.Type == CustomPawnType.Colonist ? Textures.TextureButtonWorldPawn : Textures.TextureButtonColonyPawn);
                                 if (Event.current.type == EventType.MouseDown && swapRect.Contains(Event.current.mousePosition)) {
-                                    swapSelection = pawn;
+                                    pawnToSwap = pawn;
                                 }
                                 GUI.color = Color.white;
                             }
@@ -267,8 +275,8 @@ namespace EdB.PrepareCarefully {
                         Widgets.Label(professionRect, descriptionTrimmer.TrimLabelIfNeeded(description));
                     }
 
-                    if (pawn != state.CurrentPawn && Event.current.type == EventType.MouseDown && rect.Contains(Event.current.mousePosition) && swapSelection == null) {
-                        newPawnSelection = pawn;
+                    if (pawn != state.CurrentPawn && Event.current.type == EventType.MouseDown && rect.Contains(Event.current.mousePosition) && pawnToSwap == null) {
+                        pawnToSelect = pawn;
                     }
 
                     cursor += rect.height + SizeEntrySpacing;
@@ -292,12 +300,16 @@ namespace EdB.PrepareCarefully {
             Text.Font = GameFont.Small;
             Text.Anchor = TextAnchor.UpperLeft;
 
-            if (swapSelection != null) {
-                PawnSwapped(swapSelection);
+            if (pawnToDelete != null) {
+                PawnDeleted(pawnToDelete);
             }
-            else if (newPawnSelection != null) {
-                PawnSelected(newPawnSelection);
+            else if (pawnToSwap != null) {
+                PawnSwapped(pawnToSwap);
             }
+            else if (pawnToSelect != null) {
+                PawnSelected(pawnToSelect);
+            }
+
         }
 
         protected abstract bool IsMaximized(State state);

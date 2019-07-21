@@ -6,6 +6,7 @@
 <!-- NEW: EdB.PC.Equipment.LoadingProgress.StuffDefs -->
 <!-- NEW: EdB.PC.Equipment.LoadingProgress.ThingDefs -->
 <!-- NEW: EdB.PC.Equipment.LoadingProgress.Finished -->
+<!-- REMOVED: EdB.PC.Panel.Health.PartWithInjury -->
   
 <!-- v1.0.10 -->
 <!-- NEW: EdB.PC.Equipment.AnimalLabel -->
@@ -278,7 +279,6 @@ This is not the case for faction leaders.  If you make this character a faction 
   <EdB.PC.Panel.Health.None>No injuries, conditions or implants</EdB.PC.Panel.Health.None>
   <EdB.PC.Panel.Health.SelectBodyPart>Select a location</EdB.PC.Panel.Health.SelectBodyPart>
   <EdB.PC.Panel.Health.SelectSeverity>Select a severity level</EdB.PC.Panel.Health.SelectSeverity>
-  <EdB.PC.Panel.Health.PartWithInjury>{0}: &lt;color={2}&gt;{1}&lt;/color&gt;</EdB.PC.Panel.Health.PartWithInjury>
 
   <EdB.PC.Panel.Incapable.None>None</EdB.PC.Panel.Incapable.None>
   <EdB.PC.Panel.Incapable.Warning>None of your pawns are capable of the following work types that are considered to be required by the vanilla game.
