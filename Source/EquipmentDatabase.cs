@@ -221,7 +221,19 @@ namespace EdB.PrepareCarefully {
         }
         */
 
-           
+        private bool FoodTypeIsClassifiedAsFood(ThingDef def) {
+            int foodTypes = (int)def.ingestible.foodType;
+            if ((foodTypes & (int)FoodTypeFlags.Liquor) > 0) {
+                return true;
+            }
+            if ((foodTypes & (int)FoodTypeFlags.Meal) > 0) {
+                return true;
+            }
+            if ((foodTypes & (int)FoodTypeFlags.VegetableOrFruit) > 0) {
+                return true;
+            }
+            return false;
+        }
 
         public EquipmentType ClassifyThingDef(ThingDef def) {
             if (def.mote != null) {
@@ -245,43 +257,46 @@ namespace EdB.PrepareCarefully {
             if (def.weaponTags != null && def.weaponTags.Count > 0 && def.IsWeapon) {
                 return TypeWeapons;
             }
+            if (BelongsToCategoryContaining(def, "Weapon")) {
+                return TypeWeapons;
+            }
 
             if (def.IsApparel && !def.destroyOnDrop) {
                 return TypeApparel;
             }
 
-            if (def.defName.StartsWith("MechSerum")) {
+            if (BelongsToCategory(def, "Foods")) {
+                return TypeFood;
+            }
+
+            // Ingestibles
+            if (def.IsDrug || (def.statBases != null && def.IsMedicine)) {
+                if (def.ingestible != null) {
+                    if (BelongsToCategory(def, thingCategorySweetMeals)) {
+                        return TypeFood;
+                    }
+                    if (FoodTypeIsClassifiedAsFood(def)) {
+                        return TypeFood;
+                    }
+                }
                 return TypeMedical;
+            }
+            if (def.ingestible != null) {
+                if (BelongsToCategory(def, thingCategoryMeatRaw)) {
+                    return TypeFood;
+                }
+                if (def.ingestible.drugCategory == DrugCategory.Medical) {
+                    return TypeMedical;
+                }
+                if (def.ingestible.preferability == FoodPreferability.DesperateOnly) {
+                    return TypeResources;
+                }
+                return TypeFood;
             }
 
             if (def.CountAsResource) {
                 if (def.IsShell) {
                     return TypeWeapons;
-                }
-                if (def.IsDrug || (def.statBases != null && def.IsMedicine)) {
-                    if (def.ingestible != null) {
-                        if (BelongsToCategory(def, thingCategorySweetMeals)) {
-                            return TypeFood;
-                        }
-                        int foodTypes = (int) def.ingestible.foodType;
-                        bool isFood = ((foodTypes & (int)FoodTypeFlags.Liquor) > 0) | ((foodTypes & (int)FoodTypeFlags.Meal) > 0);
-                        if (isFood) {
-                            return TypeFood;
-                        }
-                    }
-                    return TypeMedical;
-                }
-                if (def.ingestible != null) {
-                    if (BelongsToCategory(def, thingCategoryMeatRaw)) {
-                        return TypeFood;
-                    }
-                    if (def.ingestible.drugCategory == DrugCategory.Medical) {
-                        return TypeMedical;
-                    }
-                    if (def.ingestible.preferability == FoodPreferability.DesperateOnly || def.ingestible.preferability == FoodPreferability.NeverForNutrition) {
-                        return TypeResources;
-                    }
-                    return TypeFood;
                 }
 
                 return TypeResources;
@@ -296,7 +311,21 @@ namespace EdB.PrepareCarefully {
             }
 
             if (def.category == ThingCategory.Item) {
+                if (def.defName.StartsWith("MechSerum")) {
+                    return TypeMedical;
+                }
+                // Body parts should be medical
                 if (BelongsToCategoryStartingWith(def, "BodyParts")) {
+                    return TypeMedical;
+                }
+                // EPOE parts should be medical
+                if (BelongsToCategoryContaining(def, "Prostheses")) {
+                    return TypeMedical;
+                }
+                if (BelongsToCategory(def, "GlitterworldParts")) {
+                    return TypeMedical;
+                }
+                if (BelongsToCategoryEndingWith(def, "Organs")) {
                     return TypeMedical;
                 }
                 return TypeResources;
@@ -320,6 +349,24 @@ namespace EdB.PrepareCarefully {
             }
             return def.thingCategories.FirstOrDefault(d => {
                 return d.defName.StartsWith(categoryNamePrefix);
+            }) != null;
+        }
+
+        public bool BelongsToCategoryEndingWith(ThingDef def, string categoryNameSuffix) {
+            if (categoryNameSuffix.NullOrEmpty() || def.thingCategories == null) {
+                return false;
+            }
+            return def.thingCategories.FirstOrDefault(d => {
+                return d.defName.EndsWith(categoryNameSuffix);
+            }) != null;
+        }
+
+        public bool BelongsToCategoryContaining(ThingDef def, string categoryNameSubstring) {
+            if (categoryNameSubstring.NullOrEmpty() || def.thingCategories == null) {
+                return false;
+            }
+            return def.thingCategories.FirstOrDefault(d => {
+                return d.defName.Contains(categoryNameSubstring);
             }) != null;
         }
 
