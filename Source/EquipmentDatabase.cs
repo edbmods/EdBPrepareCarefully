@@ -242,10 +242,10 @@ namespace EdB.PrepareCarefully {
             if (def.isUnfinishedThing) {
                 return TypeDiscard;
             }
-            if (def.IsWithinCategory(ThingCategoryDefOf.Corpses)) {
+            if (BelongsToCategoryOrParentCategory(def, ThingCategoryDefOf.Corpses)) {
                 return TypeDiscard;
             }
-            if (def.IsWithinCategory(ThingCategoryDefOf.Chunks)) {
+            if (BelongsToCategoryOrParentCategory(def, ThingCategoryDefOf.Chunks)) {
                 return TypeDiscard;
             }
             if (def.IsBlueprint) {
@@ -332,6 +332,24 @@ namespace EdB.PrepareCarefully {
             }
 
             return null;
+        }
+
+        private HashSet<string> categoryLookup = new HashSet<string>();
+        // A duplicate of ThingDef.IsWithinCategory(), but with checks to prevent infinite recursion.
+        public bool BelongsToCategoryOrParentCategory(ThingDef def, ThingCategoryDef categoryDef) {
+            if (categoryDef == null || def.thingCategories == null) {
+                return false;
+            }
+            categoryLookup.Clear();
+            for (int i = 0; i < def.thingCategories.Count; i++) {
+                for (ThingCategoryDef thingCategoryDef = def.thingCategories[i]; thingCategoryDef != null && !categoryLookup.Contains(thingCategoryDef.defName); thingCategoryDef = thingCategoryDef.parent) {
+                    categoryLookup.Add(thingCategoryDef.defName);
+                    if (thingCategoryDef.defName == categoryDef.defName) {
+                        return true;
+                    }
+                }
+            }
+            return false;
         }
 
         public bool BelongsToCategory(ThingDef def, ThingCategoryDef categoryDef) {
