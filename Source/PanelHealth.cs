@@ -246,7 +246,7 @@ namespace EdB.PrepareCarefully {
                     },
                     ConfirmValidation = () => {
                         if (selectedSeverity == null) {
-                            return "EdB.PC.Error.MustSelectSeverity";
+                            return "EdB.PC.Panel.Health.Error.MustSelectSeverity";
                         }
                         else {
                             return null;
@@ -314,6 +314,9 @@ namespace EdB.PrepareCarefully {
                         if (option.ValidParts == null && !option.WholeBody) {
                             bodyPartSelectionRequired = true;
                         }
+                        else if (option.ValidParts != null && option.ValidParts.Count > 0) {
+                            bodyPartSelectionRequired = true;
+                        }
                         else {
                             bodyPartSelectionRequired = false;
                         }
@@ -333,10 +336,18 @@ namespace EdB.PrepareCarefully {
                         ResetSeverityOptions(selectedInjury);
                         if (bodyPartSelectionRequired) {
                             bodyPartDialog.Options = healthOptions.BodyPartsForInjury(selectedInjury);
-                            ResetDisabledBodyParts(bodyPartDialog.Options, customPawn);
-                            Find.WindowStack.Add(bodyPartDialog);
+                            int count = bodyPartDialog.Options.Count();
+                            if (count > 1) {
+                                ResetDisabledBodyParts(bodyPartDialog.Options, customPawn);
+                                Find.WindowStack.Add(bodyPartDialog);
+                                return;
+                            }
+                            else if (count == 1) {
+                                selectedBodyPart = bodyPartDialog.Options.First();
+                            }
                         }
-                        else if (severityOptions.Count > 1) {
+
+                        if (severityOptions.Count > 1) {
                             Find.WindowStack.Add(severityDialog);
                         }
                         else {

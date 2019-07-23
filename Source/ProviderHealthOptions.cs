@@ -110,7 +110,8 @@ namespace EdB.PrepareCarefully {
             if (giver.partsToAffect != null && !giver.canAffectAnyLivePart) {
                 List<BodyPartDef> validParts = new List<BodyPartDef>();
                 foreach (var def in giver.partsToAffect) {
-                    if (options.FindBodyPartsForDef(def) != null) {
+                    List<UniqueBodyPart> parts = options.FindBodyPartsForDef(def);
+                    if (parts != null) {
                         validParts.Add(def);
                     }
                 }
@@ -146,7 +147,7 @@ namespace EdB.PrepareCarefully {
                     }
                 }
             }
-            // Go though all of the chemical defs, looking for hediff givers.
+            // Go through all of the chemical defs, looking for hediff givers.
             foreach (var chemicalDef in DefDatabase<ChemicalDef>.AllDefs) {
                 if (chemicalDef.onGeneratedAddictedEvents != null) {
                     foreach (var giver in chemicalDef.onGeneratedAddictedEvents) {

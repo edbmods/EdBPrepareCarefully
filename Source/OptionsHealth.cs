@@ -100,8 +100,7 @@ namespace EdB.PrepareCarefully {
             return null;
         }
         public UniqueBodyPart FindBodyPartsForRecord(BodyPartRecord record) {
-            UniqueBodyPart result;
-            if (bodyPartRecordLookup.TryGetValue(record, out result)) {
+            if (bodyPartRecordLookup.TryGetValue(record, out UniqueBodyPart result)) {
                 return result;
             }
             else {
@@ -109,8 +108,7 @@ namespace EdB.PrepareCarefully {
             }
         }
         public List<UniqueBodyPart> FindBodyPartsForDef(BodyPartDef def) {
-            List<UniqueBodyPart> result;
-            if (bodyPartDefLookup.TryGetValue(def, out result)) {
+            if (bodyPartDefLookup.TryGetValue(def, out List<UniqueBodyPart> result)) {
                 return result;
             }
             else {
@@ -187,7 +185,16 @@ namespace EdB.PrepareCarefully {
             }
         }
         public IEnumerable<BodyPartRecord> BodyPartsForInjury(InjuryOption option) {
-            return SkinCoveredBodyParts.Select((UniqueBodyPart p) => { return p.Record; });
+            if (option.ValidParts == null || option.ValidParts.Count == 0) {
+                return SkinCoveredBodyParts.Select((UniqueBodyPart p) => { return p.Record; });
+            }
+            else {
+                List<BodyPartRecord> records = new List<BodyPartRecord>();
+                foreach (var part in option.ValidParts) {
+                    records.AddRange(FindBodyPartsForDef(part).ConvertAll(p => p.Record));
+                }
+                return records;
+            }
         }
     }
 }
