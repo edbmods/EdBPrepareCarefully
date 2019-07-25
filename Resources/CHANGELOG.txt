@@ -4,6 +4,8 @@
  _____________________________________________________________________________
 
   - Bug-fix for item categories with multiple parent categories.
+  - Bug fix for choosing body parts for injuries that affect specific parts.
+  - Updated the version of Harmony to 1.2.0.1
 
  _____________________________________________________________________________
  
