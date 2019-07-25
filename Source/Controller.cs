@@ -103,18 +103,6 @@ namespace EdB.PrepareCarefully {
             state.AddMessage("SavedAs".Translate(PrepareCarefully.Instance.Filename));
         }
         
-        private Pawn ConvertPawn(CustomPawn customPawn) {
-            customPawn.Pawn.SetFactionDirect(Faction.OfPlayer);
-            if (customPawn.Type == CustomPawnType.Colonist) {
-                customPawn.Pawn.SetFactionDirect(Faction.OfPlayer);
-            }
-            if (customPawn.Pawn.workSettings == null) {
-                customPawn.Pawn.workSettings = new Pawn_WorkSettings(customPawn.Pawn);
-            }
-            customPawn.Pawn.workSettings.EnableAndInitialize();
-            return customPawn.Pawn;
-        }
-
         public void PrepareGame() {
             PrepareColonists();
             PrepareWorldPawns();
