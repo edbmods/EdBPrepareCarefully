@@ -216,7 +216,9 @@
     <Compile Include="Source\TabViewRelationships.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
-  <ItemGroup />
+  <ItemGroup>
+    <Content Include="Resources\About\Manifest.xml" />
+  </ItemGroup>
   <ItemGroup>
     <None Include=".editorconfig" />
     <None Include="Resources\CHANGELOG.txt" />

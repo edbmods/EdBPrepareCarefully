@@ -124,7 +124,7 @@ namespace EdB.PrepareCarefully {
         protected void ProcessStuff() {
             for (int i = 0; i < LoadingProgress.stuffToProcessPerFrame; i++) {
                 if (!LoadingProgress.enumerator.MoveNext()) {
-                    Log.Message("Prepare Carefully loaded equipment database with " + LoadingProgress.stuffCount + " material(s)");
+                    Log.Message("Prepare Carefully :: Loaded equipment database with " + LoadingProgress.stuffCount + " material(s)");
                     NextPhase();
                     return;
                 }
@@ -138,7 +138,7 @@ namespace EdB.PrepareCarefully {
         protected void ProcessThings() {
             for (int i=0; i<LoadingProgress.thingsToProcessPerFrame; i++) {
                 if (!LoadingProgress.enumerator.MoveNext()) {
-                    Log.Message("Prepare Carefully loaded equipment database with " + LoadingProgress.thingCount + " item(s)");
+                    Log.Message("Prepare Carefully :: Loaded equipment database with " + LoadingProgress.thingCount + " item(s)");
                     NextPhase();
                     return;
                 }
@@ -202,25 +202,6 @@ namespace EdB.PrepareCarefully {
             return false;
         }
 
-        /*
-        public void BuildEquipmentLists() {
-            foreach (var def in DefDatabase<ThingDef>.AllDefs) {
-                try {
-                    if (def != null) {
-                        EquipmentType type = ClassifyThingDef(def);
-                        if (type != null && type != TypeDiscard) {
-                            AddThingDef(def, type);
-                        }
-                    }
-                }
-                catch (Exception e) {
-                    Log.Warning("Prepare Carefully failed to classify thing definition while building equipment lists: " + def.defName);
-                    Log.Message("  Exception: " + e.Message);
-                }
-            }
-        }
-        */
-
         private bool FoodTypeIsClassifiedAsFood(ThingDef def) {
             int foodTypes = (int)def.ingestible.foodType;
             if ((foodTypes & (int)FoodTypeFlags.Liquor) > 0) {
@@ -242,10 +223,10 @@ namespace EdB.PrepareCarefully {
             if (def.isUnfinishedThing) {
                 return TypeDiscard;
             }
-            if (def.IsWithinCategory(ThingCategoryDefOf.Corpses)) {
+            if (BelongsToCategoryOrParentCategory(def, ThingCategoryDefOf.Corpses)) {
                 return TypeDiscard;
             }
-            if (def.IsWithinCategory(ThingCategoryDefOf.Chunks)) {
+            if (BelongsToCategoryOrParentCategory(def, ThingCategoryDefOf.Chunks)) {
                 return TypeDiscard;
             }
             if (def.IsBlueprint) {
@@ -253,6 +234,9 @@ namespace EdB.PrepareCarefully {
             }
             if (def.IsFrame) {
                 return TypeDiscard;
+            }
+            if (BelongsToCategory(def, "Toy")) {
+                return TypeResources;
             }
             if (def.weaponTags != null && def.weaponTags.Count > 0 && def.IsWeapon) {
                 return TypeWeapons;
@@ -295,6 +279,10 @@ namespace EdB.PrepareCarefully {
             }
 
             if (def.CountAsResource) {
+                // Ammunition should be counted under the weapons category
+                if (HasTradeTag(def, "CE_Ammo")) {
+                    return TypeWeapons;
+                }
                 if (def.IsShell) {
                     return TypeWeapons;
                 }
@@ -332,6 +320,24 @@ namespace EdB.PrepareCarefully {
             }
 
             return null;
+        }
+
+        private HashSet<string> categoryLookup = new HashSet<string>();
+        // A duplicate of ThingDef.IsWithinCategory(), but with checks to prevent infinite recursion.
+        public bool BelongsToCategoryOrParentCategory(ThingDef def, ThingCategoryDef categoryDef) {
+            if (categoryDef == null || def.thingCategories == null) {
+                return false;
+            }
+            categoryLookup.Clear();
+            for (int i = 0; i < def.thingCategories.Count; i++) {
+                for (ThingCategoryDef thingCategoryDef = def.thingCategories[i]; thingCategoryDef != null && !categoryLookup.Contains(thingCategoryDef.defName); thingCategoryDef = thingCategoryDef.parent) {
+                    categoryLookup.Add(thingCategoryDef.defName);
+                    if (thingCategoryDef.defName == categoryDef.defName) {
+                        return true;
+                    }
+                }
+            }
+            return false;
         }
 
         public bool BelongsToCategory(ThingDef def, ThingCategoryDef categoryDef) {
@@ -376,6 +382,15 @@ namespace EdB.PrepareCarefully {
             }
             return def.thingCategories.FirstOrDefault(d => {
                 return categoryName == d.defName;
+            }) != null;
+        }
+
+        public bool HasTradeTag(ThingDef def, string tradeTag) {
+            if (tradeTag.NullOrEmpty() || def.tradeTags == null) {
+                return false;
+            }
+            return def.tradeTags.FirstOrDefault(t => {
+                return tradeTag == t;
             }) != null;
         }
 
