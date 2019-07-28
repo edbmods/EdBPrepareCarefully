@@ -235,6 +235,9 @@ namespace EdB.PrepareCarefully {
             if (def.IsFrame) {
                 return TypeDiscard;
             }
+            if (BelongsToCategory(def, "Toy")) {
+                return TypeResources;
+            }
             if (def.weaponTags != null && def.weaponTags.Count > 0 && def.IsWeapon) {
                 return TypeWeapons;
             }
