@@ -5,7 +5,11 @@
 
   - Bug-fix for item categories with multiple parent categories.
   - Bug fix for choosing body parts for injuries that affect specific parts.
-  - Updated the version of Harmony to 1.2.0.1
+  - Bug fix for races with no defined age generation curve.
+  - Updated the version of Harmony to 1.2.0.1.
+  - Added "manifest" file to support the Mod Manager mod.
+  - Ammunition equipment from Combat Extended is now classified under the
+    "Weapons" category.
 
  _____________________________________________________________________________
  
