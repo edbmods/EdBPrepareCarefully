@@ -322,15 +322,18 @@ namespace EdB.PrepareCarefully {
             return null;
         }
 
-        private HashSet<string> categoryLookup = new HashSet<string>();
         // A duplicate of ThingDef.IsWithinCategory(), but with checks to prevent infinite recursion.
+        private HashSet<string> categoryLookup = new HashSet<string>();
         public bool BelongsToCategoryOrParentCategory(ThingDef def, ThingCategoryDef categoryDef) {
-            if (categoryDef == null || def.thingCategories == null) {
+            if (categoryDef == null || def.thingCategories == null || def.thingCategories.Count == 0) {
                 return false;
             }
             categoryLookup.Clear();
             for (int i = 0; i < def.thingCategories.Count; i++) {
-                for (ThingCategoryDef thingCategoryDef = def.thingCategories[i]; thingCategoryDef != null && !categoryLookup.Contains(thingCategoryDef.defName); thingCategoryDef = thingCategoryDef.parent) {
+                for (ThingCategoryDef thingCategoryDef = def.thingCategories[i];
+                    thingCategoryDef != null && !categoryLookup.Contains(thingCategoryDef.defName);
+                    thingCategoryDef = thingCategoryDef.parent)
+                {
                     categoryLookup.Add(thingCategoryDef.defName);
                     if (thingCategoryDef.defName == categoryDef.defName) {
                         return true;
@@ -505,20 +508,6 @@ namespace EdB.PrepareCarefully {
                 return null;
             }
         }
-
-        /*
-        public EquipmentRecord this[EquipmentKey key] {
-            get {
-                EquipmentRecord result;
-                if (entries.TryGetValue(key, out result)) {
-                    return result;
-                }
-                else {
-                    return null;
-                }
-            }
-        }
-        */
 
         public EquipmentRecord AddThingDefWithStuff(ThingDef def, ThingDef stuff, EquipmentType type) {
             if (type == null) {
