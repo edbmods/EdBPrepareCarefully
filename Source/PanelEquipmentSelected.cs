@@ -122,7 +122,7 @@ namespace EdB.PrepareCarefully {
                     Rect fieldRect = new Rect(columnRect.x + 17, columnRect.y + 7, 60, 28);
                     Widgets.DrawAtlas(fieldRect, Textures.TextureFieldAtlas);
 
-                    if (metadata.rowIndex <= numberFields.Count) {
+                    if (metadata.rowIndex >= numberFields.Count) {
                         numberFields.Add(new WidgetNumberField() {
                             MaxValue = 100000
                         });

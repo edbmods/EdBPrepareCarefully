@@ -34,6 +34,18 @@ namespace EdB.PrepareCarefully {
             return result;
         }
 
+        public Pawn GenerateColonistAsCloseToAsPossible(Pawn pawn) {
+            var request = new PawnGenerationRequestWrapper() {
+                KindDef = pawn.kindDef,
+                Faction = pawn.Faction,
+                FixedBiologicalAge = pawn.ageTracker.AgeBiologicalYears,
+                FixedChronologicalAge = pawn.ageTracker.AgeChronologicalYears,
+                FixedGender = pawn.gender
+            };
+            Pawn result = AttemptToGeneratePawn(request.Request);
+            return result;
+        }
+
         public Pawn GeneratePawn(PawnGenerationRequest request) {
             Pawn result = AttemptToGeneratePawn(request);
             return result;

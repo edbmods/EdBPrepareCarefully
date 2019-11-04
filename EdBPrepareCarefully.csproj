@@ -135,7 +135,6 @@
     <Compile Include="Source\SelectedAnimal.cs" />
     <Compile Include="Source\EquipmentSelection.cs" />
     <Compile Include="Source\SelectedPet.cs" />
-    <Compile Include="Source\StandardEquipment.cs" />
     <Compile Include="Source\TabRecordExtensions.cs" />
     <Compile Include="Source\Version3\SaveRecordEquipmentV3.cs" />
     <Compile Include="Source\IEquipment.cs" />
