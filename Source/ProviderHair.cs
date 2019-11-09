@@ -85,6 +85,11 @@ namespace EdB.PrepareCarefully {
             })) {
                 result.AddHair(hairDef);
             }
+            
+            if (alienRace.HairColors != null) {
+                result.Colors = alienRace.HairColors.ToList();
+            }
+            
             result.Sort();
             return result;
         }
