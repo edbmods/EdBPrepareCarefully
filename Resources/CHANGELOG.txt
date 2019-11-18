@@ -5,6 +5,7 @@
 
   - Better error handling when loading the classes needed to add the
     Prepare Carefully button to the character configuration screen.
+  - Fix for alien hair color swatches
 
  _____________________________________________________________________________
  
