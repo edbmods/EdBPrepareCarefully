@@ -1,4 +1,4 @@
-﻿using Harmony;
+using Harmony;
 using RimWorld;
 using System;
 using System.Collections.Generic;
@@ -15,8 +15,8 @@ namespace EdB.PrepareCarefully {
     internal class HarmonyPatches {
         static HarmonyPatches() {
             try {
-                Type pageConfigureStartingPawnsType = AccessTools.TypeByName("RimWorld.Page_ConfigureStartingPawns");
-                Type gameType = AccessTools.TypeByName("Verse.Game");
+                Type pageConfigureStartingPawnsType = ReflectionUtil.TypeByName("RimWorld.Page_ConfigureStartingPawns");
+                Type gameType = ReflectionUtil.TypeByName("Verse.Game");
                 HarmonyInstance harmony = HarmonyInstance.Create("EdB.PrepareCarefully");
                 if (pageConfigureStartingPawnsType != null) {
                     if (harmony.Patch(pageConfigureStartingPawnsType.GetMethod("PreOpen"),
@@ -41,7 +41,7 @@ namespace EdB.PrepareCarefully {
                     }
                 }
                 else {
-                    Log.Warning("Could not modify the game initilization routine as needed for Prepare Carefully.  Could not find the required type.");
+                    Log.Warning("Could not modify the game initialization routine as needed for Prepare Carefully.  Could not find the required type.");
                 }
             }
             catch (Exception e) {

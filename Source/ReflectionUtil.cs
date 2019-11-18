@@ -69,5 +69,58 @@ namespace EdB.PrepareCarefully {
                 info.SetValue(target, value);
             }
         }
+
+
+        // Similar to Harmony's AccessTools.TypeByName() but with error handling around Assembly.GetTypes() to avoid
+        // issues with bad assemblies.
+        public static Type TypeByName(string name) {
+            Type type = null;
+            try {
+                type = Type.GetType(name, false);
+            }
+            catch (Exception) {
+                Log.Warning("Prepare Carefully encountered an error when trying to get type {" + name + "} using Type.GetType(name)");
+            }
+            if (type != null) {
+                return type;
+            }
+            Assembly[] assemblies = null;
+            try {
+                assemblies = AppDomain.CurrentDomain.GetAssemblies();
+            }
+            catch (Exception) {
+                Log.Warning("Prepare Carefully encountered an error when trying to get the list of available assemblies");
+                return null;
+            }
+            foreach (var assembly in assemblies) {
+                try {
+                    Type[] types = assembly.GetTypes();
+                    type = types.FirstOrDefault(x => x.FullName == name);
+                    if (type != null) {
+                        return type;
+                    }
+                    else {
+                        type = types.FirstOrDefault(x => x.Name == name);
+                    }
+                    if (type != null) {
+                        return type;
+                    }
+                }
+                catch (Exception) {
+                    String assemblyNameAsString = "Unknown assembly";
+                    try {
+                        var assemblyName = assembly.GetName();
+                        assemblyNameAsString = assemblyName.Name;
+                    }
+                    catch {
+                        Log.Warning("Prepare Carefully ran into an error when trying to get an assembly name");
+                    }
+                    Log.Warning("Prepare Carefully was searching for the class {" + name + "}, but there was an error when getting the list of types "
+                        + "from the assembly {" + assemblyNameAsString + "}.  Something might be broken in the mod to which that assembly belongs.  "
+                        + "Skipping it to continue the search in the rest of the assemblies.");
+                }
+            }
+            return null;
+        }
     }
 }

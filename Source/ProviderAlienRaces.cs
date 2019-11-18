@@ -217,7 +217,7 @@ namespace EdB.PrepareCarefully {
             object hairColorGeneratorValue = GetFieldValue(raceDef, alienPartGeneratorObject, "alienhaircolorgen", true);
             ColorGenerator hairColorGenerator = hairColorGeneratorValue as ColorGenerator;
             if (hairColorGenerator != null) {
-                result.HairColors = primaryGenerator.GetColorList();
+                result.HairColors = hairColorGenerator.GetColorList();
             }
             else {
                 result.HairColors = null;
