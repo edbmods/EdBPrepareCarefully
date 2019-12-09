@@ -1,4 +1,4 @@
-﻿using RimWorld;
+using RimWorld;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -57,7 +57,14 @@ namespace EdB.PrepareCarefully {
         }
         protected OptionsHeadType InitializeHeadTypes(ThingDef race) {
             OptionsHeadType result;
-            if (race == ThingDefOf.Human) {
+            // If the race definition has an alien comp, then look for the head types in it.  If not, then use the default human head types.
+            CompProperties alienCompProperties = null;
+            if (race != null && race.comps != null) {
+                alienCompProperties = race.comps.FirstOrDefault((CompProperties comp) => {
+                    return (comp.compClass.Name == "AlienComp");
+                });
+            }
+            if (alienCompProperties == null) {
                 result = InitializeHumanHeadTypes();
             }
             else {
