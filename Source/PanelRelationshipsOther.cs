@@ -1,4 +1,4 @@
-﻿using RimWorld;
+using RimWorld;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -38,7 +38,7 @@ namespace EdB.PrepareCarefully {
                 if (def.familyByBloodRelation) {
                     return false;
                 }
-                MethodInfo info = def.workerClass.GetMethod("CreateRelation", BindingFlags.Instance | BindingFlags.Public | BindingFlags.DeclaredOnly);
+                MethodInfo info = ReflectionUtil.Method(def.workerClass, "CreateRelation");
                 if (info == null) {
                     return false;
                 }

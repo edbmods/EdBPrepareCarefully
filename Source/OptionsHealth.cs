@@ -1,4 +1,4 @@
-﻿using RimWorld;
+using RimWorld;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -158,7 +158,7 @@ namespace EdB.PrepareCarefully {
         }
         public void Sort() {
             implantRecipes.Sort((RecipeDef a, RecipeDef b) => {
-                return a.LabelCap.CompareTo(b.LabelCap);
+                return a.LabelCap.Resolve().CompareTo(b.LabelCap);
             });
             injuryOptions.Sort((InjuryOption a, InjuryOption b) => {
                 return a.Label.CompareTo(b.Label);

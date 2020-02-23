@@ -1,4 +1,4 @@
-﻿using RimWorld;
+using RimWorld;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -124,7 +124,7 @@ namespace EdB.PrepareCarefully {
         protected void ProcessStuff() {
             for (int i = 0; i < LoadingProgress.stuffToProcessPerFrame; i++) {
                 if (!LoadingProgress.enumerator.MoveNext()) {
-                    Log.Message("Prepare Carefully :: Loaded equipment database with " + LoadingProgress.stuffCount + " material(s)");
+                    Logger.Message("Loaded equipment database with " + LoadingProgress.stuffCount + " material(s)");
                     NextPhase();
                     return;
                 }
@@ -138,7 +138,7 @@ namespace EdB.PrepareCarefully {
         protected void ProcessThings() {
             for (int i=0; i<LoadingProgress.thingsToProcessPerFrame; i++) {
                 if (!LoadingProgress.enumerator.MoveNext()) {
-                    Log.Message("Prepare Carefully :: Loaded equipment database with " + LoadingProgress.thingCount + " item(s)");
+                    Logger.Message("Loaded equipment database with " + LoadingProgress.thingCount + " item(s)");
                     NextPhase();
                     return;
                 }
@@ -692,9 +692,12 @@ namespace EdB.PrepareCarefully {
             if (kindDef != null) {
                 int messageCount;
                 Faction faction = Faction.OfPlayer;
-                PawnGenerationRequest request = new PawnGenerationRequest(kindDef, faction, PawnGenerationContext.NonPlayer,
-                    -1, false, false, true, true, true, false, 1f, false, true, true, false, false, false,
-                    false, null, null, null, null, null, null, null, null);
+                PawnGenerationRequest request = new PawnGenerationRequestWrapper() {
+                    KindDef = kindDef,
+                    Faction = faction,
+                    MustBeCapableOfViolence = true
+                    
+                }.Request;
                 messageCount = ReflectionUtil.GetNonPublicStatic<int>(typeof(Log), "messageCount");
                 Pawn pawn =  PawnGenerator.GeneratePawn(request);
                 if (ReflectionUtil.GetNonPublicStatic<int>(typeof(Log), "messageCount") > messageCount) {

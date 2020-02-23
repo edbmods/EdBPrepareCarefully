@@ -82,8 +82,7 @@ namespace EdB.PrepareCarefully {
             return result;
         }
         protected OptionsHeadType InitializeHumanHeadTypes() {
-            MethodInfo headGraphicsMethod = typeof(GraphicDatabaseHeadRecords).GetMethod("BuildDatabaseIfNecessary", BindingFlags.Static | BindingFlags.NonPublic);
-            headGraphicsMethod.Invoke(null, null);
+            Reflection.GraphicDatabaseHeadRecords.BuildDatabaseIfNecessary();
             string[] headsFolderPaths = new string[] {
                 "Things/Pawn/Humanlike/Heads/Male",
                 "Things/Pawn/Humanlike/Heads/Female"

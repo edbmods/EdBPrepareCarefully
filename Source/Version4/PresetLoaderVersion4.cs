@@ -1,4 +1,4 @@
-﻿using RimWorld;
+using RimWorld;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -162,17 +162,7 @@ namespace EdB.PrepareCarefully {
                 throw e;
             }
             finally {
-                // I don't fully understand how these cross-references and saveables are resolved, but
-                // if we don't clear them out, we get null pointer exceptions.
-                HashSet<IExposable> saveables = (HashSet<IExposable>)(typeof(PostLoadIniter).GetField("saveablesToPostLoad", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(Scribe.loader.initer));
-                if (saveables != null) {
-                    saveables.Clear();
-                }
-                List<IExposable> crossReferencingExposables = (List<IExposable>)(typeof(CrossRefHandler).GetField("crossReferencingExposables", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(Scribe.loader.crossRefs));
-                if (crossReferencingExposables != null) {
-                    crossReferencingExposables.Clear();
-                }
-                Scribe.loader.FinalizeLoading();
+                PresetLoader.ClearSaveablesAndCrossRefs();
             }
 
             List<CustomPawn> allPawns = new List<CustomPawn>();
@@ -330,10 +320,12 @@ namespace EdB.PrepareCarefully {
                 generationRequest.KindDef = pawnKindDef;
             }
             Pawn source = PawnGenerator.GeneratePawn(generationRequest.Request);
-            source.health.Reset();
+            if (source.health != null) {
+                source.health.Reset();
+            }
             
             CustomPawn pawn = new CustomPawn(source);
-            if (pawn.Id == null) {
+            if (record.id == null) {
                 pawn.GenerateId();
             }
             else {
@@ -367,6 +359,11 @@ namespace EdB.PrepareCarefully {
             pawn.FirstName = record.firstName;
             pawn.NickName = record.nickName;
             pawn.LastName = record.lastName;
+
+            if (record.originalFactionDef != null) {
+                pawn.OriginalFactionDef = DefDatabase<FactionDef>.GetNamedSilentFail(record.originalFactionDef);
+            }
+            pawn.OriginalKindDef = pawnKindDef;
 
             if (pawn.Type == CustomPawnType.World) {
                 if (record.faction != null) {
@@ -417,7 +414,9 @@ namespace EdB.PrepareCarefully {
             }
             
             pawn.HeadGraphicPath = record.headGraphicPath;
-            pawn.Pawn.story.hairColor = record.hairColor;
+            if (pawn.Pawn.story != null) {
+                pawn.Pawn.story.hairColor = record.hairColor;
+            }
             
             if (record.melanin >= 0.0f) {
                 pawn.MelaninLevel = record.melanin;

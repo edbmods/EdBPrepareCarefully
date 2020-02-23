@@ -1,4 +1,4 @@
-﻿using RimWorld;
+using RimWorld;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -11,6 +11,7 @@ namespace EdB.PrepareCarefully {
         public string type;
         public SaveRecordFactionV4 faction;
         public string pawnKindDef;
+        public string originalFactionDef;
         public string thingDef;
         public Gender gender;
         public string adulthood;
@@ -54,7 +55,8 @@ namespace EdB.PrepareCarefully {
                 this.faction.index = pawn.Faction.Index;
                 this.faction.leader = pawn.Faction.Leader;
             }
-            this.pawnKindDef = pawn.Pawn.kindDef.defName;
+            this.pawnKindDef = pawn.OriginalKindDef != null ? pawn.OriginalKindDef.defName : pawn.Pawn.kindDef.defName;
+            this.originalFactionDef = pawn.OriginalFactionDef != null ? pawn.OriginalFactionDef.defName : null;
             this.gender = pawn.Gender;
             if (pawn.Adulthood != null) {
                 this.adulthood = pawn.Adulthood.identifier;
@@ -140,6 +142,7 @@ namespace EdB.PrepareCarefully {
             Scribe_Values.Look<string>(ref this.type, "type", null, false);
             Scribe_Deep.Look<SaveRecordFactionV4>(ref this.faction, "faction");
             Scribe_Values.Look<string>(ref this.pawnKindDef, "pawnKindDef", null, false);
+            Scribe_Values.Look<string>(ref this.originalFactionDef, "originalFactionDef", null, false);
             Scribe_Values.Look<string>(ref this.thingDef, "thingDef", ThingDefOf.Human.defName, false);
             Scribe_Values.Look<Gender>(ref this.gender, "gender", Gender.Male, false);
             Scribe_Values.Look<string>(ref this.childhood, "childhood", null, false);

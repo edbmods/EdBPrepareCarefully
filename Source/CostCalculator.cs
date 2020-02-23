@@ -1,4 +1,4 @@
-﻿using RimWorld;
+using RimWorld;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -269,12 +269,11 @@ namespace EdB.PrepareCarefully {
                     return def.BaseMarketValue;
                 }
                 else {
-                    // TODO:
+                    // EVERY RELEASE:
                     // Should look at ThingMaker.MakeThing() to decide which validations we need to do
                     // before calling that method.  That method doesn't do null checks everywhere, so we
                     // may need to do those validations ourselves to avoid null pointer exceptions.
-                    // Should re-evaluate for each new release and then update the todo comment with the next
-                    // alpha version.
+                    // Should re-evaluate for each new release.
                     if (def.thingClass == null) {
                         Log.Warning("Prepare Carefully trying to calculate the cost of a ThingDef with null thingClass: " + def.defName);
                         return 0;

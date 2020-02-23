@@ -1,4 +1,4 @@
-﻿using RimWorld;
+using RimWorld;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -105,11 +105,13 @@ namespace EdB.PrepareCarefully {
             if (factionDef == null) {
                 factionDef = Faction.OfPlayer.def;
             }
-            MethodInfo method = typeof(PawnBioAndNameGenerator).GetMethod("FillBackstorySlotShuffled", BindingFlags.Static | BindingFlags.NonPublic);
-            object[] arguments = new object[] { customPawn.Pawn, BackstorySlot.Adulthood, null, kindDef.backstoryCategories, factionDef };
-            method.Invoke(null, arguments);
-            Backstory result = arguments[2] as Backstory;
-            return result;
+
+            List<BackstoryCategoryFilter> backstoryCategoryFiltersFor = Reflection.PawnBioAndNameGenerator
+                .GetBackstoryCategoryFiltersFor(customPawn.Pawn, factionDef);
+            if (!Reflection.PawnBioAndNameGenerator.TryGetRandomUnusedSolidBioFor(backstoryCategoryFiltersFor, kindDef, customPawn.Gender, null, out PawnBio pawnBio)) {
+                return customPawn.Adulthood;
+            }
+            return pawnBio.adulthood;
         }
 
         public void RandomizeName(CustomPawn customPawn) {

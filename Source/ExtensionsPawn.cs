@@ -1,4 +1,4 @@
-﻿using RimWorld;
+using RimWorld;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -77,23 +77,15 @@ namespace EdB.PrepareCarefully {
         public static void ClearCaches(this Pawn pawn) {
             pawn.ClearCachedHealth();
             pawn.ClearCachedLifeStage();
-            pawn.ClearCachedDisabledWorkTypes();
             pawn.ClearCachedDisabledSkillRecords();
-        }
-
-        public static void ClearCachedDisabledWorkTypes(this Pawn pawn) {
-            if (pawn.story != null) {
-                typeof(Pawn_StoryTracker).GetField("cachedDisabledWorkTypes", BindingFlags.Instance | BindingFlags.NonPublic).SetValue(pawn.story, null);
-            }
         }
 
         public static void ClearCachedDisabledSkillRecords(this Pawn pawn) {
             if (pawn.skills != null && pawn.skills.skills != null) {
-                FieldInfo field = typeof(SkillRecord).GetField("cachedTotallyDisabled", BindingFlags.NonPublic | BindingFlags.Instance);
-                foreach (var record in pawn.skills.skills) {
-                    field.SetValue(record, BoolUnknown.Unknown);
-                }
+                pawn.skills.Notify_SkillDisablesChanged();
             }
+            Reflection.Pawn.ClearCachedDisabledWorkTypes(pawn);
+            Reflection.Pawn.ClearCachedDisabledWorkTypesPermanent(pawn);
         }
 
         public static void ClearCachedHealth(this Pawn pawn) {
@@ -118,6 +110,11 @@ namespace EdB.PrepareCarefully {
         public static void ClearCachedPortraits(this Pawn pawn) {
             pawn.Drawer.renderer.graphics.ResolveAllGraphics();
             PortraitsCache.SetDirty(pawn);
+        }
+
+        public static void AssignToFaction(this Pawn pawn, Faction faction) {
+            FieldInfo field = typeof(Pawn_AgeTracker).GetField("factionInt", BindingFlags.NonPublic | BindingFlags.Instance);
+            field.SetValue(pawn, faction);
         }
 
     }
