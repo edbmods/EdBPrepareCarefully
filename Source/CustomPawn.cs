@@ -1,4 +1,4 @@
-﻿using RimWorld;
+using RimWorld;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -26,7 +26,7 @@ namespace EdB.PrepareCarefully {
 
         public Dictionary<SkillDef, Passion> originalPassions = new Dictionary<SkillDef, Passion>();
         public Dictionary<SkillDef, Passion> currentPassions = new Dictionary<SkillDef, Passion>();
-        
+
         protected string incapable = null;
         protected Pawn pawn;
 
@@ -46,7 +46,7 @@ namespace EdB.PrepareCarefully {
 
         // A GUID provides a unique identifier for the CustomPawn.
         protected string id;
-        
+
         protected CustomHeadType headType;
 
         protected List<Implant> implants = new List<Implant>();
@@ -56,6 +56,8 @@ namespace EdB.PrepareCarefully {
         protected bool portraitDirty = true;
         protected AlienRace alienRace = null;
         protected CustomFaction faction = null;
+        protected PawnKindDef originalKindDef = null;
+        protected FactionDef originalFactionDef = null;
 
         public CustomPawn() {
             GenerateId();
@@ -91,13 +93,23 @@ namespace EdB.PrepareCarefully {
                 return Type == CustomPawnType.Hidden || Type == CustomPawnType.Temporary;
             }
         }
-        
+
         public CustomFaction Faction {
             get {
                 return faction;
             }
             set {
                 faction = value;
+            }
+        }
+
+        // Stores the original FactionDef of a pawn that was created from a faction template.
+        public FactionDef OriginalFactionDef {
+            get {
+                return originalFactionDef;
+            }
+            set {
+                originalFactionDef = value;
             }
         }
 
@@ -116,7 +128,7 @@ namespace EdB.PrepareCarefully {
                 return alienRace;
             }
         }
-        
+
         public bool HasCustomBodyParts {
             get {
                 return bodyParts.Count > 0;
@@ -171,6 +183,9 @@ namespace EdB.PrepareCarefully {
         public void InitializeWithPawn(Pawn pawn) {
             this.pawn = pawn;
             this.pawn.ClearCaches();
+
+            this.originalKindDef = pawn.kindDef;
+            this.originalFactionDef = pawn.Faction != null ? pawn.Faction.def : null;
 
             PrepareCarefully.Instance.Providers.Health.GetOptions(this);
 
@@ -230,7 +245,7 @@ namespace EdB.PrepareCarefully {
 
             // Evaluate all hediffs.
             InitializeInjuriesAndImplantsFromPawn(pawn);
-            
+
             // Set the alien race, if any.
             alienRace = PrepareCarefully.Instance.Providers.AlienRaces.GetAlienRace(pawn.def);
 
@@ -675,7 +690,7 @@ namespace EdB.PrepareCarefully {
                 return pawn.LabelShort;
             }
         }
-        
+
         public IEnumerable<Implant> Implants {
             get {
                 return implants;
@@ -692,6 +707,18 @@ namespace EdB.PrepareCarefully {
         public bool IsAdult {
             get {
                 return this.BiologicalAge > 19;
+            }
+        }
+
+        // Stores the original PawnKindDef of the pawn.  This value automatically changes when you assign
+        // a pawn to the FactionOf.Colony, so we want to preserve it for faction pawns that are created from
+        // a different PawnKindDef.
+        public PawnKindDef OriginalKindDef {
+            get {
+                return originalKindDef;
+            }
+            set {
+                originalKindDef = value;
             }
         }
 
@@ -1049,7 +1076,7 @@ namespace EdB.PrepareCarefully {
             }
         }
 
-        protected void ResetBackstories() {
+        public void ResetBackstories() {
             UpdateSkillLevelsForNewBackstoryOrTrait();
         }
 
@@ -1307,12 +1334,11 @@ namespace EdB.PrepareCarefully {
         }
 
         public string ResetCachedIncapableOf() {
-            pawn.ClearCachedDisabledWorkTypes();
             pawn.ClearCachedDisabledSkillRecords();
             List<string> incapableList = new List<string>();
-            WorkTags combinedDisabledWorkTags = pawn.story.CombinedDisabledWorkTags;
+            WorkTags combinedDisabledWorkTags = pawn.story.DisabledWorkTagsBackstoryAndTraits;
             if (combinedDisabledWorkTags != WorkTags.None) {
-                IEnumerable<WorkTags> list = (IEnumerable<WorkTags>)typeof(CharacterCardUtility).GetMethod("WorkTagsFrom", BindingFlags.Static | BindingFlags.NonPublic).Invoke(null, new object[] { combinedDisabledWorkTags });
+                IEnumerable<WorkTags> list = Reflection.CharacterCardUtility.WorkTagsFrom(combinedDisabledWorkTags);
                 foreach (var tag in list) {
                     incapableList.Add(WorkTypeDefsUtility.LabelTranslated(tag).CapitalizeFirst());
                 }

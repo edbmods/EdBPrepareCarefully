@@ -2,6 +2,7 @@ using RimWorld;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 using UnityEngine;
 using Verse;
 using Verse.Sound;
@@ -13,7 +14,7 @@ namespace EdB.PrepareCarefully {
         public event UpdateBackstoryHandler BackstoryUpdated;
         public event RandomizeBackstoriesHandler BackstoriesRandomized;
 
-        private ProviderBackstories providerBackstories = new ProviderBackstories();
+        private ProviderBackstories providerBackstories = PrepareCarefully.Instance.Providers.Backstories;
         private Rect RectAdulthoodLabel;
         private Rect RectChildhoodLabel;
         private Rect RectAdulthoodField;
@@ -90,7 +91,7 @@ namespace EdB.PrepareCarefully {
             else {
                 FieldChildhood.Label = null;
             }
-            FieldChildhood.Tip = pawn.Childhood.FullDescriptionFor(pawn.Pawn);
+            FieldChildhood.Tip = pawn.Childhood.CheckedDescriptionFor(pawn.Pawn);
             FieldChildhood.ClickAction = () => {
                 ShowBackstoryDialog(pawn, BackstorySlot.Childhood);
             };
@@ -104,7 +105,7 @@ namespace EdB.PrepareCarefully {
             FieldAdulthood.Enabled = isAdult;
             if (isAdult) {
                 FieldAdulthood.Label = pawn.Adulthood.TitleCapFor(pawn.Gender);
-                FieldAdulthood.Tip = pawn.Adulthood.FullDescriptionFor(pawn.Pawn);
+                FieldAdulthood.Tip = pawn.Adulthood.CheckedDescriptionFor(pawn.Pawn);
                 FieldAdulthood.ClickAction = () => {
                     ShowBackstoryDialog(pawn, BackstorySlot.Adulthood);
                 };
@@ -151,14 +152,14 @@ namespace EdB.PrepareCarefully {
             Filter<Backstory> filterToRemove = null;
             bool filterListDirtyFlag = true;
             List<Backstory> fullOptionsList = slot == BackstorySlot.Childhood ?
-                    this.providerBackstories.GetChildhoodBackstoriesForPawn(customPawn) : this.providerBackstories.GetAdulthoodBackstoriesForPawn(customPawn);
+                    this.providerBackstories.AllChildhookBackstories : this.providerBackstories.AllAdulthookBackstories;
             List<Backstory> filteredBackstories = new List<Backstory>(fullOptionsList.Count);
             Dialog_Options<Backstory> dialog = new Dialog_Options<Backstory>(filteredBackstories) {
                 NameFunc = (Backstory backstory) => {
                     return backstory.TitleCapFor(customPawn.Gender);
                 },
                 DescriptionFunc = (Backstory backstory) => {
-                    return backstory.FullDescriptionFor(customPawn.Pawn);
+                    return backstory.CheckedDescriptionFor(customPawn.Pawn);
                 },
                 SelectedFunc = (Backstory backstory) => {
                     return selectedBackstory == backstory;

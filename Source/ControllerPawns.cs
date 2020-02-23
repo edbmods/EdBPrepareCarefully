@@ -1,4 +1,4 @@
-﻿using RimWorld;
+using RimWorld;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -29,7 +29,7 @@ namespace EdB.PrepareCarefully {
                 if (w.requireCapableColonist) {
                     bool workTypeEnabledOnAtLeastOneColonist = false;
                     foreach (CustomPawn pawn in PrepareCarefully.Instance.Pawns.Where((pawn) => { return pawn.Type == CustomPawnType.Colonist; })) {
-                        if (!pawn.Pawn.story.WorkTypeIsDisabled(w)) {
+                        if (!pawn.Pawn.WorkTypeIsDisabled(w)) {
                             workTypeEnabledOnAtLeastOneColonist = true;
                             break;
                         }
@@ -101,13 +101,17 @@ namespace EdB.PrepareCarefully {
             if (factionDef == null) {
                 factionDef = Faction.OfPlayer.def;
             }
-            MethodInfo method = typeof(PawnBioAndNameGenerator).GetMethod("FillBackstorySlotShuffled", BindingFlags.Static | BindingFlags.NonPublic);
-            object[] arguments = new object[] { currentPawn.Pawn, BackstorySlot.Childhood, null, kindDef.backstoryCategories, factionDef };
-            method.Invoke(null, arguments);
-            currentPawn.Childhood = arguments[2] as Backstory;
-            arguments = new object[] { currentPawn.Pawn, BackstorySlot.Adulthood, null, kindDef.backstoryCategories, factionDef };
-            method.Invoke(null, arguments);
-            currentPawn.Adulthood = arguments[2] as Backstory;
+            List<BackstoryCategoryFilter> backstoryCategoryFiltersFor = Reflection.PawnBioAndNameGenerator
+                .GetBackstoryCategoryFiltersFor(currentPawn.Pawn, factionDef);
+            if (!Reflection.PawnBioAndNameGenerator.TryGetRandomUnusedSolidBioFor(backstoryCategoryFiltersFor, 
+                    kindDef, currentPawn.Gender, null, out PawnBio pawnBio)) {
+                return;
+            }
+            currentPawn.Childhood = pawnBio.childhood;
+            // TODO: Remove the hard-coded adult age and get the value from a provider instead?
+            if (currentPawn.BiologicalAge >= 20) {
+                currentPawn.Adulthood = pawnBio.adulthood;
+            }
         }
 
         // Trait-related actions.
@@ -290,7 +294,7 @@ namespace EdB.PrepareCarefully {
                     Faction = faction,
                     KindDef = kindDef,
                     Context = PawnGenerationContext.NonPlayer,
-                    WorldPawnFactionDoesntMatter = true
+                    WorldPawnFactionDoesntMatter = false
                 }.Request);
                 if (pawn.equipment != null) {
                     pawn.equipment.DestroyAllEquipment(DestroyMode.Vanish);
@@ -312,6 +316,7 @@ namespace EdB.PrepareCarefully {
             finally {
                 kindDef.weaponMoney = savedWeaponsMoney;
             }
+
             // Reset the quality and damage of all apparel.
             foreach (var a in pawn.apparel.WornApparel) {
                 a.SetQuality(QualityCategory.Normal);
@@ -319,6 +324,10 @@ namespace EdB.PrepareCarefully {
             }
 
             CustomPawn customPawn = new CustomPawn(pawn);
+            customPawn.OriginalKindDef = kindDef;
+            customPawn.OriginalFactionDef = faction.def;
+            pawn.SetFaction(Faction.OfPlayer);
+
             customPawn.Type = startingPawn ? CustomPawnType.Colonist : CustomPawnType.World;
             if (!startingPawn) {
                 CustomFaction customFaction = PrepareCarefully.Instance.Providers.Factions.FindRandomCustomFactionByDef(factionDef);

@@ -1,4 +1,4 @@
-﻿using RimWorld;
+using RimWorld;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -62,6 +62,7 @@ namespace EdB.PrepareCarefully {
             }
             base.DrawPanelContent(state);
 
+            Action clickAction = null;
             float cursor = 0;
             GUI.color = Color.white;
             GUI.BeginGroup(RectScrollFrame);
@@ -141,10 +142,16 @@ namespace EdB.PrepareCarefully {
                         Find.WindowStack.Add(dialog);
                     };
                     field.PreviousAction = () => {
-                        SelectPreviousTrait(currentPawn, index);
+                        var capturedIndex = index;
+                        clickAction = () => {
+                            SelectPreviousTrait(currentPawn, capturedIndex);
+                        };
                     };
                     field.NextAction = () => {
-                        SelectNextTrait(currentPawn, index);
+                        var capturedIndex = index;
+                        clickAction = () => {
+                            SelectNextTrait(currentPawn, capturedIndex);
+                        };
                     };
                     field.Draw();
 
@@ -174,6 +181,11 @@ namespace EdB.PrepareCarefully {
             }
 
             GUI.color = Color.white;
+
+            if (clickAction != null) {
+                clickAction();
+                clickAction = null;
+            }
 
             // Randomize traits button.
             Rect randomizeRect = new Rect(PanelRect.width - 32, 9, 22, 22);

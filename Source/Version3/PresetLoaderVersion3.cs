@@ -1,4 +1,4 @@
-﻿using RimWorld;
+using RimWorld;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -215,17 +215,7 @@ namespace EdB.PrepareCarefully {
                 throw e;
             }
             finally {
-                // I don't fully understand how these cross-references and saveables are resolved, but
-                // if we don't clear them out, we get null pointer exceptions.
-                HashSet<IExposable> saveables = (HashSet<IExposable>)(typeof(PostLoadIniter).GetField("saveablesToPostLoad", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(Scribe.loader.initer));
-                if (saveables != null) {
-                    saveables.Clear();
-                }
-                List<IExposable> crossReferencingExposables = (List<IExposable>)(typeof(CrossRefHandler).GetField("crossReferencingExposables", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(Scribe.loader.crossRefs));
-                if (crossReferencingExposables != null) {
-                    crossReferencingExposables.Clear();
-                }
-                Scribe.loader.FinalizeLoading();
+                PresetLoader.ClearSaveablesAndCrossRefs();
             }
 
             List<CustomPawn> allPawns = new List<CustomPawn>();

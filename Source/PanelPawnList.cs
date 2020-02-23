@@ -1,4 +1,4 @@
-﻿using RimWorld;
+using RimWorld;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -291,7 +291,7 @@ namespace EdB.PrepareCarefully {
             GUI.color = Color.white;
             Text.Font = GameFont.Tiny;
             if (Widgets.ButtonText(RectButtonAdd, "EdB.PC.Common.Add".Translate(), true, false, true)) {
-                SoundDefOf.SelectDesignator.PlayOneShotOnCamera();
+                SoundDefOf.Click.PlayOneShotOnCamera();
                 AddingPawn(StartingPawns);
             }
             if (Widgets.ButtonText(RectButtonAdvancedAdd, "...", true, false, true)) {
@@ -353,7 +353,7 @@ namespace EdB.PrepareCarefully {
                 RowGroups = rowGroups,
                 DisabledOptions = disabled,
                 CloseAction = () => {
-                    SoundDefOf.SelectDesignator.PlayOneShotOnCamera();
+                    SoundDefOf.Click.PlayOneShotOnCamera();
                     if (selected != null) {
                         PrepareCarefully.Instance.State.LastSelectedPawnKindDef = selected;
                         AddingPawnWithPawnKind(selected, StartingPawns);

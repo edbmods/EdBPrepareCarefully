@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.IO;
@@ -10,7 +10,7 @@ namespace EdB.PrepareCarefully {
         public static string SavedPresetsFolderPath {
             get {
                 try {
-                    return (string)typeof(GenFilePaths).GetMethod("FolderUnderSaveData", BindingFlags.NonPublic | BindingFlags.Static).Invoke(null, new object[] { "PrepareCarefully" });
+                    return Reflection.GenFilePaths.FolderUnderSaveData("PrepareCarefully");
                 }
                 catch (Exception e) {
                     Log.Error("Failed to get preset save directory");

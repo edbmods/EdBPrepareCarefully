@@ -1,4 +1,4 @@
-﻿using RimWorld;
+using RimWorld;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -41,80 +41,7 @@ namespace EdB.PrepareCarefully {
         public List<SaveRecordInjuryV3> injuries = new List<SaveRecordInjuryV3>();
 
         public SaveRecordPawnV3() {
-
         }
-
-        /*
-        public SaveRecordPawnV3(CustomPawn pawn) {
-            this.id = pawn.Id;
-            this.thingDef = pawn.Pawn.def.defName;
-            this.pawnKindDef = pawn.Pawn.kindDef.defName;
-            this.gender = pawn.Gender;
-            if (pawn.Adulthood != null) {
-                this.adulthood = pawn.Adulthood.identifier;
-            }
-            else {
-                this.adulthood = pawn.LastSelectedAdulthoodBackstory.identifier;
-            }
-            this.childhood = pawn.Childhood.identifier;
-            this.skinColor = pawn.Pawn.story.SkinColor;
-            this.melanin = pawn.Pawn.story.melanin;
-            this.hairDef = pawn.HairDef.defName;
-            this.hairColor = pawn.GetColor(PrepareCarefully.Instance.Providers.PawnLayers.HairLayer);
-            this.headGraphicPath = pawn.HeadGraphicPath;
-            this.bodyType = pawn.BodyType.defName; // TODO: Enum.GetName(typeof(BodyTypeDef), pawn.BodyType);
-            this.firstName = pawn.FirstName;
-            this.nickName = pawn.NickName;
-            this.lastName = pawn.LastName;
-            this.age = 0;
-            this.biologicalAge = pawn.BiologicalAge;
-            this.chronologicalAge = pawn.ChronologicalAge;
-            foreach (var trait in pawn.Traits) {
-                if (trait != null) {
-                    this.traitNames.Add(trait.def.defName);
-                    this.traitDegrees.Add(trait.Degree);
-                }
-            }
-            foreach (var skill in pawn.Pawn.skills.skills) {
-                this.skillNames.Add(skill.def.defName);
-                this.skillValues.Add(pawn.GetUnmodifiedSkillLevel(skill.def));
-                this.passions.Add(pawn.currentPassions[skill.def]);
-                this.originalPassions.Add(pawn.originalPassions[skill.def]);
-            }
-            for (int layer = 0; layer < PawnLayers.Count; layer++) {
-                ThingDef apparelThingDef = pawn.GetAcceptedApparel(layer);
-                ThingDef apparelStuffDef = pawn.GetSelectedStuff(layer);
-                Color color = pawn.GetColor(layer);
-                if (apparelThingDef != null) {
-                    this.apparelLayers.Add(layer);
-                    this.apparel.Add(apparelThingDef.defName);
-                    this.apparelStuff.Add(apparelStuffDef != null ? apparelStuffDef.defName : "");
-                    this.apparelColors.Add(color);
-                }
-            }
-            OptionsHealth healthOptions = PrepareCarefully.Instance.Providers.Health.GetOptions(pawn);
-            foreach (Implant implant in pawn.Implants) {
-                var saveRecord = new SaveRecordImplantV3(implant);
-                if (implant.BodyPartRecord != null) {
-                    UniqueBodyPart part = healthOptions.FindBodyPartsForRecord(implant.BodyPartRecord);
-                    if (part != null && part.Index > 0) {
-                        saveRecord.bodyPartIndex = part.Index;
-                    }
-                }
-                this.implants.Add(saveRecord);
-            }
-            foreach (Injury injury in pawn.Injuries) {
-                var saveRecord = new SaveRecordInjuryV3(injury);
-                if (injury.BodyPartRecord != null) {
-                    UniqueBodyPart part = healthOptions.FindBodyPartsForRecord(injury.BodyPartRecord);
-                    if (part != null && part.Index > 0) {
-                        saveRecord.bodyPartIndex = part.Index;
-                    }
-                }
-                this.injuries.Add(saveRecord);
-            }
-        }
-        */
 
         public void ExposeData() {
             Scribe_Values.Look<string>(ref this.id, "id", null, false);

@@ -1,4 +1,4 @@
-﻿using RimWorld;
+using RimWorld;
 using System;
 using System.Collections.Generic;
 using UnityEngine;
@@ -13,7 +13,7 @@ namespace EdB.PrepareCarefully {
 
         public virtual string PartName {
             get {
-                return BodyPartRecord != null ? (BodyPartRecord.LabelCap) : "EdB.PC.BodyParts.WholeBody".Translate();
+                return BodyPartRecord != null ? (BodyPartRecord.LabelCap) : "EdB.PC.BodyParts.WholeBody".Translate().Resolve();
             }
         }
 

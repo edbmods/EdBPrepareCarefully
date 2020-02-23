@@ -1,4 +1,4 @@
-﻿using RimWorld;
+using RimWorld;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -93,7 +93,7 @@ namespace EdB.PrepareCarefully {
                                     return 1;
                                 }
                                 else {
-                                    return a.LabelCap.CompareTo(b.LabelCap);
+                                    return a.LabelCap.Resolve().CompareTo(b.LabelCap);
                                 }
                             }
                             else {

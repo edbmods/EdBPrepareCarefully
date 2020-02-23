@@ -1,4 +1,4 @@
-﻿using RimWorld;
+using RimWorld;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -170,6 +170,7 @@ namespace EdB.PrepareCarefully {
             Providers.Factions = new ProviderFactions();
             Providers.PawnLayers = new ProviderPawnLayers();
             Providers.AgeLimits = new ProviderAgeLimits();
+            Providers.Backstories = new ProviderBackstories();
         }
 
         // TODO:
@@ -260,11 +261,10 @@ namespace EdB.PrepareCarefully {
 
         private static PawnKindDef RandomPet(ScenPart_StartingAnimal startingAnimal) {
             FieldInfo animalKindField = typeof(ScenPart_StartingAnimal).GetField("animalKind", BindingFlags.Instance | BindingFlags.NonPublic);
-            MethodInfo randomPetsMethod = typeof(ScenPart_StartingAnimal).GetMethod("RandomPets", BindingFlags.Instance | BindingFlags.NonPublic);
 
             PawnKindDef animalKindDef = (PawnKindDef)animalKindField.GetValue(startingAnimal);
             if (animalKindDef == null) {
-                IEnumerable<PawnKindDef> animalKindDefs = (IEnumerable<PawnKindDef>)randomPetsMethod.Invoke(startingAnimal, null);
+                IEnumerable<PawnKindDef> animalKindDefs = Reflection.ScenPart_StartingAnimal.RandomPets(startingAnimal);
                 animalKindDef = animalKindDefs.RandomElementByWeight((PawnKindDef td) => td.RaceProps.petness);
             }
             return animalKindDef;

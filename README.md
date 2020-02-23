@@ -12,22 +12,43 @@ The solution file was created using Xamarin Studio/MonoDevelop, but it should al
 
 Note that the solution has dependencies on the following RimWorld DLLs:
 - Assembly-CSharp.dll
-- UnityEngine.dll
+- UnityEngine.CoreModule.dll
+- UnityEngine.IMGUIModule
+- UnityEngine.InputLegacyModule
+- UnityEngine.TextRenderingModule
 
 Copy those dependencies from the RimWorld game directory into the "Libraries" directory.  Be sure to make _copies_ of the originals--don't accidentally move/delete them from the original game directory.
 
 The solution also has a dependency on the following third-party DLL:
 - 0Harmony.dll
 
-The Harmony DLL is available from https://github.com/pardeike/Harmony/releases and should also be placed in the "Libraries" directory.  Be sure to download and use the "Release" version.
+The Harmony DLL is available from https://github.com/pardeike/Harmony/releases and should also be placed in the "Libraries" directory.  Prepare Carefully uses version 2.0.0.5 of Harmony. When you download Harmony, you'll see
+multiple versions of the DLL organized into various directories.  Be sure to use the one in the "Release/net472" directory.
+
+Only if you _must_ create a build that also supports RimWorld 1.0, you will need to get the DLL from the latest Prepare Carefully release for 1.0, along with the DLL for Harmony _1.2_.  Place these DLLs into the `Resources/Assemblies` directory.
 
 The result of the build will be the following DLL:
 - EdBPrepareCarefully.dll
 
-This DLL must be packaged with the contents of the `Resources` directory to create a working mod. The DLL should be placed inside an `Assemblies` directory.
+This DLL must be packaged alongside the contents of the `Resources` directory to create a working mod. The DLL built by the project should be placed inside a `1.1/Assemblies` directory along with the Harmony DLL.  The directory structure should look like this:
 
-To automatically build the mod directory for your Release DLL, run the `dist.bat` script.  This will copy all of the mod resources and the DLL into a `dist/EdBPrepareCarefully` directory.  Copy this `EdBPrepareCarefully` directory into your RimWorld `Mods` folder.
+```
++ EdBPrepareCarefully
+  + 1.1
+    + Assemblies
+      - 0Harmony.dll
+      - EdBPrepareCarefully.dll
+  + About
+  + Assemblies
+  + Defs
+  + Languages
+  + Textures
+  - CHANGLELOG.txt
+  - LICENSE
+  - LoadFolders.xml
+```
 
+If Windows is the OS on which you're developing, you don't need to manually create the mod directory.  Instead, you can automatically package up the mod by running the `dist.bat` script.  This will copy all of the mod resources and the DLL into a `dist/EdBPrepareCarefully` directory.  Copy this `EdBPrepareCarefully` directory into your RimWorld `Mods` folder to use the mod in your game.
 
 ## Versioning
 
@@ -40,4 +61,5 @@ Other conventions used to determine the mod version numbers:
 
 Some examples:
 + **0.18.2**: The second release of the mod for the Beta 18 version of RimWorld
-+ **1.0.1**: The first release of the mod for RimWorld 1.0
++ **1.0.11**: The eleventh release of the mod for RimWorld 1.0
++ **1.1.1**: The first release of the mod for RimWorld 1.1

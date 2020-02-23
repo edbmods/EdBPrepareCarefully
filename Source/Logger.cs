@@ -1,42 +1,27 @@
-﻿using System;
+using System;
 using Verse;
 
 namespace EdB.PrepareCarefully {
-    public class Logger {
-        private bool debugEnabled = false;
+    public static class Logger {
+        private static readonly string Prefix = "[Prepare Carefully] ";
+        private static readonly bool DebugEnabled = false;
 
-        public bool DebugEnabled {
-            get {
-                return debugEnabled;
-            }
-            set {
-                debugEnabled = value;
-            }
-        }
-
-        public Logger() {
-        }
-
-        public Logger(bool debugEnabled) {
-            this.debugEnabled = debugEnabled;
-        }
-
-        public void Debug(string message) {
-            if (debugEnabled) {
+        public static void Debug(string message) {
+            if (DebugEnabled) {
                 Log.Message(message);
             }
         }
 
-        public void Message(string message) {
-            Log.Message(message);
+        public static void Message(string message) {
+            Log.Message(Prefix + message);
         }
 
-        public void Warning(string message) {
-            Log.Warning(message);
+        public static void Warning(string message) {
+            Log.Warning(Prefix + message);
         }
 
-        public void Error(string message) {
-            Log.Error(message);
+        public static void Error(string message) {
+            Log.Error(Prefix + message);
         }
     }
 }

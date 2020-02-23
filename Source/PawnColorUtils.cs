@@ -1,4 +1,4 @@
-﻿using RimWorld;
+using RimWorld;
 using System;
 using System.Collections.Generic;
 using System.Reflection;
@@ -27,11 +27,6 @@ namespace EdB.PrepareCarefully {
         public static void InitializeColors() {
             List<float> values = new List<float>();
 
-            // Get the private GetSkinDataLeftIndexByWhiteness() method from the PawnSkinColors class.
-            MethodInfo getSkinDataIndexOfMelaninMethod = typeof(PawnSkinColors)
-                    .GetMethod("GetSkinDataIndexOfMelanin",
-                    BindingFlags.NonPublic | BindingFlags.Static, null, new Type[] { typeof(float) }, null);
-
             // Iterate all values from 0.0f to 1.0f, using increments of 0.01f, to get the left index for each value.
             // Use this technique to construct a list of all of the indexes and their values.  Once we have the list
             // of indexes and their values, we can use the GetSkinColor() method to get the actual colors.
@@ -40,7 +35,7 @@ namespace EdB.PrepareCarefully {
             float f = 0.01f;
             int counter = 1;
             while (f < 1.0f) {
-                int result = (int)getSkinDataIndexOfMelaninMethod.Invoke(null, new object[] { f });
+                int result = Reflection.PawnSkinColors.GetSkinDataIndexOfMelanin(f);
                 if (result != currentIndex) {
                     currentIndex = result;
                     values.Add(f);

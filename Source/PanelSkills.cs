@@ -224,7 +224,7 @@ namespace EdB.PrepareCarefully {
 
         private void DrawSkill(CustomPawn customPawn, SkillRecord skill, Rect rect) {
             int level = skill.Level;
-            bool disabled = customPawn.IsSkillDisabled(skill.def);
+            bool disabled = skill.TotallyDisabled;
             if (!disabled) {
                 float barSize = (level > 0 ? (float)level : 0) / 20f;
                 FillableBar(rect, barSize, Textures.TextureSkillBarFill);

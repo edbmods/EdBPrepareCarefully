@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -9,6 +9,9 @@ namespace EdB.PrepareCarefully {
             get; set;
         }
         public ProviderApparel Apparel {
+            get; set;
+        }
+        public ProviderBackstories Backstories {
             get; set;
         }
         public ProviderBodyTypes BodyTypes {

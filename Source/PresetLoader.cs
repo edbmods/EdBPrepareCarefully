@@ -1,4 +1,4 @@
-﻿using RimWorld;
+using RimWorld;
 using System;
 using System.Collections.Generic;
 using System.Reflection;
@@ -40,6 +40,16 @@ namespace EdB.PrepareCarefully {
             }
 
             return result;
+        }
+
+        public static void ClearSaveablesAndCrossRefs() {
+            // I don't fully understand how these cross-references and saveables are resolved, but
+            // if we don't clear them out, we get null pointer exceptions.
+            Reflection.PostLoadIniter.ClearSaveablesToPostLoad(Scribe.loader.initer);
+            if (Scribe.loader.crossRefs.crossReferencingExposables != null) {
+                Scribe.loader.crossRefs.crossReferencingExposables.Clear();
+            }
+            Scribe.loader.FinalizeLoading();
         }
     }
 

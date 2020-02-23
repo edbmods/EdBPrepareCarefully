@@ -1,4 +1,4 @@
-﻿using RimWorld;
+using RimWorld;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -138,11 +138,6 @@ namespace EdB.PrepareCarefully {
 
         protected override void DrawPanelContent(State state) {
             base.DrawPanelContent(state);
-
-            // TODO: Why were we doing it this way?
-            //IEnumerable<EquipmentSelection> entries = PrepareCarefully.Instance.Equipment.Select((EquipmentSelection equipment) => {
-            //    return FindEntry(equipment);
-            //}).Where((EquipmentSelection equipment) => { return equipment != null; });
 
             IEnumerable<EquipmentSelection> entries = SelectedEquipment;
 
