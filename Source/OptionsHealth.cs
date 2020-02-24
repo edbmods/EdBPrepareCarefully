@@ -157,11 +157,17 @@ namespace EdB.PrepareCarefully {
             }
         }
         public void Sort() {
+            SortImplants();
+            SortInjuries();
+        }
+        protected void SortImplants() {
             implantRecipes.Sort((RecipeDef a, RecipeDef b) => {
-                return a.LabelCap.Resolve().CompareTo(b.LabelCap);
+                return string.Compare(a.LabelCap.Resolve(), b.LabelCap.Resolve());
             });
+        }
+        protected void SortInjuries() {
             injuryOptions.Sort((InjuryOption a, InjuryOption b) => {
-                return a.Label.CompareTo(b.Label);
+                return string.Compare(a.Label, b.Label);
             });
         }
         public void AddInjury(InjuryOption option) {
