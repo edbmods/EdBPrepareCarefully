@@ -1,4 +1,4 @@
-﻿using RimWorld;
+using RimWorld;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -288,7 +288,7 @@ namespace EdB.PrepareCarefully {
                     stuffFilterOptions.Add(new FloatMenuOption("EdB.PC.Panel.AvailableEquipment.Materials.None".Translate(), () => {
                         UpdateStuffFilter(false, null);
                     }, MenuOptionPriority.Default, null, null, 0, null, null));
-                    foreach (var item in stuffFilterSet.OrderBy((ThingDef def) => { return def.LabelCap; })) {
+                    foreach (var item in stuffFilterSet.OrderBy((ThingDef def) => { return def.LabelCap.Resolve(); })) {
                         stuffFilterOptions.Add(new FloatMenuOption(item.LabelCap, () => {
                             UpdateStuffFilter(true, item);
                         }, MenuOptionPriority.Default, null, null, 0, null, null));
