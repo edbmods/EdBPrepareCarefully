@@ -1,9 +1,27 @@
  _____________________________________________________________________________
  
+   Version 1.1.3
+ _____________________________________________________________________________
+
+  - Fixed an issue when saving presets.
+  - Fixed an issue with Alien Races mods when the mod does not define a
+    color generator.
+  - Fixed an issue when trying to choose equipment materials.
+
+ _____________________________________________________________________________
+ 
+   Version 1.1.2
+ _____________________________________________________________________________
+
+  - Fixed an issue when initializing health options.
+  - Fixed an issue with a new color generator option in the Alien Races mod.
+
+ _____________________________________________________________________________
+ 
    Version 1.1.1
  _____________________________________________________________________________
 
-  - Added support for RimWorld 1.1
+  - Added support for RimWorld 1.1.
 
  _____________________________________________________________________________
  
@@ -19,7 +37,7 @@
 
   - Better error handling when loading the classes needed to add the
     Prepare Carefully button to the character configuration screen.
-  - Fix for alien hair color swatches
+  - Fix for alien hair color swatches.
 
  _____________________________________________________________________________
  
