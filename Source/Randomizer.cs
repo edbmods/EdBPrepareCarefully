@@ -100,18 +100,7 @@ namespace EdB.PrepareCarefully {
         }
 
         public static Backstory RandomAdulthood(CustomPawn customPawn) {
-            PawnKindDef kindDef = customPawn.Pawn.kindDef;
-            FactionDef factionDef = kindDef.defaultFactionType;
-            if (factionDef == null) {
-                factionDef = Faction.OfPlayer.def;
-            }
-
-            List<BackstoryCategoryFilter> backstoryCategoryFiltersFor = Reflection.PawnBioAndNameGenerator
-                .GetBackstoryCategoryFiltersFor(customPawn.Pawn, factionDef);
-            if (!Reflection.PawnBioAndNameGenerator.TryGetRandomUnusedSolidBioFor(backstoryCategoryFiltersFor, kindDef, customPawn.Gender, null, out PawnBio pawnBio)) {
-                return customPawn.Adulthood;
-            }
-            return pawnBio.adulthood;
+            return PrepareCarefully.Instance.Providers.Backstories.GetAdulthoodBackstoriesForPawn(customPawn).RandomElement();
         }
 
         public void RandomizeName(CustomPawn customPawn) {
