@@ -342,7 +342,7 @@ namespace EdB.PrepareCarefully {
                 if (alienRace == null || alienRace.UseMelaninLevels) {
                     DrawHumanlikeColorSelector(customPawn, cursorY);
                 }
-                else {
+                else if (alienRace.ChangeableColor) {
                     DrawAlienPawnColorSelector(customPawn, cursorY, alienRace.PrimaryColors, true);
                 }
             }
@@ -545,31 +545,33 @@ namespace EdB.PrepareCarefully {
             Color currentColor = customPawn.Pawn.story.SkinColor;
             Color clickedColor = currentColor;
             Rect rect = new Rect(SwatchPosition.x, cursorY, SwatchSize.x, SwatchSize.y);
-            foreach (Color color in colors) {
-                bool selected = (color == currentColor);
-                if (selected) {
-                    Rect selectionRect = new Rect(rect.x - 2, rect.y - 2, SwatchSize.x + 4, SwatchSize.y + 4);
-                    GUI.color = ColorSwatchSelection;
-                    GUI.DrawTexture(selectionRect, BaseContent.WhiteTex);
-                }
-
-                Rect borderRect = new Rect(rect.x - 1, rect.y - 1, SwatchSize.x + 2, SwatchSize.y + 2);
-                GUI.color = ColorSwatchBorder;
-                GUI.DrawTexture(borderRect, BaseContent.WhiteTex);
-
-                GUI.color = color;
-                GUI.DrawTexture(rect, BaseContent.WhiteTex);
-
-                if (!selected) {
-                    if (Widgets.ButtonInvisible(rect, false)) {
-                        clickedColor = color;
+            if (colors != null) {
+                foreach (Color color in colors) {
+                    bool selected = (color == currentColor);
+                    if (selected) {
+                        Rect selectionRect = new Rect(rect.x - 2, rect.y - 2, SwatchSize.x + 4, SwatchSize.y + 4);
+                        GUI.color = ColorSwatchSelection;
+                        GUI.DrawTexture(selectionRect, BaseContent.WhiteTex);
                     }
-                }
 
-                rect.x += SwatchSpacing.x;
-                if (rect.x >= SwatchLimit - SwatchSize.x) {
-                    rect.y += SwatchSpacing.y;
-                    rect.x = SwatchPosition.x;
+                    Rect borderRect = new Rect(rect.x - 1, rect.y - 1, SwatchSize.x + 2, SwatchSize.y + 2);
+                    GUI.color = ColorSwatchBorder;
+                    GUI.DrawTexture(borderRect, BaseContent.WhiteTex);
+
+                    GUI.color = color;
+                    GUI.DrawTexture(rect, BaseContent.WhiteTex);
+
+                    if (!selected) {
+                        if (Widgets.ButtonInvisible(rect, false)) {
+                            clickedColor = color;
+                        }
+                    }
+
+                    rect.x += SwatchSpacing.x;
+                    if (rect.x >= SwatchLimit - SwatchSize.x) {
+                        rect.y += SwatchSpacing.y;
+                        rect.x = SwatchPosition.x;
+                    }
                 }
             }
 

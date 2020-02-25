@@ -22,6 +22,9 @@ namespace EdB.PrepareCarefully {
         public bool HasSecondaryColor {
             get; set;
         }
+        public bool ChangeableColor {
+            get; set;
+        }
         public List<Color> PrimaryColors {
             get; set;
         }
