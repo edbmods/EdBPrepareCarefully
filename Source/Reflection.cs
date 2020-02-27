@@ -48,6 +48,11 @@ namespace EdB.PrepareCarefully {
             }
         }
         public static class PawnBioAndNameGenerator {
+            public static float BioSelectionWeight(PawnBio b) {
+                return (float)ReflectionCache.Instance.PawnBioAndNameGenerator_BioSelectionWeight.Invoke(null,
+                    new object[] { b }
+                );
+            }
             public static void FillBackstorySlotShuffled(Verse.Pawn pawn, BackstorySlot slot, ref Backstory backstory, Backstory backstoryOtherSlot, List<BackstoryCategoryFilter> backstoryCategories, FactionDef factionType) {
                 ReflectionCache.Instance.PawnBioAndNameGenerator_FillBackstorySlotShuffled.Invoke(null,
                     new object[] {
@@ -60,11 +65,22 @@ namespace EdB.PrepareCarefully {
                     new object[] { pawn, faction }
                 );
             }
+            public static bool IsBioUseable(PawnBio bio, BackstoryCategoryFilter categoryFilter, PawnKindDef kind, Gender gender, string requiredLastName) {
+                return (bool)ReflectionCache.Instance.PawnBioAndNameGenerator_IsBioUseable.Invoke(null,
+                    new object[] { bio, categoryFilter, kind, gender, requiredLastName }
+                );
+            }
             public static bool TryGetRandomUnusedSolidBioFor(List<BackstoryCategoryFilter> backstoryCategories, PawnKindDef kind, Gender gender, string requiredLastName, out PawnBio result) {
                 Object[] args = new object[] { backstoryCategories, kind, gender, requiredLastName, null };
                 bool value = (bool)ReflectionCache.Instance.PawnBioAndNameGenerator_TryGetRandomUnusedSolidBioFor.Invoke(null, args);
                 result = args[4] as PawnBio;
                 return value;
+            }
+            public static BackstoryCategoryFilter GetFallbackCategoryGroup() {
+                return (BackstoryCategoryFilter)ReflectionCache.Instance.PawnBioAndNameGenerator_FallbackCategoryGroup.GetValue(null);
+            }
+            public static List<string> GetTmpNames() {
+                return (List<string>)ReflectionCache.Instance.PawnBioAndNameGenerator_tmpNames.GetValue(null);
             }
         }
         public static class PostLoadIniter {

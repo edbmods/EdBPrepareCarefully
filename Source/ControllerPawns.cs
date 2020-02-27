@@ -101,14 +101,23 @@ namespace EdB.PrepareCarefully {
             if (factionDef == null) {
                 factionDef = Faction.OfPlayer.def;
             }
-            List<BackstoryCategoryFilter> backstoryCategoryFiltersFor = Reflection.PawnBioAndNameGenerator
-                .GetBackstoryCategoryFiltersFor(currentPawn.Pawn, factionDef);
-            if (!Reflection.PawnBioAndNameGenerator.TryGetRandomUnusedSolidBioFor(backstoryCategoryFiltersFor, 
-                    kindDef, currentPawn.Gender, null, out PawnBio pawnBio)) {
-                return;
+            List<BackstoryCategoryFilter> backstoryCategoryFiltersFor = Reflection.PawnBioAndNameGenerator.GetBackstoryCategoryFiltersFor(currentPawn.Pawn, factionDef);
+            // Generate a bio from which to get the backstories
+            if (!Reflection.PawnBioAndNameGenerator.TryGetRandomUnusedSolidBioFor(backstoryCategoryFiltersFor, kindDef, currentPawn.Gender, null, out PawnBio pawnBio)) {
+                // Other mods are patching the vanilla method in ways that cause it to return false.  If that happens,
+                // we use our duplicate implementation instead.
+                if (!PawnBioGenerator.TryGetRandomUnusedSolidBioFor(backstoryCategoryFiltersFor, kindDef, currentPawn.Gender, null, out pawnBio)) {
+                    // If we still can't get a bio with our duplicate implementation, we pick backstories completely at random.
+                    currentPawn.Childhood = PrepareCarefully.Instance.Providers.Backstories.GetChildhoodBackstoriesForPawn(currentPawn).RandomElement();
+                    if (currentPawn.BiologicalAge >= 20) {
+                        currentPawn.Adulthood = PrepareCarefully.Instance.Providers.Backstories.GetAdulthoodBackstoriesForPawn(currentPawn).RandomElement();
+                    }
+                    return;
+                }
             }
             currentPawn.Childhood = pawnBio.childhood;
-            // TODO: Remove the hard-coded adult age and get the value from a provider instead?
+            // TODO: Can we remove the hard-coded adult age and get the value from a provider instead?
+            // Probably not in vanilla, but maybe if other mods somehow override the "20" that's hard-coded in the vanilla code.
             if (currentPawn.BiologicalAge >= 20) {
                 currentPawn.Adulthood = pawnBio.adulthood;
             }
