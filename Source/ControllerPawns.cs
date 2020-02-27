@@ -332,6 +332,12 @@ namespace EdB.PrepareCarefully {
                 a.HitPoints = a.MaxHitPoints;
             }
 
+            // TODO: Revisit this if we add a UI to edit titles.
+            // Clear out all titles.
+            if (pawn.royalty != null) {
+                pawn.royalty = new Pawn_RoyaltyTracker(pawn);
+            }
+
             CustomPawn customPawn = new CustomPawn(pawn);
             customPawn.OriginalKindDef = kindDef;
             customPawn.OriginalFactionDef = faction.def;
