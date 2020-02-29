@@ -10,8 +10,8 @@ using Verse.Sound;
 
 namespace EdB.PrepareCarefully {
     public static class ExtensionsPawn {
-        // It would be nice if we could just do this to deep copy a pawn, but there are references in a saved pawn that can cause
-        // problems, i.e. relationships.  So we follow the more explicit technique below to copy the pawn.
+        // It would be nice if we could just do this to deep copy a pawn, but there are references to world objects in a saved pawn that can cause
+        // problems, i.e. relationship references to other pawns.  So we follow the more explicit technique below to copy the pawn.
         // Leaving this here to remind us to not bother trying to do this again.
         //public static Pawn IdealCopy(this Pawn source) {
         //    try {
@@ -25,12 +25,15 @@ namespace EdB.PrepareCarefully {
         //    }
         //}
 
-        public static List<string> CompsExcludedFromCopying = null;
+        public static HashSet<string> CompsExcludedFromCopying = null;
 
         // MODMAKERS: If you need to exclude a modded ThingComp from the list of ThingComps that are copied when duplicating a pawn,
-        // add the FullName for the ThingComp class to the CompsExcludedFromCopying list in a PostFix method.
-        public static void CreateExcludedCompList() {
-            CompsExcludedFromCopying = new List<string>();
+        // add the FullName for the ThingComp class to the CompsExcludedFromCopying hash set in a PostFix method.
+        public static void CreateExcludedComps() {
+            CompsExcludedFromCopying = new HashSet<string>() {
+                // Excludes CompAttachBase because it defines no custom fields that need to be copied
+                "Verse.CompAttachBase"
+            };
         }
 
         public static Pawn Copy(this Pawn source) {
@@ -64,16 +67,24 @@ namespace EdB.PrepareCarefully {
             result.apparel = UtilityCopy.CopyExposable(source.apparel, constructorArgs);
 
             // Copy comps
-            CompsCopier copier = new CompsCopier(source);
+            if (CompsExcludedFromCopying == null) {
+                CreateExcludedComps();
+            }
+            CompsCopier copier = new CompsCopier(source, CompsExcludedFromCopying);
             source.AllComps.ForEach((c) => {
-                copier.AllComps.Add(c);
+                if (!CompsExcludedFromCopying.Contains(c.GetType().FullName)) {
+                    copier.AllComps.Add(c);
+                }
+                else {
+                    //Logger.Debug("Removed excluded " + c.GetType().FullName + " comp from the list of comps to copy over");
+                }
             });
-            CompsCopier compsCopy = UtilityCopy.CopyExposable(copier, new[] { result });
+            CompsCopier compsCopy = UtilityCopy.CopyExposable(copier, new object[] { result, CompsExcludedFromCopying });
             CopyCompsIntoResult(result, compsCopy);
 
             // Verify the pawn health state.
             if (result.health.State != savedHealthState) {
-                Log.Warning("Mismatched health state on copied pawn: " + savedHealthState + " != " + result.health.State + ";  Resetting value to match.");
+                Logger.Warning("Mismatched health state on copied pawn: " + savedHealthState + " != " + result.health.State + ";  Resetting value to match.");
                 result.SetHealthState(savedHealthState);
             }
 
@@ -87,32 +98,22 @@ namespace EdB.PrepareCarefully {
         public static void CopyCompsIntoResult(Pawn target, CompsCopier comps) {
             Dictionary<string, ThingComp> lookup = new Dictionary<string, ThingComp>();
             comps.AllComps.ForEach(c => lookup.Add(c.GetType().FullName, c));
-            RemoveExcludedComps(lookup);
+            //Logger.Debug("Copied comps: ");
+            foreach (var pair in lookup) {
+                //Logger.Debug("  - " + pair.Key);
+            }
             int count = target.AllComps.Count;
             for (int i=0; i<count; i++) {
                 var type = target.AllComps[i].GetType();
                 if (lookup.TryGetValue(type.FullName, out ThingComp c)) {
-                    //Logger.Debug("Replaced the " + type.FullName + " comp with the copied version");
+                    //Logger.Debug("Replaced the " + type.FullName + " comp on the target with the copied version");
                     target.AllComps[i] = c;
                     lookup.Remove(type.FullName);
                 }
             }
             foreach (var pair in lookup) {
-                //Logger.Debug("Added the copied " + pair.Key + " version of the comp");
+                //Logger.Debug("Added the copied " + pair.Key + " version of the comp to the target");
                 target.AllComps.Add(pair.Value);
-            }
-        }
-
-        public static void RemoveExcludedComps(Dictionary<string, ThingComp> lookup) {
-            if (CompsExcludedFromCopying == null) {
-                CreateExcludedCompList();
-            }
-            List<Type> removals = new List<Type>();
-            foreach (var name in CompsExcludedFromCopying) {
-                if (lookup.ContainsKey(name)) {
-                    //Logger.Debug("Removed excluded " + name + " comp from the list of comps to copy over");
-                    lookup.Remove(name);
-                }
             }
         }
 
@@ -121,10 +122,12 @@ namespace EdB.PrepareCarefully {
             private List<ThingComp> comps = new List<ThingComp>();
             public ThingDef Def { get; set; }
             public ThingWithComps Parent { get; set; }
+            public HashSet<string> ExcludedComps { get; set; }
             // The constructor needs to take the target pawn as an argument--the pawn to which the comps will be copied.
-            public CompsCopier(Pawn pawn) {
+            public CompsCopier(Pawn pawn, HashSet<string> excludedComps) {
                 Parent = pawn;
                 Def = pawn.def;
+                ExcludedComps = excludedComps;
             }
             public List<ThingComp> AllComps {
                 get {
@@ -149,14 +152,18 @@ namespace EdB.PrepareCarefully {
                     for (int i = 0; i < Def.comps.Count; i++) {
                         ThingComp thingComp = null;
                         try {
-                            thingComp = (ThingComp)Activator.CreateInstance(Def.comps[i].compClass);
-                            // We set the parent to our target pawn.
-                            thingComp.parent = Parent;
-                            this.comps.Add(thingComp);
-                            thingComp.Initialize(Def.comps[i]);
+                            Type type = Def.comps[i].compClass;
+                            // Check to see if this comp is in the list of excluded comps
+                            if (!ExcludedComps.Contains(type.FullName)) {
+                                thingComp = (ThingComp)Activator.CreateInstance(type);
+                                // We set the parent to our target pawn.
+                                thingComp.parent = Parent;
+                                this.comps.Add(thingComp);
+                                thingComp.Initialize(Def.comps[i]);
+                            }
                         }
                         catch (Exception arg) {
-                            Log.Error("Could not instantiate or initialize a ThingComp: " + arg, false);
+                            Logger.Warning("Could not instantiate or initialize a ThingComp when copying a pawn: " + arg);
                             this.comps.Remove(thingComp);
                         }
                     }
@@ -183,7 +190,7 @@ namespace EdB.PrepareCarefully {
             pawn.health.summaryHealth.Notify_HealthChanged();
             pawn.health.capacities.Clear();
             if (pawn.health.State != savedHealthState) {
-                Log.Warning("Pawn healthState mismatched: " + savedHealthState + " != " + pawn.health.State + ";  Resetting value to match.");
+                Logger.Warning("Pawn healthState mismatched: " + savedHealthState + " != " + pawn.health.State + ";  Resetting value to match.");
                 pawn.SetHealthState(savedHealthState);
             }
         }
