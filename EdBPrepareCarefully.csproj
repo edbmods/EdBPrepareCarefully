@@ -111,6 +111,7 @@
     <Compile Include="Source\PanelRelationshipsParentChild.cs" />
     <Compile Include="Source\HarmonyPatches.cs" />
     <Compile Include="Source\PanelWorldPawnList.cs" />
+    <Compile Include="Source\PawnBioGenerator.cs" />
     <Compile Include="Source\PawnGenerationRequestWrapper.cs" />
     <Compile Include="Source\PawnLayer.cs" />
     <Compile Include="Source\PawnLayerAlienAddon.cs" />

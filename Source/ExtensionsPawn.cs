@@ -10,6 +10,32 @@ using Verse.Sound;
 
 namespace EdB.PrepareCarefully {
     public static class ExtensionsPawn {
+        // It would be nice if we could just do this to deep copy a pawn, but there are references to world objects in a saved pawn that can cause
+        // problems, i.e. relationship references to other pawns.  So we follow the more explicit technique below to copy the pawn.
+        // Leaving this here to remind us to not bother trying to do this again.
+        //public static Pawn IdealCopy(this Pawn source) {
+        //    try {
+        //        Pawn copy = UtilityCopy.CopyExposable<Pawn>(source);
+        //        copy.ClearCaches();
+        //        return copy;
+        //    }
+        //    catch (Exception e) {
+        //        Logger.Warning("Failed to copy pawn with preferred method.  Using backup method instead.\n" + e);
+        //        return CopyBackup(source);
+        //    }
+        //}
+
+        public static HashSet<string> CompsExcludedFromCopying = null;
+
+        // MODMAKERS: If you need to exclude a modded ThingComp from the list of ThingComps that are copied when duplicating a pawn,
+        // add the FullName for the ThingComp class to the CompsExcludedFromCopying hash set in a PostFix method.
+        public static void CreateExcludedComps() {
+            CompsExcludedFromCopying = new HashSet<string>() {
+                // Excludes CompAttachBase because it defines no custom fields that need to be copied
+                "Verse.CompAttachBase"
+            };
+        }
+
         public static Pawn Copy(this Pawn source) {
 
             PawnHealthState savedHealthState = source.health.State;
@@ -40,38 +66,109 @@ namespace EdB.PrepareCarefully {
             result.health = UtilityCopy.CopyExposable(source.health, constructorArgs);
             result.apparel = UtilityCopy.CopyExposable(source.apparel, constructorArgs);
 
-            // Copy alien comps
-            ThingComp sourceAlienComp = ProviderAlienRaces.FindAlienCompForPawn(source);
-            ThingComp resultAlienComp = ProviderAlienRaces.FindAlienCompForPawn(result);
-            if (sourceAlienComp != null && resultAlienComp != null) {
-                ProviderAlienRaces.SetCrownTypeOnComp(resultAlienComp, ProviderAlienRaces.GetCrownTypeFromComp(sourceAlienComp));
-                ProviderAlienRaces.SetSkinColorOnComp(resultAlienComp, ProviderAlienRaces.GetSkinColorFromComp(sourceAlienComp));
-                ProviderAlienRaces.SetSkinColorSecondOnComp(resultAlienComp, ProviderAlienRaces.GetSkinColorSecondFromComp(sourceAlienComp));
-                ProviderAlienRaces.SetHairColorSecondOnComp(resultAlienComp, ProviderAlienRaces.GetHairColorSecondFromComp(sourceAlienComp));
+            // Copy comps
+            if (CompsExcludedFromCopying == null) {
+                CreateExcludedComps();
             }
-
-            // Copy properties added to pawns by mods.
-            CopyModdedProperties(source, result);
+            CompsCopier copier = new CompsCopier(source, CompsExcludedFromCopying);
+            source.AllComps.ForEach((c) => {
+                if (!CompsExcludedFromCopying.Contains(c.GetType().FullName)) {
+                    copier.AllComps.Add(c);
+                }
+                else {
+                    //Logger.Debug("Removed excluded " + c.GetType().FullName + " comp from the list of comps to copy over");
+                }
+            });
+            CompsCopier compsCopy = UtilityCopy.CopyExposable(copier, new object[] { result, CompsExcludedFromCopying });
+            CopyCompsIntoResult(result, compsCopy);
 
             // Verify the pawn health state.
             if (result.health.State != savedHealthState) {
-                Log.Warning("Mismatched health state on copied pawn: " + savedHealthState + " != " + result.health.State + ";  Resetting value to match.");
+                Logger.Warning("Mismatched health state on copied pawn: " + savedHealthState + " != " + result.health.State + ";  Resetting value to match.");
                 result.SetHealthState(savedHealthState);
             }
 
             // Clear all of the pawn caches.
             source.ClearCaches();
-            
+            result.ClearCaches();
+
             return result;
         }
 
-        // Deep-copies modded properties from a source pawn to a target pawn.  Kept separate from the Copy() method to provide a
-        // clear place for modders to add patches/detours for their mods.
-        private static void CopyModdedProperties(Pawn source, Pawn target) {
-            // Copy fields from Psychology mod.
-            object[] constructorArgs = new object[] { target };
-            UtilityCopy.CopyExposableViaReflection("psyche", source, target, constructorArgs);
-            UtilityCopy.CopyExposableViaReflection("sexuality", source, target, constructorArgs);
+        public static void CopyCompsIntoResult(Pawn target, CompsCopier comps) {
+            Dictionary<string, ThingComp> lookup = new Dictionary<string, ThingComp>();
+            comps.AllComps.ForEach(c => lookup.Add(c.GetType().FullName, c));
+            //Logger.Debug("Copied comps: ");
+            foreach (var pair in lookup) {
+                //Logger.Debug("  - " + pair.Key);
+            }
+            int count = target.AllComps.Count;
+            for (int i=0; i<count; i++) {
+                var type = target.AllComps[i].GetType();
+                if (lookup.TryGetValue(type.FullName, out ThingComp c)) {
+                    //Logger.Debug("Replaced the " + type.FullName + " comp on the target with the copied version");
+                    target.AllComps[i] = c;
+                    lookup.Remove(type.FullName);
+                }
+            }
+            foreach (var pair in lookup) {
+                //Logger.Debug("Added the copied " + pair.Key + " version of the comp to the target");
+                target.AllComps.Add(pair.Value);
+            }
+        }
+
+        // Utility class to copy all of the comps in a pawn.
+        public class CompsCopier : IExposable {
+            private List<ThingComp> comps = new List<ThingComp>();
+            public ThingDef Def { get; set; }
+            public ThingWithComps Parent { get; set; }
+            public HashSet<string> ExcludedComps { get; set; }
+            // The constructor needs to take the target pawn as an argument--the pawn to which the comps will be copied.
+            public CompsCopier(Pawn pawn, HashSet<string> excludedComps) {
+                Parent = pawn;
+                Def = pawn.def;
+                ExcludedComps = excludedComps;
+            }
+            public List<ThingComp> AllComps {
+                get {
+                    return comps;
+                }
+            }
+            // Partially duplicated from ThingWithComps.
+            public void ExposeData() {
+                if (Scribe.mode == LoadSaveMode.LoadingVars) {
+                    this.InitializeComps();
+                }
+                if (this.comps != null) {
+                    for (int i = 0; i < this.comps.Count; i++) {
+                        this.comps[i].PostExposeData();
+                    }
+                }
+            }
+            // Partially duplicated from ThingWithComps.
+            public void InitializeComps() {
+                if (Def.comps.Any<CompProperties>()) {
+                    this.comps = new List<ThingComp>();
+                    for (int i = 0; i < Def.comps.Count; i++) {
+                        ThingComp thingComp = null;
+                        try {
+                            Type type = Def.comps[i].compClass;
+                            // Check to see if this comp is in the list of excluded comps
+                            if (!ExcludedComps.Contains(type.FullName)) {
+                                thingComp = (ThingComp)Activator.CreateInstance(type);
+                                // We set the parent to our target pawn.
+                                thingComp.parent = Parent;
+                                this.comps.Add(thingComp);
+                                thingComp.Initialize(Def.comps[i]);
+                            }
+                        }
+                        catch (Exception arg) {
+                            Logger.Warning("Could not instantiate or initialize a ThingComp when copying a pawn: " + arg);
+                            this.comps.Remove(thingComp);
+                        }
+                    }
+                }
+            }
         }
 
         public static void ClearCaches(this Pawn pawn) {
@@ -93,7 +190,7 @@ namespace EdB.PrepareCarefully {
             pawn.health.summaryHealth.Notify_HealthChanged();
             pawn.health.capacities.Clear();
             if (pawn.health.State != savedHealthState) {
-                Log.Warning("Pawn healthState mismatched: " + savedHealthState + " != " + pawn.health.State + ";  Resetting value to match.");
+                Logger.Warning("Pawn healthState mismatched: " + savedHealthState + " != " + pawn.health.State + ";  Resetting value to match.");
                 pawn.SetHealthState(savedHealthState);
             }
         }
