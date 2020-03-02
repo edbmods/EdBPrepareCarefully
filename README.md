@@ -22,7 +22,7 @@ Copy those dependencies from the RimWorld game directory into the "Libraries" di
 The solution also has a dependency on the following third-party DLL:
 - 0Harmony.dll
 
-The Harmony DLL is available from https://github.com/pardeike/Harmony/releases and should also be placed in the "Libraries" directory.  Prepare Carefully uses version 2.0.0.5 of Harmony. When you download Harmony, you'll see
+The Harmony DLL is available from https://github.com/pardeike/Harmony/releases and should also be placed in the "Libraries" directory.  Prepare Carefully uses version 2.0.0.8 of Harmony. When you download Harmony, you'll see
 multiple versions of the DLL organized into various directories.  Be sure to use the one in the "Release/net472" directory.
 
 Only if you _must_ create a build that also supports RimWorld 1.0, you will need to get the DLL from the latest Prepare Carefully release for 1.0, along with the DLL for Harmony _1.2_.  Place these DLLs into the `Resources/Assemblies` directory.
