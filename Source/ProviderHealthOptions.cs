@@ -97,6 +97,14 @@ namespace EdB.PrepareCarefully {
             }
         }
         protected void InitializeHediffGiverInjuries(OptionsHealth options, HediffGiver giver) {
+            if (giver == null) {
+                Logger.Warning("Could not add injury/health condition because a HediffGiver was null");
+                return;
+            }
+            if (giver.hediff == null) {
+                Logger.Warning("Could not add injury/health condition because the hediff for " + giver.GetType().FullName + " was null");
+                return;
+            }
             InjuryOption option = new InjuryOption();
             option.HediffDef = giver.hediff;
             option.Label = giver.hediff.LabelCap;
