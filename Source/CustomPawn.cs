@@ -790,8 +790,7 @@ namespace EdB.PrepareCarefully {
         }
 
         public Color GetColor(PawnLayer layer) {
-            Color color;
-            if (colors.TryGetValue(layer, out color)) {
+            if (colors.TryGetValue(layer, out Color color)) {
                 return color;
             }
             else {
@@ -1101,6 +1100,7 @@ namespace EdB.PrepareCarefully {
                 return pawn.story.HeadGraphicPath;
             }
             set {
+                //Logger.Debug("Setting HeadGraphicPath  " + value + " for " + pawn.def.defName);
                 CustomHeadType headType = PrepareCarefully.Instance.Providers.HeadTypes.FindHeadType(pawn.def, value);
                 if (headType != null) {
                     HeadType = headType;
@@ -1108,9 +1108,9 @@ namespace EdB.PrepareCarefully {
                 else {
                     // Set the graphic path on the pawn directly if no head type was found.
                     SetHeadGraphicPathOnPawn(pawn, value);
-                    Log.Warning("Prepare Carefully could not find a head type the graphic path: "
-                        + value + ". Head type selection disabled for this pawn");
+                    Logger.Warning("Could not find a head type the graphic path: " + value);
                 }
+                ResetCachedHead();
                 MarkPortraitAsDirty();
             }
         }

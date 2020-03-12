@@ -1,4 +1,4 @@
-﻿using RimWorld;
+using RimWorld;
 using System;
 using System.Collections.Generic;
 using System.Reflection;
@@ -29,7 +29,10 @@ namespace EdB.PrepareCarefully {
                 return new ColonistLoaderVersion3().Load(loadout, name);
             }
             else if ("4".Equals(version)) {
-                return new ColonistLoaderVersion4().Load(loadout, name);
+                return new PawnLoaderV5().Load(loadout, name);
+            }
+            else if ("5".Equals(version)) {
+                return new PawnLoaderV5().Load(loadout, name);
             }
             else {
                 throw new Exception("Invalid preset version");

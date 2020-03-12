@@ -1,4 +1,4 @@
-﻿using RimWorld;
+using RimWorld;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -58,47 +58,57 @@ namespace EdB.PrepareCarefully {
             Rect outRect = new Rect(inRect.AtZero());
             outRect.height -= this.bottomAreaHeight;
             Widgets.BeginScrollView(outRect, ref this.scrollPosition, viewRect);
-            float num2 = 0;
-            int num3 = 0;
-            foreach (FileInfo current in list) {
-                Rect rect = new Rect(0, num2, vector.x, vector.y);
-                if (num3 % 2 == 0) {
-                    GUI.DrawTexture(rect, Textures.TextureAlternateRow);
+            try {
+                float num2 = 0;
+                int num3 = 0;
+                foreach (FileInfo current in list) {
+                    Rect rect = new Rect(0, num2, vector.x, vector.y);
+                    if (num3 % 2 == 0) {
+                        GUI.DrawTexture(rect, Textures.TextureAlternateRow);
+                    }
+                    Rect innerRect = new Rect(rect.x + 3, rect.y + 3, rect.width - 6, rect.height - 6);
+                    GUI.BeginGroup(innerRect);
+                    try {
+                        string fileNameWithoutExtension = Path.GetFileNameWithoutExtension(current.Name);
+                        GUI.color = ManualSaveTextColor;
+                        Rect rect2 = new Rect(15, 0, innerRect.width, innerRect.height);
+                        Text.Anchor = TextAnchor.MiddleLeft;
+                        Text.Font = GameFont.Small;
+                        Widgets.Label(rect2, fileNameWithoutExtension);
+                        GUI.color = Color.white;
+                        Rect rect3 = new Rect(250, 0, innerRect.width, innerRect.height);
+                        Text.Font = GameFont.Tiny;
+                        GUI.color = new Color(1, 1, 1, 0.5f);
+                        Widgets.Label(rect3, current.LastWriteTime.ToString("g"));
+                        GUI.color = Color.white;
+                        Text.Anchor = TextAnchor.UpperLeft;
+                        Text.Font = GameFont.Small;
+                        float num4 = vector.x - 6 - vector2.x - vector2.y;
+                        Rect butRect = new Rect(num4, 0, vector2.x, vector2.y);
+                        if (Widgets.ButtonText(butRect, this.interactButLabel, true, false, true)) {
+                            this.DoMapEntryInteraction(Path.GetFileNameWithoutExtension(current.Name));
+                        }
+                        Rect rect4 = new Rect(num4 + vector2.x + 5, 0, vector2.y, vector2.y);
+                        if (Widgets.ButtonImage(rect4, Textures.TextureDeleteX)) {
+                            FileInfo localFile = current;
+                            Find.UIRoot.windows.Add(new Dialog_Confirm("EdB.PC.Dialog.PawnPreset.ConfirmDelete".Translate(localFile.Name), delegate {
+                                localFile.Delete();
+                            }, true, null, true));
+                        }
+                        TooltipHandler.TipRegion(rect4, "EdB.PC.Dialog.PawnPreset.DeleteTooltip".Translate());
+                    }
+                    finally {
+                        GUI.EndGroup();
+                    }
+                    num2 += vector.y + 3;
+                    num3++;
                 }
-                Rect innerRect = new Rect(rect.x + 3, rect.y + 3, rect.width - 6, rect.height - 6);
-                GUI.BeginGroup(innerRect);
-                string fileNameWithoutExtension = Path.GetFileNameWithoutExtension(current.Name);
-                GUI.color = ManualSaveTextColor;
-                Rect rect2 = new Rect(15, 0, innerRect.width, innerRect.height);
-                Text.Anchor = TextAnchor.MiddleLeft;
-                Text.Font = GameFont.Small;
-                Widgets.Label(rect2, fileNameWithoutExtension);
-                GUI.color = Color.white;
-                Rect rect3 = new Rect(250, 0, innerRect.width, innerRect.height);
-                Text.Font = GameFont.Tiny;
-                GUI.color = new Color(1, 1, 1, 0.5f);
-                Widgets.Label(rect3, current.LastWriteTime.ToString("g"));
-                GUI.color = Color.white;
+            }
+            finally {
+                Widgets.EndScrollView();
                 Text.Anchor = TextAnchor.UpperLeft;
                 Text.Font = GameFont.Small;
-                float num4 = vector.x - 6 - vector2.x - vector2.y;
-                Rect butRect = new Rect(num4, 0, vector2.x, vector2.y);
-                if (Widgets.ButtonText(butRect, this.interactButLabel, true, false, true)) {
-                    this.DoMapEntryInteraction(Path.GetFileNameWithoutExtension(current.Name));
-                }
-                Rect rect4 = new Rect(num4 + vector2.x + 5, 0, vector2.y, vector2.y);
-                if (Widgets.ButtonImage(rect4, Textures.TextureDeleteX)) {
-                    FileInfo localFile = current;
-                    Find.UIRoot.windows.Add(new Dialog_Confirm("EdB.PC.Dialog.PawnPreset.ConfirmDelete".Translate(localFile.Name), delegate {
-                        localFile.Delete();
-                    }, true, null, true));
-                }
-                TooltipHandler.TipRegion(rect4, "EdB.PC.Dialog.PawnPreset.DeleteTooltip".Translate());
-                GUI.EndGroup();
-                num2 += vector.y + 3;
-                num3++;
             }
-            Widgets.EndScrollView();
             this.DoSpecialSaveLoadGUI(inRect.AtZero());
         }
     }

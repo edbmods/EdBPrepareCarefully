@@ -1,4 +1,4 @@
-﻿using RimWorld;
+using RimWorld;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -10,15 +10,15 @@ namespace EdB.PrepareCarefully {
         // Static Methods
         //
         public static void SaveToFile(CustomPawn customPawn, string colonistName) {
+            SaveRecordPawnV5 pawn = new SaveRecordPawnV5(customPawn);
             try {
                 Scribe.saver.InitSaving(ColonistFiles.FilePathForSavedColonist(colonistName), "character");
-                string versionStringFull = "4";
+                string versionStringFull = "5";
                 Scribe_Values.Look<string>(ref versionStringFull, "version", null, false);
                 string modString = GenText.ToCommaList(Enumerable.Select<ModContentPack, string>(LoadedModManager.RunningMods, (Func<ModContentPack, string>)(mod => mod.Name)), true);
                 Scribe_Values.Look<string>(ref modString, "mods", null, false);
 
-                SaveRecordPawnV4 pawn = new SaveRecordPawnV4(customPawn);
-                Scribe_Deep.Look<SaveRecordPawnV4>(ref pawn, "pawn");
+                Scribe_Deep.Look<SaveRecordPawnV5>(ref pawn, "pawn");
             }
             catch (Exception e) {
                 Log.Error("Failed to save preset file");

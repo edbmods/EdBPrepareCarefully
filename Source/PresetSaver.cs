@@ -1,4 +1,4 @@
-﻿using RimWorld;
+using RimWorld;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -32,17 +32,17 @@ namespace EdB.PrepareCarefully {
                     }
                 }
 
-                SaveRecordPresetV4 preset = new SaveRecordPresetV4();
+                SaveRecordPresetV5 preset = new SaveRecordPresetV5();
                 preset.mods = GenText.ToCommaList(Enumerable.Select<ModContentPack, string>(LoadedModManager.RunningMods, (Func<ModContentPack, string>)(mod => mod.Name)), true);
                 foreach (CustomPawn customPawn in data.Pawns) {
-                    SaveRecordPawnV4 pawn = new SaveRecordPawnV4(customPawn);
+                    SaveRecordPawnV5 pawn = new SaveRecordPawnV5(customPawn);
                     preset.pawns.Add(pawn);
                 }
                 foreach (var g in data.RelationshipManager.ParentChildGroups) {
                     foreach (var parent in g.Parents) {
                         if (parent.Hidden) {
                             if (parent.Pawn != null) {
-                                SaveRecordPawnV4 pawn = new SaveRecordPawnV4(parent);
+                                SaveRecordPawnV5 pawn = new SaveRecordPawnV5(parent);
                                 preset.pawns.Add(pawn);
                             }
                             else {
@@ -52,7 +52,7 @@ namespace EdB.PrepareCarefully {
                         foreach (var child in g.Children) {
                             if (child.Hidden) {
                                 if (child.Pawn != null) {
-                                    SaveRecordPawnV4 pawn = new SaveRecordPawnV4(child);
+                                    SaveRecordPawnV5 pawn = new SaveRecordPawnV5(child);
                                     preset.pawns.Add(pawn);
                                 }
                                 else {
