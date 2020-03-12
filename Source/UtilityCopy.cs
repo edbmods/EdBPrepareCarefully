@@ -1,4 +1,4 @@
-﻿using RimWorld;
+using RimWorld;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -30,7 +30,26 @@ namespace EdB.PrepareCarefully {
             InitLoadFromString(xml);
             T result = default(T);
             Scribe_Deep.Look(ref result, "saveable", constructorArgs);
-            Scribe.loader.FinalizeLoading();
+            FinalizeLoading(); 
+            //Scribe.loader.FinalizeLoading();
+            HashSet<IExposable> saveables = (HashSet<IExposable>)(typeof(PostLoadIniter).GetField("saveablesToPostLoad", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(Scribe.loader.initer));
+            saveables.Clear();
+            return result;
+        }
+
+        // Serializes an instance of an IExposable class to a string. 
+        public static string SerializeExposableToString<T>(T value) where T : IExposable {
+            return Scribe.saver.DebugOutputFor(value);
+        }
+
+        // Deserializes an instance of an IExposable class from a string. 
+        public static T DeserializeExposable<T>(string xml, object[] constructorArgs) where T : IExposable {
+            xml = "<doc>" + xml + "</doc>";
+            InitLoadFromString(xml);
+            T result = default(T);
+            Scribe_Deep.Look(ref result, "saveable", constructorArgs);
+            FinalizeLoading();
+            //Scribe.loader.FinalizeLoading();
             HashSet<IExposable> saveables = (HashSet<IExposable>)(typeof(PostLoadIniter).GetField("saveablesToPostLoad", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(Scribe.loader.initer));
             saveables.Clear();
             return result;
@@ -86,6 +105,60 @@ namespace EdB.PrepareCarefully {
                 Scribe.loader.ForceStop();
                 throw;
             }
+        }
+
+        public static void FinalizeLoading() {
+            if (Scribe.mode != LoadSaveMode.LoadingVars) {
+                Log.Error("Called FinalizeLoading() but current mode is " + Scribe.mode, false);
+                return;
+            }
+            try {
+                Scribe.ExitNode();
+                Scribe.loader.curXmlParent = null;
+                Scribe.loader.curParent = null;
+                Scribe.loader.curPathRelToParent = null;
+                Scribe.mode = LoadSaveMode.Inactive;
+                ResolveAllCrossReferences();
+                //Scribe.loader.crossRefs.ResolveAllCrossReferences();
+                Scribe.loader.initer.DoAllPostLoadInits();
+            }
+            catch (Exception arg) {
+                Log.Error("Exception in FinalizeLoading(): " + arg, false);
+                Scribe.loader.ForceStop();
+                throw;
+            }
+        }
+
+        public static void ResolveAllCrossReferences() {
+            Scribe.mode = LoadSaveMode.ResolvingCrossRefs;
+            using (List<IExposable>.Enumerator enumerator = Scribe.loader.crossRefs.crossReferencingExposables.GetEnumerator()) {
+                while (enumerator.MoveNext()) {
+                    ILoadReferenceable loadReferenceable = enumerator.Current as ILoadReferenceable;
+                    if (loadReferenceable != null) {
+                        LoadedObjectDirectory loadedObjectDirectory = ReflectionUtil.GetFieldValue<LoadedObjectDirectory>(Scribe.loader.crossRefs, "loadedObjectDirectory");
+                        if (loadedObjectDirectory != null) {
+                            loadedObjectDirectory.RegisterLoaded(loadReferenceable);
+                        }
+                        else {
+                            Logger.Warning("Could not access CrossRefHandler.loadedObjectDirectory in our version of ResolveAllCrossReferences()");
+                        }
+                    }
+                }
+            }
+            foreach (IExposable current in Scribe.loader.crossRefs.crossReferencingExposables) {
+                try {
+                    Scribe.loader.curParent = current;
+                    Scribe.loader.curPathRelToParent = null;
+                    current.ExposeData();
+                }
+                catch (Exception arg) {
+                    Log.Warning("Could not resolve cross refs: " + arg, false);
+                }
+            }
+            Scribe.loader.curParent = null;
+            Scribe.loader.curPathRelToParent = null;
+            Scribe.mode = LoadSaveMode.Inactive;
+            Scribe.loader.crossRefs.Clear(false);
         }
     }
 }

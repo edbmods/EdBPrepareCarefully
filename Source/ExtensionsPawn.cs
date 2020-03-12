@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Text;
+using System.Xml;
 using UnityEngine;
 using Verse;
 using Verse.Sound;
@@ -24,17 +25,6 @@ namespace EdB.PrepareCarefully {
         //        return CopyBackup(source);
         //    }
         //}
-
-        public static HashSet<string> CompsExcludedFromCopying = null;
-
-        // MODMAKERS: If you need to exclude a modded ThingComp from the list of ThingComps that are copied when duplicating a pawn,
-        // add the FullName for the ThingComp class to the CompsExcludedFromCopying hash set in a PostFix method.
-        public static void CreateExcludedComps() {
-            CompsExcludedFromCopying = new HashSet<string>() {
-                // Excludes CompAttachBase because it defines no custom fields that need to be copied
-                "Verse.CompAttachBase"
-            };
-        }
 
         public static Pawn Copy(this Pawn source) {
 
@@ -67,26 +57,22 @@ namespace EdB.PrepareCarefully {
             result.apparel = UtilityCopy.CopyExposable(source.apparel, constructorArgs);
 
             // Copy comps
-            if (CompsExcludedFromCopying == null) {
-                CreateExcludedComps();
-            }
-            CompsCopier copier = new CompsCopier(source, CompsExcludedFromCopying);
-            source.AllComps.ForEach((c) => {
-                if (!CompsExcludedFromCopying.Contains(c.GetType().FullName)) {
-                    copier.AllComps.Add(c);
-                }
-                else {
-                    //Logger.Debug("Removed excluded " + c.GetType().FullName + " comp from the list of comps to copy over");
-                }
-            });
-            CompsCopier compsCopy = UtilityCopy.CopyExposable(copier, new object[] { result, CompsExcludedFromCopying });
-            CopyCompsIntoResult(result, compsCopy);
+            //List<ThingComp> validComps = new List<ThingComp>();
+            //foreach (var c in source.AllComps) {
+            //    PawnCompsSaver saver = new PawnCompsSaver(new List<ThingComp>() { c }, null);
+            //    string xml = UtilityCopy.SerializeExposableToString(saver);
+            //    XmlDocument doc = new XmlDocument();
+            //    doc.LoadXml(xml);
+            //    if (doc.DocumentElement.HasChildNodes) {
+            //        validComps.Add(c);
+            //        Logger.Debug(c.GetType().FullName + ": \n  " + xml);
+            //    }
+            //    else {
+            //        Logger.Debug(c.GetType().FullName + " is empty");
+            //    }
+            //}
 
-            // Verify the pawn health state.
-            if (result.health.State != savedHealthState) {
-                Logger.Warning("Mismatched health state on copied pawn: " + savedHealthState + " != " + result.health.State + ";  Resetting value to match.");
-                result.SetHealthState(savedHealthState);
-            }
+            CopyPawnComps(source, result);
 
             // Clear all of the pawn caches.
             source.ClearCaches();
@@ -95,80 +81,22 @@ namespace EdB.PrepareCarefully {
             return result;
         }
 
-        public static void CopyCompsIntoResult(Pawn target, CompsCopier comps) {
-            Dictionary<string, ThingComp> lookup = new Dictionary<string, ThingComp>();
-            comps.AllComps.ForEach(c => lookup.Add(c.GetType().FullName, c));
-            //Logger.Debug("Copied comps: ");
-            foreach (var pair in lookup) {
-                //Logger.Debug("  - " + pair.Key);
-            }
-            int count = target.AllComps.Count;
-            for (int i=0; i<count; i++) {
-                var type = target.AllComps[i].GetType();
-                if (lookup.TryGetValue(type.FullName, out ThingComp c)) {
-                    //Logger.Debug("Replaced the " + type.FullName + " comp on the target with the copied version");
-                    target.AllComps[i] = c;
-                    lookup.Remove(type.FullName);
+        public static void CopyPawnComps(Pawn source, Pawn target) {
+            PawnCompsSaver saver = new PawnCompsSaver(source, DefaultPawnCompRules.RulesForCopying);
+            string xml = UtilityCopy.SerializeExposableToString(saver);
+            //Logger.Debug("Serialized comps to string\n" + xml);
+            XmlDocument doc = new XmlDocument();
+            doc.LoadXml(xml);
+            foreach (var fieldPath in DefaultPawnCompRules.RulesForCopying.ExcludedFields) {
+                XmlNode node = doc.DocumentElement.SelectSingleNode(fieldPath);
+                if (node != null) {
+                    //Logger.Debug("Removing " + node.Name + " element");
+                    doc.DocumentElement.RemoveChild(node);
                 }
             }
-            foreach (var pair in lookup) {
-                //Logger.Debug("Added the copied " + pair.Key + " version of the comp to the target");
-                target.AllComps.Add(pair.Value);
-            }
-        }
-
-        // Utility class to copy all of the comps in a pawn.
-        public class CompsCopier : IExposable {
-            private List<ThingComp> comps = new List<ThingComp>();
-            public ThingDef Def { get; set; }
-            public ThingWithComps Parent { get; set; }
-            public HashSet<string> ExcludedComps { get; set; }
-            // The constructor needs to take the target pawn as an argument--the pawn to which the comps will be copied.
-            public CompsCopier(Pawn pawn, HashSet<string> excludedComps) {
-                Parent = pawn;
-                Def = pawn.def;
-                ExcludedComps = excludedComps;
-            }
-            public List<ThingComp> AllComps {
-                get {
-                    return comps;
-                }
-            }
-            // Partially duplicated from ThingWithComps.
-            public void ExposeData() {
-                if (Scribe.mode == LoadSaveMode.LoadingVars) {
-                    this.InitializeComps();
-                }
-                if (this.comps != null) {
-                    for (int i = 0; i < this.comps.Count; i++) {
-                        this.comps[i].PostExposeData();
-                    }
-                }
-            }
-            // Partially duplicated from ThingWithComps.
-            public void InitializeComps() {
-                if (Def.comps.Any<CompProperties>()) {
-                    this.comps = new List<ThingComp>();
-                    for (int i = 0; i < Def.comps.Count; i++) {
-                        ThingComp thingComp = null;
-                        try {
-                            Type type = Def.comps[i].compClass;
-                            // Check to see if this comp is in the list of excluded comps
-                            if (!ExcludedComps.Contains(type.FullName)) {
-                                thingComp = (ThingComp)Activator.CreateInstance(type);
-                                // We set the parent to our target pawn.
-                                thingComp.parent = Parent;
-                                this.comps.Add(thingComp);
-                                thingComp.Initialize(Def.comps[i]);
-                            }
-                        }
-                        catch (Exception arg) {
-                            Logger.Warning("Could not instantiate or initialize a ThingComp when copying a pawn: " + arg);
-                            this.comps.Remove(thingComp);
-                        }
-                    }
-                }
-            }
+            xml = "<saveable Class=\"" + typeof(PawnCompsLoader).FullName + "\">" + doc.DocumentElement.InnerXml + "</saveable>";
+            //Logger.Debug("Post node-exclusions\n" + xml);
+            UtilityCopy.DeserializeExposable<PawnCompsLoader>(xml, new object[] { target, DefaultPawnCompRules.RulesForCopying });
         }
 
         public static void ClearCaches(this Pawn pawn) {

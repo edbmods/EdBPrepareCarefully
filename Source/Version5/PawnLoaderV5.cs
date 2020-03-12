@@ -2,18 +2,20 @@ using RimWorld;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Reflection;
+using System.Text;
 using System.Text.RegularExpressions;
+using System.Threading.Tasks;
 using UnityEngine;
 using Verse;
 
 namespace EdB.PrepareCarefully {
-    public class PresetLoaderVersion4 {
-        public bool Failed = false;
+    public class PawnLoaderV5 {
+        // Maintain lists of definitions that were replaced in newer versions of the game.
         public Dictionary<string, string> thingDefReplacements = new Dictionary<string, string>();
         public Dictionary<string, string> traitReplacements = new Dictionary<string, string>();
         public Dictionary<string, string> recipeReplacements = new Dictionary<string, string>();
         public Dictionary<string, ReplacementBodyPart> bodyPartReplacements = new Dictionary<string, ReplacementBodyPart>();
+        Dictionary<string, List<string>> skillDefReplacementLookup = new Dictionary<string, List<string>>();
 
         public class ReplacementBodyPart {
             public BodyPartDef def;
@@ -24,13 +26,13 @@ namespace EdB.PrepareCarefully {
             }
         }
 
-        public PresetLoaderVersion4() {
+        public PawnLoaderV5() {
             thingDefReplacements.Add("Gun_SurvivalRifle", "Gun_BoltActionRifle");
             thingDefReplacements.Add("Gun_Pistol", "Gun_Revolver");
             thingDefReplacements.Add("Medicine", "MedicineIndustrial");
             thingDefReplacements.Add("Component", "ComponentIndustrial");
             thingDefReplacements.Add("WolfTimber", "Wolf_Timber");
-            
+
             traitReplacements.Add("Prosthophobe", "BodyPurist");
             traitReplacements.Add("Prosthophile", "Transhumanist");
             traitReplacements.Add("SuperImmune", "Immunity");
@@ -66,6 +68,11 @@ namespace EdB.PrepareCarefully {
             AddBodyPartReplacement("RightKidney", "Kidney", 1);
         }
 
+        protected void InitializeSkillDefReplacements() {
+            AddSkillDefReplacement("Growing", "Plants");
+            AddSkillDefReplacement("Research", "Intellectual");
+        }
+
         public void AddBodyPartReplacement(string name, string newPart, int index) {
             BodyPartDef def = DefDatabase<BodyPartDef>.GetNamedSilentFail(newPart);
             if (def == null) {
@@ -75,86 +82,24 @@ namespace EdB.PrepareCarefully {
             bodyPartReplacements.Add(name, new ReplacementBodyPart(def, index));
         }
 
-        public bool Load(PrepareCarefully loadout, string presetName) {
-            SaveRecordPresetV4 preset = new SaveRecordPresetV4();
-            Failed = false;
+        public CustomPawn Load(PrepareCarefully loadout, string name) {
+            SaveRecordPawnV5 pawnRecord = new SaveRecordPawnV5();
+            string modString = "";
+            string version = "";
             try {
-                Scribe.loader.InitLoading(PresetFiles.FilePathForSavedPreset(presetName));
-                preset.ExposeData();
+                Scribe.loader.InitLoading(ColonistFiles.FilePathForSavedColonist(name));
+                Scribe_Values.Look<string>(ref version, "version", "unknown", false);
+                Scribe_Values.Look<string>(ref modString, "mods", "", false);
 
-                if (preset.equipment != null) {
-                    List<EquipmentSelection> equipment = new List<EquipmentSelection>(preset.equipment.Count);
-                    foreach (var e in preset.equipment) {
-                        ThingDef thingDef = DefDatabase<ThingDef>.GetNamedSilentFail(e.def);
-                        if (thingDef == null) {
-                            string replacementDefName;
-                            if (thingDefReplacements.TryGetValue(e.def, out replacementDefName)) {
-                                thingDef = DefDatabase<ThingDef>.GetNamedSilentFail(replacementDefName);
-                            }
-                        }
-                        ThingDef stuffDef = null;
-                        Gender gender = Gender.None;
-                        if (!string.IsNullOrEmpty(e.stuffDef)) {
-                            stuffDef = DefDatabase<ThingDef>.GetNamedSilentFail(e.stuffDef);
-                        }
-                        if (!string.IsNullOrEmpty(e.gender)) {
-                            try {
-                                gender = (Gender)Enum.Parse(typeof(Gender), e.gender);
-                            }
-                            catch (Exception) {
-                                Log.Warning("Failed to load gender value for animal.");
-                                Failed = true;
-                                continue;
-                            }
-                        }
-                        if (thingDef != null) {
-                            if (string.IsNullOrEmpty(e.stuffDef)) {
-                                EquipmentKey key = new EquipmentKey(thingDef, null, gender);
-                                EquipmentRecord record = PrepareCarefully.Instance.EquipmentDatabase.LookupEquipmentRecord(key);
-                                if (record != null) {
-                                    equipment.Add(new EquipmentSelection(record, e.count));
-                                }
-                                else {
-                                    Log.Warning("Could not find equipment in equipment database: " + key);
-                                    Failed = true;
-                                    continue;
-                                }
-                            }
-                            else {
-                                if (stuffDef != null) {
-                                    EquipmentKey key = new EquipmentKey(thingDef, stuffDef, gender);
-                                    EquipmentRecord record = PrepareCarefully.Instance.EquipmentDatabase.LookupEquipmentRecord(key);
-                                    if (record == null) {
-                                        string thing = thingDef != null ? thingDef.defName : "null";
-                                        string stuff = stuffDef != null ? stuffDef.defName : "null";
-                                        Log.Warning(string.Format("Could not load equipment/resource from the preset.  This may be caused by an invalid thing/stuff combination: " + key));
-                                        Failed = true;
-                                        continue;
-                                    }
-                                    else {
-                                        equipment.Add(new EquipmentSelection(record, e.count));
-                                    }
-                                }
-                                else {
-                                    Log.Warning("Could not load stuff definition \"" + e.stuffDef + "\" for item \"" + e.def + "\"");
-                                    Failed = true;
-                                }
-                            }
-                        }
-                        else {
-                            Log.Warning("Could not load thing definition \"" + e.def + "\"");
-                            Failed = true;
-                        }
-                    }
-                    loadout.Equipment.Clear();
-                    foreach (var e in equipment) {
-                        loadout.Equipment.Add(e);
-                    }
+                try {
+                    Scribe_Deep.Look<SaveRecordPawnV5>(ref pawnRecord, "pawn", null);
                 }
-                else {
-                    Messages.Message("EdB.PC.Dialog.Preset.Error.EquipmentFailed".Translate(), MessageTypeDefOf.ThreatBig);
-                    Log.Warning("Failed to load equipment from preset");
-                    Failed = true;
+                catch (Exception e) {
+                    Messages.Message(modString, MessageTypeDefOf.SilentInput);
+                    Messages.Message("EdB.PC.Dialog.PawnPreset.Error.Failed".Translate(), MessageTypeDefOf.RejectInput);
+                    Log.Warning(e.ToString());
+                    Log.Warning("Colonist was created with the following mods: " + modString);
+                    return null;
                 }
             }
             catch (Exception e) {
@@ -165,143 +110,33 @@ namespace EdB.PrepareCarefully {
                 PresetLoader.ClearSaveablesAndCrossRefs();
             }
 
-            List<CustomPawn> allPawns = new List<CustomPawn>();
-            List<CustomPawn> colonistCustomPawns = new List<CustomPawn>();
-            List<CustomPawn> hiddenCustomPawns = new List<CustomPawn>();
-            try {
-                foreach (SaveRecordPawnV4 p in preset.pawns) {
-                    CustomPawn pawn = LoadPawn(p);
-                    if (pawn != null) {
-                        allPawns.Add(pawn);
-                        if (!pawn.Hidden) {
-                            colonistCustomPawns.Add(pawn);
-                        }
-                        else {
-                            hiddenCustomPawns.Add(pawn);
-                        }
-                    }
-                    else {
-                        Messages.Message("EdB.PC.Dialog.Preset.Error.NoCharacter".Translate(), MessageTypeDefOf.ThreatBig);
-                        Log.Warning("Preset was created with the following mods: " + preset.mods);
-                    }
-                }
-            }
-            catch (Exception e) {
-                Messages.Message("EdB.PC.Dialog.Preset.Error.Failed".Translate(), MessageTypeDefOf.ThreatBig);
-                Log.Warning(e.ToString());
-                Log.Warning("Preset was created with the following mods: " + preset.mods);
-                return false;
+            if (pawnRecord == null) {
+                Messages.Message(modString, MessageTypeDefOf.SilentInput);
+                Messages.Message("EdB.PC.Dialog.PawnPreset.Error.Failed".Translate(), MessageTypeDefOf.RejectInput);
+                Log.Warning("Colonist was created with the following mods: " + modString);
+                return null;
             }
 
-            loadout.ClearPawns();
-            foreach (CustomPawn p in colonistCustomPawns) {
-                loadout.AddPawn(p);
-            }
-            loadout.RelationshipManager.Clear();
-            loadout.RelationshipManager.InitializeWithCustomPawns(colonistCustomPawns.AsEnumerable().Concat(hiddenCustomPawns));
+            CustomPawn pawn = ConvertSaveRecordToPawn(pawnRecord);
 
-            bool atLeastOneRelationshipFailed = false;
-            List<CustomRelationship> allRelationships = new List<CustomRelationship>();
-            if (preset.relationships != null) {
-                try {
-                    foreach (SaveRecordRelationshipV3 r in preset.relationships) {
-                        if (string.IsNullOrEmpty(r.source) || string.IsNullOrEmpty(r.target) || string.IsNullOrEmpty(r.relation)) {
-                            atLeastOneRelationshipFailed = true;
-                            Log.Warning("Prepare Carefully failed to load a custom relationship from the preset: " + r);
-                            continue;
-                        }
-                        CustomRelationship relationship = LoadRelationship(r, allPawns);
-                        if (relationship == null) {
-                            atLeastOneRelationshipFailed = true;
-                            Log.Warning("Prepare Carefully failed to load a custom relationship from the preset: " + r);
-                        }
-                        else {
-                            allRelationships.Add(relationship);
-                        }
-                    }
-                }
-                catch (Exception e) {
-                    Messages.Message("EdB.PC.Dialog.Preset.Error.RelationshipFailed".Translate(), MessageTypeDefOf.ThreatBig);
-                    Log.Warning(e.ToString());
-                    Log.Warning("Preset was created with the following mods: " + preset.mods);
-                    return false;
-                }
-                if (atLeastOneRelationshipFailed) {
-                    Messages.Message("EdB.PC.Dialog.Preset.Error.RelationshipFailed".Translate(), MessageTypeDefOf.ThreatBig);
-                }
-            }
-            loadout.RelationshipManager.AddRelationships(allRelationships);
-
-            if (preset.parentChildGroups != null) {
-                foreach (var groupRecord in preset.parentChildGroups) {
-                    ParentChildGroup group = new ParentChildGroup();
-                    if (groupRecord.parents != null) {
-                        foreach (var id in groupRecord.parents) {
-                            CustomPawn parent = FindPawnById(id, colonistCustomPawns, hiddenCustomPawns);
-                            if (parent != null) {
-                                var pawn = parent;
-                                if (pawn != null) {
-                                    group.Parents.Add(pawn);
-                                }
-                                else {
-                                    Log.Warning("Prepare Carefully could not load a custom parent relationship because it could not find a matching pawn in the relationship manager.");
-                                }
-                            }
-                            else {
-                                Log.Warning("Prepare Carefully could not load a custom parent relationship because it could not find a pawn with the saved identifer.");
-                            }
-                        }
-                    }
-                    if (groupRecord.children != null) {
-                        foreach (var id in groupRecord.children) {
-                            CustomPawn child = FindPawnById(id, colonistCustomPawns, hiddenCustomPawns);
-                            if (child != null) {
-                                var pawn = child;
-                                if (pawn != null) {
-                                    group.Children.Add(pawn);
-                                }
-                                else {
-                                    Log.Warning("Prepare Carefully could not load a custom child relationship because it could not find a matching pawn in the relationship manager.");
-                                }
-                            }
-                            else {
-                                Log.Warning("Prepare Carefully could not load a custom child relationship because it could not find a pawn with the saved identifer.");
-                            }
-                        }
-                    }
-                    loadout.RelationshipManager.ParentChildGroups.Add(group);
-                }
-            }
-            loadout.RelationshipManager.ReassignHiddenPawnIndices();
-
-            if (Failed) {
-                Messages.Message(preset.mods, MessageTypeDefOf.SilentInput);
-                Messages.Message("EdB.PC.Dialog.Preset.Error.ThingDefFailed".Translate(), MessageTypeDefOf.ThreatBig);
-                Log.Warning("Preset was created with the following mods: " + preset.mods);
-                return false;
-            }
-
-            return true;
+            return pawn;
         }
 
-        protected UniqueBodyPart FindReplacementBodyPart(OptionsHealth healthOptions, string name) {
-            ReplacementBodyPart replacement = null;
-            if (bodyPartReplacements.TryGetValue(name, out replacement)) {
-                return healthOptions.FindBodyPart(replacement.def, replacement.index);
-            }
-            return null;
-        }
+        public CustomPawn ConvertSaveRecordToPawn(SaveRecordPawnV5 record) {
+            bool partialFailure = false;
 
-        public CustomPawn LoadPawn(SaveRecordPawnV4 record) {
             PawnKindDef pawnKindDef = null;
             if (record.pawnKindDef != null) {
                 pawnKindDef = DefDatabase<PawnKindDef>.GetNamedSilentFail(record.pawnKindDef);
                 if (pawnKindDef == null) {
-                    Log.Warning("Prepare Carefully could not find the pawn kind definition for the saved character: \"" + record.pawnKindDef + "\"");
-                    return null;
+                    Logger.Warning("Pawn kind definition for the saved character (" + record.pawnKindDef + ") not found.  Picking a random player colony pawn kind definition.");
+                    pawnKindDef = PrepareCarefully.Instance.Providers.Factions.GetPawnKindsForFactionDef(FactionDefOf.PlayerColony).RandomElement();
+                    if (pawnKindDef == null) {
+                        return null;
+                    }
                 }
             }
-            
+
             ThingDef pawnThingDef = ThingDefOf.Human;
             if (record.thingDef != null) {
                 ThingDef thingDef = DefDatabase<ThingDef>.GetNamedSilentFail(record.thingDef);
@@ -320,10 +155,11 @@ namespace EdB.PrepareCarefully {
                 generationRequest.KindDef = pawnKindDef;
             }
             Pawn source = PawnGenerator.GeneratePawn(generationRequest.Request);
+
             if (source.health != null) {
                 source.health.Reset();
             }
-            
+
             CustomPawn pawn = new CustomPawn(source);
             if (record.id == null) {
                 pawn.GenerateId();
@@ -383,7 +219,7 @@ namespace EdB.PrepareCarefully {
                                     pawn.Faction = customFaction;
                                 }
                                 else {
-                                    Log.Warning("Prepare Carefully could not place at least one preset character into a saved faction because there were not enough available factions of that type in the world");
+                                    Logger.Warning("Could not place at least one preset character into a saved faction because there were not enough available factions of that type in the world");
                                     randomFaction = true;
                                 }
                             }
@@ -398,53 +234,40 @@ namespace EdB.PrepareCarefully {
                             }
                         }
                         else {
-                            Log.Warning("Prepare Carefully could not place at least one preset character into a saved faction because that faction is not available in the world");
+                            Logger.Warning("Could not place at least one preset character into a saved faction because that faction is not available in the world");
                         }
                     }
                 }
             }
 
-            HairDef h = FindHairDef(record.hairDef);
+            HairDef h = DefDatabase<HairDef>.GetNamedSilentFail(record.hairDef);
             if (h != null) {
                 pawn.HairDef = h;
             }
             else {
-                Log.Warning("Could not load hair definition \"" + record.hairDef + "\"");
-                Failed = true;
+                Logger.Warning("Could not load hair definition \"" + record.hairDef + "\"");
+                partialFailure = true;
             }
-            
+
             pawn.HeadGraphicPath = record.headGraphicPath;
             if (pawn.Pawn.story != null) {
                 pawn.Pawn.story.hairColor = record.hairColor;
             }
-            
+
             if (record.melanin >= 0.0f) {
                 pawn.MelaninLevel = record.melanin;
             }
             else {
                 pawn.MelaninLevel = PawnColorUtils.FindMelaninValueFromColor(record.skinColor);
             }
-            // Set the skin color for Alien Races and alien comp values.
-            if (pawn.AlienRace != null) {
-                pawn.SkinColor = record.skinColor;
-                if (record.alien != null) {
-                    ThingComp alienComp = ProviderAlienRaces.FindAlienCompForPawn(pawn.Pawn);
-                    if (alienComp != null) {
-                        ProviderAlienRaces.SetCrownTypeOnComp(alienComp, record.alien.crownType);
-                        ProviderAlienRaces.SetSkinColorOnComp(alienComp, record.alien.skinColor);
-                        ProviderAlienRaces.SetSkinColorSecondOnComp(alienComp, record.alien.skinColorSecond);
-                        ProviderAlienRaces.SetHairColorSecondOnComp(alienComp, record.alien.hairColorSecond);
-                    }
-                }
-            }
-            
+
             Backstory backstory = FindBackstory(record.childhood);
             if (backstory != null) {
                 pawn.Childhood = backstory;
             }
             else {
                 Log.Warning("Could not load childhood backstory definition \"" + record.childhood + "\"");
-                Failed = true;
+                partialFailure = true;
             }
             if (record.adulthood != null) {
                 backstory = FindBackstory(record.adulthood);
@@ -453,7 +276,7 @@ namespace EdB.PrepareCarefully {
                 }
                 else {
                     Log.Warning("Could not load adulthood backstory definition \"" + record.adulthood + "\"");
-                    Failed = true;
+                    partialFailure = true;
                 }
             }
 
@@ -475,24 +298,55 @@ namespace EdB.PrepareCarefully {
                 pawn.BodyType = bodyType;
             }
 
-            pawn.ClearTraits();
-            for (int i = 0; i < record.traitNames.Count; i++) {
-                string traitName = record.traitNames[i];
-                Trait trait = FindTrait(traitName, record.traitDegrees[i]);
-                if (trait != null) {
-                    pawn.AddTrait(trait);
-                }
-                else {
-                    Log.Warning("Could not load trait definition \"" + traitName + "\"");
-                    Failed = true;
+            // Load pawn comps
+            //Logger.Debug("pre-copy comps xml: " + record.compsXml);
+            String compsXml = "<saveable Class=\"" + typeof(PawnCompsLoader).FullName + "\">" + record.compsXml + "</saveable>";
+            PawnCompInclusionRules rules = new PawnCompInclusionRules();
+            rules.IncludeComps(record.savedComps);
+            UtilityCopy.DeserializeExposable<PawnCompsLoader>(compsXml, new object[] { pawn.Pawn, rules });
+            Dictionary<string, ThingComp> compLookup = new Dictionary<string, ThingComp>();
+            foreach (var c in pawn.Pawn.AllComps) {
+                if (!compLookup.ContainsKey(c.GetType().FullName)) {
+                    //Logger.Debug("Added comp to comp lookup with key: " + c.GetType().FullName);
+                    compLookup.Add(c.GetType().FullName, c);
                 }
             }
-            
+            HashSet<string> savedComps = record.savedComps != null ? new HashSet<string>(record.savedComps) : new HashSet<string>();
+            DefaultPawnCompRules.PostLoadModifiers.Apply(pawn.Pawn, compLookup, savedComps);
+
+            pawn.ClearTraits();
+            if (record.traits != null) {
+                for (int i = 0; i < record.traits.Count; i++) {
+                    string traitName = record.traits[i].def;
+                    Trait trait = FindTrait(traitName, record.traits[i].degree);
+                    if (trait != null) {
+                        pawn.AddTrait(trait);
+                    }
+                    else {
+                        Logger.Warning("Could not load trait definition \"" + traitName + "\"");
+                        partialFailure = true;
+                    }
+                }
+            }
+            else if (record.traitNames != null && record.traitDegrees != null && record.traitNames.Count == record.traitDegrees.Count) {
+                for (int i = 0; i < record.traitNames.Count; i++) {
+                    string traitName = record.traitNames[i];
+                    Trait trait = FindTrait(traitName, record.traitDegrees[i]);
+                    if (trait != null) {
+                        pawn.AddTrait(trait);
+                    }
+                    else {
+                        Logger.Warning("Could not load trait definition \"" + traitName + "\"");
+                        partialFailure = true;
+                    }
+                }
+            }
+
             foreach (var skill in record.skills) {
                 SkillDef def = FindSkillDef(pawn.Pawn, skill.name);
                 if (def == null) {
-                    Log.Warning("Could not load skill definition \"" + skill.name + "\" from saved preset");
-                    Failed = true;
+                    Logger.Warning("Could not load skill definition \"" + skill.name + "\" from saved preset");
+                    partialFailure = true;
                     continue;
                 }
                 pawn.currentPassions[def] = skill.passion;
@@ -512,13 +366,13 @@ namespace EdB.PrepareCarefully {
                 // Find the pawn layer for the saved apparel record.
                 PawnLayer layer = apparelLayers.FirstOrDefault((apparelLayer) => { return apparelLayer.Name == apparelRecord.layer; });
                 if (layer == null) {
-                    Log.Warning("Could not find a matching pawn layer for the saved apparel \"" + apparelRecord.layer + "\"");
-                    Failed = true;
+                    Logger.Warning("Could not find a matching pawn layer for the saved apparel \"" + apparelRecord.layer + "\"");
+                    partialFailure = true;
                     continue;
                 }
                 if (apparelRecord.apparel.NullOrEmpty()) {
-                    Log.Warning("Saved apparel entry for layer \"" + apparelRecord.layer + "\" had an empty apparel def");
-                    Failed = true;
+                    Logger.Warning("Saved apparel entry for layer \"" + apparelRecord.layer + "\" had an empty apparel def");
+                    partialFailure = true;
                     continue;
                 }
                 // Set the defaults.
@@ -528,16 +382,16 @@ namespace EdB.PrepareCarefully {
 
                 ThingDef def = DefDatabase<ThingDef>.GetNamedSilentFail(apparelRecord.apparel);
                 if (def == null) {
-                    Log.Warning("Could not load thing definition for apparel \"" + apparelRecord.apparel + "\"");
-                    Failed = true;
+                    Logger.Warning("Could not load thing definition for apparel \"" + apparelRecord.apparel + "\"");
+                    partialFailure = true;
                     continue;
                 }
                 ThingDef stuffDef = null;
                 if (!string.IsNullOrEmpty(apparelRecord.stuff)) {
                     stuffDef = DefDatabase<ThingDef>.GetNamedSilentFail(apparelRecord.stuff);
                     if (stuffDef == null) {
-                        Log.Warning("Could not load stuff definition \"" + apparelRecord.stuff + "\" for apparel \"" + apparelRecord.apparel + "\"");
-                        Failed = true;
+                        Logger.Warning("Could not load stuff definition \"" + apparelRecord.stuff + "\" for apparel \"" + apparelRecord.apparel + "\"");
+                        partialFailure = true;
                         continue;
                     }
                 }
@@ -554,17 +408,17 @@ namespace EdB.PrepareCarefully {
                     uniqueBodyPart = FindReplacementBodyPart(healthOptions, implantRecord.bodyPart);
                 }
                 if (uniqueBodyPart == null) {
-                    Log.Warning("Prepare Carefully could not add the implant because it could not find the needed body part \"" + implantRecord.bodyPart + "\""
+                    Logger.Warning("Could not add the implant because it could not find the needed body part \"" + implantRecord.bodyPart + "\""
                         + (implantRecord.bodyPartIndex != null ? " with index " + implantRecord.bodyPartIndex : ""));
-                    Failed = true;
+                    partialFailure = true;
                     continue;
                 }
                 BodyPartRecord bodyPart = uniqueBodyPart.Record;
                 if (implantRecord.recipe != null) {
                     RecipeDef recipeDef = FindRecipeDef(implantRecord.recipe);
                     if (recipeDef == null) {
-                        Log.Warning("Prepare Carefully could not add the implant because it could not find the recipe definition \"" + implantRecord.recipe + "\"");
-                        Failed = true;
+                        Logger.Warning("Could not add the implant because it could not find the recipe definition \"" + implantRecord.recipe + "\"");
+                        partialFailure = true;
                         continue;
                     }
                     bool found = false;
@@ -575,8 +429,8 @@ namespace EdB.PrepareCarefully {
                         }
                     }
                     if (!found) {
-                        Log.Warning("Prepare carefully could not apply the saved implant recipe \"" + implantRecord.recipe + "\" to the body part \"" + bodyPart.def.defName + "\".  Recipe does not support that part.");
-                        Failed = true;
+                        Logger.Warning("Could not apply the saved implant recipe \"" + implantRecord.recipe + "\" to the body part \"" + bodyPart.def.defName + "\".  Recipe does not support that part.");
+                        partialFailure = true;
                         continue;
                     }
                     Implant implant = new Implant();
@@ -586,18 +440,18 @@ namespace EdB.PrepareCarefully {
                     pawn.AddImplant(implant);
                 }
             }
-            
+
             foreach (var injuryRecord in record.injuries) {
                 HediffDef def = DefDatabase<HediffDef>.GetNamedSilentFail(injuryRecord.hediffDef);
                 if (def == null) {
-                    Log.Warning("Prepare Carefully could not add the injury because it could not find the hediff definition \"" + injuryRecord.hediffDef + "\"");
-                    Failed = true;
+                    Logger.Warning("Could not add the injury because it could not find the hediff definition \"" + injuryRecord.hediffDef + "\"");
+                    partialFailure = true;
                     continue;
                 }
                 InjuryOption option = healthOptions.FindInjuryOptionByHediffDef(def);
                 if (option == null) {
-                    Log.Warning("Prepare Carefully could not add the injury because it could not find a matching injury option for the saved hediff \"" + injuryRecord.hediffDef + "\"");
-                    Failed = true;
+                    Logger.Warning("Could not add the injury because it could not find a matching injury option for the saved hediff \"" + injuryRecord.hediffDef + "\"");
+                    partialFailure = true;
                     continue;
                 }
                 BodyPartRecord bodyPart = null;
@@ -608,9 +462,9 @@ namespace EdB.PrepareCarefully {
                         uniquePart = FindReplacementBodyPart(healthOptions, injuryRecord.bodyPart);
                     }
                     if (uniquePart == null) {
-                        Log.Warning("Prepare Carefully could not add the injury because it could not find the needed body part \"" + injuryRecord.bodyPart + "\""
+                        Logger.Warning("Could not add the injury because it could not find the needed body part \"" + injuryRecord.bodyPart + "\""
                             + (injuryRecord.bodyPartIndex != null ? " with index " + injuryRecord.bodyPartIndex : ""));
-                        Failed = true;
+                        partialFailure = true;
                         continue;
                     }
                     bodyPart = uniquePart.Record;
@@ -626,61 +480,14 @@ namespace EdB.PrepareCarefully {
                 }
                 pawn.AddInjury(injury);
             }
-            
+
             pawn.CopySkillsAndPassionsToPawn();
             pawn.ClearPawnCaches();
 
             return pawn;
         }
 
-        protected CustomPawn FindPawnById(string id, List<CustomPawn> colonistPawns, List<CustomPawn> hiddenPawns) {
-            CustomPawn result = colonistPawns.FirstOrDefault((CustomPawn c) => {
-                return id == c.Id;
-            });
-            if (result == null) {
-                result = hiddenPawns.FirstOrDefault((CustomPawn c) => {
-                    return id == c.Id;
-                });
-            }
-            return result;
-        }
-
-        public CustomRelationship LoadRelationship(SaveRecordRelationshipV3 saved, List<CustomPawn> pawns) {
-            CustomRelationship result = new CustomRelationship();
-
-            foreach (var p in pawns) {
-                if (p.Id == saved.source || p.Name.ToStringFull == saved.source) {
-                    result.source = p;
-                }
-                if (p.Id == saved.target || p.Name.ToStringFull == saved.target) {
-                    result.target = p;
-                }
-            }
-
-            result.def = DefDatabase<PawnRelationDef>.GetNamedSilentFail(saved.relation);
-            if (result.def != null) {
-                result.inverseDef = PrepareCarefully.Instance.RelationshipManager.FindInverseRelationship(result.def);
-            }
-            if (result.def == null) {
-                Log.Warning("Couldn't find relationship definition: " + saved.relation);
-                return null;
-            }
-            else if (result.source == null) {
-                Log.Warning("Couldn't find relationship source pawn: " + saved.source);
-                return null;
-            }
-            else if (result.target == null) {
-                Log.Warning("Couldn't find relationship target pawn: " + saved.source);
-                return null;
-            }
-            else if (result.inverseDef == null) {
-                Log.Warning("Couldn't determine inverse relationship: " + saved.relation);
-                return null;
-            }
-            return result;
-        }
-
-        public RecipeDef FindRecipeDef(string name) {
+        protected RecipeDef FindRecipeDef(string name) {
             RecipeDef result = DefDatabase<RecipeDef>.GetNamedSilentFail(name);
             if (result == null) {
                 return FindReplacementRecipe(name);
@@ -698,11 +505,15 @@ namespace EdB.PrepareCarefully {
             return null;
         }
 
-        public HairDef FindHairDef(string name) {
-            return DefDatabase<HairDef>.GetNamedSilentFail(name);
+        protected UniqueBodyPart FindReplacementBodyPart(OptionsHealth healthOptions, string name) {
+            ReplacementBodyPart replacement = null;
+            if (bodyPartReplacements.TryGetValue(name, out replacement)) {
+                return healthOptions.FindBodyPart(replacement.def, replacement.index);
+            }
+            return null;
         }
 
-        public Backstory FindBackstory(string name) {
+        private Backstory FindBackstory(string name) {
             Backstory matchingBackstory = BackstoryDatabase.allBackstories.Values.ToList().Find((Backstory b) => {
                 return b.identifier.Equals(name);
             });
@@ -714,13 +525,13 @@ namespace EdB.PrepareCarefully {
                     return b.identifier.StartsWith(backstoryMinusVersioning);
                 });
                 if (matchingBackstory != null) {
-                    Log.Message("Found replacement backstory.  Using " + matchingBackstory.identifier + " in place of " + name);
+                    Logger.Message("Found replacement backstory.  Using " + matchingBackstory.identifier + " in place of " + name);
                 }
             }
             return matchingBackstory;
         }
 
-        public Trait FindTrait(string name, int degree) {
+        protected Trait FindTrait(string name, int degree) {
             Trait trait = LookupTrait(name, degree);
             if (trait != null) {
                 return trait;
@@ -755,24 +566,15 @@ namespace EdB.PrepareCarefully {
             return null;
         }
 
-        // Maintains a list of skill definitions that were replaced in newer versions of the game.
-        Dictionary<string, List<string>> skillDefReplacementLookup = new Dictionary<string, List<string>>();
-
-        protected void InitializeSkillDefReplacements() {
-            AddSkillDefReplacement("Growing", "Plants");
-            AddSkillDefReplacement("Research", "Intellectual");
-        }
-
         protected void AddSkillDefReplacement(String skill, String replacement) {
-            List<string> replacements = null;
-            if (!skillDefReplacementLookup.TryGetValue(skill, out replacements)) {
+            if (!skillDefReplacementLookup.TryGetValue(skill, out List<string> replacements)) {
                 replacements = new List<string>();
                 skillDefReplacementLookup.Add(skill, replacements);
             }
             replacements.Add(replacement);
         }
 
-        public SkillDef FindSkillDef(Pawn pawn, string name) {
+        protected SkillDef FindSkillDef(Pawn pawn, string name) {
             List<string> replacements = null;
             if (skillDefReplacementLookup.ContainsKey(name)) {
                 replacements = skillDefReplacementLookup[name];
@@ -791,6 +593,6 @@ namespace EdB.PrepareCarefully {
             }
             return null;
         }
+
     }
 }
-

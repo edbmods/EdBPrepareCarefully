@@ -1,4 +1,4 @@
-﻿using RimWorld;
+using RimWorld;
 using System;
 using System.Collections.Generic;
 using System.Collections;
@@ -25,6 +25,9 @@ namespace EdB.PrepareCarefully {
         public void AddHeadType(CustomHeadType headType) {
             headTypes.Add(headType);
             pathDictionary.Add(headType.GraphicPath, headType);
+            if (headType.AlternateGraphicPath != null) {
+                pathDictionary.Add(headType.AlternateGraphicPath, headType);
+            }
         }
         public IEnumerable<CustomHeadType> GetHeadTypesForGender(Gender gender) {
             return headTypes.Where((CustomHeadType headType) => {
@@ -36,7 +39,7 @@ namespace EdB.PrepareCarefully {
             if (alienComp == null) {
                 var result = FindHeadTypeByGraphicsPath(pawn.story.HeadGraphicPath);
                 if (result == null) {
-                    Log.Warning("Did not find head type for path: " + pawn.story.HeadGraphicPath);
+                    Logger.Warning("Did not find head type for path: " + pawn.story.HeadGraphicPath);
                 }
                 return result;
             }
@@ -44,7 +47,7 @@ namespace EdB.PrepareCarefully {
                 string crownType = ProviderAlienRaces.GetCrownTypeFromComp(alienComp);
                 var result = FindHeadTypeByCrownTypeAndGender(crownType, pawn.gender);
                 if (result == null) {
-                    Log.Warning("Did not find head type for alien crown type: " + crownType);
+                    Logger.Warning("Did not find head type for alien crown type: " + crownType);
                 }
                 return result;
             }

@@ -272,6 +272,10 @@ namespace EdB.PrepareCarefully {
             if (pawn != null) {
                 state.AddMessage("EdB.PC.Dialog.PawnPreset.Loaded".Translate(name));
             }
+            else {
+                state.AddError("Failed to load pawn");
+                return;
+            }
             bool colonyPawn = state.PawnListMode == PawnListMode.ColonyPawnsMaximized;
             pawn.Type = colonyPawn ? CustomPawnType.Colonist : CustomPawnType.World;
             PrepareCarefully.Instance.AddPawn(pawn);

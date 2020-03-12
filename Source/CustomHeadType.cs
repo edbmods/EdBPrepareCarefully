@@ -1,4 +1,4 @@
-﻿using RimWorld;
+using RimWorld;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -10,7 +10,8 @@ using Verse.Sound;
 namespace EdB.PrepareCarefully {
     public class CustomHeadType {
         private CrownType crownType;
-        private string graphicsPath;
+        private string graphicPath;
+        private string alternateGraphicPath;
         public string AlienCrownType {
             get; set;
         }
@@ -25,10 +26,18 @@ namespace EdB.PrepareCarefully {
         }
         public string GraphicPath {
             get {
-                return graphicsPath;
+                return graphicPath;
             }
             set {
-                graphicsPath = value;
+                graphicPath = value;
+            }
+        }
+        public string AlternateGraphicPath {
+            get {
+                return alternateGraphicPath;
+            }
+            set {
+                alternateGraphicPath = value;
             }
         }
         public Gender? Gender {
@@ -53,12 +62,12 @@ namespace EdB.PrepareCarefully {
                 return values[values.Count() - 2] + ", " + values[values.Count() - 1];
             }
             catch (Exception) {
-                Log.Warning("Prepare Carefully could not determine head type label from graphics path: " + path);
+                Logger.Warning("Prepare Carefully could not determine head type label from graphics path: " + path);
                 return "EdB.PC.Common.Default".Translate();
             }
         }
         public override string ToString() {
-            return "{ label = \"" + Label + "\", graphicsPath = \"" + graphicsPath + "\", crownType = " + crownType + "\", AlienCrownType = " + AlienCrownType + ", gender = " + gender + "}";
+            return "{ label = \"" + Label + "\", graphicsPath = \"" + graphicPath + "\", crownType = " + crownType + "\", AlienCrownType = " + AlienCrownType + ", gender = " + gender + "}";
         }
     }
 }
