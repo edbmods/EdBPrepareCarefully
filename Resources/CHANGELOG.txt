@@ -1,5 +1,20 @@
  _____________________________________________________________________________
  
+   Version 1.1.7
+ _____________________________________________________________________________
+
+  - Changed the way that ThingComps added to pawns by other mods are handled
+    by Prepare Carefully.
+    - ThingComps are now copied along with everything else when Prepare
+      Carefully makes copies of all of the starting pawns.
+    - ThingComps for popular mods are now saved with presets so that mod
+      makers do not need to write custom code to integrate with the Prepare
+      Carefully preset functionality
+    - The hope is to make it easier for other mods to work with this mod.
+  - Fixed an issue when loading certain types of health conditions/injuries.
+
+ _____________________________________________________________________________
+ 
    Version 1.1.6
  _____________________________________________________________________________
 
