@@ -171,6 +171,8 @@
     <Compile Include="Source\CarefullyPawnRelationDef.cs" />
     <Compile Include="Source\UtilityCopy.cs" />
     <Compile Include="Source\ExtensionsObject.cs" />
+    <Compile Include="Source\Version4\ColonistLoaderVersion4.cs" />
+    <Compile Include="Source\Version4\PresetLoaderVersion4.cs" />
     <Compile Include="Source\Version4\SaveRecordAlienV4.cs" />
     <Compile Include="Source\Version4\SaveRecordFactionV4.cs" />
     <Compile Include="Source\Version3\PresetLoaderVersion3.cs" />
