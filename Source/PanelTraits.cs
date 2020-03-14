@@ -31,8 +31,34 @@ namespace EdB.PrepareCarefully {
         protected Rect RectScrollFrame;
         protected Rect RectScrollView;
 
+        public class TipCache {
+            public Dictionary<Trait, string> Lookup = new Dictionary<Trait, string>();
+            private CustomPawn pawn = null;
+            private bool ready = false;
+            public void CheckPawn(CustomPawn pawn) {
+                if (this.pawn != pawn) {
+                    this.pawn = pawn;
+                    Invalidate();
+                }
+            }
+            public void Invalidate() {
+                this.ready = false;
+                Lookup.Clear();
+            }
+            public void MakeReady() {
+                this.ready = true;
+            }
+            public bool Ready {
+                get {
+                    return ready;
+                }
+            }
+        }
+        protected TipCache tipCache = new TipCache();
+
         public PanelTraits() {
         }
+
         public override string PanelHeader {
             get {
                 return "Traits".Translate();
@@ -54,6 +80,8 @@ namespace EdB.PrepareCarefully {
 
         protected override void DrawPanelContent(State state) {
             CustomPawn currentPawn = state.CurrentPawn;
+            tipCache.CheckPawn(currentPawn);
+
             if (currentPawn.TraitCount > Constraints.MaxVanillaTraits) {
                 Warning = "EdB.PC.Panel.Traits.Warning.TooManyTraits".Translate();
             }
@@ -180,6 +208,8 @@ namespace EdB.PrepareCarefully {
                 GUI.EndGroup();
             }
 
+            tipCache.MakeReady();
+
             GUI.color = Color.white;
 
             if (clickAction != null) {
@@ -198,6 +228,7 @@ namespace EdB.PrepareCarefully {
             GUI.DrawTexture(randomizeRect, Textures.TextureButtonRandom);
             if (Widgets.ButtonInvisible(randomizeRect, false)) {
                 SoundDefOf.Tick_Low.PlayOneShotOnCamera();
+                tipCache.Invalidate();
                 TraitsRandomized();
             }
 
@@ -234,6 +265,7 @@ namespace EdB.PrepareCarefully {
                     CloseAction = () => {
                         if (selectedTrait != null) {
                             TraitAdded(selectedTrait);
+                            tipCache.Invalidate();
                         }
                     }
                 };
@@ -245,42 +277,60 @@ namespace EdB.PrepareCarefully {
                     TraitRemoved(trait);
                 }
                 traitsToRemove.Clear();
+                tipCache.Invalidate();
             }
         }
 
         protected string GetTraitTip(Trait trait, CustomPawn pawn) {
-            string baseTip = trait.TipString(pawn.Pawn);
-            string conflictingNames = null;
-            if (!conflictingTraitList.TryGetValue(trait, out conflictingNames)) {
-                List<Trait> conflictingTraits = providerTraits.Traits.Where((Trait t) => {
-                    return trait.def.conflictingTraits.Contains(t.def) || (t.def == trait.def && t.Label != trait.Label);
-                }).ToList();
-                if (conflictingTraits.Count == 0) {
-                    conflictingTraitList.Add(trait, null);
-                }
-                else {
-                    conflictingNames = "";
-                    if (conflictingTraits.Count == 1) {
-                        conflictingNames = "EdB.PC.Panel.Traits.Tip.Conflict.List.1".Translate(conflictingTraits[0].LabelCap);
-                    }
-                    else if (conflictingTraits.Count == 2) {
-                        conflictingNames = "EdB.PC.Panel.Traits.Tip.Conflict.List.2".Translate(conflictingTraits[0].LabelCap, conflictingTraits[1].LabelCap);
-                    }
-                    else {
-                        int c = conflictingTraits.Count;
-                        conflictingNames = "EdB.PC.Panel.Traits.Tip.Conflict.List.Last".Translate(conflictingTraits[c - 2].LabelCap, conflictingTraits[c - 1].LabelCap);
-                        for (int i = c - 3; i >= 0; i--) {
-                            conflictingNames = "EdB.PC.Panel.Traits.Tip.Conflict.List.Many".Translate(conflictingTraits[i].LabelCap, conflictingNames);
-                        }
-                    }
-                    conflictingTraitList.Add(trait, conflictingNames);
-                }
-            }
-            if (conflictingNames == null) {
-                return baseTip;
+            if (!tipCache.Ready || !tipCache.Lookup.ContainsKey(trait)) {
+                string value = GenerateTraitTip(trait, pawn);
+                tipCache.Lookup.Add(trait, value);
+                return value;
             }
             else {
-                return "EdB.PC.Panel.Traits.Tip.Conflict".Translate(baseTip, conflictingNames);
+                return tipCache.Lookup[trait];
+            }
+        }
+
+        protected string GenerateTraitTip(Trait trait, CustomPawn pawn) {
+            try {
+                string baseTip = trait.TipString(pawn.Pawn);
+                string conflictingNames = null;
+                if (!conflictingTraitList.TryGetValue(trait, out conflictingNames)) {
+                    List<Trait> conflictingTraits = providerTraits.Traits.Where((Trait t) => {
+                        return trait.def.conflictingTraits.Contains(t.def) || (t.def == trait.def && t.Label != trait.Label);
+                    }).ToList();
+                    if (conflictingTraits.Count == 0) {
+                        conflictingTraitList.Add(trait, null);
+                    }
+                    else {
+                        conflictingNames = "";
+                        if (conflictingTraits.Count == 1) {
+                            conflictingNames = "EdB.PC.Panel.Traits.Tip.Conflict.List.1".Translate(conflictingTraits[0].LabelCap);
+                        }
+                        else if (conflictingTraits.Count == 2) {
+                            conflictingNames = "EdB.PC.Panel.Traits.Tip.Conflict.List.2".Translate(conflictingTraits[0].LabelCap, conflictingTraits[1].LabelCap);
+                        }
+                        else {
+                            int c = conflictingTraits.Count;
+                            conflictingNames = "EdB.PC.Panel.Traits.Tip.Conflict.List.Last".Translate(conflictingTraits[c - 2].LabelCap, conflictingTraits[c - 1].LabelCap);
+                            for (int i = c - 3; i >= 0; i--) {
+                                conflictingNames = "EdB.PC.Panel.Traits.Tip.Conflict.List.Many".Translate(conflictingTraits[i].LabelCap, conflictingNames);
+                            }
+                        }
+                        conflictingTraitList.Add(trait, conflictingNames);
+                    }
+                }
+                if (conflictingNames == null) {
+                    return baseTip;
+                }
+                else {
+                    return "EdB.PC.Panel.Traits.Tip.Conflict".Translate(baseTip, conflictingNames).Resolve();
+                }
+            }
+            catch (Exception e) {
+                Logger.Warning("There was an error when trying to generate a mouseover tip for trait {" + (trait?.LabelCap ?? "null") + "}\n" + e);
+                return null;
             }
         }
 
