@@ -89,6 +89,7 @@ namespace EdB.PrepareCarefully {
                 .IncludeComp("VanillaHairExpanded.CompBeard")
                 .IncludeComp("Psychology.CompPsychology")
                 .IncludeComp("GradientHair.CompGradientHair")
+                .IncludeCompWithPrefix("ReviaRace.")
                 .ExcludeField("pawnFaction");
         }
 

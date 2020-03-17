@@ -143,18 +143,61 @@ namespace EdB.PrepareCarefully {
                 if (thingDef != null) {
                     pawnThingDef = thingDef;
                 }
+                else {
+                    Logger.Warning("Pawn's thing definition {" + record.thingDef + "} was not found.  Defaulting to the thing definition for humans.");
+                }
+            }
+            else {
+                Logger.Warning("Pawn's thing definition was null.  Defaulting to the thing definition for humans.");
             }
 
+            // Create the pawn generation request.
             PawnGenerationRequestWrapper generationRequest = new PawnGenerationRequestWrapper() {
                 FixedBiologicalAge = record.biologicalAge,
                 FixedChronologicalAge = record.chronologicalAge,
                 FixedGender = record.gender
             };
-
+            // Add a faction to the generation request, if possible.
+            if (record.originalFactionDef != null) {
+                FactionDef factionDef = DefDatabase<FactionDef>.GetNamedSilentFail(record.originalFactionDef);
+                if (factionDef != null) {
+                    Faction faction = PrepareCarefully.Instance.Providers.Factions.GetFaction(factionDef);
+                    if (faction != null) {
+                        generationRequest.Faction = faction;
+                    }
+                    else {
+                        Logger.Warning("No faction found for faction definition {" + record.originalFactionDef + "}");
+                    }
+                }
+                else {
+                    Logger.Warning("No faction defition defition found for {" + record.originalFactionDef + "}");
+                }
+            }
+            // Add a pawn kind definition to the generation request, if possible.
             if (pawnKindDef != null) {
                 generationRequest.KindDef = pawnKindDef;
             }
-            Pawn source = PawnGenerator.GeneratePawn(generationRequest.Request);
+
+            // Create the pawn.
+            Pawn source = null;
+            try {
+                source = PawnGenerator.GeneratePawn(generationRequest.Request);
+            }
+            catch (Exception e) {
+                Logger.Warning("Failed to generate a pawn from preset for pawn {" + (record.nickName) + "}. Will try to create it using fallback settings", e);
+                generationRequest = new PawnGenerationRequestWrapper() {
+                    FixedBiologicalAge = record.biologicalAge,
+                    FixedChronologicalAge = record.chronologicalAge,
+                    FixedGender = record.gender
+                };
+                try {
+                    source = PawnGenerator.GeneratePawn(generationRequest.Request);
+                }
+                catch (Exception) {
+                    Logger.Warning("Failed to generate a pawn using fallback settings from preset for pawn {" + (record.nickName) + "}", e);
+                    return null;
+                }
+            }
 
             if (source.health != null) {
                 source.health.Reset();
@@ -201,7 +244,13 @@ namespace EdB.PrepareCarefully {
             }
             pawn.OriginalKindDef = pawnKindDef;
 
-            if (pawn.Type == CustomPawnType.World) {
+            if (pawn.Type == CustomPawnType.Colonist) {
+                Faction playerFaction = Faction.OfPlayerSilentFail;
+                if (playerFaction != null) {
+                    pawn.Pawn.SetFactionDirect(playerFaction);
+                }
+            }
+            else if (pawn.Type == CustomPawnType.World) {
                 if (record.faction != null) {
                     if (record.faction.def != null) {
                         FactionDef factionDef = DefDatabase<FactionDef>.GetNamedSilentFail(record.faction.def);
