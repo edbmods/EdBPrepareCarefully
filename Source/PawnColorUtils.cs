@@ -61,7 +61,7 @@ namespace EdB.PrepareCarefully {
                 RoundedColors[i].b = (float)Math.Round(color.b, 3);
                 RoundedColors[i].a = (float)Math.Round(color.a, 3);
                 ColorValues[i] = v;
-                //Log.Message("Color added: (" + color.r + ", " + color.g + ", " + color.b + ")");
+                //Logger.Debug("Color added: (" + color.r + ", " + color.g + ", " + color.b + ")");
             }
         }
 
@@ -176,7 +176,7 @@ namespace EdB.PrepareCarefully {
 
                 return result;
             }
-            Log.Warning("Prepare Carefully could not find a valid matching value for the saved Color");
+            Logger.Warning("Could not find a valid matching value for the saved Color");
             return 0.5f;
         }
     }

@@ -113,7 +113,7 @@ namespace EdB.PrepareCarefully {
         protected void CountDefs() {
             for (int i = 0; i < LoadingProgress.defsToCountPerFrame; i++) {
                 if (!LoadingProgress.enumerator.MoveNext()) {
-                    //Log.Message("Prepare Carefully finished counting " + LoadingProgress.defCount + " thing definition(s)");
+                    //Logger.Message("Finished counting " + LoadingProgress.defCount + " thing definition(s)");
                     NextPhase();
                     return;
                 }
@@ -196,8 +196,7 @@ namespace EdB.PrepareCarefully {
                 }
             }
             catch (Exception e) {
-                Log.Warning("Prepare Carefully failed to process thing definition while building equipment lists: " + def.defName);
-                Log.Message("  Exception: " + e);
+                Logger.Warning("Failed to process thing definition while building equipment lists: " + def.defName, e);
             }
             return false;
         }
@@ -518,7 +517,7 @@ namespace EdB.PrepareCarefully {
 
         public EquipmentRecord AddThingDefWithStuff(ThingDef def, ThingDef stuff, EquipmentType type) {
             if (type == null) {
-                Log.Warning("Prepare Carefully could not add unclassified equipment: " + def);
+                Logger.Warning("Could not add unclassified equipment: " + def);
                 return null;
             }
             EquipmentKey key = new EquipmentKey(def, stuff);

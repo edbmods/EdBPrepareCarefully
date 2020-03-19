@@ -1,4 +1,4 @@
-﻿using RimWorld;
+using RimWorld;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -121,7 +121,7 @@ namespace EdB.PrepareCarefully {
             else {
                 PawnRelationWorker worker = carefullyDef.Worker;
                 if (worker != null) {
-                    //Log.Message("Returned carefully worker for " + def.defName + ", " + worker.GetType().FullName);
+                    //Logger.Debug("Returned carefully worker for " + def.defName + ", " + worker.GetType().FullName);
                     return carefullyDef.Worker;
                 }
                 else {
@@ -148,7 +148,7 @@ namespace EdB.PrepareCarefully {
             Dictionary<Pawn, ParentChildGroup> groupLookup = new Dictionary<Pawn, ParentChildGroup>();
             foreach (Pawn child in pawns) {
                 foreach (var r in child.relations.DirectRelations) {
-                    //Log.Message("Relationship: " + r.def.defName + ", " + child.LabelShort + " & " + r.otherPawn.LabelShort);
+                    //Logger.Debug("Relationship: " + r.def.defName + ", " + child.LabelShort + " & " + r.otherPawn.LabelShort);
                     if (r.def == PawnRelationDefOf.Parent) {
                         Pawn parent = r.otherPawn;
                         CustomPawn parentCustomPawn = pawnCustomPawnLookup[parent];
@@ -184,11 +184,11 @@ namespace EdB.PrepareCarefully {
                     parent = relationship.source;
                 }
                 if (parent == null) {
-                    Log.Warning("Could not add relationship because of missing parent");
+                    Logger.Warning("Could not add relationship because of missing parent");
                     continue;
                 }
                 if (child == null) {
-                    Log.Warning("Could not add relationship because of missing child");
+                    Logger.Warning("Could not add relationship because of missing child");
                     continue;
                 }
 
@@ -236,12 +236,12 @@ namespace EdB.PrepareCarefully {
                 }
                 ParentChildGroup existing;
                 if (parentLookup.TryGetValue(hash, out existing)) {
-                    //Log.Message("Removing duplicate group: " + group);
-                    //Log.Message("  Duplicate of group: " + existing);
+                    //Logger.Debug("Removing duplicate group: " + group);
+                    //Logger.Debug("  Duplicate of group: " + existing);
                     foreach (var child in group.Children) {
                         existing.Children.Add(child);
                     }
-                    //Log.Message("  Added children from dupe: " + existing);
+                    //Logger.Debug("  Added children from dupe: " + existing);
                     groupsToRemove.Add(group);
                 }
                 else {
@@ -254,7 +254,7 @@ namespace EdB.PrepareCarefully {
             foreach (var group in groups) {
                 if (!groupsToRemove.Contains(group)) {
                     result.Add(group);
-                    //Log.Message(group.ToString());
+                    //Logger.Debug(group.ToString());
                 }
             }
             
@@ -350,13 +350,13 @@ namespace EdB.PrepareCarefully {
                     if (r.def == PawnRelationDefOf.Parent) {
                         Pawn parent = r.otherPawn;
                         if (!pawnCustomPawnLookup.ContainsKey(parent)) {
-                            //Log.Warning("Creating custom pawn for missing parent pawn " + parent.LabelShort);
+                            //Logger.Debug("Creating custom pawn for missing parent pawn " + parent.LabelShort);
                             CustomPawn customPawn = new CustomPawn(parent);
                             customPawn.Type = CustomPawnType.Hidden;
                             AddHiddenParentChildPawn(customPawn);
                         }
                         if (!pawnCustomPawnLookup.ContainsKey(child)) {
-                            //Log.Warning("Creating custom pawn for missing child pawn " + child.LabelShort);
+                            //Logger.Debug("Creating custom pawn for missing child pawn " + child.LabelShort);
                             CustomPawn customPawn = new CustomPawn(child);
                             customPawn.Type = CustomPawnType.Hidden;
                             AddHiddenParentChildPawn(customPawn);

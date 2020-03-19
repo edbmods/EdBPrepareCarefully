@@ -288,7 +288,7 @@ namespace EdB.PrepareCarefully {
                 ThingDef apparelDef = customPawn.GetSelectedApparel(selectedPawnLayer);
                 if (apparelDef != null && apparelDef.MadeFromStuff) {
                     if (customPawn.GetSelectedStuff(selectedPawnLayer) == null) {
-                        Log.Error("Selected stuff for " + selectedPawnLayer.ApparelLayer + " is null");
+                        Logger.Error("Selected stuff for " + selectedPawnLayer.ApparelLayer + " is null");
                     }
                     Rect stuffFieldRect = new Rect(RectPortrait.x, cursorY, RectPortrait.width, 28);
                     DrawFieldSelector(stuffFieldRect, customPawn.GetSelectedStuff(selectedPawnLayer).LabelCap,
@@ -825,7 +825,7 @@ namespace EdB.PrepareCarefully {
             List<BodyTypeDef> bodyTypes = provider.GetBodyTypesForPawn(customPawn);
             int index = bodyTypes.IndexOf(customPawn.BodyType);
             if (index == -1) {
-                Log.Warning("Could not find the current pawn's body type in list of available options: " + customPawn.BodyType);
+                Logger.Warning("Could not find the current pawn's body type in list of available options: " + customPawn.BodyType);
                 return;
             }
             index += direction;

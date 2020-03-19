@@ -45,7 +45,7 @@ namespace EdB.PrepareCarefully {
                     factionDefPawnKinds.Add(kindDef);
                 }
                 catch (Exception) {
-                    Log.Warning("Prepare Carefully failed to get a list of factions from a kindDef: " + kindDef.defName);
+                    Logger.Warning("Failed to get a list of factions from a kindDef: " + kindDef.defName);
                 }
             }
 
@@ -73,7 +73,7 @@ namespace EdB.PrepareCarefully {
                     }
                 }
                 catch (Exception) {
-                    Log.Warning("Prepare Carefully failed to classify a FactionDef as humanlike or not: " + def.defName);
+                    Logger.Warning("Failed to classify a FactionDef as humanlike or not: " + def.defName);
                 }
             }
             nonPlayerHumanlikeFactionDefs.Sort((FactionDef a, FactionDef b) => {

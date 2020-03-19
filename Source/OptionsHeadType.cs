@@ -94,7 +94,7 @@ namespace EdB.PrepareCarefully {
                 }
                 CustomHeadType result = FindHeadTypeByGraphicsPath(graphicsPath);
                 if (result == null) {
-                    Log.Warning("Could not find head type for gender: " + graphicsPath);
+                    Logger.Warning("Could not find head type for gender: " + graphicsPath);
                 }
                 return result != null ? result : headType;
             }

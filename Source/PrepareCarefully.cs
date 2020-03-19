@@ -200,7 +200,7 @@ namespace EdB.PrepareCarefully {
                     EquipmentKey key = new EquipmentKey(thingDef, stuffDef);
                     EquipmentRecord record = equipmentDatabase.LookupEquipmentRecord(key);
                     if (record == null) {
-                        Log.Warning("Prepare Carefully couldn't initialize all scenario equipment.  Didn't find an equipment entry for " + thingDef.defName);
+                        Logger.Warning("Couldn't initialize all scenario equipment.  Didn't find an equipment entry for " + thingDef.defName);
                         record = AddNonStandardScenarioEquipmentEntry(key);
                     }
                     if (record != null) {
@@ -223,7 +223,7 @@ namespace EdB.PrepareCarefully {
                     EquipmentKey key = new EquipmentKey(thingDef, stuffDef);
                     EquipmentRecord entry = equipmentDatabase.LookupEquipmentRecord(key);
                     if (entry == null) {
-                        Log.Warning("Prepare Carefully couldn't initialize all scenario equipment.  Didn't find an equipment entry for " + thingDef.defName);
+                        Logger.Warning("Couldn't initialize all scenario equipment.  Didn't find an equipment entry for " + thingDef.defName);
                         entry = AddNonStandardScenarioEquipmentEntry(key);
                     }
                     if (entry != null) {
@@ -252,7 +252,7 @@ namespace EdB.PrepareCarefully {
                             AddEquipment(entry);
                         }
                         else {
-                            Log.Warning("Prepare Carefully failed to add the expected scenario animal to list of selected equipment");
+                            Logger.Warning("Failed to add the expected scenario animal to list of selected equipment");
                         }
                     }
                 }

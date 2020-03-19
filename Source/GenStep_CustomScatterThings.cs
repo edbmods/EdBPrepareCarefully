@@ -160,7 +160,7 @@ namespace EdB.PrepareCarefully {
         protected override void ScatterAt(IntVec3 loc, Map map, GenStepParams parms, int stackCount = 1) {
             Rot4 rot;
             if (!this.TryGetRandomValidRotation(loc, map, out rot)) {
-                Log.Warning("Could not find any valid rotation for " + this.thingDef, false);
+                Logger.Warning("Could not find any valid rotation for " + this.thingDef);
                 return;
             }
             if (this.clearSpaceSize > 0) {

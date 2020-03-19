@@ -196,7 +196,7 @@ namespace EdB.PrepareCarefully {
                             label = getsPermanentProperties.permanentLabel.CapitalizeFirst();
                         }
                         else {
-                            Log.Warning("Prepare Carefully could not find label for old injury: " + hd.defName);
+                            Logger.Warning("Could not find label for old injury: " + hd.defName);
                             continue;
                         }
                     }

@@ -265,7 +265,7 @@ namespace EdB.PrepareCarefully {
         }
         public void LoadCharacter(string name) {
             if (string.IsNullOrEmpty(name)) {
-                Log.Warning("Trying to load a character without a name");
+                Logger.Warning("Trying to load a character without a name");
                 return;
             }
             CustomPawn pawn = ColonistLoader.LoadFromFile(PrepareCarefully.Instance, name);
@@ -284,7 +284,7 @@ namespace EdB.PrepareCarefully {
         }
         public void SaveCharacter(CustomPawn pawn, string filename) {
             if (string.IsNullOrEmpty(filename)) {
-                Log.Warning("Trying to save a character without a name");
+                Logger.Warning("Trying to save a character without a name");
                 return;
             }
             ColonistSaver.SaveToFile(pawn, filename);
@@ -317,9 +317,7 @@ namespace EdB.PrepareCarefully {
                 }
             }
             catch (Exception e) {
-                Log.Warning("Failed to create faction pawn of kind " + kindDef.defName);
-                Log.Message(e.Message);
-                Log.Message(e.StackTrace);
+                Logger.Warning("Failed to create faction pawn of kind " + kindDef.defName, e);
                 if (pawn != null) {
                     pawn.Destroy();
                 }

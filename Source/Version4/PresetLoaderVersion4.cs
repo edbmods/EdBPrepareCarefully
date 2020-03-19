@@ -69,7 +69,7 @@ namespace EdB.PrepareCarefully {
         public void AddBodyPartReplacement(string name, string newPart, int index) {
             BodyPartDef def = DefDatabase<BodyPartDef>.GetNamedSilentFail(newPart);
             if (def == null) {
-                Log.Warning("Could not find body part definition \"" + newPart + "\" to replace body part \"" + name + "\"");
+                Logger.Warning("Could not find body part definition \"" + newPart + "\" to replace body part \"" + name + "\"");
                 return;
             }
             bodyPartReplacements.Add(name, new ReplacementBodyPart(def, index));
@@ -102,7 +102,7 @@ namespace EdB.PrepareCarefully {
                                 gender = (Gender)Enum.Parse(typeof(Gender), e.gender);
                             }
                             catch (Exception) {
-                                Log.Warning("Failed to load gender value for animal.");
+                                Logger.Warning("Failed to load gender value for animal.");
                                 Failed = true;
                                 continue;
                             }
@@ -115,7 +115,7 @@ namespace EdB.PrepareCarefully {
                                     equipment.Add(new EquipmentSelection(record, e.count));
                                 }
                                 else {
-                                    Log.Warning("Could not find equipment in equipment database: " + key);
+                                    Logger.Warning("Could not find equipment in equipment database: " + key);
                                     Failed = true;
                                     continue;
                                 }
@@ -127,7 +127,7 @@ namespace EdB.PrepareCarefully {
                                     if (record == null) {
                                         string thing = thingDef != null ? thingDef.defName : "null";
                                         string stuff = stuffDef != null ? stuffDef.defName : "null";
-                                        Log.Warning(string.Format("Could not load equipment/resource from the preset.  This may be caused by an invalid thing/stuff combination: " + key));
+                                        Logger.Warning(string.Format("Could not load equipment/resource from the preset.  This may be caused by an invalid thing/stuff combination: " + key));
                                         Failed = true;
                                         continue;
                                     }
@@ -136,13 +136,13 @@ namespace EdB.PrepareCarefully {
                                     }
                                 }
                                 else {
-                                    Log.Warning("Could not load stuff definition \"" + e.stuffDef + "\" for item \"" + e.def + "\"");
+                                    Logger.Warning("Could not load stuff definition \"" + e.stuffDef + "\" for item \"" + e.def + "\"");
                                     Failed = true;
                                 }
                             }
                         }
                         else {
-                            Log.Warning("Could not load thing definition \"" + e.def + "\"");
+                            Logger.Warning("Could not load thing definition \"" + e.def + "\"");
                             Failed = true;
                         }
                     }
@@ -153,12 +153,12 @@ namespace EdB.PrepareCarefully {
                 }
                 else {
                     Messages.Message("EdB.PC.Dialog.Preset.Error.EquipmentFailed".Translate(), MessageTypeDefOf.ThreatBig);
-                    Log.Warning("Failed to load equipment from preset");
+                    Logger.Warning("Failed to load equipment from preset");
                     Failed = true;
                 }
             }
             catch (Exception e) {
-                Log.Error("Failed to load preset file");
+                Logger.Error("Failed to load preset file");
                 throw e;
             }
             finally {
@@ -182,14 +182,14 @@ namespace EdB.PrepareCarefully {
                     }
                     else {
                         Messages.Message("EdB.PC.Dialog.Preset.Error.NoCharacter".Translate(), MessageTypeDefOf.ThreatBig);
-                        Log.Warning("Preset was created with the following mods: " + preset.mods);
+                        Logger.Warning("Preset was created with the following mods: " + preset.mods);
                     }
                 }
             }
             catch (Exception e) {
                 Messages.Message("EdB.PC.Dialog.Preset.Error.Failed".Translate(), MessageTypeDefOf.ThreatBig);
-                Log.Warning(e.ToString());
-                Log.Warning("Preset was created with the following mods: " + preset.mods);
+                Logger.Warning("Error while loading preset", e);
+                Logger.Warning("Preset was created with the following mods: " + preset.mods);
                 return false;
             }
 
@@ -207,13 +207,13 @@ namespace EdB.PrepareCarefully {
                     foreach (SaveRecordRelationshipV3 r in preset.relationships) {
                         if (string.IsNullOrEmpty(r.source) || string.IsNullOrEmpty(r.target) || string.IsNullOrEmpty(r.relation)) {
                             atLeastOneRelationshipFailed = true;
-                            Log.Warning("Prepare Carefully failed to load a custom relationship from the preset: " + r);
+                            Logger.Warning("Failed to load a custom relationship from the preset: " + r);
                             continue;
                         }
                         CustomRelationship relationship = LoadRelationship(r, allPawns);
                         if (relationship == null) {
                             atLeastOneRelationshipFailed = true;
-                            Log.Warning("Prepare Carefully failed to load a custom relationship from the preset: " + r);
+                            Logger.Warning("Failed to load a custom relationship from the preset: " + r);
                         }
                         else {
                             allRelationships.Add(relationship);
@@ -222,8 +222,8 @@ namespace EdB.PrepareCarefully {
                 }
                 catch (Exception e) {
                     Messages.Message("EdB.PC.Dialog.Preset.Error.RelationshipFailed".Translate(), MessageTypeDefOf.ThreatBig);
-                    Log.Warning(e.ToString());
-                    Log.Warning("Preset was created with the following mods: " + preset.mods);
+                    Logger.Warning("Error while loading preset", e);
+                    Logger.Warning("Preset was created with the following mods: " + preset.mods);
                     return false;
                 }
                 if (atLeastOneRelationshipFailed) {
@@ -244,11 +244,11 @@ namespace EdB.PrepareCarefully {
                                     group.Parents.Add(pawn);
                                 }
                                 else {
-                                    Log.Warning("Prepare Carefully could not load a custom parent relationship because it could not find a matching pawn in the relationship manager.");
+                                    Logger.Warning("Could not load a custom parent relationship because it could not find a matching pawn in the relationship manager.");
                                 }
                             }
                             else {
-                                Log.Warning("Prepare Carefully could not load a custom parent relationship because it could not find a pawn with the saved identifer.");
+                                Logger.Warning("Could not load a custom parent relationship because it could not find a pawn with the saved identifer.");
                             }
                         }
                     }
@@ -261,11 +261,11 @@ namespace EdB.PrepareCarefully {
                                     group.Children.Add(pawn);
                                 }
                                 else {
-                                    Log.Warning("Prepare Carefully could not load a custom child relationship because it could not find a matching pawn in the relationship manager.");
+                                    Logger.Warning("Could not load a custom child relationship because it could not find a matching pawn in the relationship manager.");
                                 }
                             }
                             else {
-                                Log.Warning("Prepare Carefully could not load a custom child relationship because it could not find a pawn with the saved identifer.");
+                                Logger.Warning("Could not load a custom child relationship because it could not find a pawn with the saved identifer.");
                             }
                         }
                     }
@@ -277,7 +277,7 @@ namespace EdB.PrepareCarefully {
             if (Failed) {
                 Messages.Message(preset.mods, MessageTypeDefOf.SilentInput);
                 Messages.Message("EdB.PC.Dialog.Preset.Error.ThingDefFailed".Translate(), MessageTypeDefOf.ThreatBig);
-                Log.Warning("Preset was created with the following mods: " + preset.mods);
+                Logger.Warning("Preset was created with the following mods: " + preset.mods);
                 return false;
             }
 
@@ -297,7 +297,7 @@ namespace EdB.PrepareCarefully {
             if (record.pawnKindDef != null) {
                 pawnKindDef = DefDatabase<PawnKindDef>.GetNamedSilentFail(record.pawnKindDef);
                 if (pawnKindDef == null) {
-                    Log.Warning("Prepare Carefully could not find the pawn kind definition for the saved character: \"" + record.pawnKindDef + "\"");
+                    Logger.Warning("Could not find the pawn kind definition for the saved character: \"" + record.pawnKindDef + "\"");
                     return null;
                 }
             }
@@ -383,7 +383,7 @@ namespace EdB.PrepareCarefully {
                                     pawn.Faction = customFaction;
                                 }
                                 else {
-                                    Log.Warning("Prepare Carefully could not place at least one preset character into a saved faction because there were not enough available factions of that type in the world");
+                                    Logger.Warning("Could not place at least one preset character into a saved faction because there were not enough available factions of that type in the world");
                                     randomFaction = true;
                                 }
                             }
@@ -398,7 +398,7 @@ namespace EdB.PrepareCarefully {
                             }
                         }
                         else {
-                            Log.Warning("Prepare Carefully could not place at least one preset character into a saved faction because that faction is not available in the world");
+                            Logger.Warning("Could not place at least one preset character into a saved faction because that faction is not available in the world");
                         }
                     }
                 }
@@ -409,7 +409,7 @@ namespace EdB.PrepareCarefully {
                 pawn.HairDef = h;
             }
             else {
-                Log.Warning("Could not load hair definition \"" + record.hairDef + "\"");
+                Logger.Warning("Could not load hair definition \"" + record.hairDef + "\"");
                 Failed = true;
             }
             
@@ -443,7 +443,7 @@ namespace EdB.PrepareCarefully {
                 pawn.Childhood = backstory;
             }
             else {
-                Log.Warning("Could not load childhood backstory definition \"" + record.childhood + "\"");
+                Logger.Warning("Could not load childhood backstory definition \"" + record.childhood + "\"");
                 Failed = true;
             }
             if (record.adulthood != null) {
@@ -452,7 +452,7 @@ namespace EdB.PrepareCarefully {
                     pawn.Adulthood = backstory;
                 }
                 else {
-                    Log.Warning("Could not load adulthood backstory definition \"" + record.adulthood + "\"");
+                    Logger.Warning("Could not load adulthood backstory definition \"" + record.adulthood + "\"");
                     Failed = true;
                 }
             }
@@ -483,7 +483,7 @@ namespace EdB.PrepareCarefully {
                     pawn.AddTrait(trait);
                 }
                 else {
-                    Log.Warning("Could not load trait definition \"" + traitName + "\"");
+                    Logger.Warning("Could not load trait definition \"" + traitName + "\"");
                     Failed = true;
                 }
             }
@@ -491,7 +491,7 @@ namespace EdB.PrepareCarefully {
             foreach (var skill in record.skills) {
                 SkillDef def = FindSkillDef(pawn.Pawn, skill.name);
                 if (def == null) {
-                    Log.Warning("Could not load skill definition \"" + skill.name + "\" from saved preset");
+                    Logger.Warning("Could not load skill definition \"" + skill.name + "\" from saved preset");
                     Failed = true;
                     continue;
                 }
@@ -512,12 +512,12 @@ namespace EdB.PrepareCarefully {
                 // Find the pawn layer for the saved apparel record.
                 PawnLayer layer = apparelLayers.FirstOrDefault((apparelLayer) => { return apparelLayer.Name == apparelRecord.layer; });
                 if (layer == null) {
-                    Log.Warning("Could not find a matching pawn layer for the saved apparel \"" + apparelRecord.layer + "\"");
+                    Logger.Warning("Could not find a matching pawn layer for the saved apparel \"" + apparelRecord.layer + "\"");
                     Failed = true;
                     continue;
                 }
                 if (apparelRecord.apparel.NullOrEmpty()) {
-                    Log.Warning("Saved apparel entry for layer \"" + apparelRecord.layer + "\" had an empty apparel def");
+                    Logger.Warning("Saved apparel entry for layer \"" + apparelRecord.layer + "\" had an empty apparel def");
                     Failed = true;
                     continue;
                 }
@@ -528,7 +528,7 @@ namespace EdB.PrepareCarefully {
 
                 ThingDef def = DefDatabase<ThingDef>.GetNamedSilentFail(apparelRecord.apparel);
                 if (def == null) {
-                    Log.Warning("Could not load thing definition for apparel \"" + apparelRecord.apparel + "\"");
+                    Logger.Warning("Could not load thing definition for apparel \"" + apparelRecord.apparel + "\"");
                     Failed = true;
                     continue;
                 }
@@ -536,7 +536,7 @@ namespace EdB.PrepareCarefully {
                 if (!string.IsNullOrEmpty(apparelRecord.stuff)) {
                     stuffDef = DefDatabase<ThingDef>.GetNamedSilentFail(apparelRecord.stuff);
                     if (stuffDef == null) {
-                        Log.Warning("Could not load stuff definition \"" + apparelRecord.stuff + "\" for apparel \"" + apparelRecord.apparel + "\"");
+                        Logger.Warning("Could not load stuff definition \"" + apparelRecord.stuff + "\" for apparel \"" + apparelRecord.apparel + "\"");
                         Failed = true;
                         continue;
                     }
@@ -554,7 +554,7 @@ namespace EdB.PrepareCarefully {
                     uniqueBodyPart = FindReplacementBodyPart(healthOptions, implantRecord.bodyPart);
                 }
                 if (uniqueBodyPart == null) {
-                    Log.Warning("Prepare Carefully could not add the implant because it could not find the needed body part \"" + implantRecord.bodyPart + "\""
+                    Logger.Warning("Could not add the implant because it could not find the needed body part \"" + implantRecord.bodyPart + "\""
                         + (implantRecord.bodyPartIndex != null ? " with index " + implantRecord.bodyPartIndex : ""));
                     Failed = true;
                     continue;
@@ -563,7 +563,7 @@ namespace EdB.PrepareCarefully {
                 if (implantRecord.recipe != null) {
                     RecipeDef recipeDef = FindRecipeDef(implantRecord.recipe);
                     if (recipeDef == null) {
-                        Log.Warning("Prepare Carefully could not add the implant because it could not find the recipe definition \"" + implantRecord.recipe + "\"");
+                        Logger.Warning("Could not add the implant because it could not find the recipe definition \"" + implantRecord.recipe + "\"");
                         Failed = true;
                         continue;
                     }
@@ -575,7 +575,7 @@ namespace EdB.PrepareCarefully {
                         }
                     }
                     if (!found) {
-                        Log.Warning("Prepare carefully could not apply the saved implant recipe \"" + implantRecord.recipe + "\" to the body part \"" + bodyPart.def.defName + "\".  Recipe does not support that part.");
+                        Logger.Warning("Could not apply the saved implant recipe \"" + implantRecord.recipe + "\" to the body part \"" + bodyPart.def.defName + "\".  Recipe does not support that part.");
                         Failed = true;
                         continue;
                     }
@@ -590,13 +590,13 @@ namespace EdB.PrepareCarefully {
             foreach (var injuryRecord in record.injuries) {
                 HediffDef def = DefDatabase<HediffDef>.GetNamedSilentFail(injuryRecord.hediffDef);
                 if (def == null) {
-                    Log.Warning("Prepare Carefully could not add the injury because it could not find the hediff definition \"" + injuryRecord.hediffDef + "\"");
+                    Logger.Warning("Could not add the injury because it could not find the hediff definition \"" + injuryRecord.hediffDef + "\"");
                     Failed = true;
                     continue;
                 }
                 InjuryOption option = healthOptions.FindInjuryOptionByHediffDef(def);
                 if (option == null) {
-                    Log.Warning("Prepare Carefully could not add the injury because it could not find a matching injury option for the saved hediff \"" + injuryRecord.hediffDef + "\"");
+                    Logger.Warning("Could not add the injury because it could not find a matching injury option for the saved hediff \"" + injuryRecord.hediffDef + "\"");
                     Failed = true;
                     continue;
                 }
@@ -608,7 +608,7 @@ namespace EdB.PrepareCarefully {
                         uniquePart = FindReplacementBodyPart(healthOptions, injuryRecord.bodyPart);
                     }
                     if (uniquePart == null) {
-                        Log.Warning("Prepare Carefully could not add the injury because it could not find the needed body part \"" + injuryRecord.bodyPart + "\""
+                        Logger.Warning("Could not add the injury because it could not find the needed body part \"" + injuryRecord.bodyPart + "\""
                             + (injuryRecord.bodyPartIndex != null ? " with index " + injuryRecord.bodyPartIndex : ""));
                         Failed = true;
                         continue;
@@ -662,19 +662,19 @@ namespace EdB.PrepareCarefully {
                 result.inverseDef = PrepareCarefully.Instance.RelationshipManager.FindInverseRelationship(result.def);
             }
             if (result.def == null) {
-                Log.Warning("Couldn't find relationship definition: " + saved.relation);
+                Logger.Warning("Couldn't find relationship definition: " + saved.relation);
                 return null;
             }
             else if (result.source == null) {
-                Log.Warning("Couldn't find relationship source pawn: " + saved.source);
+                Logger.Warning("Couldn't find relationship source pawn: " + saved.source);
                 return null;
             }
             else if (result.target == null) {
-                Log.Warning("Couldn't find relationship target pawn: " + saved.source);
+                Logger.Warning("Couldn't find relationship target pawn: " + saved.source);
                 return null;
             }
             else if (result.inverseDef == null) {
-                Log.Warning("Couldn't determine inverse relationship: " + saved.relation);
+                Logger.Warning("Couldn't determine inverse relationship: " + saved.relation);
                 return null;
             }
             return result;
@@ -714,7 +714,7 @@ namespace EdB.PrepareCarefully {
                     return b.identifier.StartsWith(backstoryMinusVersioning);
                 });
                 if (matchingBackstory != null) {
-                    Log.Message("Found replacement backstory.  Using " + matchingBackstory.identifier + " in place of " + name);
+                    Logger.Message("Found replacement backstory.  Using " + matchingBackstory.identifier + " in place of " + name);
                 }
             }
             return matchingBackstory;

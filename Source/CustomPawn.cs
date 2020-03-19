@@ -302,7 +302,7 @@ namespace EdB.PrepareCarefully {
         protected void InitializeSkillLevelsAndPassions() {
 
             if (pawn.skills == null) {
-                Log.Warning("Prepare Carefully could not initialize skills for the pawn.  No pawn skill tracker for " + pawn.def.defName + ", " + pawn.kindDef.defName);
+                Logger.Warning("Could not initialize skills for the pawn.  No pawn skill tracker for " + pawn.def.defName + ", " + pawn.kindDef.defName);
             }
 
             // Save the original passions and set the current values to the same.
@@ -1299,7 +1299,7 @@ namespace EdB.PrepareCarefully {
                 // gender, swapping to the correct head type if necessary.
                 CustomHeadType filteredHeadType = PrepareCarefully.Instance.Providers.HeadTypes.FindHeadTypeForGender(pawn.def, headType, Gender);
                 if (filteredHeadType == null) {
-                    Log.Warning("No filtered head type found"); //TODO
+                    Logger.Warning("No filtered head type found"); //TODO
                 }
                 SetHeadGraphicPathOnPawn(pawn, filteredHeadType.GraphicPath);
             }
@@ -1468,7 +1468,7 @@ namespace EdB.PrepareCarefully {
                 InitializeInjuriesAndImplantsFromPawn(this.pawn);
             }
             else {
-                Log.Warning("Discarding implant because of missing body part: " + implant.BodyPartRecord.def.defName);
+                Logger.Warning("Discarding implant because of missing body part: " + implant.BodyPartRecord.def.defName);
             }
         }
 

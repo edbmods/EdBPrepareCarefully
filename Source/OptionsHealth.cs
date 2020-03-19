@@ -82,14 +82,14 @@ namespace EdB.PrepareCarefully {
         }
         public UniqueBodyPart FindBodyPartByName(string name, int index) {
             if (name == null) {
-                Log.Warning("Cannot complete a body part lookup by name with a null name value");
+                Logger.Warning("Cannot complete a body part lookup by name with a null name value");
                 return null;
             }
             BodyPartDef def = DefDatabase<BodyPartDef>.GetNamedSilentFail(name);
             if (def != null) {
                 return FindBodyPart(def, index);
             }
-            Log.Warning("Did not find body part: " + name);/*
+            Logger.Warning("Did not find body part: " + name);/*
             List<UniqueBodyPart> result;
             if (bodyPartDefLookup.TryGetValue(def, out result)) {
                 if (index < result.Count) {

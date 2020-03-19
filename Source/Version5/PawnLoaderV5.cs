@@ -76,7 +76,7 @@ namespace EdB.PrepareCarefully {
         public void AddBodyPartReplacement(string name, string newPart, int index) {
             BodyPartDef def = DefDatabase<BodyPartDef>.GetNamedSilentFail(newPart);
             if (def == null) {
-                Log.Warning("Could not find body part definition \"" + newPart + "\" to replace body part \"" + name + "\"");
+                Logger.Warning("Could not find body part definition \"" + newPart + "\" to replace body part \"" + name + "\"");
                 return;
             }
             bodyPartReplacements.Add(name, new ReplacementBodyPart(def, index));
@@ -97,13 +97,13 @@ namespace EdB.PrepareCarefully {
                 catch (Exception e) {
                     Messages.Message(modString, MessageTypeDefOf.SilentInput);
                     Messages.Message("EdB.PC.Dialog.PawnPreset.Error.Failed".Translate(), MessageTypeDefOf.RejectInput);
-                    Log.Warning(e.ToString());
-                    Log.Warning("Colonist was created with the following mods: " + modString);
+                    Logger.Warning(e.ToString());
+                    Logger.Warning("Colonist was created with the following mods: " + modString);
                     return null;
                 }
             }
             catch (Exception e) {
-                Log.Error("Failed to load preset file");
+                Logger.Error("Failed to load preset file");
                 throw e;
             }
             finally {
@@ -113,7 +113,7 @@ namespace EdB.PrepareCarefully {
             if (pawnRecord == null) {
                 Messages.Message(modString, MessageTypeDefOf.SilentInput);
                 Messages.Message("EdB.PC.Dialog.PawnPreset.Error.Failed".Translate(), MessageTypeDefOf.RejectInput);
-                Log.Warning("Colonist was created with the following mods: " + modString);
+                Logger.Warning("Colonist was created with the following mods: " + modString);
                 return null;
             }
 
@@ -315,7 +315,7 @@ namespace EdB.PrepareCarefully {
                 pawn.Childhood = backstory;
             }
             else {
-                Log.Warning("Could not load childhood backstory definition \"" + record.childhood + "\"");
+                Logger.Warning("Could not load childhood backstory definition \"" + record.childhood + "\"");
                 partialFailure = true;
             }
             if (record.adulthood != null) {
@@ -324,7 +324,7 @@ namespace EdB.PrepareCarefully {
                     pawn.Adulthood = backstory;
                 }
                 else {
-                    Log.Warning("Could not load adulthood backstory definition \"" + record.adulthood + "\"");
+                    Logger.Warning("Could not load adulthood backstory definition \"" + record.adulthood + "\"");
                     partialFailure = true;
                 }
             }
