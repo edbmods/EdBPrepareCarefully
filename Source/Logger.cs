@@ -8,7 +8,7 @@ namespace EdB.PrepareCarefully {
 
         public static void Debug(string message) {
             if (DebugEnabled) {
-                Log.Message("<color='#33ff33'>" + message + "</color>");
+                Log.Message("<color='#33ff33'>" + message + "</color>", true);
             }
         }
 

@@ -1,4 +1,4 @@
-﻿using RimWorld;
+using RimWorld;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -8,12 +8,7 @@ using Verse;
 namespace EdB.PrepareCarefully {
     public static class WidgetEquipmentIcon {
         public static void Draw(Rect rect, EquipmentRecord entry) {
-            if (entry.thing == null) {
-                Draw(rect, entry.def, entry.color);
-            }
-            else {
-                Draw(rect, entry.thing, entry.color);
-            }
+            Draw(rect, entry.def, entry.color);
         }
         public static void Draw(Rect rect, AnimalRecord animal) {
             Draw(rect, animal.Thing, Color.white);

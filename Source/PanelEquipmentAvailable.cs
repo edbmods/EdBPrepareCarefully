@@ -21,6 +21,8 @@ namespace EdB.PrepareCarefully {
         public static readonly string ColumnNameName = "Name";
         public static readonly string ColumnNameCost = "Cost";
 
+        public StatDef marketValueStatDef = null;
+
         protected Rect RectDropdownTypes;
         protected Rect RectDropdownMaterials;
         protected Rect RectDropdownQuality;
@@ -49,6 +51,10 @@ namespace EdB.PrepareCarefully {
         }
         public override void Resize(Rect rect) {
             base.Resize(rect);
+
+            if (marketValueStatDef ==  null) {
+                marketValueStatDef = StatDefOf.MarketValue;
+            }
 
             Vector2 padding = new Vector2(12, 12);
             
@@ -120,7 +126,7 @@ namespace EdB.PrepareCarefully {
                             GUI.DrawTexture(infoRect, Textures.TextureButtonInfo);
                             if (Widgets.ButtonInvisible(infoRect)) {
                                 if (entry.animal) {
-                                    Find.WindowStack.Add((Window)new Dialog_InfoCard(entry.thing));
+                                    Find.WindowStack.Add((Window)new Dialog_InfoCard(entry.def));
                                 }
                                 else if (entry.stuffDef != null) {
                                     Find.WindowStack.Add((Window)new Dialog_InfoCard(entry.def, entry.stuffDef));
@@ -151,6 +157,7 @@ namespace EdB.PrepareCarefully {
                             Text.Font = GameFont.Small;
                             Text.Anchor = TextAnchor.MiddleLeft;
                             Widgets.Label(columnRect, entry.Label);
+                            //Widgets.Label(columnRect, entry.def.defName);
                             GUI.color = Color.white;
                             Text.Anchor = TextAnchor.UpperLeft;
                         }
@@ -165,8 +172,8 @@ namespace EdB.PrepareCarefully {
                             GUI.color = Style.ColorText;
                             Text.Font = GameFont.Small;
                             Text.Anchor = TextAnchor.MiddleRight;
-                            Widgets.Label(new Rect(columnRect.x, columnRect.y, columnRect.width, columnRect.height),
-                                          "" + entry.cost);
+                            string costString = GenText.ToStringByStyle((float)entry.cost, ToStringStyle.FloatTwo);
+                            Widgets.Label(new Rect(columnRect.x, columnRect.y, columnRect.width, columnRect.height), costString);
                             GUI.color = Color.white;
                             Text.Anchor = TextAnchor.UpperLeft;
                         },

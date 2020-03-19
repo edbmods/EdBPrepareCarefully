@@ -1,4 +1,4 @@
-﻿using RimWorld;
+using RimWorld;
 using System;
 using UnityEngine;
 using Verse;
@@ -8,7 +8,7 @@ namespace EdB.PrepareCarefully {
         public ThingDef def;
         public ThingDef stuffDef = null;
         public Gender gender = Gender.None;
-        public Thing thing = null;
+        //public Thing thing = null;
         public EquipmentType type;
         public int stackSize;
         public double cost = 0;
@@ -28,7 +28,7 @@ namespace EdB.PrepareCarefully {
         public string Label {
             get {
                 if (label == null) {
-                    if (thing != null && animal == true) {
+                    if (animal) {
                         return LabelForAnimal;
                     }
                     else {
@@ -44,7 +44,7 @@ namespace EdB.PrepareCarefully {
         public string LabelNoCount {
             get {
                 if (label == null) {
-                    if (thing != null && animal == true) {
+                    if (animal) {
                         return LabelForAnimal;
                     }
                     else {
@@ -59,12 +59,11 @@ namespace EdB.PrepareCarefully {
 
         public string LabelForAnimal {
             get {
-                Pawn pawn = thing as Pawn;
-                if (pawn.def.race.hasGenders) {
-                    return "EdB.PC.Equipment.AnimalLabel".Translate(pawn.gender.GetLabel(), pawn.kindDef.label).CapitalizeFirst();
+                if (def.race.hasGenders) {
+                    return "EdB.PC.Equipment.AnimalLabel".Translate(gender.GetLabel(), def.label).CapitalizeFirst();
                 }
                 else {
-                    return pawn.LabelCap;
+                    return GenLabel.ThingLabel(def, null, 1).CapitalizeFirst();
                 }
             }
         }
@@ -81,9 +80,8 @@ namespace EdB.PrepareCarefully {
                 (stuffDef != null ? stuffDef.defName : "null"),
                 gender);
         }
+
     }
-
-
 
 }
 

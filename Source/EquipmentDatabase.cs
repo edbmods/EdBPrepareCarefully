@@ -223,6 +223,12 @@ namespace EdB.PrepareCarefully {
             if (def.isUnfinishedThing) {
                 return TypeDiscard;
             }
+            if (!def.scatterableOnMapGen) {
+                return TypeDiscard;
+            }
+            if (def.destroyOnDrop) {
+                return TypeDiscard;
+            }
             if (BelongsToCategoryOrParentCategory(def, ThingCategoryDefOf.Corpses)) {
                 return TypeDiscard;
             }
@@ -235,20 +241,21 @@ namespace EdB.PrepareCarefully {
             if (def.IsFrame) {
                 return TypeDiscard;
             }
-            if (BelongsToCategory(def, "Toy")) {
-                return TypeResources;
+            if (def.plant != null) {
+                return TypeDiscard;
+            }
+            if (def.IsApparel) {
+                return TypeApparel;
             }
             if (def.weaponTags != null && def.weaponTags.Count > 0 && def.IsWeapon) {
                 return TypeWeapons;
             }
+            if (BelongsToCategory(def, "Toy")) {
+                return TypeResources;
+            }
             if (BelongsToCategoryContaining(def, "Weapon")) {
                 return TypeWeapons;
             }
-
-            if (def.IsApparel && !def.destroyOnDrop) {
-                return TypeApparel;
-            }
-
             if (BelongsToCategory(def, "Foods")) {
                 return TypeFood;
             }
@@ -515,7 +522,7 @@ namespace EdB.PrepareCarefully {
                 return null;
             }
             EquipmentKey key = new EquipmentKey(def, stuff);
-            EquipmentRecord entry = CreateEquipmentEntry(def, stuff, type);
+            EquipmentRecord entry = CreateEquipmentRecord(def, stuff, type);
             if (entry != null) {
                 AddRecordIfNotThereAlready(key, entry);
             }
@@ -546,7 +553,7 @@ namespace EdB.PrepareCarefully {
                 foreach (var s in stuff) {
                     if (s.stuffProps.CanMake(def)) {
                         EquipmentKey key = new EquipmentKey(def, s);
-                        EquipmentRecord entry = CreateEquipmentEntry(def, s, type);
+                        EquipmentRecord entry = CreateEquipmentRecord(def, s, type);
                         if (entry != null) {
                             AddRecordIfNotThereAlready(key, entry);
                         }
@@ -555,18 +562,18 @@ namespace EdB.PrepareCarefully {
             }
             else if (def.race != null && def.race.Animal) {
                 if (def.race.hasGenders) {
-                    EquipmentRecord femaleEntry = CreateEquipmentEntry(def, Gender.Female, type);
+                    EquipmentRecord femaleEntry = CreateAnimalEquipmentRecord(def, Gender.Female);
                     if (femaleEntry != null) {
                         AddRecordIfNotThereAlready(new EquipmentKey(def, Gender.Female), femaleEntry);
                     }
-                    EquipmentRecord maleEntry = CreateEquipmentEntry(def, Gender.Male, type);
+                    EquipmentRecord maleEntry = CreateAnimalEquipmentRecord(def, Gender.Male);
                     if (maleEntry != null) {
                         AddRecordIfNotThereAlready(new EquipmentKey(def, Gender.Male), maleEntry);
                     }
                 }
                 else {
                     EquipmentKey key = new EquipmentKey(def, Gender.None);
-                    EquipmentRecord entry = CreateEquipmentEntry(def, Gender.None, type);
+                    EquipmentRecord entry = CreateAnimalEquipmentRecord(def, Gender.None);
                     if (entry != null) {
                         AddRecordIfNotThereAlready(key, entry);
                     }
@@ -574,28 +581,38 @@ namespace EdB.PrepareCarefully {
             }
             else {
                 EquipmentKey key = new EquipmentKey(def, null);
-                EquipmentRecord entry = CreateEquipmentEntry(def, null, Gender.None, type);
+                EquipmentRecord entry = CreateEquipmentRecord(def, null, type);
                 if (entry != null) {
                     AddRecordIfNotThereAlready(key, entry);
                 }
             }
         }
 
-        protected EquipmentRecord CreateEquipmentEntry(ThingDef def, ThingDef stuffDef, EquipmentType type) {
-            return CreateEquipmentEntry(def, stuffDef, Gender.None, type);
+        protected EquipmentRecord CreateAnimalEquipmentRecord(ThingDef def, Gender gender) {
+            if (def.BaseMarketValue == 0) {
+                //Logger.Debug("Animal base market value was zero: " + def.defName);
+                return null;
+            }
+            EquipmentRecord result = new EquipmentRecord() {
+                type = TypeAnimals,
+                def = def,
+                stuffDef = null,
+                stackSize = 1,
+                stacks = false,
+                gear = false,
+                animal = true,
+                cost = def.BaseMarketValue,
+                gender = gender
+            };
+            return result;
         }
 
-        protected EquipmentRecord CreateEquipmentEntry(ThingDef def, Gender gender, EquipmentType type) {
-            return CreateEquipmentEntry(def, null, gender, type);
-        }
-
-        protected EquipmentRecord CreateEquipmentEntry(ThingDef def, ThingDef stuffDef, Gender gender, EquipmentType type) {
+        protected EquipmentRecord CreateEquipmentRecord(ThingDef def, ThingDef stuffDef, EquipmentType type) {
             double baseCost = costs.GetBaseThingCost(def, stuffDef);
             if (baseCost == 0) {
                 return null;
             }
             int stackSize = CalculateStackCount(def, baseCost);
-
             EquipmentRecord result = new EquipmentRecord();
             result.type = type;
             result.def = def;
@@ -652,25 +669,6 @@ namespace EdB.PrepareCarefully {
                 result.hideFromPortrait = true;
             }
 
-            if (def.race != null && def.race.Animal) {
-                result.animal = true;
-                result.gender = gender;
-                try {
-                    Pawn pawn = CreatePawn(def, stuffDef, gender);
-                    if (pawn == null) {
-                        return null;
-                    }
-                    else {
-                        result.thing = pawn;
-                    }
-                }
-                catch (Exception e) {
-                    Log.Warning("Prepare Carefully failed to create a pawn for animal equipment entry: " + def.defName);
-                    Log.Message("  Exception message: " + e);
-                    return null;
-                }
-            }
-
             return result;
         }
 
@@ -680,9 +678,7 @@ namespace EdB.PrepareCarefully {
         }
 
         public Pawn CreatePawn(ThingDef def, ThingDef stuffDef, Gender gender) {
-            PawnKindDef kindDef = (from td in DefDatabase<PawnKindDef>.AllDefs
-                                   where td.race == def
-                                   select td).FirstOrDefault();
+            PawnKindDef kindDef = (from td in DefDatabase<PawnKindDef>.AllDefs where td.race == def select td).FirstOrDefault();
 
             RulePackDef nameGenerator = kindDef.RaceProps.GetNameGenerator(gender);
             if (nameGenerator == null) {
@@ -696,22 +692,15 @@ namespace EdB.PrepareCarefully {
                     KindDef = kindDef,
                     Faction = faction,
                     MustBeCapableOfViolence = true
-                    
                 }.Request;
                 messageCount = ReflectionUtil.GetNonPublicStatic<int>(typeof(Log), "messageCount");
                 Pawn pawn =  PawnGenerator.GeneratePawn(request);
-                if (ReflectionUtil.GetNonPublicStatic<int>(typeof(Log), "messageCount") > messageCount) {
-                    Log.Warning("Prepare Carefully failed to generate a pawn/animal for the equipment list: " + def.defName);
-                }
                 if (pawn.Dead || pawn.Downed) {
                     return null;
                 }
                 pawn.gender = gender;
                 messageCount = ReflectionUtil.GetNonPublicStatic<int>(typeof(Log), "messageCount");
                 pawn.Drawer.renderer.graphics.ResolveAllGraphics();
-                if (ReflectionUtil.GetNonPublicStatic<int>(typeof(Log), "messageCount") > messageCount) {
-                    Log.Warning("Prepare Carefully failed to load all graphics for equipment list pawn/animal: " + def.defName);
-                }
                 return pawn;
             }
             else {
