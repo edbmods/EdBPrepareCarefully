@@ -199,6 +199,7 @@ namespace EdB.PrepareCarefully {
             }
             pathValue += crownType;
             result.GraphicPath = pathValue;
+            result.AlternateGraphicPath = null;
             result.Label = LabelFromCrownType(crownType);
             result.Gender = null;
             result.CrownType = FindCrownTypeEnumValue(crownType);
@@ -209,6 +210,7 @@ namespace EdB.PrepareCarefully {
         protected CustomHeadType CreateHumanHeadTypeFromGenderedGraphicPath(string graphicPath) {
             CustomHeadType result = new CustomHeadType();
             result.GraphicPath = graphicPath;
+            result.AlternateGraphicPath = null;
             result.Label = LabelFromGraphicsPath(graphicPath);
             string[] strArray = Path.GetFileNameWithoutExtension(graphicPath).Split('_');
             try {

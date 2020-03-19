@@ -62,7 +62,7 @@ namespace EdB.PrepareCarefully {
                 return values[values.Count() - 2] + ", " + values[values.Count() - 1];
             }
             catch (Exception) {
-                Logger.Warning("Prepare Carefully could not determine head type label from graphics path: " + path);
+                Logger.Warning("Could not determine head type label from graphics path: " + path);
                 return "EdB.PC.Common.Default".Translate();
             }
         }

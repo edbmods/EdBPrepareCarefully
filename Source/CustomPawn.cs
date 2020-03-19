@@ -271,8 +271,9 @@ namespace EdB.PrepareCarefully {
                     injuries.Add(injury);
                 }
                 else {
+                    //Logger.Debug("Looking for implant recipes for part {" + hediff.Part?.def + "}");
                     RecipeDef implantRecipe = healthOptions.ImplantRecipes.Where((RecipeDef def) => {
-                        return (def.addsHediff != null && def.addsHediff == hediff.def && def.appliedOnFixedBodyParts.Contains(hediff.Part.def));
+                        return (def.addsHediff != null && def.addsHediff == hediff.def && def.appliedOnFixedBodyParts.Contains(hediff.Part?.def));
                     }).RandomElementWithFallback(null);
                     if (implantRecipe != null) {
                         Implant implant = new Implant();
@@ -281,7 +282,7 @@ namespace EdB.PrepareCarefully {
                         implants.Add(implant);
                     }
                     else if (hediff.def.defName != "MissingBodyPart") {
-                        Log.Warning("Prepare Carefully could not add a hediff to the pawn: " + hediff.def.defName + ", " + (hediff.Part != null ? hediff.Part.def.defName : "no part"));
+                        Logger.Warning("Could not add hediff {" + hediff.def.defName + "} to the pawn because no recipe adds it to the body part {" + (hediff.Part?.def?.defName ?? "WholeBody") + "}");
                     }
                 }
             }

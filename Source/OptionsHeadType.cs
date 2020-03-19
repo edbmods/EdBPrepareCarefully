@@ -24,6 +24,7 @@ namespace EdB.PrepareCarefully {
         }
         public void AddHeadType(CustomHeadType headType) {
             headTypes.Add(headType);
+            //Logger.Debug(headType.ToString());
             pathDictionary.Add(headType.GraphicPath, headType);
             if (headType.AlternateGraphicPath != null) {
                 pathDictionary.Add(headType.AlternateGraphicPath, headType);
@@ -53,8 +54,7 @@ namespace EdB.PrepareCarefully {
             }
         }
         public CustomHeadType FindHeadTypeByGraphicsPath(string graphicsPath) {
-            CustomHeadType result;
-            if (pathDictionary.TryGetValue(graphicsPath, out result)) {
+            if (pathDictionary.TryGetValue(graphicsPath, out CustomHeadType result)) {
                 return result;
             }
             else {

@@ -409,11 +409,13 @@ namespace EdB.PrepareCarefully {
 
         protected void ClearTrait(CustomPawn customPawn, int traitIndex) {
             TraitUpdated(traitIndex, null);
+            tipCache.Invalidate();
         }
 
         public void ScrollToTop() {
             scrollView.ScrollToTop();
         }
+
         public void ScrollToBottom() {
             scrollView.ScrollToBottom();
         }
