@@ -1,4 +1,4 @@
-﻿using RimWorld;
+using RimWorld;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -305,6 +305,9 @@ namespace EdB.PrepareCarefully {
                     HeaderLabel = "EdB.PC.Dialog.Injury.Header".Translate(),
                     NameFunc = (InjuryOption option) => {
                         return option.Label;
+                    },
+                    DescriptionFunc = (InjuryOption option) => {
+                        return option.HediffDef?.description;
                     },
                     SelectedFunc = (InjuryOption option) => {
                         return selectedInjury == option;
