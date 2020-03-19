@@ -1,4 +1,4 @@
-﻿using RimWorld;
+using RimWorld;
 using System;
 using System.Collections.Generic;
 using Verse;
@@ -194,7 +194,7 @@ namespace EdB.PrepareCarefully {
                 return accessoryLayer;
             }
             else {
-                Log.Warning("Cannot find matching layer for apparel.  Last layer: " + apparelProperties.LastLayer);
+                Logger.Warning("Cannot find matching layer for apparel.  Last layer: " + apparelProperties.LastLayer);
                 return null;
             }
         }

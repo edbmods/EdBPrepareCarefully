@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
@@ -18,10 +18,10 @@ namespace EdB.PrepareCarefully {
             if (!minAgeLookup.TryGetValue(pawn.def, out int age)) {
                 SimpleCurve simpleCurve = pawn.def.race.ageGenerationCurve;
                 if (simpleCurve == null) {
-                    Log.Warning("Prepare Carefully :: No age generation curve defined for " + pawn.def.defName + ". Using default age generation curve to determine minimum age.");
+                    Logger.Warning("No age generation curve defined for " + pawn.def.defName + ". Using default age generation curve to determine minimum age.");
                     simpleCurve = DefaultAgeGenerationCurve;
                     if (simpleCurve == null) {
-                        Log.Warning("Prepare Carefully :: Failed to get default age generation curve. Using default minimum age of " + DEFAULT_MIN_AGE);
+                        Logger.Warning("Failed to get default age generation curve. Using default minimum age of " + DEFAULT_MIN_AGE);
                         age = DEFAULT_MIN_AGE;
                     }
                     else {
@@ -41,10 +41,10 @@ namespace EdB.PrepareCarefully {
             if (!maxAgeLookup.TryGetValue(pawn.def, out int age)) {
                 SimpleCurve simpleCurve = pawn.def.race.ageGenerationCurve;
                 if (simpleCurve == null) {
-                    Log.Warning("Prepare Carefully :: No age generation curve defined for " + pawn.def.defName + ". Using default age generation curve to determine maximum age.");
+                    Logger.Warning("No age generation curve defined for " + pawn.def.defName + ". Using default age generation curve to determine maximum age.");
                     simpleCurve = DefaultAgeGenerationCurve;
                     if (simpleCurve == null) {
-                        Log.Warning("Prepare Carefully :: Failed to get default age generation curve. Using default maximum age of " + DEFAULT_MAX_AGE);
+                        Logger.Warning("Failed to get default age generation curve. Using default maximum age of " + DEFAULT_MAX_AGE);
                         age = DEFAULT_MAX_AGE;
                     }
                     else {

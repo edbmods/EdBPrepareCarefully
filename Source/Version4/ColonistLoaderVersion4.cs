@@ -23,13 +23,13 @@ namespace EdB.PrepareCarefully {
                 catch (Exception e) {
                     Messages.Message(modString, MessageTypeDefOf.SilentInput);
                     Messages.Message("EdB.PC.Dialog.PawnPreset.Error.Failed".Translate(), MessageTypeDefOf.RejectInput);
-                    Log.Warning(e.ToString());
-                    Log.Warning("Colonist was created with the following mods: " + modString);
+                    Logger.Warning(e.ToString());
+                    Logger.Warning("Colonist was created with the following mods: " + modString);
                     return null;
                 }
             }
             catch (Exception e) {
-                Log.Error("Failed to load preset file");
+                Logger.Error("Failed to load preset file");
                 throw e;
             }
             finally {
@@ -39,7 +39,7 @@ namespace EdB.PrepareCarefully {
             if (pawnRecord == null) {
                 Messages.Message(modString, MessageTypeDefOf.SilentInput);
                 Messages.Message("EdB.PC.Dialog.PawnPreset.Error.Failed".Translate(), MessageTypeDefOf.RejectInput);
-                Log.Warning("Colonist was created with the following mods: " + modString);
+                Logger.Warning("Colonist was created with the following mods: " + modString);
                 return null;
             }
 
@@ -57,7 +57,7 @@ namespace EdB.PrepareCarefully {
             else {
                 loadout.State.AddError(modString);
                 loadout.State.AddError("EdB.PC.Dialog.Preset.Error.NoCharacter".Translate());
-                Log.Warning("Preset was created with the following mods: " + modString);
+                Logger.Warning("Preset was created with the following mods: " + modString);
                 return null;
             }
         }

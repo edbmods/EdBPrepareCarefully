@@ -80,7 +80,7 @@ namespace EdB.PrepareCarefully {
                     GUI.DrawTexture(infoRect, Textures.TextureButtonInfo);
                     if (Widgets.ButtonInvisible(infoRect)) {
                         if (entry.record.animal) {
-                            Find.WindowStack.Add((Window)new Dialog_InfoCard(entry.record.thing));
+                            Find.WindowStack.Add((Window)new Dialog_InfoCard(entry.ThingDef));
                         }
                         else if (entry.StuffDef != null) {
                             Find.WindowStack.Add((Window)new Dialog_InfoCard(entry.ThingDef, entry.StuffDef));
@@ -204,7 +204,7 @@ namespace EdB.PrepareCarefully {
         //    if (entry == null) {
         //        string thing = def != null ? def.defName : "null";
         //        string stuff = equipment.StuffDef != null ? equipment.StuffDef.defName : "null";
-        //        Log.Warning(string.Format("Could not draw unrecognized resource/equipment.  Invalid item was removed.  This may have been caused by an invalid thing/stuff combination. (thing = {0}, stuff={1})", thing, stuff));
+        //        Logger.Warning(string.Format("Could not draw unrecognized resource/equipment.  Invalid item was removed.  This may have been caused by an invalid thing/stuff combination. (thing = {0}, stuff={1})", thing, stuff));
         //        PrepareCarefully.Instance.RemoveEquipment(equipment);
         //        return null;
         //    }

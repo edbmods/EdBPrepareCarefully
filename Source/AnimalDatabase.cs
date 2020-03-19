@@ -81,8 +81,7 @@ namespace EdB.PrepareCarefully {
                 }
             }
             catch (Exception e) {
-                Log.Warning("Prepare Carefully failed to create a pawn for animal database record: " + def.defName);
-                Log.Message("  Exception message: " + e);
+                Logger.Warning("Failed to create a pawn for animal database record: " + def.defName, e);
                 return null;
             }
             return result;

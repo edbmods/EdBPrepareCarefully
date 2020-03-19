@@ -17,10 +17,10 @@ namespace EdB.PrepareCarefully {
             if (ProblemBackstories.Contains(backstory.untranslatedTitle)) {
                     return PartialDescriptionFor(backstory);
             }
-            string description = backstory.FullDescriptionFor(pawn);
+            string description = backstory.FullDescriptionFor(pawn).Resolve();
             if (description.StartsWith("Could not resolve")) {
                 return PartialDescriptionFor(backstory);
-                //Log.Message("Failed to resolve description for backstory with this pawn: " + backstory.title + ", " + backstory.identifier);
+                //Logger.Debug("Failed to resolve description for backstory with this pawn: " + backstory.title + ", " + backstory.identifier);
             }
             return description;
         }

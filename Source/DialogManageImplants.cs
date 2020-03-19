@@ -1,4 +1,4 @@
-﻿using RimWorld;
+using RimWorld;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -215,9 +215,9 @@ namespace EdB.PrepareCarefully {
                 validImplants.Add(implant);
             }
 
-            //Log.Warning("Valid implants");
+            //Logger.Debug("Valid implants");
             //foreach (var i in validImplants) {
-            //    Log.Message("  " + i.recipe.LabelCap + ", " + i.PartName + (i.ReplacesPart ? ", replaces part" : ""));
+            //    Logger.Debug("  " + i.recipe.LabelCap + ", " + i.PartName + (i.ReplacesPart ? ", replaces part" : ""));
             //}
 
             // Iterate each each body part option for each recipe to determine if that body part is missing,

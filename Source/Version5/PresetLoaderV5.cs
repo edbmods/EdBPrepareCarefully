@@ -33,7 +33,7 @@ namespace EdB.PrepareCarefully {
                                 gender = (Gender)Enum.Parse(typeof(Gender), e.gender);
                             }
                             catch (Exception) {
-                                Log.Warning("Failed to load gender value for animal.");
+                                Logger.Warning("Failed to load gender value for animal.");
                                 Failed = true;
                                 continue;
                             }
@@ -46,7 +46,7 @@ namespace EdB.PrepareCarefully {
                                     equipment.Add(new EquipmentSelection(record, e.count));
                                 }
                                 else {
-                                    Log.Warning("Could not find equipment in equipment database: " + key);
+                                    Logger.Warning("Could not find equipment in equipment database: " + key);
                                     Failed = true;
                                     continue;
                                 }
@@ -58,7 +58,7 @@ namespace EdB.PrepareCarefully {
                                     if (record == null) {
                                         string thing = thingDef != null ? thingDef.defName : "null";
                                         string stuff = stuffDef != null ? stuffDef.defName : "null";
-                                        Log.Warning(string.Format("Could not load equipment/resource from the preset.  This may be caused by an invalid thing/stuff combination: " + key));
+                                        Logger.Warning(string.Format("Could not load equipment/resource from the preset.  This may be caused by an invalid thing/stuff combination: " + key));
                                         Failed = true;
                                         continue;
                                     }
@@ -67,13 +67,13 @@ namespace EdB.PrepareCarefully {
                                     }
                                 }
                                 else {
-                                    Log.Warning("Could not load stuff definition \"" + e.stuffDef + "\" for item \"" + e.def + "\"");
+                                    Logger.Warning("Could not load stuff definition \"" + e.stuffDef + "\" for item \"" + e.def + "\"");
                                     Failed = true;
                                 }
                             }
                         }
                         else {
-                            Log.Warning("Could not load thing definition \"" + e.def + "\"");
+                            Logger.Warning("Could not load thing definition \"" + e.def + "\"");
                             Failed = true;
                         }
                     }
@@ -84,12 +84,12 @@ namespace EdB.PrepareCarefully {
                 }
                 else {
                     Messages.Message("EdB.PC.Dialog.Preset.Error.EquipmentFailed".Translate(), MessageTypeDefOf.ThreatBig);
-                    Log.Warning("Failed to load equipment from preset");
+                    Logger.Warning("Failed to load equipment from preset");
                     Failed = true;
                 }
             }
             catch (Exception e) {
-                Log.Error("Failed to load preset file");
+                Logger.Error("Failed to load preset file");
                 throw e;
             }
             finally {
@@ -113,14 +113,14 @@ namespace EdB.PrepareCarefully {
                     }
                     else {
                         Messages.Message("EdB.PC.Dialog.Preset.Error.NoCharacter".Translate(), MessageTypeDefOf.ThreatBig);
-                        Log.Warning("Preset was created with the following mods: " + preset.mods);
+                        Logger.Warning("Preset was created with the following mods: " + preset.mods);
                     }
                 }
             }
             catch (Exception e) {
                 Messages.Message("EdB.PC.Dialog.Preset.Error.Failed".Translate(), MessageTypeDefOf.ThreatBig);
-                Log.Warning(e.ToString());
-                Log.Warning("Preset was created with the following mods: " + preset.mods);
+                Logger.Warning("Error while loading preset", e);
+                Logger.Warning("Preset was created with the following mods: " + preset.mods);
                 return false;
             }
 
@@ -138,13 +138,13 @@ namespace EdB.PrepareCarefully {
                     foreach (SaveRecordRelationshipV3 r in preset.relationships) {
                         if (string.IsNullOrEmpty(r.source) || string.IsNullOrEmpty(r.target) || string.IsNullOrEmpty(r.relation)) {
                             atLeastOneRelationshipFailed = true;
-                            Log.Warning("Prepare Carefully failed to load a custom relationship from the preset: " + r);
+                            Logger.Warning("Failed to load a custom relationship from the preset: " + r);
                             continue;
                         }
                         CustomRelationship relationship = LoadRelationship(r, allPawns);
                         if (relationship == null) {
                             atLeastOneRelationshipFailed = true;
-                            Log.Warning("Prepare Carefully failed to load a custom relationship from the preset: " + r);
+                            Logger.Warning("Failed to load a custom relationship from the preset: " + r);
                         }
                         else {
                             allRelationships.Add(relationship);
@@ -153,8 +153,8 @@ namespace EdB.PrepareCarefully {
                 }
                 catch (Exception e) {
                     Messages.Message("EdB.PC.Dialog.Preset.Error.RelationshipFailed".Translate(), MessageTypeDefOf.ThreatBig);
-                    Log.Warning(e.ToString());
-                    Log.Warning("Preset was created with the following mods: " + preset.mods);
+                    Logger.Warning("Error while loading preset", e);
+                    Logger.Warning("Preset was created with the following mods: " + preset.mods);
                     return false;
                 }
                 if (atLeastOneRelationshipFailed) {
@@ -175,11 +175,11 @@ namespace EdB.PrepareCarefully {
                                     group.Parents.Add(pawn);
                                 }
                                 else {
-                                    Log.Warning("Prepare Carefully could not load a custom parent relationship because it could not find a matching pawn in the relationship manager.");
+                                    Logger.Warning("Could not load a custom parent relationship because it could not find a matching pawn in the relationship manager.");
                                 }
                             }
                             else {
-                                Log.Warning("Prepare Carefully could not load a custom parent relationship because it could not find a pawn with the saved identifer.");
+                                Logger.Warning("Could not load a custom parent relationship because it could not find a pawn with the saved identifer.");
                             }
                         }
                     }
@@ -192,11 +192,11 @@ namespace EdB.PrepareCarefully {
                                     group.Children.Add(pawn);
                                 }
                                 else {
-                                    Log.Warning("Prepare Carefully could not load a custom child relationship because it could not find a matching pawn in the relationship manager.");
+                                    Logger.Warning("Could not load a custom child relationship because it could not find a matching pawn in the relationship manager.");
                                 }
                             }
                             else {
-                                Log.Warning("Prepare Carefully could not load a custom child relationship because it could not find a pawn with the saved identifer.");
+                                Logger.Warning("Could not load a custom child relationship because it could not find a pawn with the saved identifer.");
                             }
                         }
                     }
@@ -208,7 +208,7 @@ namespace EdB.PrepareCarefully {
             if (Failed) {
                 Messages.Message(preset.mods, MessageTypeDefOf.SilentInput);
                 Messages.Message("EdB.PC.Dialog.Preset.Error.ThingDefFailed".Translate(), MessageTypeDefOf.ThreatBig);
-                Log.Warning("Preset was created with the following mods: " + preset.mods);
+                Logger.Warning("Preset was created with the following mods: " + preset.mods);
                 return false;
             }
 
@@ -244,19 +244,19 @@ namespace EdB.PrepareCarefully {
                 result.inverseDef = PrepareCarefully.Instance.RelationshipManager.FindInverseRelationship(result.def);
             }
             if (result.def == null) {
-                Log.Warning("Couldn't find relationship definition: " + saved.relation);
+                Logger.Warning("Couldn't find relationship definition: " + saved.relation);
                 return null;
             }
             else if (result.source == null) {
-                Log.Warning("Couldn't find relationship source pawn: " + saved.source);
+                Logger.Warning("Couldn't find relationship source pawn: " + saved.source);
                 return null;
             }
             else if (result.target == null) {
-                Log.Warning("Couldn't find relationship target pawn: " + saved.source);
+                Logger.Warning("Couldn't find relationship target pawn: " + saved.source);
                 return null;
             }
             else if (result.inverseDef == null) {
-                Log.Warning("Couldn't determine inverse relationship: " + saved.relation);
+                Logger.Warning("Couldn't determine inverse relationship: " + saved.relation);
                 return null;
             }
             return result;

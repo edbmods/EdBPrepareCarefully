@@ -1,4 +1,4 @@
-﻿using RimWorld;
+using RimWorld;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -216,7 +216,7 @@ namespace EdB.PrepareCarefully {
                                     AddInjuryToPawn(selectedInjury, selectedSeverity, part.Record);
                                 }
                                 else {
-                                    Log.Warning("Could not find body part record for definition: " + p.defName);
+                                    Logger.Warning("Could not find body part record for definition: " + p.defName);
                                 }
                             }
                         }
@@ -305,6 +305,9 @@ namespace EdB.PrepareCarefully {
                     HeaderLabel = "EdB.PC.Dialog.Injury.Header".Translate(),
                     NameFunc = (InjuryOption option) => {
                         return option.Label;
+                    },
+                    DescriptionFunc = (InjuryOption option) => {
+                        return option.HediffDef?.description;
                     },
                     SelectedFunc = (InjuryOption option) => {
                         return selectedInjury == option;
@@ -401,9 +404,9 @@ namespace EdB.PrepareCarefully {
         }
 
         protected void ApplyImplantsToPawn(CustomPawn pawn, List<Implant> implants) {
-            //Log.Warning("Updated implants");
+            //Logger.Debug("Updated implants");
             //foreach (var i in implants) {
-            //    Log.Message("  " + i.recipe.LabelCap + ", " + i.PartName + (i.ReplacesPart ? ", replaces part" : ""));
+            //    Logger.Debug("  " + i.recipe.LabelCap + ", " + i.PartName + (i.ReplacesPart ? ", replaces part" : ""));
             //}
             pawn.UpdateImplants(implants);
         }

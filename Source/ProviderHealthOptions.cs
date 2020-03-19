@@ -172,53 +172,54 @@ namespace EdB.PrepareCarefully {
             
             // Add injury options.
             foreach (var hd in DefDatabase<HediffDef>.AllDefs) {
-                // TODO: Missing body part seems to be a special case.  The hediff giver doesn't itself remove
-                // limbs, so disable it until we can add special-case handling.
-                if (hd.defName == "MissingBodyPart") {
-                    continue;
-                }
-                // Filter out defs that were already added via the hediff giver sets.
-                if (addedDefs.Contains(hd)) {
-                    continue;
-                }
-                // Filter out implants.
-                if (hd.hediffClass == typeof(Hediff_AddedPart)) {
-                    continue;
-                }
+                try {
+                    // TODO: Missing body part seems to be a special case.  The hediff giver doesn't itself remove
+                    // limbs, so disable it until we can add special-case handling.
+                    if (hd.defName == "MissingBodyPart") {
+                        continue;
+                    }
+                    // Filter out defs that were already added via the hediff giver sets.
+                    if (addedDefs.Contains(hd)) {
+                        continue;
+                    }
+                    // Filter out implants.
+                    if (hd.hediffClass != null && typeof(Hediff_Implant).IsAssignableFrom(hd.hediffClass)) {
+                        continue;
+                    }
 
-                // If it's an old injury, use the old injury properties to get the label.
-                HediffCompProperties p = hd.CompPropsFor(typeof(HediffComp_GetsPermanent));
-                HediffCompProperties_GetsPermanent getsPermanentProperties = p as HediffCompProperties_GetsPermanent;
-                String label;
-                if (getsPermanentProperties != null) {
-                    if (getsPermanentProperties.permanentLabel != null) {
-                        label = getsPermanentProperties.permanentLabel.CapitalizeFirst();
+                    // If it's an old injury, use the old injury properties to get the label.
+                    HediffCompProperties p = hd.CompPropsFor(typeof(HediffComp_GetsPermanent));
+                    HediffCompProperties_GetsPermanent getsPermanentProperties = p as HediffCompProperties_GetsPermanent;
+                    String label;
+                    if (getsPermanentProperties != null) {
+                        if (getsPermanentProperties.permanentLabel != null) {
+                            label = getsPermanentProperties.permanentLabel.CapitalizeFirst();
+                        }
+                        else {
+                            Logger.Warning("Could not find label for old injury: " + hd.defName);
+                            continue;
+                        }
                     }
                     else {
-                        Log.Warning("Prepare Carefully could not find label for old injury: " + hd.defName);
-                        continue;
+                        label = hd.LabelCap;
                     }
-                }
-                // If it's not an old injury, make sure it's one of the available hediffs that can
-                // be added via ScenPart_ForcedHediff.  If it's not, filter it out.
-                else {
-                    if (!scenPartDefSet.Contains(hd)) {
-                        continue;
-                    }
-                    label = hd.LabelCap;
-                }
 
-                // Add the injury option..
-                InjuryOption option = new InjuryOption();
-                option.HediffDef = hd;
-                option.Label = label;
-                if (getsPermanentProperties != null) {
-                    option.IsOldInjury = true;
+                    // Add the injury option..
+                    InjuryOption option = new InjuryOption();
+                    option.HediffDef = hd;
+                    option.Label = label;
+                    if (getsPermanentProperties != null) {
+                        option.IsOldInjury = true;
+                    }
+                    else {
+                        option.ValidParts = new List<BodyPartDef>();
+                    }
+                    options.AddInjury(option);
                 }
-                else {
-                    option.ValidParts = new List<BodyPartDef>();
+                catch (Exception e) {
+                    Logger.Warning("There was en error while processing hediff {" + hd.defName + "} when trying to add it to the list of available injury options", e);
+                    continue;
                 }
-                options.AddInjury(option);
             }
             
             // Disambiguate duplicate injury labels.

@@ -1,4 +1,4 @@
-﻿using RimWorld;
+using RimWorld;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -81,7 +81,7 @@ namespace EdB.PrepareCarefully {
 
         public void LoadPreset(string name) {
             if (string.IsNullOrEmpty(name)) {
-                Log.Warning("Trying to load a preset without a name");
+                Logger.Warning("Trying to load a preset without a name");
                 return;
             }
             bool result = PresetLoader.LoadFromFile(PrepareCarefully.Instance, name);
@@ -96,7 +96,7 @@ namespace EdB.PrepareCarefully {
         public void SavePreset(string name) {
             PrepareCarefully.Instance.Filename = name;
             if (string.IsNullOrEmpty(name)) {
-                Log.Warning("Trying to save a preset without a name");
+                Logger.Warning("Trying to save a preset without a name");
                 return;
             }
             PresetSaver.SaveToFile(PrepareCarefully.Instance, PrepareCarefully.Instance.Filename);
@@ -183,7 +183,7 @@ namespace EdB.PrepareCarefully {
                         pawn.Pawn.SetFaction(pawn.Faction.Faction, null);
                     }
                     catch (Exception) {
-                        Log.Warning("Prepare Carefully failed to add a world pawn to the expected faction");
+                        Logger.Warning("Failed to add a world pawn to the expected faction");
                     }
                 }
                 // If they are assigned to a random faction of a specific def, choose the random faction and assign it.
@@ -193,7 +193,7 @@ namespace EdB.PrepareCarefully {
                         pawn.Pawn.SetFaction(pawn.Faction.Faction, null);
                     }
                     catch (Exception) {
-                        Log.Warning("Prepare Carefully failed to add a world pawn to the expected faction");
+                        Logger.Warning("Failed to add a world pawn to the expected faction");
                     }
                 }
             }

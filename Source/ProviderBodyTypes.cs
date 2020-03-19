@@ -1,4 +1,4 @@
-﻿using RimWorld;
+using RimWorld;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -65,7 +65,7 @@ namespace EdB.PrepareCarefully {
             else {
                 OptionsBodyType result = InitializeAlienRaceBodyTypes(def);
                 if (result == null) {
-                    Log.Warning("Prepare Carefully could not initialize body types for alien race, " + def.defName + ". Defaulting to humanlike body types.");
+                    Logger.Warning("Could not initialize body types for alien race, " + def.defName + ". Defaulting to humanlike body types.");
                     return InitializeHumanlikeBodyTypes();
                 }
                 return result;
@@ -160,20 +160,20 @@ namespace EdB.PrepareCarefully {
         //    string path = race.GraphicsPathForBodyTypes + "/" + def.bodyNakedGraphicPath.Split('/').Last();
         //    path = path.Replace("//", "/");
         //    path += "_south";
-        //    Log.Warning("ValidateBodyTypeForRace(" + race + ", " + def.defName + "), path = " + path);
+        //    Logger.Debug("ValidateBodyTypeForRace(" + race + ", " + def.defName + "), path = " + path);
         //    try {
         //        // TODO: Figure out which mod we're dealing with and only go through that content pack.
         //        List<ModContentPack> modsListForReading = LoadedModManager.RunningModsListForReading;
         //        for (int index = modsListForReading.Count - 1; index >= 0; --index) {
         //            ModContentPack pack = modsListForReading[index];
-        //            Log.Message("Looking for path in " + pack.Identifier);
+        //            Logger.Debug("Looking for path in " + pack.Identifier);
         //            var contentHolder = pack.GetContentHolder<Texture2D>();
         //            if (contentHolder.contentList.ContainsKey(path)) {
-        //                Log.Warning("Found it");
+        //                Logger.Warning("Found it");
         //                return true;
         //            }
         //        }
-        //        Log.Warning("Didn't find it");
+        //        Logger.Debug("Didn't find it");
         //        return false;
         //    } 
         //    catch (Exception) {

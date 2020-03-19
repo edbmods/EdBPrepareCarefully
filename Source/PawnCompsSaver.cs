@@ -32,6 +32,9 @@ namespace EdB.PrepareCarefully {
                         comp.PostExposeData();
                         savedComps.Add(comp.GetType().FullName);
                     }
+                    else {
+                        //Logger.Debug("Excluded comp: " + comp.GetType().FullName);
+                    }
                 }
             }
         }

@@ -14,7 +14,7 @@ namespace EdB.PrepareCarefully {
                 Scribe_Values.Look<string>(ref version, "version", "unknown", false);
             }
             catch (Exception e) {
-                Log.Error("Failed to load preset file");
+                Logger.Error("Failed to load preset file");
                 throw e;
             }
             finally {

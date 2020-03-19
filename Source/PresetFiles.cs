@@ -13,7 +13,7 @@ namespace EdB.PrepareCarefully {
                     return Reflection.GenFilePaths.FolderUnderSaveData("PrepareCarefully");
                 }
                 catch (Exception e) {
-                    Log.Error("Failed to get preset save directory");
+                    Logger.Error("Failed to get preset save directory");
                     throw e;
                 }
             }

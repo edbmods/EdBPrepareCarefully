@@ -86,6 +86,7 @@ namespace EdB.PrepareCarefully {
     public class CostCalculator {
         protected HashSet<string> freeApparel = new HashSet<string>();
         protected HashSet<string> cheapApparel = new HashSet<string>();
+        StatWorker statWorker = null;
 
         public CostCalculator() {
             cheapApparel.Add("Apparel_Pants");
@@ -194,7 +195,7 @@ namespace EdB.PrepareCarefully {
                 // Check if there are any ancestor parts that override the selection.
                 UniqueBodyPart uniquePart = healthOptions.FindBodyPartsForRecord(option.BodyPartRecord);
                 if (uniquePart == null) {
-                    Log.Warning("Prepare Carefully could not find body part record when computing the cost of an implant: " + option.BodyPartRecord.def.defName);
+                    Logger.Warning("Could not find body part record when computing the cost of an implant: " + option.BodyPartRecord.def.defName);
                     continue;
                 }
                 if (pawn.AtLeastOneImplantedPart(uniquePart.Ancestors.Select((UniqueBodyPart p) => { return p.Record; }))) {
@@ -247,64 +248,28 @@ namespace EdB.PrepareCarefully {
             }
         }
 
-        /*
-        public double CalculateAnimalCost(SelectedAnimal animal) {
-            AnimalRecord record = PrepareCarefully.Instance.AnimalDatabase.FindAnimal(animal.Key);
-            if (record != null) {
-                return (double)animal.Count * record.Cost;
+        public double GetAnimalCost(Thing thing) {
+            if (statWorker == null) {
+                StatDef marketValueStatDef = StatDefOf.MarketValue;
+                statWorker = marketValueStatDef.Worker;
             }
-            else {
-                return 0;
-            }
+            float value = statWorker.GetValue(StatRequest.For(thing));
+            return value;
         }
-        */
 
         public double GetBaseThingCost(ThingDef def, ThingDef stuffDef) {
-            if (def == null) {
-                Log.Warning("Prepare Carefully is trying to calculate the cost of a null ThingDef");
-                return 0;
+            double value = 0;
+            if (stuffDef != null) {
+                value = StatWorker_MarketValue.CalculatedBaseMarketValue(def, stuffDef);
             }
-            if (def.BaseMarketValue > 0) {
-                if (stuffDef == null) {
-                    return def.BaseMarketValue;
-                }
-                else {
-                    // EVERY RELEASE:
-                    // Should look at ThingMaker.MakeThing() to decide which validations we need to do
-                    // before calling that method.  That method doesn't do null checks everywhere, so we
-                    // may need to do those validations ourselves to avoid null pointer exceptions.
-                    // Should re-evaluate for each new release.
-                    if (def.thingClass == null) {
-                        Log.Warning("Prepare Carefully trying to calculate the cost of a ThingDef with null thingClass: " + def.defName);
-                        return 0;
-                    }
-                    if (def.MadeFromStuff && stuffDef == null) {
-                        Log.Warning("Prepare Carefully trying to calculate the cost of a \"made-from-stuff\" ThingDef without specifying any stuff: " + def.defName);
-                        return 0;
-                    }
-
-                    try {
-                        // TODO: Creating an instance of a thing may not be the best way to calculate
-                        // its market value.  It may be considered a relatively expensive operation,
-                        // especially when a lot of mods are enabled.  There may be a lower-level set of
-                        // methods in the vanilla codebase that could be called.  Should investigate.
-                        Thing thing = ThingMaker.MakeThing(def, stuffDef);
-                        if (thing == null) {
-                            Log.Warning("Prepare Carefully failed when calling MakeThing(" + def.defName + ", ...) to calculate a ThingDef's market value");
-                            return 0;
-                        }
-                        return thing.MarketValue;
-                    }
-                    catch (Exception e) {
-                        Log.Warning("Prepare Carefully failed to calculate the cost of a ThingDef (" + def.defName + "): ");
-                        Log.Warning(e.ToString());
-                        return 0;
-                    }
-                }
+            if (value == 0) {
+                value = def.BaseMarketValue;
             }
-            else {
-                return 0;
+            if (value > 100) {
+                value = Math.Round(value / 5.0) * 5.0;
             }
+            value = Math.Round(value, 2);
+            return value;
         }
 
         public double CalculateStackCost(ThingDef def, ThingDef stuffDef, double baseCost) {
@@ -312,19 +277,18 @@ namespace EdB.PrepareCarefully {
 
             if (def.MadeFromStuff) {
                 if (def.IsApparel) {
-                    cost = cost * 1;
+                    cost *= 1;
                 }
                 else {
-                    cost = cost * 0.5;
+                    cost *= 0.5;
                 }
             }
 
             if (def.IsRangedWeapon) {
-                cost = cost * 2;
+                cost *= 2;
             }
 
-            //cost = cost * 1.25;
-            cost = Math.Round(cost, 1);
+            cost = Math.Round(cost, 2);
 
             return cost;
         }

@@ -108,32 +108,32 @@ namespace EdB.PrepareCarefully {
                         portraitWidth -= 1f;
                         float portraitHeight = Mathf.Floor(portraitWidth * 1.4f);
                         RectPortrait = new Rect(RectPortrait.x, RectPortrait.y, portraitWidth, portraitHeight);
-                        Log.Message("RectPortrait = " + RectPortrait);
+                        Logger.Debug("RectPortrait = " + RectPortrait);
                     }
                     else if (Event.current.keyCode == KeyCode.RightArrow) {
                         float portraitWidth = RectPortrait.width;
                         portraitWidth += 1f;
                         float portraitHeight = Mathf.Floor(portraitWidth * 1.4f);
                         RectPortrait = new Rect(RectPortrait.x, RectPortrait.y, portraitWidth, portraitHeight);
-                        Log.Message("RectPortrait = " + RectPortrait);
+                        Logger.Debug("RectPortrait = " + RectPortrait);
                     }
                 }
                 else {
                     if (Event.current.keyCode == KeyCode.LeftArrow) {
                         RectPortrait = RectPortrait.OffsetBy(new Vector2(-1, 0));
-                        Log.Message("RectPortrait = " + RectPortrait);
+                        Logger.Debug("RectPortrait = " + RectPortrait);
                     }
                     else if (Event.current.keyCode == KeyCode.RightArrow) {
                         RectPortrait = RectPortrait.OffsetBy(new Vector2(1, 0));
-                        Log.Message("RectPortrait = " + RectPortrait);
+                        Logger.Debug("RectPortrait = " + RectPortrait);
                     }
                     else if (Event.current.keyCode == KeyCode.UpArrow) {
                         RectPortrait = RectPortrait.OffsetBy(new Vector2(0, -1));
-                        Log.Message("RectPortrait = " + RectPortrait);
+                        Logger.Debug("RectPortrait = " + RectPortrait);
                     }
                     else if (Event.current.keyCode == KeyCode.DownArrow) {
                         RectPortrait = RectPortrait.OffsetBy(new Vector2(0, 1));
-                        Log.Message("RectPortrait = " + RectPortrait);
+                        Logger.Debug("RectPortrait = " + RectPortrait);
                     }
                 }
             }

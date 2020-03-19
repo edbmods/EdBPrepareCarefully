@@ -93,12 +93,12 @@ namespace EdB.PrepareCarefully {
                 }
 
                 /*
-                Log.Message("GraphicsPaths for " + raceDef.defName + ":");
+                Logger.Debug("GraphicsPaths for " + raceDef.defName + ":");
                 if (graphicPathsCollection.Count > 0) {
                     foreach (object o in graphicPathsCollection) {
-                        Log.Message("  GraphicsPath");
-                        Log.Message("    .body = " + GetFieldValueAsString(raceDef, o, "body"));
-                        Log.Message("    .head = " + GetFieldValueAsString(raceDef, o, "head"));
+                        Logger.Debug("  GraphicsPath");
+                        Logger.Debug("    .body = " + GetFieldValueAsString(raceDef, o, "body"));
+                        Logger.Debug("    .head = " + GetFieldValueAsString(raceDef, o, "head"));
                         System.Collections.ICollection lifeStagesCollections = GetFieldValueAsCollection(raceDef, o, "lifeStageDefs");
                     }
                 }
@@ -121,13 +121,13 @@ namespace EdB.PrepareCarefully {
                     foreach (object o in alienBodyTypesCollection) {
                         if (o.GetType() == typeof(BodyTypeDef)) {
                             BodyTypeDef def = o as BodyTypeDef;
-                            //Log.Debug("  - " + def.defName + ", " + def.LabelCap);
+                            //Logger.Debug("  - " + def.defName + ", " + def.LabelCap);
                             bodyTypes.Add((BodyTypeDef)o);
                         }
                     }
                 }
                 else {
-                    //Log.Debug("  none");
+                    //Logger.Debug("  none");
                 }
                 result.BodyTypes = bodyTypes;
 
@@ -144,13 +144,13 @@ namespace EdB.PrepareCarefully {
                     return null;
                 }
                 List<string> crownTypes = new List<string>();
-                //Log.Message("Crown Types for " + raceDef.defName + ":");
+                //Logger.Debug("Crown Types for " + raceDef.defName + ":");
                 if (alienCrownTypesCollection.Count > 0) {
                     foreach (object o in alienCrownTypesCollection) {
                         string crownTypeString = o as string;
                         if (crownTypeString != null) {
                             crownTypes.Add(crownTypeString);
-                            //Log.Message("  " + crownTypeString);
+                            //Logger.Debug("  " + crownTypeString);
                         }
                     }
                 }
@@ -270,19 +270,19 @@ namespace EdB.PrepareCarefully {
                         AlienRaceBodyAddon addon = new AlienRaceBodyAddon();
                         string path = GetFieldValueAsString(raceDef, o, "path");
                         if (path == null) {
-                            Log.Warning("Failed to get path for body add-on for alien race: " + raceDef.defName);
+                            Logger.Warning("Failed to get path for body add-on for alien race: " + raceDef.defName);
                             continue;
                         }
                         addon.Path = path;
                         int? variantCount = GetFieldValueAsInt(raceDef, o, "variantCount");
                         if (variantCount == null) {
-                            Log.Warning("Failed to get variant count for body add-on for alien race: " + raceDef.defName);
+                            Logger.Warning("Failed to get variant count for body add-on for alien race: " + raceDef.defName);
                             continue;
                         }
                         addon.OptionCount = variantCount.Value;
                         string name = ParseAddonName(path);
                         if (name == null) {
-                            Log.Warning("Failed to parse a name from its path for body add-on for alien race: " + raceDef.defName);
+                            Logger.Warning("Failed to parse a name from its path for body add-on for alien race: " + raceDef.defName);
                             continue;
                         }
                         addon.Name = name;
@@ -312,13 +312,13 @@ namespace EdB.PrepareCarefully {
             try {
                 FieldInfo field = source.GetType().GetField(name, BindingFlags.Public | BindingFlags.Instance);
                 if (field == null) {
-                    Log.Warning("Prepare carefully could not find " + name + " field for " + raceDef.defName);
+                    Logger.Warning("Could not find " + name + " field for " + raceDef.defName);
                     return null;
                 }
                 object result = field.GetValue(source);
                 if (result == null) {
                     if (!allowNull) {
-                        Log.Warning("Prepare carefully could not find " + name + " field value for " + raceDef.defName);
+                        Logger.Warning("Could not find " + name + " field value for " + raceDef.defName);
                     }
                     return null;
                 }
@@ -327,7 +327,7 @@ namespace EdB.PrepareCarefully {
                 }
             }
             catch (Exception) {
-                Log.Warning("Prepare carefully could resolve value of the " + name + " field for " + raceDef.defName);
+                Logger.Warning("Could resolve value of the " + name + " field for " + raceDef.defName);
                 return null;
             }
         }
@@ -338,7 +338,7 @@ namespace EdB.PrepareCarefully {
             }
             System.Collections.ICollection collection = result as System.Collections.ICollection;
             if (collection == null) {
-                Log.Warning("Prepare carefully could not convert " + name + " field value into a collection for " + raceDef.defName + ".");
+                Logger.Warning("Could not convert " + name + " field value into a collection for " + raceDef.defName + ".");
                 return null;
             }
             else {
@@ -354,7 +354,7 @@ namespace EdB.PrepareCarefully {
                 return (bool)result;
             }
             else {
-                Log.Warning("Prepare carefully could not convert " + name + " field value into a bool for " + raceDef.defName + ".");
+                Logger.Warning("Could not convert " + name + " field value into a bool for " + raceDef.defName + ".");
                 return null;
             }
         }
@@ -368,7 +368,7 @@ namespace EdB.PrepareCarefully {
                 return result;
             }
             else {
-                Log.Warning("Prepare carefully could not convert " + name + " field value into a string for " + raceDef.defName + ".");
+                Logger.Warning("Could not convert " + name + " field value into a string for " + raceDef.defName + ".");
                 return null;
             }
         }
@@ -381,7 +381,7 @@ namespace EdB.PrepareCarefully {
                 return (int)value;
             }
             catch (Exception) {
-                Log.Warning("Prepare carefully could not convert " + name + " field value into an int for " + raceDef.defName + ".");
+                Logger.Warning("Could not convert " + name + " field value into an int for " + raceDef.defName + ".");
                 return null;
             }
         }

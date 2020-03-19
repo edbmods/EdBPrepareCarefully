@@ -32,7 +32,7 @@ namespace EdB.PrepareCarefully {
             OptionsHeadType headTypes = GetHeadTypesForRace(pawn.def);
             var result = headTypes.FindHeadTypeForPawn(pawn);
             if (result == null) {
-                Log.Warning("Could not find a head type for the pawn: " + pawn.def.defName + ". Head type selection disabled for this pawn");
+                Logger.Warning("Could not find a head type for the pawn: " + pawn.def.defName + ". Head type selection disabled for this pawn");
             }
             return result;
         }
@@ -70,14 +70,14 @@ namespace EdB.PrepareCarefully {
             else {
                 result = InitializeAlienHeadTypes(race);
             }
-            //Log.Warning("Head Types for " + race.defName + ":");
-            //Log.Warning("  Male: ");
+            //Logger.Debug("Head Types for " + race.defName + ":");
+            //Logger.Debug("  Male: ");
             //foreach (var h in result.GetHeadTypesForGender(Gender.Male)) {
-            //    Log.Message("    " + h.ToString());
+            //    Logger.Debug("    " + h.ToString());
             //}
-            //Log.Warning("  Female: ");
+            //Logger.Debug("  Female: ");
             //foreach (var h in result.GetHeadTypesForGender(Gender.Female)) {
-            //    Log.Message("    " + h.ToString());
+            //    Logger.Debug("    " + h.ToString());
             //}
             return result;
         }
@@ -199,6 +199,7 @@ namespace EdB.PrepareCarefully {
             }
             pathValue += crownType;
             result.GraphicPath = pathValue;
+            result.AlternateGraphicPath = null;
             result.Label = LabelFromCrownType(crownType);
             result.Gender = null;
             result.CrownType = FindCrownTypeEnumValue(crownType);
@@ -209,6 +210,7 @@ namespace EdB.PrepareCarefully {
         protected CustomHeadType CreateHumanHeadTypeFromGenderedGraphicPath(string graphicPath) {
             CustomHeadType result = new CustomHeadType();
             result.GraphicPath = graphicPath;
+            result.AlternateGraphicPath = null;
             result.Label = LabelFromGraphicsPath(graphicPath);
             string[] strArray = Path.GetFileNameWithoutExtension(graphicPath).Split('_');
             try {
@@ -231,7 +233,7 @@ namespace EdB.PrepareCarefully {
                 return values[values.Count() - 2] + ", " + values[values.Count() - 1];
             }
             catch (Exception) {
-                Log.Warning("Prepare Carefully could not determine head type label from graphics path: " + path);
+                Logger.Warning("Could not determine head type label from graphics path: " + path);
                 return "EdB.PC.Common.Default".Translate();
             }
         }

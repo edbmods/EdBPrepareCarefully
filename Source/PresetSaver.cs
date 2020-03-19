@@ -46,7 +46,7 @@ namespace EdB.PrepareCarefully {
                                 preset.pawns.Add(pawn);
                             }
                             else {
-                                Log.Warning("Prepare Carefully found an empty pawn in a parent child relationship while saving the preset.  Skipping that pawn.");
+                                Logger.Warning("Found an empty pawn in a parent child relationship while saving the preset.  Skipping that pawn.");
                             }
                         }
                         foreach (var child in g.Children) {
@@ -56,7 +56,7 @@ namespace EdB.PrepareCarefully {
                                     preset.pawns.Add(pawn);
                                 }
                                 else {
-                                    Log.Warning("Prepare Carefully found an empty pawn in a parent child relationship while saving the preset.  Skipping that pawn.");
+                                    Logger.Warning("Found an empty pawn in a parent child relationship while saving the preset.  Skipping that pawn.");
                                 }
                             }
                         }
@@ -69,12 +69,12 @@ namespace EdB.PrepareCarefully {
                     }
                     else {
                         problem = true;
-                        Log.Warning("Prepare Carefully found an invalid custom relationship when saving a preset: " + presetName);
+                        Logger.Warning("Found an invalid custom relationship when saving a preset: " + presetName);
                         if (r.target != null && r.source != null) {
-                            Log.Warning("  Relationship = { source = " + r.source.Id + ", target = " + r.target.Id + ", relationship = " + r.def + "}");
+                            Logger.Warning("  Relationship = { source = " + r.source.Id + ", target = " + r.target.Id + ", relationship = " + r.def + "}");
                         }
                         else {
-                            Log.Warning("  Relationship = { source = " + r.source + ", target = " + r.target + ", relationship = " + r.def + "}");
+                            Logger.Warning("  Relationship = { source = " + r.source + ", target = " + r.target + ", relationship = " + r.def + "}");
                         }
                     }
                 }
@@ -88,7 +88,7 @@ namespace EdB.PrepareCarefully {
                     foreach (var p in g.Parents) {
                         if (p.Pawn == null) {
                             problem = true;
-                            Log.Warning("Prepare Carefully found an invalid parent/child relationship when saving the preset: " + presetName);
+                            Logger.Warning("Found an invalid parent/child relationship when saving the preset: " + presetName);
                             continue;
                         }
                         else {
@@ -98,7 +98,7 @@ namespace EdB.PrepareCarefully {
                     foreach (var p in g.Children) {
                         if (p.Pawn == null) {
                             problem = true;
-                            Log.Warning("Prepare Carefully found an invalid parent/child relationship when saving the preset: " + presetName);
+                            Logger.Warning("Found an invalid parent/child relationship when saving the preset: " + presetName);
                             continue;
                         }
                         else {
@@ -118,7 +118,7 @@ namespace EdB.PrepareCarefully {
             }
             catch (Exception e) {
                 PrepareCarefully.Instance.State.AddError("EdB.PC.Dialog.Preset.Error.SaveFailed".Translate());
-                Log.Error("Failed to save preset file");
+                Logger.Error("Failed to save preset file");
                 throw e;
             }
             finally {

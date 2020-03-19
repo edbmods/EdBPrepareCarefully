@@ -29,7 +29,7 @@ namespace EdB.PrepareCarefully {
                     || !patchedMethods.Contains((typeof(Verse.Game), "InitNewGame"))
                 ) {
                     String methodsMessage = String.Join(", ", harmony.GetPatchedMethods().Select(i => i.DeclaringType + "." + i.Name));
-                    Log.Warning("[Prepare Carefully] Did not patch all of the expected methods.  The following patched methods were found: "
+                    Logger.Warning("Did not patch all of the expected methods.  The following patched methods were found: "
                         + (!methodsMessage.NullOrEmpty() ? methodsMessage : "none"));
                 }
             }
@@ -72,7 +72,7 @@ namespace EdB.PrepareCarefully {
 
                         PrepareCarefully prepareCarefully = PrepareCarefully.Instance;
                         if (prepareCarefully == null) {
-                            Log.Error("Could not open Prepare Carefully screen, because we failed to get the Prepare Carefully singleton.");
+                            Logger.Error("Could not open Prepare Carefully screen, because we failed to get the Prepare Carefully singleton.");
                             return;
                         }
                         prepareCarefully.Initialize();
@@ -81,7 +81,7 @@ namespace EdB.PrepareCarefully {
 
                         State state = prepareCarefully.State;
                         if (state == null) {
-                            Log.Error("Could not open Prepare Carefully screen, because the Prepare Carefully state was null.");
+                            Logger.Error("Could not open Prepare Carefully screen, because the Prepare Carefully state was null.");
                             return;
                         }
                         state.Page = page;

@@ -26,7 +26,7 @@ namespace EdB.PrepareCarefully {
         // with the provided constructor arguments.
         public static T CopyExposable<T>(T type, object[] constructorArgs) where T : IExposable {
             string xml = "<doc>" + Scribe.saver.DebugOutputFor(type) + "</doc>";
-            //Log.Warning(xml);
+            //Logger.Debug(xml);
             InitLoadFromString(xml);
             T result = default(T);
             Scribe_Deep.Look(ref result, "saveable", constructorArgs);
@@ -75,15 +75,15 @@ namespace EdB.PrepareCarefully {
         // uses a StringReader instead of reading from a file.
         private static void InitLoadFromString(String value) {
             if (Scribe.mode != LoadSaveMode.Inactive) {
-                Log.Error("Called InitLoading() but current mode is " + Scribe.mode);
+                Logger.Error("Called InitLoading() but current mode is " + Scribe.mode);
                 Scribe.ForceStop();
             }
             if (Scribe.loader.curParent != null) {
-                Log.Error("Current parent is not null in InitLoading");
+                Logger.Error("Current parent is not null in InitLoading");
                 Scribe.loader.curParent = null;
             }
             if (Scribe.loader.curPathRelToParent != null) {
-                Log.Error("Current path relative to parent is not null in InitLoading");
+                Logger.Error("Current path relative to parent is not null in InitLoading");
                 Scribe.loader.curPathRelToParent = null;
             }
             try {
@@ -97,7 +97,7 @@ namespace EdB.PrepareCarefully {
                 Scribe.mode = LoadSaveMode.LoadingVars;
             }
             catch (Exception ex) {
-                Log.Error(string.Concat(new object[] {
+                Logger.Error(string.Concat(new object[] {
                     "Exception while unmarshalling XML",
                     "\n",
                     ex

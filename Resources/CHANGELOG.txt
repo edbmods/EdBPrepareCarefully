@@ -1,5 +1,18 @@
  _____________________________________________________________________________
  
+   Version 1.1.9
+ _____________________________________________________________________________
+
+  - Better error handling in various panels.
+  - Fixed Backstory and Trait panel tooltip display so that tagged strings
+    are properly highlighted.
+  - Support for more injuries and health conditions.
+  - Added a tooltip description when choosing injuries and health conditions.
+  - Apparel/faction-related bug fix when loading presets.
+  - Performance improvements when initializing the equipment panel.
+
+ _____________________________________________________________________________
+ 
    Version 1.1.8
  _____________________________________________________________________________
 

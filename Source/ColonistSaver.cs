@@ -21,7 +21,7 @@ namespace EdB.PrepareCarefully {
                 Scribe_Deep.Look<SaveRecordPawnV5>(ref pawn, "pawn");
             }
             catch (Exception e) {
-                Log.Error("Failed to save preset file");
+                Logger.Error("Failed to save preset file");
                 throw e;
             }
             finally {
