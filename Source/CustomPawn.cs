@@ -1428,13 +1428,34 @@ namespace EdB.PrepareCarefully {
 
         protected void ApplyInjuriesAndImplantsToPawn() {
             this.pawn.health.Reset();
+            List<Injury> injuriesToRemove = new List<Injury>();
             foreach (var injury in injuries) {
-                injury.AddToPawn(this, pawn);
+                try {
+                    injury.AddToPawn(this, pawn);
+                }
+                catch (Exception e) {
+                    Logger.Warning("Failed to add injury {" + injury.Option?.HediffDef?.defName + "} to part {" + injury.BodyPartRecord?.def?.defName + "}", e);
+                    injuriesToRemove.Add(injury);
+                }
             }
+            foreach (var injury in injuriesToRemove) {
+                injuries.Remove(injury);
+            }
+            List<Implant> implantsToRemove = new List<Implant>();
             foreach (var implant in implants) {
-                implant.AddToPawn(this, pawn);
+                try {
+                    implant.AddToPawn(this, pawn);
+                }
+                catch (Exception e) {
+                    Logger.Warning("Failed to add implant {" + implant.label + "} to part {" + implant.BodyPartRecord?.def?.defName + "}", e);
+                    implantsToRemove.Add(implant);
+                }
+            }
+            foreach (var implant in implantsToRemove) {
+                implants.Remove(implant);
             }
             ClearPawnCaches();
+            MarkPortraitAsDirty();
         }
 
         public void RemoveCustomBodyParts(CustomBodyPart part) {
