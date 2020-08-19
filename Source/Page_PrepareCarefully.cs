@@ -1,4 +1,4 @@
-﻿using RimWorld;
+using RimWorld;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -22,7 +22,21 @@ namespace EdB.PrepareCarefully {
         private List<TabRecord> tabRecords = new List<TabRecord>();
         private bool pawnListActionThisFrame = false;
 
+        private float? costLabelWidth = null;
+
         private Controller controller;
+
+        public override Vector2 InitialSize {
+            get {
+                //Logger.Debug("Prepare Carefully window size: [" + Page.StandardSize.x + " x " + Page.StandardSize.y + "]");
+                return new Vector2(Page.StandardSize.x, Page.StandardSize.y);
+            }
+        }
+
+        public override void Notify_ResolutionChanged() {
+            //Logger.Debug("Resolution changed to: [" + Screen.width + " x " + Screen.height + "]");
+            base.Notify_ResolutionChanged();
+        }
 
         public Page_PrepareCarefully() {
             this.closeOnCancel = false;
@@ -80,11 +94,14 @@ namespace EdB.PrepareCarefully {
 
         public override void PreOpen() {
             base.PreOpen();
+            //Logger.Debug("windowRect: " + windowRect);
+
             // Set the default tab view to the first tab and the selected pawn to the first pawn.
             State.CurrentTab = tabViews[0];
             State.CurrentColonyPawn = State.ColonyPawns.FirstOrDefault();
             State.CurrentWorldPawn = State.WorldPawns.FirstOrDefault();
 
+            costLabelWidth = null;
             controller = new Controller(State);
             InstrumentPanels();
         }
@@ -120,7 +137,7 @@ namespace EdB.PrepareCarefully {
             }
 
             // Draw other controls.
-            DrawPresetButtons();
+            DrawPresetButtons(inRect);
             DrawPoints(mainRect);
             DoNextBackButtons(inRect, "Start".Translate(),
                 delegate {
@@ -183,17 +200,19 @@ namespace EdB.PrepareCarefully {
             }
         }
 
-        protected void DrawPresetButtons() {
+        protected void DrawPresetButtons(Rect rect) {
             GUI.color = Color.white;
-            float middle = 982f / 2f;
+            float middle = rect.width / 2f;
+            float top = rect.height - 38;
+            //float middle = this.windowRect.width / 2f;
             float buttonWidth = 150;
             float buttonSpacing = 24;
-            if (Widgets.ButtonText(new Rect(middle - buttonWidth - buttonSpacing / 2, 692, buttonWidth, 38), "EdB.PC.Page.Button.LoadPreset".Translate(), true, false, true)) {
+            if (Widgets.ButtonText(new Rect(middle - buttonWidth - buttonSpacing / 2, top, buttonWidth, 38), "EdB.PC.Page.Button.LoadPreset".Translate(), true, false, true)) {
                 Find.WindowStack.Add(new Dialog_LoadPreset((string name) => {
                     PresetLoaded(name);
                 }));
             }
-            if (Widgets.ButtonText(new Rect(middle + buttonSpacing / 2, 692, buttonWidth, 38), "EdB.PC.Page.Button.SavePreset".Translate(), true, false, true)) {
+            if (Widgets.ButtonText(new Rect(middle + buttonSpacing / 2, top, buttonWidth, 38), "EdB.PC.Page.Button.SavePreset".Translate(), true, false, true)) {
                 Find.WindowStack.Add(new Dialog_SavePreset((string name) => {
                     PresetSaved(name);
                 }));
@@ -202,10 +221,15 @@ namespace EdB.PrepareCarefully {
         }
 
         protected void DrawPoints(Rect parentRect) {
-            Rect rect = new Rect(parentRect.width - 446, 4, 418, 32);
             Text.Anchor = TextAnchor.UpperRight;
             GUI.color = Color.white;
             Text.Font = GameFont.Small;
+            if (costLabelWidth == null) {
+                string max = Int32.MaxValue.ToString();
+                string translated1 = "EdB.PC.Page.Points.Spent".Translate(max);
+                string translated2 = "EdB.PC.Page.Points.Remaining".Translate(max);
+                costLabelWidth = Mathf.Max(Text.CalcSize(translated1).x, Text.CalcSize(translated2).x);
+            }
             CostDetails cost = PrepareCarefully.Instance.Cost;
             string label;
             if (Config.pointsEnabled) {
@@ -223,6 +247,7 @@ namespace EdB.PrepareCarefully {
                 GUI.color = Style.ColorText;
                 label = "EdB.PC.Page.Points.Spent".Translate(points);
             }
+            Rect rect = new Rect(parentRect.width - costLabelWidth.Value, 2, costLabelWidth.Value, 32);
             Widgets.Label(rect, label);
 
             string tooltipText = "";
@@ -246,7 +271,7 @@ namespace EdB.PrepareCarefully {
             float optionTop = rect.y;
             optionLabel = "EdB.PC.Page.Points.UsePoints".Translate();
             Vector2 size = Text.CalcSize(optionLabel);
-            Rect optionRect = new Rect(620, optionTop, size.x + 10, 32);
+            Rect optionRect = new Rect(parentRect.width - costLabelWidth.Value - size.x - 100, optionTop, size.x + 10, 32);
             Widgets.Label(optionRect, optionLabel);
             GUI.color = Color.white;
             TooltipHandler.TipRegion(optionRect, "EdB.PC.Page.Points.UsePoints.Tip".Translate());

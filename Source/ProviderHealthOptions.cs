@@ -211,6 +211,9 @@ namespace EdB.PrepareCarefully {
                     if (getsPermanentProperties != null) {
                         option.IsOldInjury = true;
                     }
+                    else if (hd.hediffClass == typeof(Hediff_Injury)) {
+                        continue;
+                    }
                     else {
                         option.ValidParts = new List<BodyPartDef>();
                     }
