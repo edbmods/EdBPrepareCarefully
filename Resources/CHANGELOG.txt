@@ -1,5 +1,14 @@
  _____________________________________________________________________________
  
+   Version 1.1.10
+ _____________________________________________________________________________
+
+  - Better error handling when adding injuries and implants to pawns.
+  - Removed the "bruise" injury and other non-permanent "Hediff_Injury"
+    injuries from the list of options.
+
+ _____________________________________________________________________________
+ 
    Version 1.1.9
  _____________________________________________________________________________
 
