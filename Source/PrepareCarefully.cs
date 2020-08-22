@@ -239,6 +239,10 @@ namespace EdB.PrepareCarefully {
                     int count = (int)animalCountField.GetValue(animal);
                     for (int i = 0; i < count; i++) {
                         PawnKindDef animalKindDef = RandomPet(animal);
+                        if (animalKindDef == null) {
+                            Logger.Warning("Could not add random pet");
+                            continue;
+                        }
                         equipmentDatabase.PreloadDefinition(animalKindDef.race);
 
                         List<EquipmentRecord> entries = PrepareCarefully.Instance.EquipmentDatabase.Animals.FindAll((EquipmentRecord e) => {
@@ -260,12 +264,32 @@ namespace EdB.PrepareCarefully {
         }
 
         private static PawnKindDef RandomPet(ScenPart_StartingAnimal startingAnimal) {
-            FieldInfo animalKindField = typeof(ScenPart_StartingAnimal).GetField("animalKind", BindingFlags.Instance | BindingFlags.NonPublic);
-
-            PawnKindDef animalKindDef = (PawnKindDef)animalKindField.GetValue(startingAnimal);
+            PawnKindDef animalKindDef = QuietReflectionUtil.GetFieldValue<PawnKindDef>(startingAnimal, "animalKind");
+            if (animalKindDef != null) {
+                return animalKindDef;
+            }
             if (animalKindDef == null) {
                 IEnumerable<PawnKindDef> animalKindDefs = Reflection.ScenPart_StartingAnimal.RandomPets(startingAnimal);
-                animalKindDef = animalKindDefs.RandomElementByWeight((PawnKindDef td) => td.RaceProps.petness);
+                if (animalKindDefs != null) {
+                    var enumerator = animalKindDefs.GetEnumerator();
+                    if (enumerator != null) {
+                        List<PawnKindDef> validAnimalKindDefs = new List<PawnKindDef>();
+                        try {
+                            while (enumerator.MoveNext()) {
+                                PawnKindDef kindDef = enumerator.Current;
+                                if (kindDef != null) {
+                                    validAnimalKindDefs.Add(kindDef);
+                                }
+                            }
+                        }
+                        catch (Exception) {
+                            Logger.Error("There was an error while selecting a random pet.  We could not select from the full range of available animals.  This may be caused by a bad definition in another mod.");
+                        }
+                        if (validAnimalKindDefs.Count > 0) {
+                            animalKindDef = validAnimalKindDefs.RandomElementByWeight((PawnKindDef td) => td.RaceProps.petness);
+                        }
+                    }
+                }
             }
             return animalKindDef;
         }
