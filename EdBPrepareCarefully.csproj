@@ -143,6 +143,7 @@
     <Compile Include="Source\Randomizer.cs" />
     <Compile Include="Source\Reflection.cs" />
     <Compile Include="Source\ReflectionCache.cs" />
+    <Compile Include="Source\QuietReflectionUtil.cs" />
     <Compile Include="Source\ReflectionUtil.cs" />
     <Compile Include="Source\RelatedPawn.cs" />
     <Compile Include="Source\RelationshipBuilder.cs" />

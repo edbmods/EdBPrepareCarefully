@@ -1218,19 +1218,29 @@ namespace EdB.PrepareCarefully {
                     if (alienComp == null) {
                         return;
                     }
-                    FieldInfo primaryColorField = alienComp.GetType().GetField("skinColor", BindingFlags.Instance | BindingFlags.Public);
-                    if (primaryColorField == null) {
-                        return;
-                    }
-                    FieldInfo secondaryColorField = alienComp.GetType().GetField("skinColorSecond", BindingFlags.Instance | BindingFlags.Public);
-                    if (secondaryColorField == null) {
-                        return;
-                    }
-                    primaryColorField.SetValue(alienComp, value);
-                    if (!alienRace.HasSecondaryColor) {
-                        secondaryColorField.SetValue(alienComp, value);
-                    }
+
                     MarkPortraitAsDirty();
+
+                    // Pre 1.2
+                    QuietReflectionUtil.SetFieldValue(alienComp, "skinColor", value);
+                    QuietReflectionUtil.SetFieldValue(alienComp, "skinColorSecond", value);
+
+                    // 1.2 and later
+                    object dictionaryObject = QuietReflectionUtil.GetPropertyValue<object>(alienComp, "ColorChannels");
+                    if (dictionaryObject == null) {
+                        return;
+                    }
+                    System.Collections.IDictionary colorChannelsDictionary = dictionaryObject as System.Collections.IDictionary;
+                    if (colorChannelsDictionary == null) {
+                        return;
+                    }
+                    if (colorChannelsDictionary.Contains("skin")) {
+                        object skinColorObject = colorChannelsDictionary["skin"];
+                        ReflectionUtil.SetFieldValue(skinColorObject, "first", value);
+                        if (!alienRace.HasSecondaryColor) {
+                            ReflectionUtil.SetFieldValue(skinColorObject, "second", value);
+                        }
+                    }
                 }
             }
         }
