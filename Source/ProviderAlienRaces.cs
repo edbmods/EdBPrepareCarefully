@@ -73,6 +73,63 @@ namespace EdB.PrepareCarefully {
             FieldInfo alienRaceField = raceDef.GetType().GetField("alienRace", BindingFlags.Public | BindingFlags.Instance);
             return (alienRaceField != null);
         }
+
+        protected ColorGenerator FindPrimarySkinColorGenerator(ThingDef raceDef, object alienPartGeneratorObject) {
+            ColorGenerator generator = FindPrimarySkinColorGeneratorPre12(raceDef, alienPartGeneratorObject);
+            if (generator != null) {
+                return generator;
+            }
+            return FindPrimaryColorGenerator(raceDef, alienPartGeneratorObject, "skin");
+        }
+
+        protected ColorGenerator FindSecondarySkinColorGenerator(ThingDef raceDef, object alienPartGeneratorObject) {
+            ColorGenerator generator = FindSecondarySkinColorGeneratorPre12(raceDef, alienPartGeneratorObject);
+            if (generator != null) {
+                return generator;
+            }
+            return FindSecondaryColorGenerator(raceDef, alienPartGeneratorObject, "skin");
+        }
+
+        protected ColorGenerator FindPrimarySkinColorGeneratorPre12(ThingDef raceDef, object alienPartGeneratorObject) {
+            return GetFieldValue(raceDef, alienPartGeneratorObject, "alienskincolorgen", true) as ColorGenerator;
+        }
+
+        protected ColorGenerator FindSecondarySkinColorGeneratorPre12(ThingDef raceDef, object alienPartGeneratorObject) {
+            return GetFieldValue(raceDef, alienPartGeneratorObject, "alienskinsecondcolorgen", true) as ColorGenerator;
+        }
+
+        protected ColorGenerator FindPrimaryColorGenerator(ThingDef raceDef, object alienPartGeneratorObject, string channelName) {
+            return FindColorGenerator(raceDef, alienPartGeneratorObject, channelName, "first");
+        }
+
+        protected ColorGenerator FindSecondaryColorGenerator(ThingDef raceDef, object alienPartGeneratorObject, string channelName) {
+            return FindColorGenerator(raceDef, alienPartGeneratorObject, channelName, "second");
+        }
+
+        protected ColorGenerator FindColorGenerator(ThingDef raceDef, object alienPartGeneratorObject, string channelName, string generatorFieldName) {
+            object colorChannelsObject = GetFieldValue(raceDef, alienPartGeneratorObject, "colorChannels", true);
+            if (colorChannelsObject == null) {
+                Logger.Warning("didn't find colorChannels field");
+                return null;
+            }
+            System.Collections.IList colorChannelList = colorChannelsObject as System.Collections.IList;
+            if (colorChannelList == null) {
+                return null;
+            }
+            object foundGenerator = null;
+            foreach (var generator in colorChannelList) {
+                string name = GetFieldValue(raceDef, generator, "name", true) as string;
+                if (channelName == name) {
+                    foundGenerator = generator;
+                    break;
+                }
+            }
+            if (foundGenerator == null) {
+                return null;
+            }
+            return GetFieldValue(raceDef, foundGenerator, generatorFieldName, true) as ColorGenerator;
+        }
+
         protected AlienRace InitializeAlienRace(ThingDef raceDef) {
             try {
                 object alienRaceObject = GetFieldValue(raceDef, raceDef, "alienRace");
@@ -177,10 +234,12 @@ namespace EdB.PrepareCarefully {
                 result.GraphicsPathForBodyTypes = graphicsPathForBodyTypes;
 
                 // Figure out colors.
-                object primaryColorGeneratorValue = GetFieldValue(raceDef, alienPartGeneratorObject, "alienskincolorgen", true);
+                ColorGenerator primaryGenerator = FindPrimarySkinColorGenerator(raceDef, alienPartGeneratorObject);
+                ColorGenerator secondaryGenerator = FindSecondarySkinColorGenerator(raceDef, alienPartGeneratorObject);
                 result.UseMelaninLevels = true;
                 result.ChangeableColor = true;
-                ColorGenerator primaryGenerator = primaryColorGeneratorValue as ColorGenerator;
+                result.HasSecondaryColor = false;
+
                 if (primaryGenerator != null) {
                     if (primaryGenerator.GetType().Name != "ColorGenerator_SkinColorMelanin") {
                         if (primaryGenerator != null) {
@@ -190,9 +249,6 @@ namespace EdB.PrepareCarefully {
                         else {
                             result.PrimaryColors = new List<Color>();
                         }
-                        object secondaryColorGeneratorValue = GetFieldValue(raceDef, alienPartGeneratorObject, "alienskinsecondcolorgen", true);
-                        result.HasSecondaryColor = false;
-                        ColorGenerator secondaryGenerator = secondaryColorGeneratorValue as ColorGenerator;
                         if (secondaryGenerator != null) {
                             result.HasSecondaryColor = true;
                             result.SecondaryColors = secondaryGenerator.GetColorList();
@@ -201,9 +257,6 @@ namespace EdB.PrepareCarefully {
                             result.SecondaryColors = new List<Color>();
                         }
                     }
-                }
-                else {
-                    result.UseMelaninLevels = true;
                 }
 
                 // Hair properties.
@@ -229,8 +282,7 @@ namespace EdB.PrepareCarefully {
                     }
                 }
 
-                object hairColorGeneratorValue = GetFieldValue(raceDef, alienPartGeneratorObject, "alienhaircolorgen", true);
-                ColorGenerator hairColorGenerator = hairColorGeneratorValue as ColorGenerator;
+                ColorGenerator hairColorGenerator = FindPrimaryColorGenerator(raceDef, alienPartGeneratorObject, "hair");
                 if (hairColorGenerator != null) {
                     result.HairColors = hairColorGenerator.GetColorList();
                 }

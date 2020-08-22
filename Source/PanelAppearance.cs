@@ -626,7 +626,8 @@ namespace EdB.PrepareCarefully {
         }
 
         protected void DrawHumanlikeColorSelector(CustomPawn customPawn, float cursorY) {
-            int currentSwatchIndex = PawnColorUtils.GetLeftIndexForValue(customPawn.MelaninLevel);
+            float melanin = customPawn.MelaninLevel;
+            int currentSwatchIndex = PawnColorUtils.GetLeftIndexForValue(melanin);
             Color currentSwatchColor = PawnColorUtils.Colors[currentSwatchIndex];
 
             Rect swatchRect = new Rect(SwatchPosition.x, cursorY, SwatchSize.x, SwatchSize.y);
