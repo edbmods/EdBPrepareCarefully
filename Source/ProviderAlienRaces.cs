@@ -91,11 +91,11 @@ namespace EdB.PrepareCarefully {
         }
 
         protected ColorGenerator FindPrimarySkinColorGeneratorPre12(ThingDef raceDef, object alienPartGeneratorObject) {
-            return GetFieldValue(raceDef, alienPartGeneratorObject, "alienskincolorgen", true) as ColorGenerator;
+            return QuietReflectionUtil.GetFieldValue<ColorGenerator>(alienPartGeneratorObject, "alienskincolorgen");
         }
 
         protected ColorGenerator FindSecondarySkinColorGeneratorPre12(ThingDef raceDef, object alienPartGeneratorObject) {
-            return GetFieldValue(raceDef, alienPartGeneratorObject, "alienskinsecondcolorgen", true) as ColorGenerator;
+            return QuietReflectionUtil.GetFieldValue<ColorGenerator>(alienPartGeneratorObject, "alienskinsecondcolorgen");
         }
 
         protected ColorGenerator FindPrimaryColorGenerator(ThingDef raceDef, object alienPartGeneratorObject, string channelName) {
