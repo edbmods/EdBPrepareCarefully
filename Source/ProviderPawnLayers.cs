@@ -1,6 +1,7 @@
 using RimWorld;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using Verse;
 namespace EdB.PrepareCarefully {
     public class ProviderPawnLayers {
@@ -167,18 +168,17 @@ namespace EdB.PrepareCarefully {
 
         public PawnLayer FindLayerForApparel(ApparelProperties apparelProperties) {
             ApparelLayerDef layer = apparelProperties.LastLayer;
-            if (layer == ApparelLayerDefOf.OnSkin && apparelProperties.bodyPartGroups.Count == 1) {
-                if (apparelProperties.bodyPartGroups[0].Equals(BodyPartGroupDefOf.Legs)) {
-                    return pantsLayer;
-                }
-                else if (apparelProperties.bodyPartGroups[0].defName == "Hands") {
-                    return null;
-                }
-                else if (apparelProperties.bodyPartGroups[0].defName == "Feet") {
-                    return null;
-                }
-            }
             if (layer == ApparelLayerDefOf.OnSkin) {
+                if (apparelProperties.bodyPartGroups.Any(x => x.Equals(BodyPartGroupDefOf.Legs))) {
+                    if (apparelProperties.bodyPartGroups.Count == 1 ||
+                        // YAYO's Combat 3 added Feet as a body part to pants, breaking this mod, so this fixes it
+                        (apparelProperties.bodyPartGroups.Count == 2 && apparelProperties.bodyPartGroups.Any(x => x.defName == "Feet")))
+                        return pantsLayer;
+                    // would have returned bottomClothingLayer here, but it's redundant.
+                }
+                // checks if not gloves or socks (1 body part, which is either hands or feet)
+                else if (apparelProperties.bodyPartGroups.Count == 1 && apparelProperties.bodyPartGroups.All(x => x.defName == "Hands" || x.defName == "Feet"))
+                    return null;
                 return bottomClothingLayer;
             }
             else if (layer == ApparelLayerDefOf.Middle) {
