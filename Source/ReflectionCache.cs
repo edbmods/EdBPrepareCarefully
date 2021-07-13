@@ -45,7 +45,7 @@ namespace EdB.PrepareCarefully {
             GenFilePaths_FolderUnderSaveData = ReflectionUtil.RequiredMethod(typeof(GenFilePaths), "FolderUnderSaveData", new Type[] { typeof(string) });
 
             PawnBioAndNameGenerator_FillBackstorySlotShuffled = ReflectionUtil.RequiredMethod(typeof(PawnBioAndNameGenerator), "FillBackstorySlotShuffled",
-                new Type[] { typeof(Pawn), typeof(BackstorySlot), typeof(Backstory).MakeByRefType(), typeof(Backstory), typeof(List<BackstoryCategoryFilter>), typeof(FactionDef) });
+                new Type[] { typeof(Pawn), typeof(BackstorySlot), typeof(Backstory).MakeByRefType(), typeof(Backstory), typeof(List<BackstoryCategoryFilter>), typeof(FactionDef), typeof(BackstorySlot?) });
 
             PawnBioAndNameGenerator_GetBackstoryCategoryFiltersFor = ReflectionUtil.RequiredMethod(typeof(PawnBioAndNameGenerator), "GetBackstoryCategoryFiltersFor",
                 new Type[] { typeof(Pawn), typeof(FactionDef) });

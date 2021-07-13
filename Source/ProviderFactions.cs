@@ -299,7 +299,7 @@ namespace EdB.PrepareCarefully {
                 };
                 FactionRelation rel = new FactionRelation();
                 rel.other = Faction.OfPlayer;
-                rel.goodwill = 50;
+                rel.baseGoodwill = 50;
                 (typeof(Faction).GetField("relations", BindingFlags.Instance | BindingFlags.NonPublic).GetValue(faction) as List<FactionRelation>).Add(rel);
             }
             return faction;
