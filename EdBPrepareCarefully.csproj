@@ -69,7 +69,6 @@
     <None Include="Resources\Defs\MapGeneratorDefs\MapGenerators.xml" />
     <None Include="LICENSE" />
     <None Include="README.md" />
-    <None Include="Libraries\README.md" />
     <None Include="Resources\Defs\Scenarios\ScenParts_Fixed.xml" />
     <None Include="Resources\Defs\ThingDefs\EdBPrepareCarefully.xml" />
   </ItemGroup>
