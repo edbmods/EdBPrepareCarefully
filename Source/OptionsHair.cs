@@ -1,4 +1,4 @@
-﻿using RimWorld;
+using RimWorld;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -39,10 +39,10 @@ namespace EdB.PrepareCarefully {
             }
         }
         public void AddHair(HairDef def) {
-            if (def.hairGender == HairGender.Male) {
+            if (def.styleGender == StyleGender.Male) {
                 maleHairs.Add(def);
             }
-            else if (def.hairGender == HairGender.Female) {
+            else if (def.styleGender == StyleGender.Female) {
                 femaleHairs.Add(def);
             }
             else {
