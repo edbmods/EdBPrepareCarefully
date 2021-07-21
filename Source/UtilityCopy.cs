@@ -109,7 +109,7 @@ namespace EdB.PrepareCarefully {
 
         public static void FinalizeLoading() {
             if (Scribe.mode != LoadSaveMode.LoadingVars) {
-                Log.Error("Called FinalizeLoading() but current mode is " + Scribe.mode, false);
+                Log.Error("Called FinalizeLoading() but current mode is " + Scribe.mode);
                 return;
             }
             try {
@@ -123,7 +123,7 @@ namespace EdB.PrepareCarefully {
                 Scribe.loader.initer.DoAllPostLoadInits();
             }
             catch (Exception arg) {
-                Log.Error("Exception in FinalizeLoading(): " + arg, false);
+                Log.Error("Exception in FinalizeLoading(): " + arg);
                 Scribe.loader.ForceStop();
                 throw;
             }
@@ -152,7 +152,7 @@ namespace EdB.PrepareCarefully {
                     current.ExposeData();
                 }
                 catch (Exception arg) {
-                    Log.Warning("Could not resolve cross refs: " + arg, false);
+                    Log.Warning("Could not resolve cross refs: " + arg);
                 }
             }
             Scribe.loader.curParent = null;

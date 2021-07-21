@@ -47,7 +47,8 @@ namespace EdB.PrepareCarefully {
                 false, // bool certainlyBeenInCryptosleep = false
                 false, // bool forceRedressWorldPawnIfFormerColonist = false
                 worldPawnFactionDoesntMatter, // bool worldPawnFactionDoesntMatter = false
-                0f, //float biocodeWeaponChance = 0f, 
+                0f, //float biocodeWeaponChance = 0f,
+                0f, //float biocodeApparelChance = 0f,
                 null, //Pawn extraPawnForExtraRelationChance = null, 
                 1f, //float relationWithExtraPawnChanceFactor = 1f, 
                 null, // Predicate < Pawn > validatorPreGear = null

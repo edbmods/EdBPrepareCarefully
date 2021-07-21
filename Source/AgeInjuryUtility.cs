@@ -98,7 +98,7 @@ namespace EdB.PrepareCarefully {
                     }
                 }
             }
-            Log.Message(stringBuilder.ToString(), false);
+            Log.Message(stringBuilder.ToString());
             stringBuilder = new StringBuilder();
             stringBuilder.AppendLine("=======Actual injuries=========");
             for (int k = 0; k < 200; k++) {
@@ -111,7 +111,7 @@ namespace EdB.PrepareCarefully {
                 }
                 Find.WorldPawns.PassToWorld(pawn, PawnDiscardDecideMode.Discard);
             }
-            Log.Message(stringBuilder.ToString(), false);
+            Log.Message(stringBuilder.ToString());
         }
 
         public static IEnumerable<HediffGiver_Birthday> RandomHediffsToGainOnBirthday(Pawn pawn, int age) {

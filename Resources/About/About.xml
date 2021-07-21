@@ -3,16 +3,33 @@
   <name>EdB Prepare Carefully</name>
   <author>EdB</author>
   <packageId>EdB.PrepareCarefully</packageId>
+  <description>Customize your colonists, choose your gear and prepare carefully for your crash landing!
+
+  If you get a set of starting colonists that you like, save them as a preset so that you can start your game the same way next time.
+
+  1.3 Patch Version ONLY - NOT TESTED TO WORK WITH IDEOLOGY IN ANY WAY!!!
+  
+  [Version 1.3.1]
+  </description>
   <url></url>
   <supportedVersions>
     <li>1.0</li>
     <li>1.1</li>
     <li>1.2</li>
+    <li>1.3</li>
   </supportedVersions>
-<description>Customize your colonists, choose your gear and prepare carefully for your crash landing!
 
-If you get a set of starting colonists that you like, save them as a preset so that you can start your game the same way next time.
-
-[Version 1.2.1]
-</description>
+  	<modDependencies>
+		<li>
+			<packageId>brrainz.harmony</packageId>
+			<displayName>Harmony</displayName>
+			<downloadUrl>https://github.com/pardeike/HarmonyRimWorld/releases/latest</downloadUrl>
+			<steamWorkshopUrl>https://steamcommunity.com/workshop/filedetails/?id=2009463077</steamWorkshopUrl>
+		</li>
+      </modDependencies>
+      <loadAfter>
+		<li>Ludeon.RimWorld</li>
+		<li>Ludeon.RimWorld.Royalty</li>
+		<li>brrainz.harmony</li>
+      </loadAfter>
 </ModMetaData>
