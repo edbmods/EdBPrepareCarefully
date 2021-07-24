@@ -1,4 +1,4 @@
-﻿using RimWorld;
+using RimWorld;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -76,7 +76,7 @@ namespace EdB.PrepareCarefully {
             }
             OptionsHair result = new OptionsHair();
             foreach (HairDef hairDef in DefDatabase<HairDef>.AllDefs.Where((HairDef def) => {
-                foreach (var tag in def.hairTags) {
+                foreach (var tag in def.styleTags) {
                     if (alienRace.HairTags.Contains(tag)) {
                         return true;
                     }
@@ -127,7 +127,7 @@ namespace EdB.PrepareCarefully {
             */
             OptionsHair result = new OptionsHair();
             foreach (HairDef hairDef in DefDatabase<HairDef>.AllDefs.Where((HairDef def) => {
-                foreach (var tag in def.hairTags) {
+                foreach (var tag in def.styleTags) {
                     if (nonHumanHairTags.Contains(tag)) {
                         return false;
                     }
