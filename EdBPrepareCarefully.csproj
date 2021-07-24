@@ -34,25 +34,25 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="0Harmony">
-      <HintPath>Libraries\0Harmony.dll</HintPath>
+      <HintPath>..\..\..\Games\RimWorld Ideology\Mods\HarmonyRimWorld\Current\Assemblies\0Harmony.dll</HintPath>
     </Reference>
     <Reference Include="Assembly-CSharp">
-      <HintPath>Libraries\Assembly-CSharp.dll</HintPath>
+      <HintPath>..\..\..\Games\RimWorld Ideology\RimWorldWin64_Data\Managed\Assembly-CSharp.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Xml" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="UnityEngine.CoreModule">
-      <HintPath>Libraries\UnityEngine.CoreModule.dll</HintPath>
+      <HintPath>..\..\..\Games\RimWorld Ideology\RimWorldWin64_Data\Managed\UnityEngine.CoreModule.dll</HintPath>
     </Reference>
     <Reference Include="UnityEngine.IMGUIModule">
-      <HintPath>Libraries\UnityEngine.IMGUIModule.dll</HintPath>
+      <HintPath>..\..\..\Games\RimWorld Ideology\RimWorldWin64_Data\Managed\UnityEngine.IMGUIModule.dll</HintPath>
     </Reference>
     <Reference Include="UnityEngine.InputLegacyModule">
-      <HintPath>Libraries\UnityEngine.InputLegacyModule.dll</HintPath>
+      <HintPath>..\..\..\Games\RimWorld Ideology\RimWorldWin64_Data\Managed\UnityEngine.InputLegacyModule.dll</HintPath>
     </Reference>
     <Reference Include="UnityEngine.TextRenderingModule">
-      <HintPath>Libraries\UnityEngine.TextRenderingModule.dll</HintPath>
+      <HintPath>..\..\..\Games\RimWorld Ideology\RimWorldWin64_Data\Managed\UnityEngine.TextRenderingModule.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>
