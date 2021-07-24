@@ -1,4 +1,4 @@
-﻿using RimWorld;
+using RimWorld;
 using System;
 using System.Collections.Generic;
 using System.Reflection;
@@ -12,6 +12,13 @@ namespace EdB.PrepareCarefully {
         protected bool removesPart = false;
         protected bool wholeBody = false;
         protected string label = "?";
+
+        public bool UsesSeverityPercentile {
+            get {
+                return hediffDef?.stages != null && hediffDef.stages.Count > 0;
+            }
+        }
+
         protected List<BodyPartDef> validParts = null;
 
         public InjuryOption() {
@@ -72,7 +79,6 @@ namespace EdB.PrepareCarefully {
                 return true;
             }
         }
-
     }
 }
 

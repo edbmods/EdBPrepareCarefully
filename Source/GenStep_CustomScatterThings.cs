@@ -196,7 +196,7 @@ namespace EdB.PrepareCarefully {
             if (this.clusterSize > 1) {
                 if (this.leftInCluster <= 0) {
                     if (!base.TryFindScatterCell(map, out this.clusterCenter)) {
-                        Log.Error("Could not find cluster center to scatter " + this.thingDef, false);
+                        Log.Error("Could not find cluster center to scatter " + this.thingDef);
                     }
                     this.leftInCluster = this.clusterSize;
                 }

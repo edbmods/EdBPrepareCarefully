@@ -326,7 +326,8 @@ namespace EdB.PrepareCarefully {
                     ThingDef def = customPawn.GetSelectedApparel(selectedPawnLayer);
                     if (def != null && def.HasComp(typeof(CompColorable))) {
                         if (def.MadeFromStuff) {
-                            DrawColorSelector(customPawn, cursorY, null);
+                            ThingDef stuffDef = customPawn.GetSelectedStuff(selectedPawnLayer);
+                            DrawColorSelectorForStuff(customPawn, cursorY, stuffDef);
                         }
                         else {
                             DrawColorSelector(customPawn, cursorY, def.colorGenerator);
@@ -387,14 +388,31 @@ namespace EdB.PrepareCarefully {
 
         protected void DrawPawn(CustomPawn customPawn, Rect rect) {
             GUI.BeginGroup(rect);
+            try {
+                Vector2 pawnSize = new Vector2(128f, 180f);
+                Rect pawnRect = new Rect(rect.width * 0.5f - pawnSize.x * 0.5f, 10 + rect.height * 0.5f - pawnSize.y * 0.5f, pawnSize.x, pawnSize.y);
+                RenderTexture texture = customPawn.GetPortrait(pawnSize);
+                GUI.DrawTexture(pawnRect, (Texture)texture);
+            }
+            finally {
+                GUI.EndGroup();
+                GUI.color = Color.white;
+            }
+        }
 
-            Vector2 pawnSize = new Vector2(128f, 180f);
-            Rect pawnRect = new Rect(rect.width * 0.5f - pawnSize.x * 0.5f, 10 + rect.height * 0.5f - pawnSize.y * 0.5f, pawnSize.x, pawnSize.y);
-            RenderTexture texture = customPawn.GetPortrait(pawnSize);
-            GUI.DrawTexture(pawnRect, (Texture)texture);
+        protected Dictionary<ThingDef, List<Color>> stuffColorListLookup = new Dictionary<ThingDef, List<Color>>();
 
-            GUI.EndGroup();
-            GUI.color = Color.white;
+        // When drawing the color selector for apparel made from stuff, we display a color swatch for the material's default color.
+        // If we don't do this, it's difficult to get back to the default color when we change it.
+        protected void DrawColorSelectorForStuff(CustomPawn customPawn, float cursorY, ThingDef stuffDef) {
+            List<Color> colorAsList = null;
+            if (stuffDef != null) {
+                if (!stuffColorListLookup.TryGetValue(stuffDef, out colorAsList)) {
+                    colorAsList = new List<Color>(new Color[] { stuffDef.stuffProps.color });
+                    stuffColorListLookup[stuffDef] = colorAsList;
+                }
+            }
+            DrawColorSelector(customPawn, cursorY, colorAsList, true);
         }
 
         protected void DrawColorSelector(CustomPawn customPawn, float cursorY, ColorGenerator generator) {

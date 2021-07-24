@@ -7,6 +7,7 @@ using Verse;
 namespace EdB.PrepareCarefully {
     public class ProviderFactions {
         private List<FactionDef> nonPlayerHumanlikeFactionDefs = new List<FactionDef>();
+        private List<FactionDef> humanlikeFactionDefs = new List<FactionDef>();
         private Dictionary<FactionDef, Faction> factionLookup = new Dictionary<FactionDef, Faction>();
         private Dictionary<PawnKindDef, Faction> pawnKindFactionLookup = new Dictionary<PawnKindDef, Faction>();
         private Dictionary<FactionDef, List<PawnKindDef>> factionDefPawnKindLookup = new Dictionary<FactionDef, List<PawnKindDef>>();
@@ -58,10 +59,10 @@ namespace EdB.PrepareCarefully {
                     if (!def.humanlikeFaction) {
                         continue;
                     }
-                    if (def.isPlayer) {
-                        continue;
+                    if (!def.isPlayer) {
+                        nonPlayerHumanlikeFactionDefs.Add(def);
                     }
-                    nonPlayerHumanlikeFactionDefs.Add(def);
+                    humanlikeFactionDefs.Add(def);
                     List<PawnKindDef> factionKindDefs;
                     if (factionDefPawnKindLookup.TryGetValue(def, out factionKindDefs)) {
                         if (factionKindDefs.Count > 0) {
@@ -76,6 +77,9 @@ namespace EdB.PrepareCarefully {
                     Logger.Warning("Failed to classify a FactionDef as humanlike or not: " + def.defName);
                 }
             }
+            humanlikeFactionDefs.Sort((FactionDef a, FactionDef b) => {
+                return a.defName.CompareTo(b.defName);
+            });
             nonPlayerHumanlikeFactionDefs.Sort((FactionDef a, FactionDef b) => {
                 return a.defName.CompareTo(b.defName);
             });
@@ -234,6 +238,11 @@ namespace EdB.PrepareCarefully {
                 return nonPlayerHumanlikeFactionDefs;
             }
         }
+        public List<FactionDef> HumanlikeFactionDefs {
+            get {
+                return humanlikeFactionDefs;
+            }
+        }
         public IEnumerable<PawnKindDef> GetPawnKindsForFactionDef(FactionDef def) {
             List<PawnKindDef> factionDefPawnKinds;
             if (factionDefPawnKindLookup.TryGetValue(def, out factionDefPawnKinds)) {
@@ -299,7 +308,7 @@ namespace EdB.PrepareCarefully {
                 };
                 FactionRelation rel = new FactionRelation();
                 rel.other = Faction.OfPlayer;
-                rel.goodwill = 50;
+                rel.baseGoodwill = 50;
                 (typeof(Faction).GetField("relations", BindingFlags.Instance | BindingFlags.NonPublic).GetValue(faction) as List<FactionRelation>).Add(rel);
             }
             return faction;

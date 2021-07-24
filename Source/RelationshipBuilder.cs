@@ -1,4 +1,4 @@
-﻿using RimWorld;
+using RimWorld;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -25,6 +25,7 @@ namespace EdB.PrepareCarefully {
             int compatibilityPoolSize = Mathf.Max(Mathf.Min(relationships.Count * 6, 12), 50);
             this.FillCompatibilityPool(compatibilityPoolSize);
         }
+
         public List<CustomPawn> Build() {
             // These include all the pawns that have relationships with them.
             HashSet<CustomPawn> relevantPawns = new HashSet<CustomPawn>();
@@ -41,17 +42,42 @@ namespace EdB.PrepareCarefully {
                 }
             }
             
-            // Remove all relationships.
+            // Remove any existing relationships from pawns for whom we've defined custom relationships.
             foreach (var pawn in relevantPawns) {
                 pawn.Pawn.relations.ClearAllRelations();
             }
 
-            FieldInfo directRelationsField = typeof(Pawn_RelationsTracker).GetField("directRelations", BindingFlags.Instance | BindingFlags.NonPublic);
-            FieldInfo pawnsWithField = typeof(Pawn_RelationsTracker).GetField("pawnsWithDirectRelationsWithMe", BindingFlags.Instance | BindingFlags.NonPublic);
+            // Remove all relationships between world pawns and the original starting and optional pawns.  We'll be recreating
+            // those relationships between the world pawns and our custom pawns.
+            HashSet<Pawn> allWorldPawns = new HashSet<Pawn>(Find.WorldPawns.AllPawnsAliveOrDead);
+            HashSet<Pawn> startingAndOptionalPawns = new HashSet<Pawn>(Find.GameInitData.startingAndOptionalPawns);
+            List<DirectPawnRelation> toRemove = new List<DirectPawnRelation>();
+            foreach (var pawn in allWorldPawns) {
+                toRemove.Clear();
+                foreach (var rel in pawn.relations.DirectRelations) {
+                    if (startingAndOptionalPawns.Contains(rel.otherPawn)) {
+                        toRemove.Add(rel);
+                    }
+                }
+                foreach (var rel in toRemove) {
+                    pawn.relations.RemoveDirectRelation(rel);
+                }
+            }
+            foreach (var pawn in startingAndOptionalPawns) {
+                toRemove.Clear();
+                foreach (var rel in pawn.relations.DirectRelations) {
+                    if (allWorldPawns.Contains(rel.otherPawn)) {
+                        toRemove.Add(rel);
+                    }
+                }
+                foreach (var rel in toRemove) {
+                    pawn.relations.RemoveDirectRelation(rel);
+                }
+            }
 
             // Add direct relationships.
             foreach (var rel in relationships) {
-                AddRelationship(rel.source.Pawn, rel.target.Pawn, rel.def);
+                AddRelationship(rel.source, rel.target, rel.def);
             }
 
             // For any parent/child group that is missing parents, create them.
@@ -111,8 +137,8 @@ namespace EdB.PrepareCarefully {
             foreach (var group in parentChildGroups) {
                 foreach (var parent in group.Parents) {
                     foreach (var child in group.Children) {
-                        AddRelationship(child.Pawn, parent.Pawn, parentDef);
-                        AddRelationship(parent.Pawn, child.Pawn, childDef);
+                        AddRelationship(child, parent, parentDef);
+                        //AddRelationship(parent, child, childDef);
                     }
                 }
             }
@@ -137,6 +163,7 @@ namespace EdB.PrepareCarefully {
                     }
                 }
             }
+
             return worldPawns.ToList();
         }
 
@@ -186,17 +213,86 @@ namespace EdB.PrepareCarefully {
             return parent;
         }
 
-        private void AddRelationship(Pawn source, Pawn target, PawnRelationDef def) {
-            List<DirectPawnRelation> sourceDirectRelations = directRelationsField.GetValue(source.relations) as List<DirectPawnRelation>;
-            List<DirectPawnRelation> targetDirectRelations = directRelationsField.GetValue(target.relations) as List<DirectPawnRelation>;
-            HashSet<Pawn> sourcePawnsWithDirectRelationsWithMe = pawnsWithField.GetValue(target.relations) as HashSet<Pawn>;
-            HashSet<Pawn> targetPawnsWithDirectRelationsWithMe = pawnsWithField.GetValue(target.relations) as HashSet<Pawn>;
-            sourceDirectRelations.Add(new DirectPawnRelation(def, target, 0));
-            targetPawnsWithDirectRelationsWithMe.Add(source);
-            if (def.reflexive) {
-                targetDirectRelations.Add(new DirectPawnRelation(def, source, 0));
-                sourcePawnsWithDirectRelationsWithMe.Add(target);
+        protected Pawn FindMatchingPawn(CustomPawn pawn) {
+            // If the pawn is a world pawn, we need to create the relationships with the actual world pawn instead of the CustomPawn--which is a copy
+            // of the actual pawn
+            if (pawn.Type == CustomPawnType.Hidden) {
+                return PrepareCarefully.Instance.FindOriginalPawnFromCopy(pawn);
             }
+            else {
+                return pawn.Pawn;
+            }
+        }
+
+        public static void DebugWorldPawnRelationships() {
+            String output = "Starting and Optional pawns:\n";
+            Find.GameInitData.startingAndOptionalPawns.ForEach(p => {
+                output += DebugOutputForPawn(p);
+            });
+            output += "World pawns:\n";
+            Find.WorldPawns.AllPawnsAliveOrDead.ForEach(p => {
+                output += DebugOutputForPawn(p);
+            });
+            output += "Custom Pawns:\n";
+            PrepareCarefully.Instance.Pawns.ForEach(p => {
+                output += DebugOutputForCustomPawn(p);
+            });
+            //Logger.Debug(output);
+        }
+
+        private static string DebugOutputForPawn(Pawn p) {
+            string output = "";
+            output += String.Format("- {0}[{1}]\n", p.LabelShort, p.GetUniqueLoadID());
+            if (p.relations.DirectRelations.Count > 0) {
+                output += "  - DirectRelations:\n";
+                p.relations.DirectRelations.ForEach(r => {
+                    output += String.Format("    - {0}: {1}[{2}]\n", r.def.defName, r.otherPawn.LabelShort, r.otherPawn.GetUniqueLoadID());
+                });
+            }
+            if (p.relations.ChildrenCount > 0) {
+                output += "  - Children:\n";
+                foreach (var c in p.relations.Children) {
+                    output += String.Format("    - {0}[{1}]\n", c.LabelShort, c.GetUniqueLoadID());
+                }
+            }
+            return output;
+        }
+
+        private static string DebugOutputForCustomPawn(CustomPawn p) {
+            string output = "";
+            output += String.Format("- [{2}] {0}[{1}]\n", p.LabelShort, p.Pawn.GetUniqueLoadID(), p.Type);
+            if (p.Pawn.relations.DirectRelations.Count > 0) {
+                output += "  - DirectRelations:\n";
+                p.Pawn.relations.DirectRelations.ForEach(r => {
+                    output += String.Format("    - {0}: {1}[{2}]\n", r.def.defName, r.otherPawn.LabelShort, r.otherPawn.GetUniqueLoadID());
+                });
+            }
+            if (p.Pawn.relations.ChildrenCount > 0) {
+                output += "  - Children:\n";
+                foreach (var c in p.Pawn.relations.Children) {
+                    output += String.Format("    - {0}[{1}]\n", c.LabelShort, c.GetUniqueLoadID());
+                }
+            }
+            return output;
+        }
+
+        private void AddRelationship(CustomPawn customSource, CustomPawn customTarget, PawnRelationDef def) {
+            Pawn source = FindMatchingPawn(customSource);
+            Pawn target = FindMatchingPawn(customTarget);
+            if (source == null) {
+                Logger.Warning("Could not find matching source pawn " + customSource.Pawn.LabelShort + ", " + customSource.Pawn.GetUniqueLoadID() + ", + customSource. of type " + customSource.Type + " to add relationship");
+            }
+            if (target == null) {
+                Logger.Warning("Could not find matching target pawn " + customTarget.Pawn.LabelShort + ", " + customTarget.Pawn.GetUniqueLoadID() + " of type " + customTarget.Type + " to add relationship");
+            }
+            if (source == null || target == null) {
+                return;
+            }
+
+            if (source.relations.DirectRelationExists(def, target)) {
+                return;
+            }
+            source.relations.AddDirectRelation(def, target);
 
             // Try to find a better pawn compatibility, if it makes sense for the relationship.
             CarefullyPawnRelationDef pcDef = DefDatabase<CarefullyPawnRelationDef>.GetNamedSilentFail(def.defName);

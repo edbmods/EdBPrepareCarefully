@@ -8,7 +8,7 @@ using UnityEngine;
 using Verse;
 
 namespace EdB.PrepareCarefully {
-    public class PawnLayerHead : PawnLayer {
+    public class PawnLayerBeard : PawnLayer {
         private List<PawnLayerOption> options = new List<PawnLayerOption>();
         private List<Color> swatches = null;
 
@@ -37,21 +37,20 @@ namespace EdB.PrepareCarefully {
         }
 
         public override bool IsOptionSelected(CustomPawn pawn, PawnLayerOption option) {
-            var headOption = option as PawnLayerOptionHead;
-            if (headOption == null) {
+            var aOption = option as PawnLayerOptionBeard;
+            if (aOption == null) {
                 return false;
             }
-            return pawn.HeadType == headOption.HeadType;
+            return pawn.Beard == aOption.BeardDef;
         }
 
         public override int? GetSelectedIndex(CustomPawn pawn) {
             int selectedIndex = options.FirstIndexOf((option) => {
-                PawnLayerOptionHead headOption = option as PawnLayerOptionHead;
-                if (headOption == null) {
+                if (!(option is PawnLayerOptionBeard beardOption)) {
                     return false;
                 }
                 else {
-                    return headOption.HeadType == pawn.HeadType;
+                    return beardOption.BeardDef == pawn.Beard;
                 }
             });
             if (selectedIndex > -1) {
@@ -76,18 +75,17 @@ namespace EdB.PrepareCarefully {
         }
 
         public override void SelectOption(CustomPawn pawn, PawnLayerOption option) {
-            PawnLayerOptionHead headOption = option as PawnLayerOptionHead;
-            if (headOption != null) {
-                pawn.HeadType = headOption.HeadType;
+            if (option is PawnLayerOptionBeard beardOption) {
+                pawn.Beard = beardOption.BeardDef;
             }
         }
 
         public override Color GetSelectedColor(CustomPawn pawn) {
-            return pawn.SkinColor;
+            return pawn.HairColor;
         }
 
         public override void SelectColor(CustomPawn pawn, Color color) {
-            pawn.SkinColor = color;
+            pawn.HairColor = color;
         }
     }
 }

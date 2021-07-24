@@ -29,6 +29,15 @@ namespace EdB.PrepareCarefully {
         public ProviderHair Hair {
             get; set;
         }
+        public ProviderBeards Beards {
+            get; set;
+        }
+        public ProviderFaceTattoos FaceTattoos {
+            get; set;
+        }
+        public ProviderBodyTattoos BodyTattoos {
+            get; set;
+        }
         public ProviderHealthOptions Health {
             get; set;
         }

@@ -15,7 +15,6 @@ namespace EdB.PrepareCarefully {
         [StaticConstructorOnStartup]
         internal static class Main {
             static Main() {
-                //LongEventHandler.ExecuteWhenFinished(() => {
                 var harmony = new Harmony("EdB.PrepareCarefully");
                 harmony.PatchAll(Assembly.GetExecutingAssembly());
 

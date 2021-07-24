@@ -8,4 +8,4 @@ Libraries/*
 *.user
 *.bat
 !dist.bat
-Resources/Assemblies/*.dll
+*.dll

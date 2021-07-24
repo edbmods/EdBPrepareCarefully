@@ -1,4 +1,4 @@
-﻿using RimWorld;
+using RimWorld;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -50,7 +50,7 @@ namespace EdB.PrepareCarefully {
                 return null;
             }
             else {
-                return PrepareCarefully.Instance.Providers.PawnLayers.FindLayerForApparel(def.apparel);
+                return PrepareCarefully.Instance.Providers.PawnLayers.FindLayerForApparel(def);
             }
         }
         protected void AddApparel(OptionsApparel options, string defName) {

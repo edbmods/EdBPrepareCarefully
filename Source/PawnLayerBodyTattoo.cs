@@ -8,9 +8,8 @@ using UnityEngine;
 using Verse;
 
 namespace EdB.PrepareCarefully {
-    public class PawnLayerHead : PawnLayer {
+    public class PawnLayerBodyTattoo : PawnLayer {
         private List<PawnLayerOption> options = new List<PawnLayerOption>();
-        private List<Color> swatches = null;
 
         public override List<PawnLayerOption> Options {
             get {
@@ -23,35 +22,25 @@ namespace EdB.PrepareCarefully {
 
         public override ColorSelectorType ColorSelectorType {
             get {
-                return ColorSelectorType.RGB;
-            }
-        }
-
-        public override List<Color> ColorSwatches {
-            get {
-                return swatches;
-            }
-            set {
-                swatches = value;
+                return ColorSelectorType.None;
             }
         }
 
         public override bool IsOptionSelected(CustomPawn pawn, PawnLayerOption option) {
-            var headOption = option as PawnLayerOptionHead;
-            if (headOption == null) {
+            var aOption = option as PawnLayerOptionTattoo;
+            if (aOption == null) {
                 return false;
             }
-            return pawn.HeadType == headOption.HeadType;
+            return pawn.BodyTattoo == aOption.TattooDef;
         }
 
         public override int? GetSelectedIndex(CustomPawn pawn) {
             int selectedIndex = options.FirstIndexOf((option) => {
-                PawnLayerOptionHead headOption = option as PawnLayerOptionHead;
-                if (headOption == null) {
+                if (!(option is PawnLayerOptionTattoo layerOption)) {
                     return false;
                 }
                 else {
-                    return headOption.HeadType == pawn.HeadType;
+                    return layerOption.TattooDef == pawn.BodyTattoo;
                 }
             });
             if (selectedIndex > -1) {
@@ -76,18 +65,10 @@ namespace EdB.PrepareCarefully {
         }
 
         public override void SelectOption(CustomPawn pawn, PawnLayerOption option) {
-            PawnLayerOptionHead headOption = option as PawnLayerOptionHead;
-            if (headOption != null) {
-                pawn.HeadType = headOption.HeadType;
+            if (option is PawnLayerOptionTattoo layerOption) {
+                pawn.BodyTattoo = layerOption.TattooDef;
             }
         }
 
-        public override Color GetSelectedColor(CustomPawn pawn) {
-            return pawn.SkinColor;
-        }
-
-        public override void SelectColor(CustomPawn pawn, Color color) {
-            pawn.SkinColor = color;
-        }
     }
 }

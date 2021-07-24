@@ -156,6 +156,36 @@ namespace EdB.PrepareCarefully {
             }
         }
 
+        public BeardDef Beard {
+            get {
+                return pawn.style.beardDef;
+            }
+            set {
+                pawn.style.beardDef = value;
+                MarkPortraitAsDirty();
+            }
+        }
+
+        public TattooDef FaceTattoo {
+            get {
+                return pawn.style.FaceTattoo;
+            }
+            set {
+                pawn.style.FaceTattoo = value;
+                MarkPortraitAsDirty();
+            }
+        }
+
+        public TattooDef BodyTattoo {
+            get {
+                return pawn.style.BodyTattoo;
+            }
+            set {
+                pawn.style.BodyTattoo = value;
+                MarkPortraitAsDirty();
+            }
+        }
+
         public void GenerateId() {
             this.id = Guid.NewGuid().ToStringSafe();
         }
@@ -177,7 +207,7 @@ namespace EdB.PrepareCarefully {
         }
 
         public RenderTexture GetPortrait(Vector2 size) {
-            return PortraitsCache.Get(Pawn, size, new Vector3(0, 0, 0), 1.0f);
+            return PortraitsCache.Get(Pawn, size, Rot4.South, new Vector3(0, 0, 0), 1.0f);
         }
 
         public void InitializeWithPawn(Pawn pawn) {
@@ -215,14 +245,19 @@ namespace EdB.PrepareCarefully {
             // Store the current value of each apparel layer based on the apparel worn by the Pawn.
             foreach (Apparel current in this.pawn.apparel.WornApparel) {
                 Color color = current.DrawColor;
-                PawnLayer layer = PrepareCarefully.Instance.Providers.PawnLayers.FindLayerForApparel(current.def.apparel);
+                CompColorable colorable = current.TryGetComp<CompColorable>();
+                if (colorable != null) {
+                    //Logger.Debug(String.Format("{0} {1}, CompColorable: color={2}, desiredColor={3}, active={4}", current.def.defName, current.Stuff?.defName, colorable?.Color, colorable?.DesiredColor, colorable?.Active));
+                    if (colorable.Active) {
+                        color = colorable.Color;
+                    }
+                }
+                PawnLayer layer = PrepareCarefully.Instance.Providers.PawnLayers.FindLayerForApparel(current.def);
                 if (layer != null) {
                     SetSelectedApparelInternal(layer, current.def);
                     acceptedApparel[layer] = current.def;
                     SetSelectedStuffInternal(layer, current.Stuff);
-                    if (ApparelIsTintedByDefault(current.def, current.Stuff)) {
-                        SetColorInternal(layer, color);
-                    }
+                    SetColorInternal(layer, color);
                 }
             }
 
@@ -372,6 +407,11 @@ namespace EdB.PrepareCarefully {
             this.HairDef = pawn.story.hairDef;
             this.pawn.story.hairColor = pawn.story.hairColor;
             this.pawn.story.bodyType = pawn.story.bodyType;
+            if (pawn.style != null && this.Pawn.style != null) {
+                this.Beard = pawn.style.beardDef;
+                this.FaceTattoo = pawn.style.FaceTattoo;
+                this.BodyTattoo = pawn.style.BodyTattoo;
+            }
             this.HeadGraphicPath = pawn.story.HeadGraphicPath;
             this.MelaninLevel = pawn.story.melanin;
             foreach (var layer in PrepareCarefully.Instance.Providers.PawnLayers.GetLayersForPawn(this)) {
@@ -381,7 +421,7 @@ namespace EdB.PrepareCarefully {
                 }
             }
             foreach (Apparel current in pawn.apparel.WornApparel) {
-                PawnLayer layer = PrepareCarefully.Instance.Providers.PawnLayers.FindLayerForApparel(current.def.apparel);
+                PawnLayer layer = PrepareCarefully.Instance.Providers.PawnLayers.FindLayerForApparel(current.def);
                 if (layer != null) {
                     this.SetSelectedStuff(layer, current.Stuff);
                     this.SetSelectedApparel(layer, current.def);
@@ -559,25 +599,6 @@ namespace EdB.PrepareCarefully {
             originalSkillLevels[def] = value;
         }
 
-        protected bool ApparelIsTintedByDefault(ThingDef def, ThingDef stuffDef) {
-            if (stuffDef == null) {
-                if (def.colorGenerator != null) {
-                    return true;
-                }
-                else {
-                    return false;
-                }
-            }
-            else {
-                if (stuffDef.stuffProps.allowColorGenerators) {
-                    return true;
-                }
-                else {
-                    return false;
-                }
-            }
-        }
-
         public NameTriple Name {
             get {
                 return pawn.Name as NameTriple;
@@ -641,6 +662,10 @@ namespace EdB.PrepareCarefully {
                     return "EdB.PC.Pawn.TemporaryPawnNameShort".Translate(Index.Value);
                 }
                 else {
+                    if (pawn == null) {
+                        Logger.Warning("Pawn was null");
+                        return "";
+                    }
                     return pawn.LabelShortCap;
                 }
             }
@@ -785,11 +810,6 @@ namespace EdB.PrepareCarefully {
             return this.acceptedApparel[layer];
         }
 
-        public Color GetBlendedColor(PawnLayer layer) {
-            Color color = GetColor(layer) * GetStuffColor(layer);
-            return color;
-        }
-
         public Color GetColor(PawnLayer layer) {
             if (colors.TryGetValue(layer, out Color color)) {
                 return color;
@@ -883,12 +903,7 @@ namespace EdB.PrepareCarefully {
                         }
                     }
                     else {
-                        if (stuffDef.stuffProps.allowColorGenerators) {
-                            this.colors[layer] = stuffDef.stuffProps.color;
-                        }
-                        else {
-                            this.colors[layer] = Color.white;
-                        }
+                        this.colors[layer] = stuffDef.stuffProps.color;
                     }
                 }
             }
@@ -944,12 +959,7 @@ namespace EdB.PrepareCarefully {
                         colors[layer] = color;
                     }
                     else {
-                        if (stuffDef.stuffProps.allowColorGenerators) {
-                            colors[layer] = stuffDef.stuffProps.color;
-                        }
-                        else {
-                            colors[layer] = Color.white;
-                        }
+                        colors[layer] = stuffDef.stuffProps.color;
                     }
                 }
             }
@@ -1318,9 +1328,9 @@ namespace EdB.PrepareCarefully {
         protected void ResetGender() {
             List<BodyTypeDef> bodyTypes = PrepareCarefully.Instance.Providers.BodyTypes.GetBodyTypesForPawn(this);
             if (pawn.gender == Gender.Female) {
-                if (HairDef.hairGender == HairGender.Male) {
+                if (HairDef.styleGender == StyleGender.Male) {
                     HairDef = DefDatabase<HairDef>.AllDefsListForReading.Find((HairDef def) => {
-                        return def.hairGender != HairGender.Male;
+                        return def.styleGender != StyleGender.Male;
                     });
                 }
                 if (BodyType == BodyTypeDefOf.Male) {
@@ -1330,9 +1340,9 @@ namespace EdB.PrepareCarefully {
                 }
             }
             else {
-                if (HairDef.hairGender == HairGender.Female) {
+                if (HairDef.styleGender == StyleGender.Female) {
                     HairDef = DefDatabase<HairDef>.AllDefsListForReading.Find((HairDef def) => {
-                        return def.hairGender != HairGender.Female;
+                        return def.styleGender != StyleGender.Female;
                     });
                 }
                 if (BodyType == BodyTypeDefOf.Female) {
@@ -1387,8 +1397,10 @@ namespace EdB.PrepareCarefully {
         public void AddApparelToPawn(Pawn targetPawn, PawnLayer layer) {
             if (acceptedApparel[layer] != null) {
                 Apparel a;
-                Color color = Color.white;
-                if (acceptedApparel[layer].MadeFromStuff) {
+                Color color;
+                bool madeFromStuff = acceptedApparel[layer].MadeFromStuff;
+
+                if (madeFromStuff) {
                     a = (Apparel)thingCache.Get(selectedApparel[layer], selectedStuff[layer]);
                     color = colors[layer] * GetStuffColor(layer);
                 }
@@ -1396,8 +1408,24 @@ namespace EdB.PrepareCarefully {
                     a = (Apparel)thingCache.Get(selectedApparel[layer]);
                     color = colors[layer];
                 }
+
                 if (acceptedApparel[layer].HasComp(typeof(CompColorable))) {
-                    a.DrawColor = color;
+                    CompColorable colorable = a.TryGetComp<CompColorable>();
+                    if (colorable != null) {
+                        Color originalColor = Color.white;
+                        if (madeFromStuff) {
+                            originalColor = GetStuffColor(layer);
+                        }
+                        if (originalColor != colors[layer]) {
+                            colorable.SetColor(colors[layer]);
+                        }
+                        else {
+                            colorable.Disable();
+                        }
+                    }
+                }
+                else {
+                    a.DrawColor = Color.white;
                 }
 
                 // This post-process will set the quality and damage on the apparel based on the 

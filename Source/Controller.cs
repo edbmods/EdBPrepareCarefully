@@ -104,9 +104,9 @@ namespace EdB.PrepareCarefully {
         }
         
         public void PrepareGame() {
+            PrepareRelatedPawns();
             PrepareColonists();
             PrepareWorldPawns();
-            PrepareRelatedPawns();
 
             // This needs some explaining.  We need custom scenario parts to handle animal spawning
             // and scattered things.  However, we don't want the scenario that gets saved with a game
@@ -154,25 +154,38 @@ namespace EdB.PrepareCarefully {
             List<CustomPawn> relatedPawns = new RelationshipBuilder(PrepareCarefully.Instance.RelationshipManager.Relationships.ToList(),
                 PrepareCarefully.Instance.RelationshipManager.ParentChildGroups).Build();
 
-            // Add related pawns who are not already in the world to the starting pawns list
+            // Add related pawns who are not already in the world to the world
             foreach (var customPawn in relatedPawns) {
-                if (PrepareCarefully.Instance.RelationshipManager.TemporaryPawns.FirstOrDefault((pawn) => {
-                    return pawn == customPawn;
-                }) != null) {
+                if (PrepareCarefully.Instance.RelationshipManager.TemporaryPawns.Exists((p) => p == customPawn)) {
                     continue;
                 }
-                AddPawnToWorld(customPawn);
+                else {
+                    AddPawnToWorld(customPawn);
+                }
             }
         }
 
         protected void AddPawnToWorld(CustomPawn pawn) {
-            // Don't add colonists to the world.
+            // Don't add colonists to the world
             if (pawn.Type == CustomPawnType.Colonist) {
                 return;
             }
+            // Don't add hidden pawns to the world--they should already be there
+            if (pawn.Type == CustomPawnType.Hidden) {
+                return;
+            }
+
+            // Killing a pawn adds it to the world
+            if (pawn.Type == CustomPawnType.Temporary) {
+                if (!pawn.Pawn.Dead) {
+                    pawn.Pawn.Kill(null, null);
+                }
+                return;
+            }
+
+            //Logger.Debug("Adding pawn to the world: " + pawn.LabelShort);
 
             // If we have a custom faction setting, handle that.
-            CustomFaction randomFaction = PrepareCarefully.Instance.Providers.Factions.RandomFaction;
             if (pawn.Faction != null && pawn.Faction != PrepareCarefully.Instance.Providers.Factions.RandomFaction) {
                 // If they are assigned to a specific faction, assign them either as a leader or as a regular pawn.
                 if (pawn.Faction.Faction != null) {
@@ -189,8 +202,15 @@ namespace EdB.PrepareCarefully {
                 // If they are assigned to a random faction of a specific def, choose the random faction and assign it.
                 else {
                     try {
-                        Faction faction = PrepareCarefully.Instance.Providers.Factions.GetFactions(pawn.Faction.Def).RandomElement();
-                        pawn.Pawn.SetFaction(pawn.Faction.Faction, null);
+                        List<Faction> availableFactions = PrepareCarefully.Instance.Providers.Factions.GetFactions(pawn.Faction.Def);
+                        if (availableFactions != null && availableFactions.Count > 0) {
+                            Faction faction = availableFactions.RandomElement();
+                            pawn.Pawn.SetFaction(faction, null);
+                        }
+                        else {
+                            Logger.Warning(String.Format("Couldn't assign pawn {0} to specified faction.  Faction not available in world", pawn.LabelShort));
+                            pawn.Pawn.SetFactionDirect(null);
+                        }
                     }
                     catch (Exception) {
                         Logger.Warning("Failed to add a world pawn to the expected faction");
@@ -204,6 +224,7 @@ namespace EdB.PrepareCarefully {
             
             // Don't add pawns to the world if they have already been added.
             if (Find.World.worldPawns.Contains(pawn.Pawn) || Find.GameInitData.startingAndOptionalPawns.Contains(pawn.Pawn)) {
+                Logger.Message("Didn't add pawn " + pawn.ShortName + " to the world because they've already been added");
                 return;
             }
             else {

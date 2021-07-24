@@ -1,6 +1,7 @@
 using RimWorld;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Text;
@@ -14,19 +15,19 @@ namespace EdB.PrepareCarefully {
         // It would be nice if we could just do this to deep copy a pawn, but there are references to world objects in a saved pawn that can cause
         // problems, i.e. relationship references to other pawns.  So we follow the more explicit technique below to copy the pawn.
         // Leaving this here to remind us to not bother trying to do this again.
-        //public static Pawn IdealCopy(this Pawn source) {
-        //    try {
-        //        Pawn copy = UtilityCopy.CopyExposable<Pawn>(source);
-        //        copy.ClearCaches();
-        //        return copy;
-        //    }
-        //    catch (Exception e) {
-        //        Logger.Warning("Failed to copy pawn with preferred method.  Using backup method instead.\n" + e);
-        //        return CopyBackup(source);
-        //    }
-        //}
-
         public static Pawn Copy(this Pawn source) {
+            try {
+                Pawn copy = UtilityCopy.CopyExposable<Pawn>(source, CreateCrossReferenceListForCopying());
+                copy.ClearCaches();
+                return copy;
+            }
+            catch (Exception e) {
+                Logger.Warning("Failed to copy pawn with preferred method.  Using backup method instead.\n" + e);
+                return CopyBackup(source);
+            }
+        }
+
+        public static Pawn CopyBackup(this Pawn source) {
 
             PawnHealthState savedHealthState = source.health.State;
 
@@ -48,6 +49,9 @@ namespace EdB.PrepareCarefully {
                 result.Name = new NameSingle(nameSingle.Name, nameSingle.Numerical);
             }
 
+            // Set up any cross-references
+            Dictionary<String, IExposable> crossReferences = CreateCrossReferenceListForCopying();
+
             // Copy trackers.
             object[] constructorArgs = new object[] { result };
             result.ageTracker = UtilityCopy.CopyExposable(source.ageTracker, constructorArgs);
@@ -55,6 +59,8 @@ namespace EdB.PrepareCarefully {
             result.skills = UtilityCopy.CopyExposable(source.skills, constructorArgs);
             result.health = UtilityCopy.CopyExposable(source.health, constructorArgs);
             result.apparel = UtilityCopy.CopyExposable(source.apparel, constructorArgs);
+            result.style = UtilityCopy.CopyExposable(source.style, constructorArgs);
+            result.ideo = UtilityCopy.CopyExposable(source.ideo, constructorArgs, new Dictionary<string, IExposable>(crossReferences));
 
             // Copy comps
             //List<ThingComp> validComps = new List<ThingComp>();
@@ -78,6 +84,20 @@ namespace EdB.PrepareCarefully {
             source.ClearCaches();
             result.ClearCaches();
 
+            return result;
+        }
+
+        public static Dictionary<string, IExposable> CreateCrossReferenceListForCopying() {
+            var result = new Dictionary<string, IExposable>();
+            foreach (var i in Find.World.ideoManager.IdeosListForReading) {
+                result.Add(i.GetUniqueLoadID(), i);
+            }
+            foreach (var p in Find.GameInitData.startingAndOptionalPawns) {
+                result.Add(p.GetUniqueLoadID(), p);
+            }
+            foreach (var p in Find.World.worldPawns.AllPawnsAliveOrDead) {
+                result.Add(p.GetUniqueLoadID(), p);
+            }
             return result;
         }
 

@@ -17,20 +17,33 @@ namespace EdB.PrepareCarefully {
     public static class UtilityCopy {
         // Serializes and then deserializes an instance of an IExposable class to create a deep copy.  The class must be constructable
         // with no arguments.
-        public static T CopyExposable<T>(T type) where T : IExposable {
+        public static T CopyExposable<T>(T type, Dictionary<string, IExposable> crossReferences = null) where T : IExposable {
         string xml = "<doc>" + Scribe.saver.DebugOutputFor(type) + "</doc>";
-            return CopyExposable<T>(type, null);
+            return CopyExposable<T>(type, null, crossReferences);
         }
 
         // Serializes and then deserializes an instance of an IExposable class to create a deep copy.  Instantiates the copy
-        // with the provided constructor arguments.
-        public static T CopyExposable<T>(T type, object[] constructorArgs) where T : IExposable {
+        // with the provided constructor arguments.  This probably won't work for objects with references.  The referenced objects
+        // won't be saved unless they are defined in the same object, so they can't be loaded.
+        public static T CopyExposable<T>(T type, object[] constructorArgs, Dictionary<string, IExposable> crossReferences = null) where T : IExposable {
             string xml = "<doc>" + Scribe.saver.DebugOutputFor(type) + "</doc>";
             //Logger.Debug(xml);
             InitLoadFromString(xml);
+            if (crossReferences != null) {
+                foreach (var pair in crossReferences) {
+                    // If the cross references contain the same id as the thing that we're loading, we want to remove the object with the same
+                    // id from the cross references.  If we don't, it will cause an error.
+                    if (type is ILoadReferenceable loadReferenceable) {
+                        if (pair.Key == loadReferenceable.GetUniqueLoadID()) {
+                            continue;
+                        }
+                    }
+                    Scribe.loader.crossRefs.RegisterForCrossRefResolve(pair.Value);
+                }
+            }
             T result = default(T);
             Scribe_Deep.Look(ref result, "saveable", constructorArgs);
-            FinalizeLoading(); 
+            FinalizeLoading(crossReferences); 
             //Scribe.loader.FinalizeLoading();
             HashSet<IExposable> saveables = (HashSet<IExposable>)(typeof(PostLoadIniter).GetField("saveablesToPostLoad", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(Scribe.loader.initer));
             saveables.Clear();
@@ -107,9 +120,9 @@ namespace EdB.PrepareCarefully {
             }
         }
 
-        public static void FinalizeLoading() {
+        public static void FinalizeLoading(Dictionary<string, IExposable> crossReferences = null) {
             if (Scribe.mode != LoadSaveMode.LoadingVars) {
-                Log.Error("Called FinalizeLoading() but current mode is " + Scribe.mode, false);
+                Log.Error("Called FinalizeLoading() but current mode is " + Scribe.mode);
                 return;
             }
             try {
@@ -118,18 +131,18 @@ namespace EdB.PrepareCarefully {
                 Scribe.loader.curParent = null;
                 Scribe.loader.curPathRelToParent = null;
                 Scribe.mode = LoadSaveMode.Inactive;
-                ResolveAllCrossReferences();
+                ResolveAllCrossReferences(crossReferences);
                 //Scribe.loader.crossRefs.ResolveAllCrossReferences();
                 Scribe.loader.initer.DoAllPostLoadInits();
             }
             catch (Exception arg) {
-                Log.Error("Exception in FinalizeLoading(): " + arg, false);
+                Log.Error("Exception in FinalizeLoading(): " + arg);
                 Scribe.loader.ForceStop();
                 throw;
             }
         }
 
-        public static void ResolveAllCrossReferences() {
+        public static void ResolveAllCrossReferences(Dictionary<string, IExposable> crossReferences = null) {
             Scribe.mode = LoadSaveMode.ResolvingCrossRefs;
             using (List<IExposable>.Enumerator enumerator = Scribe.loader.crossRefs.crossReferencingExposables.GetEnumerator()) {
                 while (enumerator.MoveNext()) {
@@ -147,12 +160,17 @@ namespace EdB.PrepareCarefully {
             }
             foreach (IExposable current in Scribe.loader.crossRefs.crossReferencingExposables) {
                 try {
+                    if (current is ILoadReferenceable loadReferenceable) {
+                        if (crossReferences.ContainsKey(loadReferenceable.GetUniqueLoadID())) {
+                            continue;
+                        }
+                    }
                     Scribe.loader.curParent = current;
                     Scribe.loader.curPathRelToParent = null;
                     current.ExposeData();
                 }
                 catch (Exception arg) {
-                    Log.Warning("Could not resolve cross refs: " + arg, false);
+                    Log.Warning("Could not resolve cross refs: " + arg);
                 }
             }
             Scribe.loader.curParent = null;
