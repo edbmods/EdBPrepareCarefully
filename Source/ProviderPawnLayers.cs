@@ -42,7 +42,7 @@ namespace EdB.PrepareCarefully {
                 InitializeBodyLayer(pawnDef, gender)
             };
 
-            if (ModsConfig.IdeologyActive) {
+            if (ModLister.IdeologyInstalled) {
                 defaultLayers.Add(InitializeFaceTattooLayer(pawnDef, gender));
                 defaultLayers.Add(InitializeBodyTattooLayer(pawnDef, gender));
             }
@@ -89,7 +89,7 @@ namespace EdB.PrepareCarefully {
                 }
             }
 
-            if (ModsConfig.IdeologyActive) {
+            if (ModLister.IdeologyInstalled) {
                     layers.AddRange(new PawnLayer[] {
                     InitializeFaceTattooLayer(pawnDef, gender),
                     InitializeBodyTattooLayer(pawnDef, gender),

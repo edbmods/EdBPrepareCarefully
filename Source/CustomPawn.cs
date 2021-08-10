@@ -171,7 +171,7 @@ namespace EdB.PrepareCarefully {
                 return pawn.style.FaceTattoo;
             }
             set {
-                if (ModsConfig.IdeologyActive) {
+                if (ModLister.IdeologyInstalled) {
                     pawn.style.FaceTattoo = value;
                     MarkPortraitAsDirty();
                 }
@@ -183,7 +183,7 @@ namespace EdB.PrepareCarefully {
                 return pawn.style.BodyTattoo;
             }
             set {
-                if (ModsConfig.IdeologyActive) {
+                if (ModLister.IdeologyInstalled) {
                     pawn.style.BodyTattoo = value;
                     MarkPortraitAsDirty();
                 }
