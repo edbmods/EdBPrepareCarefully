@@ -299,7 +299,7 @@ namespace EdB.PrepareCarefully {
                     Messages.Message("EdB.PC.Dialog.Preset.Error.RelationshipFailed".Translate(), MessageTypeDefOf.ThreatBig);
                 }
             }
-            loadout.RelationshipManager.AddRelationships(allRelationships);
+            loadout.RelationshipManager.InitializeWithRelationships(allRelationships);
 
             if (parentChildGroups != null) {
                 foreach (var groupRecord in parentChildGroups) {
@@ -379,14 +379,20 @@ namespace EdB.PrepareCarefully {
                 }
             }
             
-            Pawn source;
+            PawnGenerationRequestWrapper generationRequest = new PawnGenerationRequestWrapper() {
+                FixedBiologicalAge = record.biologicalAge,
+                FixedChronologicalAge = record.chronologicalAge,
+                FixedGender = record.gender
+            };
+            Faction playerFaction = Faction.OfPlayerSilentFail;
+            generationRequest.FixedIdeology = playerFaction?.ideos?.PrimaryIdeo;
             if (pawnKindDef != null) {
-                source = new Randomizer().GenerateKindOfColonist(pawnKindDef);
+                generationRequest.KindDef = pawnKindDef;
             }
-            else {
-                source = new Randomizer().GenerateColonist();
+            Pawn source = PawnGenerator.GeneratePawn(generationRequest.Request);
+            if (source.health != null) {
+                source.health.Reset();
             }
-            source.health.Reset();
             
             CustomPawn pawn = new CustomPawn(source);
             if (pawn.Id == null) {
@@ -413,6 +419,11 @@ namespace EdB.PrepareCarefully {
             pawn.FirstName = record.firstName;
             pawn.NickName = record.nickName;
             pawn.LastName = record.lastName;
+            if (pawn.Pawn.style != null) {
+                pawn.Pawn.style.beardDef = BeardDefOf.NoBeard;
+                pawn.Pawn.style.BodyTattoo = TattooDefOf.NoTattoo_Body;
+                pawn.Pawn.style.FaceTattoo = TattooDefOf.NoTattoo_Face;
+            }
 
             HairDef h = FindHairDef(record.hairDef);
             if (h != null) {

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using UnityEngine;
 using Verse;
 namespace EdB.PrepareCarefully {
@@ -16,6 +16,7 @@ namespace EdB.PrepareCarefully {
         public PanelSkills PanelSkills { get; set; }
         public PanelIncapableOf PanelIncapable { get; set; }
         public PanelLoadSave PanelSaveLoad { get; set; }
+        public PanelFavoriteColor PanelFavoriteColor { get; set; }
 
         public TabViewPawns() {
             PanelColonyPawns = new PanelColonyPawnList();
@@ -31,6 +32,7 @@ namespace EdB.PrepareCarefully {
             PanelSkills = new PanelSkills();
             PanelIncapable = new PanelIncapableOf();
             PanelSaveLoad = new PanelLoadSave();
+            PanelFavoriteColor = new PanelFavoriteColor();
         }
 
         public override string Name {
@@ -49,6 +51,9 @@ namespace EdB.PrepareCarefully {
             if (state.CurrentPawn != null) {
                 PanelRandomize.Draw(state);
                 PanelName.Draw(state);
+                if (ModsConfig.IdeologyActive) {
+                    PanelFavoriteColor.Draw(state);
+                }
                 PanelSaveLoad.Draw(state);
                 PanelAge.Draw(state);
                 PanelAppearance.Draw(state);
@@ -90,10 +95,16 @@ namespace EdB.PrepareCarefully {
             // Randomize, Age and Save/Load
             PanelRandomize.Resize(new Rect(PanelColonyPawns.PanelRect.xMax + panelMargin.x,
                 PanelColonyPawns.PanelRect.yMin, 64, 64));
+            float namePanelWidth = 532;
+            if (ModsConfig.IdeologyActive) {
+                namePanelWidth -= 88;
+            }
             PanelName.Resize(new Rect(PanelRandomize.PanelRect.xMax + panelMargin.x,
-                PanelRandomize.PanelRect.yMin, 402, 64));
-            PanelSaveLoad.Resize(new Rect(PanelName.PanelRect.xMax + panelMargin.x,
-                PanelName.PanelRect.yMin, 284, 64));
+                PanelRandomize.PanelRect.yMin, namePanelWidth, 64));
+            bool favoriteColor = ModsConfig.IdeologyActive;
+            PanelFavoriteColor.Resize(new Rect(PanelName.PanelRect.xMax + panelMargin.x, PanelName.PanelRect.yMin, favoriteColor ? 64 : 0, favoriteColor ? 64 : 0));
+            float panelSaveLoadLeft = favoriteColor ? PanelFavoriteColor.PanelRect.xMax : PanelName.PanelRect.xMax;
+            PanelSaveLoad.Resize(new Rect(panelSaveLoadLeft + panelMargin.x, PanelName.PanelRect.yMin, 154, 64));
 
             // Age and Appearance
             float columnSize1 = 226;

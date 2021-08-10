@@ -34,7 +34,7 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="0Harmony">
-      <HintPath>Libraries\0Harmony.dll</HintPath>
+      <HintPath>Libraries\Harmony\2.0\0Harmony.dll</HintPath>
     </Reference>
     <Reference Include="Assembly-CSharp">
       <HintPath>Libraries\Assembly-CSharp.dll</HintPath>
@@ -71,9 +71,11 @@
     <Compile Include="Source\ControllerRelationships.cs" />
     <Compile Include="Source\CostCalculator.cs" />
     <Compile Include="Source\CustomFaction.cs" />
+    <Compile Include="Source\DialogFavoriteColor.cs" />
     <Compile Include="Source\ExtensionsBackstory.cs" />
     <Compile Include="Source\FilterBackstoryMatchesFaction.cs" />
     <Compile Include="Source\InitializationException.cs" />
+    <Compile Include="Source\PanelFavoriteColor.cs" />
     <Compile Include="Source\ParentChildGroup.cs" />
     <Compile Include="Source\CustomPawnType.cs" />
     <Compile Include="Source\DialogFactions.cs" />
@@ -116,13 +118,18 @@
     <Compile Include="Source\PawnGenerationRequestWrapper.cs" />
     <Compile Include="Source\PawnLayer.cs" />
     <Compile Include="Source\PawnLayerAlienAddon.cs" />
+    <Compile Include="Source\PawnLayerBodyTattoo.cs" />
+    <Compile Include="Source\PawnLayerFaceTattoo.cs" />
     <Compile Include="Source\PawnLayerBody.cs" />
     <Compile Include="Source\PawnLayerHair.cs" />
+    <Compile Include="Source\PawnLayerBeard.cs" />
     <Compile Include="Source\PawnLayerHead.cs" />
     <Compile Include="Source\PawnLayerOption.cs" />
     <Compile Include="Source\PawnLayerOptionAlienAddon.cs" />
+    <Compile Include="Source\PawnLayerOptionTattoo.cs" />
     <Compile Include="Source\PawnLayerOptionBody.cs" />
     <Compile Include="Source\PawnLayerOptionHair.cs" />
+    <Compile Include="Source\PawnLayerOptionBeard.cs" />
     <Compile Include="Source\PawnLayerOptionHead.cs" />
     <Compile Include="Source\PawnListMode.cs" />
     <Compile Include="Source\PrepareCarefully.cs" />
@@ -132,6 +139,9 @@
     <Compile Include="Source\ProviderAgeLimits.cs" />
     <Compile Include="Source\ProviderAlienRaces.cs" />
     <Compile Include="Source\ProviderApparel.cs" />
+    <Compile Include="Source\ProviderBodyTatoos.cs" />
+    <Compile Include="Source\ProviderFaceTatoos.cs" />
+    <Compile Include="Source\ProviderBeards.cs" />
     <Compile Include="Source\ProviderHealthOptions.cs" />
     <Compile Include="Source\ProviderBodyTypes.cs" />
     <Compile Include="Source\ProviderHair.cs" />
@@ -148,6 +158,8 @@
     <Compile Include="Source\RelatedPawn.cs" />
     <Compile Include="Source\RelationshipBuilder.cs" />
     <Compile Include="Source\RelationshipGroup.cs" />
+    <Compile Include="Source\RelationshipDefinitionHelper.cs" />
+    <Compile Include="Source\RelationshipManager.cs" />
     <Compile Include="Source\ScenPart_CustomAnimal.cs" />
     <Compile Include="Source\ScenPart_CustomScatterThingsNearPlayerStart.cs" />
     <Compile Include="Source\ScrollViewHorizontal.cs" />
@@ -157,14 +169,12 @@
     <Compile Include="Source\TabRecordExtensions.cs" />
     <Compile Include="Source\Version3\SaveRecordEquipmentV3.cs" />
     <Compile Include="Source\IEquipment.cs" />
-    <Compile Include="Source\AgeInjuryUtility.cs" />
     <Compile Include="Source\EquipmentKey.cs" />
     <Compile Include="Source\ScrollViewVertical.cs" />
     <Compile Include="Source\Dialog_Options.cs" />
     <Compile Include="Source\Textures.cs" />
     <Compile Include="Source\State.cs" />
     <Compile Include="Source\Logger.cs" />
-    <Compile Include="Source\RelationshipManager.cs" />
     <Compile Include="Source\RelationshipList.cs" />
     <Compile Include="Source\CustomRelationship.cs" />
     <Compile Include="Source\Implant.cs" />

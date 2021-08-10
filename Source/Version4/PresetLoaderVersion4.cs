@@ -230,7 +230,7 @@ namespace EdB.PrepareCarefully {
                     Messages.Message("EdB.PC.Dialog.Preset.Error.RelationshipFailed".Translate(), MessageTypeDefOf.ThreatBig);
                 }
             }
-            loadout.RelationshipManager.AddRelationships(allRelationships);
+            loadout.RelationshipManager.InitializeWithRelationships(allRelationships);
 
             if (preset.parentChildGroups != null) {
                 foreach (var groupRecord in preset.parentChildGroups) {
@@ -315,6 +315,8 @@ namespace EdB.PrepareCarefully {
                 FixedChronologicalAge = record.chronologicalAge,
                 FixedGender = record.gender
             };
+            Faction playerFaction = Faction.OfPlayerSilentFail;
+            generationRequest.FixedIdeology = playerFaction?.ideos?.PrimaryIdeo;
 
             if (pawnKindDef != null) {
                 generationRequest.KindDef = pawnKindDef;
@@ -359,6 +361,11 @@ namespace EdB.PrepareCarefully {
             pawn.FirstName = record.firstName;
             pawn.NickName = record.nickName;
             pawn.LastName = record.lastName;
+            if (pawn.Pawn.style != null) {
+                pawn.Pawn.style.beardDef = BeardDefOf.NoBeard;
+                pawn.Pawn.style.BodyTattoo = TattooDefOf.NoTattoo_Body;
+                pawn.Pawn.style.FaceTattoo = TattooDefOf.NoTattoo_Face;
+            }
 
             if (record.originalFactionDef != null) {
                 pawn.OriginalFactionDef = DefDatabase<FactionDef>.GetNamedSilentFail(record.originalFactionDef);

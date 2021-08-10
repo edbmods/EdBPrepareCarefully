@@ -338,12 +338,17 @@ namespace EdB.PrepareCarefully {
             tabViewPawns.PanelColonyPawns.PawnDeleted += pawnController.DeletePawn;
             tabViewPawns.PanelColonyPawns.PawnDeleted += (CustomPawn pawn) => { pawnController.CheckPawnCapabilities(); };
             tabViewPawns.PanelColonyPawns.PawnSwapped += this.SwapPawn;
+            tabViewPawns.PanelColonyPawns.CharacterLoaded += pawnController.LoadCharacter;
+            tabViewPawns.PanelColonyPawns.CharacterLoaded += (string filename) => { pawnController.CheckPawnCapabilities(); };
+
             tabViewPawns.PanelWorldPawns.PawnSelected += this.SelectPawn;
             tabViewPawns.PanelWorldPawns.AddingPawn += pawnController.AddingPawn;
             tabViewPawns.PanelWorldPawns.AddingPawnWithPawnKind += pawnController.AddFactionPawn;
             tabViewPawns.PanelWorldPawns.PawnDeleted += pawnController.DeletePawn;
             tabViewPawns.PanelWorldPawns.PawnDeleted += (CustomPawn pawn) => { pawnController.CheckPawnCapabilities(); };
             tabViewPawns.PanelWorldPawns.PawnSwapped += this.SwapPawn;
+            tabViewPawns.PanelWorldPawns.CharacterLoaded += pawnController.LoadCharacter;
+            tabViewPawns.PanelWorldPawns.CharacterLoaded += (string filename) => { pawnController.CheckPawnCapabilities(); };
 
             tabViewPawns.PanelColonyPawns.Maximize += () => {
                 state.PawnListMode = PawnListMode.ColonyPawnsMaximized;
@@ -381,8 +386,10 @@ namespace EdB.PrepareCarefully {
             tabViewPawns.PanelRandomize.RandomizeAllClicked += pawnController.RandomizeAll;
             tabViewPawns.PanelRandomize.RandomizeAllClicked += () => { pawnController.CheckPawnCapabilities(); };
 
-            tabViewPawns.PanelSaveLoad.CharacterLoaded += pawnController.LoadCharacter;
-            tabViewPawns.PanelSaveLoad.CharacterLoaded += (string filename) => { pawnController.CheckPawnCapabilities(); };
+            tabViewPawns.PanelFavoriteColor.FavoriteColorUpdated += pawnController.UpdateFavoriteColor;
+
+            //tabViewPawns.PanelSaveLoad.CharacterLoaded += pawnController.LoadCharacter;
+            //tabViewPawns.PanelSaveLoad.CharacterLoaded += (string filename) => { pawnController.CheckPawnCapabilities(); };
             tabViewPawns.PanelSaveLoad.CharacterSaved += pawnController.SaveCharacter;
 
             tabViewPawns.PanelSkills.SkillLevelUpdated += pawnController.UpdateSkillLevel;

@@ -1,9 +1,17 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
 <!-- CHANGE NOTES -->
+<!-- v1.3.1 -->
+<!-- NEW: EdB.PC.Dialog.FavoriteColor.Header -->
+<!-- NEW: EdB.PC.Panel.PawnList.Add -->
+<!-- NEW: EdB.PC.Panel.PawnList.Load -->
+<!-- NEW: EdB.PC.Pawn.PawnLayer.Beard -->
+<!-- NEW: EdB.PC.Pawn.PawnLayer.EyeCovering -->
+<!-- NEW: EdB.PC.Pawn.PawnLayer.FaceTattoo -->
+<!-- NEW: EdB.PC.Pawn.PawnLayer.BodyTattoo -->
+
 <!-- v1.1.1 -->
 <!-- UPDATED: EdB.PC.Error.Initialization -->
 
-<!-- CHANGE NOTES -->
 <!-- v1.0.12 -->
 <!-- NEW: EdB.PC.Pawn.BodyType.Oval -->
 <!-- NEW: EdB.PC.Equipment.LoadingProgress.Initializing -->
@@ -137,6 +145,8 @@
   <EdB.PC.Dialog.Faction.SelectRandomFaction>Place this character in a random faction</EdB.PC.Dialog.Faction.SelectRandomFaction>
   <EdB.PC.Dialog.Faction.SelectSpecificFaction>Choose a specific faction for this character</EdB.PC.Dialog.Faction.SelectSpecificFaction>
 
+  <EdB.PC.Dialog.FavoriteColor.Header>Select a Favorite Color</EdB.PC.Dialog.FavoriteColor.Header>
+
   <EdB.PC.Dialog.Implant.Alert>You've selected at least one implant that will not be installed because it conflicts with another selection:\n{0}</EdB.PC.Dialog.Implant.Alert>
   <EdB.PC.Dialog.Implant.Alert.Item>- {0}, {1}</EdB.PC.Dialog.Implant.Alert.Item>
   <EdB.PC.Dialog.Implant.Button.Confirm>Apply</EdB.PC.Dialog.Implant.Button.Confirm>
@@ -223,8 +233,12 @@ Before reporting an error, please try to figure out which mod may be causing the
   <EdB.PC.Pawn.PawnDescriptionNoGender>{0}, age {1}</EdB.PC.Pawn.PawnDescriptionNoGender>
   <EdB.PC.Pawn.PawnLayer.Accessory>Accessory</EdB.PC.Pawn.PawnLayer.Accessory>
   <EdB.PC.Pawn.PawnLayer.AlienAddonOption>Option {0}</EdB.PC.Pawn.PawnLayer.AlienAddonOption>
+  <EdB.PC.Pawn.PawnLayer.Beard>Beard</EdB.PC.Pawn.PawnLayer.Beard>
+  <EdB.PC.Pawn.PawnLayer.BodyTattoo>Body Tattoo</EdB.PC.Pawn.PawnLayer.BodyTattoo>
   <EdB.PC.Pawn.PawnLayer.BodyType>Body Type</EdB.PC.Pawn.PawnLayer.BodyType>
   <EdB.PC.Pawn.PawnLayer.BottomClothingLayer>Bottom Clothing Layer</EdB.PC.Pawn.PawnLayer.BottomClothingLayer>
+  <EdB.PC.Pawn.PawnLayer.EyeCovering>Eye Covering</EdB.PC.Pawn.PawnLayer.EyeCovering>
+  <EdB.PC.Pawn.PawnLayer.FaceTattoo>Face Tattoo</EdB.PC.Pawn.PawnLayer.FaceTattoo>
   <EdB.PC.Pawn.PawnLayer.Hair>Hair</EdB.PC.Pawn.PawnLayer.Hair>
   <EdB.PC.Pawn.PawnLayer.Hat>Hat</EdB.PC.Pawn.PawnLayer.Hat>
   <EdB.PC.Pawn.PawnLayer.HeadType>Head Type</EdB.PC.Pawn.PawnLayer.HeadType>
@@ -295,11 +309,13 @@ You can play the game with your colonists as they are, but you will be asked to 
   <EdB.PC.Panel.LoadSave.Load>Load Character</EdB.PC.Panel.LoadSave.Load>
   <EdB.PC.Panel.LoadSave.Save>Save Character</EdB.PC.Panel.LoadSave.Save>
 
+  <EdB.PC.Panel.PawnList.Add>Add...</EdB.PC.Panel.PawnList.Add>
   <EdB.PC.Panel.PawnList.Delete.Confirm>Are you sure that you want to remove this character?</EdB.PC.Panel.PawnList.Delete.Confirm>
-  <EdB.PC.Panel.PawnList.Error.MustSelectFaction>Must select a faction</EdB.PC.Panel.PawnList.Error.MustSelectFaction>
-  <EdB.PC.Panel.PawnList.SelectFaction>Select From a Faction Template</EdB.PC.Panel.PawnList.SelectFaction>
   <EdB.PC.Panel.PawnList.Error.FactionPawnFailed>There was an unexpected error when trying to create the new character</EdB.PC.Panel.PawnList.Error.FactionPawnFailed>
+  <EdB.PC.Panel.PawnList.Error.MustSelectFaction>Must select a faction</EdB.PC.Panel.PawnList.Error.MustSelectFaction>
+  <EdB.PC.Panel.PawnList.Load>Load...</EdB.PC.Panel.PawnList.Load>
   <EdB.PC.Panel.PawnList.PawnCount>({0})</EdB.PC.Panel.PawnList.PawnCount>
+  <EdB.PC.Panel.PawnList.SelectFaction>Select From a Faction Template</EdB.PC.Panel.PawnList.SelectFaction>
 
   <EdB.PC.Panel.RelationshipsOther.Title>Other Relationships</EdB.PC.Panel.RelationshipsOther.Title>
 

@@ -176,7 +176,7 @@ namespace EdB.PrepareCarefully {
                 return default(T);
             }
             if (typeof(T).IsAssignableFrom(o.GetType())) {
-                return (T)property.GetValue(target);
+                return (T)o;
             }
             return default(T);
         }
@@ -188,6 +188,21 @@ namespace EdB.PrepareCarefully {
             }
             method.Invoke(target, args ?? new object[] { });
             return true;
+        }
+
+        public static T InvokeFunctionMethod<T>(object target, string name, object[] args = null) {
+            MethodInfo method = Method(target.GetType(), name);
+            if (method == null) {
+                return default(T);
+            }
+            object o = method.Invoke(target, args ?? new object[] { });
+            if (o == null) {
+                return default(T);
+            }
+            if (typeof(T).IsAssignableFrom(o.GetType())) {
+                return (T)o;
+            }
+            return default(T);
         }
 
         public static FieldInfo GetPublicField(Type type, string name) {

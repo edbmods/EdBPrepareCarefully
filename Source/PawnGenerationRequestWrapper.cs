@@ -18,6 +18,7 @@ namespace EdB.PrepareCarefully {
         private Gender? fixedGender = null;
         private bool worldPawnFactionDoesntMatter = false;
         private bool mustBeCapableOfViolence = false;
+        private Ideo fixedIdeology = null;
         public PawnGenerationRequestWrapper() {
         }
         private PawnGenerationRequest CreateRequest() {
@@ -26,6 +27,46 @@ namespace EdB.PrepareCarefully {
             //string fixedBirthName = null, 
             //RoyalTitleDef fixedTitle = null)
 
+            /*
+             * PawnKindDef kind
+             * Faction faction = null
+             * PawnGenerationContext context = PawnGenerationContext.NonPlayer
+             * int tile = -1
+             * bool forceGenerateNewPawn = false
+             * bool newborn = false
+             * bool allowDead = false
+             * bool allowDowned = false
+             * bool canGeneratePawnRelations = true
+             * bool mustBeCapableOfViolence = false
+             * float colonistRelationChanceFactor = 1
+             * bool forceAddFreeWarmLayerIfNeeded = false
+             * bool allowGay = true
+             * bool allowFood = true
+             * bool allowAddictions = true
+             * bool inhabitant = false
+             * bool certainlyBeenInCryptosleep = false
+             * bool forceRedressWorldPawnIfFormerColonist = false
+             * bool worldPawnFactionDoesntMatter = false
+             * float biocodeWeaponChance = 0
+             * float biocodeApparelChance = 0
+             * Pawn extraPawnForExtraRelationChance = null
+             * float relationWithExtraPawnChanceFactor = 1
+             * Predicate<Pawn> validatorPreGear = null
+             * Predicate<Pawn> validatorPostGear = null
+             * IEnumerable<TraitDef> forcedTraits = null
+             * IEnumerable<TraitDef> prohibitedTraits = null
+             * float? minChanceToRedressWorldPawn = null
+             * float? fixedBiologicalAge = null
+             * float? fixedChronologicalAge = null
+             * Gender? fixedGender = null
+             * float? fixedMelanin = null
+             * string fixedLastName = null
+             * string fixedBirthName = null
+             * RoyalTitleDef fixedTitle = null
+             * Ideo fixedIdeo = null
+             * bool forceNoIdeo = false
+             * bool forceNoBackstory = false);
+             */
 
             return new PawnGenerationRequest(
                 kindDef, // PawnKindDef kind
@@ -48,6 +89,7 @@ namespace EdB.PrepareCarefully {
                 false, // bool forceRedressWorldPawnIfFormerColonist = false
                 worldPawnFactionDoesntMatter, // bool worldPawnFactionDoesntMatter = false
                 0f, //float biocodeWeaponChance = 0f, 
+                0f, //float biocodeApparelChance = 0f,
                 null, //Pawn extraPawnForExtraRelationChance = null, 
                 1f, //float relationWithExtraPawnChanceFactor = 1f, 
                 null, // Predicate < Pawn > validatorPreGear = null
@@ -56,12 +98,15 @@ namespace EdB.PrepareCarefully {
                 Enumerable.Empty<TraitDef>(), //IEnumerable<TraitDef> prohibitedTraits = null,
                 null, // float ? minChanceToRedressWorldPawn = null
                 fixedBiologicalAge, // float ? fixedBiologicalAge = null
-                null, // float ? fixedChronologicalAge = null
+                fixedChronologicalAge, // float ? fixedChronologicalAge = null
                 fixedGender, // Gender ? fixedGender = null
                 null, // float ? fixedMelanin = null
                 null, // string fixedLastName = null
                 null, //string fixedBirthName = null, 
-                null //RoyalTitleDef fixedTitle = null
+                null, //RoyalTitleDef fixedTitle = null
+                fixedIdeology, //Ideo fixedIdeo = null
+                false, //bool forceNoIdeo = false
+                false //bool forceNoBackstory = false
             );
         }
         public PawnGenerationRequest Request {
@@ -107,6 +152,11 @@ namespace EdB.PrepareCarefully {
         public bool MustBeCapableOfViolence {
             set {
                 mustBeCapableOfViolence = value;
+            }
+        }
+        public Ideo FixedIdeology {
+            set {
+                fixedIdeology = value;
             }
         }
     }

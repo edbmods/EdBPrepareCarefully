@@ -1,4 +1,4 @@
-﻿using RimWorld;
+using RimWorld;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -305,10 +305,8 @@ namespace EdB.PrepareCarefully {
             }
             rowGroups.Clear();
             rowGroups.Add(new WidgetTable<CustomPawn>.RowGroup("<b>" + "EdB.PC.AddParentChild.Header.SelectColonist".Translate() + "</b>",
-                PrepareCarefully.Instance.RelationshipManager.ColonyAndWorldPawns.Where((CustomPawn pawn) => {
-                    return pawn.Type == CustomPawnType.Colonist;
-                })));
-            List<CustomPawn> sortedHiddenPawns = PrepareCarefully.Instance.RelationshipManager.HiddenPawns.ToList();
+                PrepareCarefully.Instance.RelationshipManager.AvailableColonyPawns));
+            List<CustomPawn> sortedHiddenPawns = PrepareCarefully.Instance.RelationshipManager.HiddenParentChildPawns.ToList();
             sortedHiddenPawns.Sort((a, b) => {
                 if (a.Type != b.Type) {
                     return a.Type == CustomPawnType.Hidden ? -1 : 1;
@@ -320,9 +318,7 @@ namespace EdB.PrepareCarefully {
                 }
             });
             rowGroups.Add(new WidgetTable<CustomPawn>.RowGroup("<b>" + "EdB.PC.AddParentChild.Header.SelectWorldPawn".Translate() + "</b>",
-                PrepareCarefully.Instance.RelationshipManager.ColonyAndWorldPawns.Where((CustomPawn pawn) => {
-                    return pawn.Type != CustomPawnType.Colonist;
-                }).Concat(sortedHiddenPawns)));
+                PrepareCarefully.Instance.RelationshipManager.AvailableWorldPawns));
             WidgetTable<CustomPawn>.RowGroup newPawnGroup = new WidgetTable<CustomPawn>.RowGroup("<b>" + "EdB.PC.AddParentChild.Header.CreateTemporaryPawn".Translate() + "</b>", PrepareCarefully.Instance.RelationshipManager.TemporaryPawns);
             rowGroups.Add(newPawnGroup);
             DialogSelectParentChildPawn pawnDialog = new DialogSelectParentChildPawn() {
@@ -361,10 +357,10 @@ namespace EdB.PrepareCarefully {
             }
             rowGroups.Clear();
             rowGroups.Add(new WidgetTable<CustomPawn>.RowGroup("<b>" + "EdB.PC.AddParentChild.Header.SelectColonist".Translate() + "</b>",
-                PrepareCarefully.Instance.RelationshipManager.ColonyAndWorldPawns.Where((CustomPawn pawn) => {
+                PrepareCarefully.Instance.RelationshipManager.ColonyAndWorldPawnsForRelationships.Where((CustomPawn pawn) => {
                     return pawn.Type == CustomPawnType.Colonist;
                 })));
-            List<CustomPawn> sortedHiddenPawns = PrepareCarefully.Instance.RelationshipManager.HiddenPawns.ToList();
+            List<CustomPawn> sortedHiddenPawns = PrepareCarefully.Instance.RelationshipManager.HiddenParentChildPawns.ToList();
             sortedHiddenPawns.Sort((a, b) => {
                 if (a.Type != b.Type) {
                     return a.Type == CustomPawnType.Hidden ? -1 : 1;
@@ -376,9 +372,7 @@ namespace EdB.PrepareCarefully {
                 }
             });
             rowGroups.Add(new WidgetTable<CustomPawn>.RowGroup("<b>" + "EdB.PC.AddParentChild.Header.SelectWorldPawn".Translate() + "</b>",
-                PrepareCarefully.Instance.RelationshipManager.ColonyAndWorldPawns.Where((CustomPawn pawn) => {
-                    return pawn.Type != CustomPawnType.Colonist;
-                }).Concat(sortedHiddenPawns)));
+                PrepareCarefully.Instance.RelationshipManager.AvailableWorldPawns.Concat(sortedHiddenPawns)));
             WidgetTable<CustomPawn>.RowGroup newPawnGroup = new WidgetTable<CustomPawn>.RowGroup("EdB.PC.AddParentChild.Header.CreateTemporaryPawn".Translate(), PrepareCarefully.Instance.RelationshipManager.TemporaryPawns);
             rowGroups.Add(newPawnGroup);
             DialogSelectParentChildPawn pawnDialog = new DialogSelectParentChildPawn() {

@@ -40,7 +40,8 @@ namespace EdB.PrepareCarefully {
                 Faction = pawn.Faction,
                 FixedBiologicalAge = pawn.ageTracker.AgeBiologicalYears,
                 FixedChronologicalAge = pawn.ageTracker.AgeChronologicalYears,
-                FixedGender = pawn.gender
+                FixedGender = pawn.gender,
+                FixedIdeology = pawn.Ideo
             };
             Pawn result = AttemptToGeneratePawn(request.Request);
             return result;
@@ -66,7 +67,8 @@ namespace EdB.PrepareCarefully {
             Faction faction = PrepareCarefully.Instance.Providers.Factions.GetFaction(factionDef);
             PawnGenerationRequest req = new PawnGenerationRequestWrapper() {
                 Faction = faction,
-                KindDef = kindDef
+                KindDef = kindDef,
+                FixedIdeology = faction.ideos.GetRandomIdeoForNewPawn()
             }.Request;
             Pawn result = AttemptToGeneratePawn(req);
             return result;
@@ -81,7 +83,8 @@ namespace EdB.PrepareCarefully {
             PawnGenerationRequest req = new PawnGenerationRequestWrapper() {
                 Faction = faction,
                 KindDef = kindDef,
-                FixedGender = gender
+                FixedGender = gender,
+                FixedIdeology = faction.ideos.GetRandomIdeoForNewPawn()
             }.Request;
             Pawn result = AttemptToGeneratePawn(req);
             return result;

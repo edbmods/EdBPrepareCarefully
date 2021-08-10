@@ -15,6 +15,7 @@ namespace EdB.PrepareCarefully {
         public delegate void AddPawnHandler(bool startingPawn);
         public delegate void AddFactionPawnHandler(FactionDef def, bool startingPawn);
         public delegate void AddPawnWithPawnKindHandler(PawnKindDef def, bool startingPawn);
+        public delegate void LoadCharacterHandler(string name);
 
         public event SelectPawnHandler PawnSelected;
         public event DeletePawnHandler PawnDeleted;
@@ -22,9 +23,11 @@ namespace EdB.PrepareCarefully {
         public event AddPawnHandler AddingPawn;
         public event AddPawnWithPawnKindHandler AddingPawnWithPawnKind;
         public event MaximizeHandler Maximize;
+        public event LoadCharacterHandler CharacterLoaded;
 
-        protected Rect RectButtonAdd;
+        protected Rect RectButtonQuickAdd;
         protected Rect RectButtonAdvancedAdd;
+        protected Rect RectButtonLoad;
         protected Rect RectEntry;
         protected Rect RectPortrait;
         protected Rect RectPortraitClip;
@@ -71,11 +74,11 @@ namespace EdB.PrepareCarefully {
             RectScrollFrame = new Rect(panelPadding.x, headerHeight, width + 1, height - panelPadding.y - headerHeight - buttonHeight + 6);
             RectScrollView = new Rect(0, 0, RectScrollFrame.width, RectScrollFrame.height);
 
-            RectButtonAdvancedAdd = new Rect(panelPadding.x + width - 26, height - buttonHeight + 6, 26, buttonHeight);
-            float addButtonWidth = 64;
-            RectButtonAdd = new Rect(RectButtonAdvancedAdd.x - 2 - addButtonWidth, RectButtonAdvancedAdd.y, addButtonWidth, buttonHeight);
+            float buttonWidth = width / 2f - entryPadding.x / 2f;
+            RectButtonQuickAdd = new Rect(PanelRect.width - 27, 10, 16, 16);
+            RectButtonLoad = new Rect(panelPadding.x, height - buttonHeight + 6, buttonWidth, buttonHeight);
+            RectButtonAdvancedAdd = new Rect(panelPadding.x + buttonWidth + entryPadding.x, RectButtonLoad.y, buttonWidth, buttonHeight);
 
-            float widthMinusPadding = width - entryPadding.x * 2;
             float portraitWidth = 68;
             float portraitHeight = Mathf.Floor(portraitWidth * 1.4f);
             RectPortrait = new Rect(-15, -14, portraitWidth, portraitHeight);
@@ -287,16 +290,38 @@ namespace EdB.PrepareCarefully {
                 scrollView.End(cursor);
                 GUI.EndGroup();
             }
-            
-            GUI.color = Color.white;
-            Text.Font = GameFont.Tiny;
-            if (Widgets.ButtonText(RectButtonAdd, "EdB.PC.Common.Add".Translate(), true, false, true)) {
+
+
+            // Quick Add button.
+            if (RectButtonQuickAdd.Contains(Event.current.mousePosition)) {
+                GUI.color = Style.ColorButtonHighlight;
+            }
+            else {
+                GUI.color = Style.ColorButton;
+            }
+            GUI.DrawTexture(RectButtonQuickAdd, Textures.TextureButtonAdd);
+            if (Widgets.ButtonInvisible(RectButtonQuickAdd, false)) {
                 SoundDefOf.Click.PlayOneShotOnCamera();
                 AddingPawn(StartingPawns);
             }
-            if (Widgets.ButtonText(RectButtonAdvancedAdd, "...", true, false, true)) {
+
+            GUI.color = Color.white;
+            Text.Font = GameFont.Tiny;
+
+            // Load button
+            if (Widgets.ButtonText(RectButtonLoad, "EdB.PC.Panel.PawnList.Load".Translate(), true, false, true)) {
+                Find.WindowStack.Add(new Dialog_LoadColonist(
+                    (string name) => {
+                        CharacterLoaded(name);
+                    }
+                ));
+            }
+
+            // Advanced Add button
+            if (Widgets.ButtonText(RectButtonAdvancedAdd, "EdB.PC.Panel.PawnList.Add".Translate(), true, false, true)) {
                 ShowPawnKindDialog();
             }
+
             Text.Font = GameFont.Small;
             Text.Anchor = TextAnchor.UpperLeft;
 
@@ -336,17 +361,25 @@ namespace EdB.PrepareCarefully {
         protected void ShowPawnKindDialog() {
             HashSet<PawnKindDef> disabled = new HashSet<PawnKindDef>();
             rowGroups.Clear();
+            IEnumerable<PawnKindDef> colonyPawnKinds = PrepareCarefully.Instance.Providers.Factions.GetPawnKindsForFactionDef(Find.FactionManager.OfPlayer.def);
+            PawnKindDef defaultSelected = colonyPawnKinds.FirstOrDefault();
+            if (defaultSelected != null) {
+                rowGroups.Add(new WidgetTable<PawnKindDef>.RowGroup("<b>" + Find.FactionManager.OfPlayer.Name + "</b>", colonyPawnKinds));
+            }
             List<FactionDef> factionDefs = PrepareCarefully.Instance.Providers.Factions.NonPlayerHumanlikeFactionDefs;
             foreach (var factionDef in factionDefs) {
                 var pawnKindsEnumerable = PrepareCarefully.Instance.Providers.Factions.GetPawnKindsForFactionDef(factionDef);
                 if (pawnKindsEnumerable != null) {
                     List<PawnKindDef> pawnKinds = pawnKindsEnumerable.ToList();
                     if (pawnKinds.Count > 0) {
-                        rowGroups.Add(new WidgetTable<PawnKindDef>.RowGroup("<b>" + factionDef.LabelCap + "</b>", pawnKinds));
+                        rowGroups.Add(new WidgetTable<PawnKindDef>.RowGroup("<b>" + factionDef.LabelCap.ToString() + "</b>", pawnKinds));
                     }
                 }
             }
             PawnKindDef selected = PrepareCarefully.Instance.State.LastSelectedPawnKindDef;
+            if (selected == null) {
+                 selected = defaultSelected;
+            }
             DialogPawnKinds dialog = new DialogPawnKinds() {
                 HeaderLabel = "EdB.PC.Panel.PawnList.SelectFaction".Translate(),
                 SelectAction = (PawnKindDef pawnKind) => { selected = pawnKind; },

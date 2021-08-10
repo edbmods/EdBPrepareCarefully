@@ -56,7 +56,7 @@ namespace EdB.PrepareCarefully {
             public static void FillBackstorySlotShuffled(Verse.Pawn pawn, BackstorySlot slot, ref Backstory backstory, Backstory backstoryOtherSlot, List<BackstoryCategoryFilter> backstoryCategories, FactionDef factionType) {
                 ReflectionCache.Instance.PawnBioAndNameGenerator_FillBackstorySlotShuffled.Invoke(null,
                     new object[] {
-                        pawn, slot, backstory, backstoryOtherSlot, backstoryCategories, factionType
+                        pawn, slot, backstory, backstoryOtherSlot, backstoryCategories, factionType, null
                     }
                 );
             }

@@ -161,7 +161,7 @@ namespace EdB.PrepareCarefully {
                     Messages.Message("EdB.PC.Dialog.Preset.Error.RelationshipFailed".Translate(), MessageTypeDefOf.ThreatBig);
                 }
             }
-            loadout.RelationshipManager.AddRelationships(allRelationships);
+            loadout.RelationshipManager.InitializeWithRelationships(allRelationships);
 
             if (preset.parentChildGroups != null) {
                 foreach (var groupRecord in preset.parentChildGroups) {

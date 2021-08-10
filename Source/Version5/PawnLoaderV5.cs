@@ -144,7 +144,7 @@ namespace EdB.PrepareCarefully {
                     pawnThingDef = thingDef;
                 }
                 else {
-                    Logger.Warning("Pawn's thing definition {" + record.thingDef + "} was not found.  Defaulting to the thing definition for humans.");
+                    Logger.Warning("Pawn's thing definition {" + record.thingDef + "} was not found.  Defaulting to Human thing definition.");
                 }
             }
             else {
@@ -157,6 +157,9 @@ namespace EdB.PrepareCarefully {
                 FixedChronologicalAge = record.chronologicalAge,
                 FixedGender = record.gender
             };
+            Faction playerFaction = Faction.OfPlayerSilentFail;
+            generationRequest.FixedIdeology = playerFaction?.ideos?.PrimaryIdeo;
+
             // Add a faction to the generation request, if possible.
             if (record.originalFactionDef != null) {
                 FactionDef factionDef = DefDatabase<FactionDef>.GetNamedSilentFail(record.originalFactionDef);
@@ -164,6 +167,7 @@ namespace EdB.PrepareCarefully {
                     Faction faction = PrepareCarefully.Instance.Providers.Factions.GetFaction(factionDef);
                     if (faction != null) {
                         generationRequest.Faction = faction;
+                        generationRequest.FixedIdeology = faction?.ideos?.PrimaryIdeo;
                     }
                     else {
                         Logger.Warning("No faction found for faction definition {" + record.originalFactionDef + "}");
@@ -239,13 +243,17 @@ namespace EdB.PrepareCarefully {
             pawn.NickName = record.nickName;
             pawn.LastName = record.lastName;
 
+            if (ModsConfig.IdeologyActive && record.favoriteColor.HasValue) {
+                pawn.Pawn.story.favoriteColor = record.favoriteColor;
+            }
+
             if (record.originalFactionDef != null) {
                 pawn.OriginalFactionDef = DefDatabase<FactionDef>.GetNamedSilentFail(record.originalFactionDef);
             }
             pawn.OriginalKindDef = pawnKindDef;
 
             if (pawn.Type == CustomPawnType.Colonist) {
-                Faction playerFaction = Faction.OfPlayerSilentFail;
+                playerFaction = Faction.OfPlayerSilentFail;
                 if (playerFaction != null) {
                     pawn.Pawn.SetFactionDirect(playerFaction);
                 }
@@ -298,10 +306,11 @@ namespace EdB.PrepareCarefully {
                 partialFailure = true;
             }
 
-            pawn.HeadGraphicPath = record.headGraphicPath;
-            if (pawn.Pawn.story != null) {
-                pawn.Pawn.story.hairColor = record.hairColor;
+            if (!String.IsNullOrWhiteSpace(record.headGraphicPath)) {
+                pawn.HeadGraphicPath = record.headGraphicPath;
             }
+
+            pawn.HairColor = record.hairColor;
 
             if (record.melanin >= 0.0f) {
                 pawn.MelaninLevel = record.melanin;
@@ -346,6 +355,33 @@ namespace EdB.PrepareCarefully {
             if (bodyType != null) {
                 pawn.BodyType = bodyType;
             }
+
+            BeardDef beardDef = null;
+            if (record.beard != null) {
+                beardDef = DefDatabase<BeardDef>.GetNamedSilentFail(record.beard);
+            }
+            if (beardDef == null) {
+                beardDef = BeardDefOf.NoBeard;
+            }
+            pawn.Beard = beardDef;
+
+            TattooDef faceTattooDef = null;
+            if (record.bodyTattoo != null) {
+                faceTattooDef = DefDatabase<TattooDef>.GetNamedSilentFail(record.faceTattoo);
+            }
+            if (faceTattooDef == null) {
+                faceTattooDef = TattooDefOf.NoTattoo_Face;
+            }
+            pawn.FaceTattoo = faceTattooDef;
+
+            TattooDef bodyTattooDef = null;
+            if (record.bodyTattoo != null) {
+                bodyTattooDef = DefDatabase<TattooDef>.GetNamedSilentFail(record.bodyTattoo);
+            }
+            if (bodyTattooDef == null) {
+                bodyTattooDef = TattooDefOf.NoTattoo_Body;
+            }
+            pawn.BodyTattoo = bodyTattooDef;
 
             // Load pawn comps
             //Logger.Debug("pre-copy comps xml: " + record.compsXml);

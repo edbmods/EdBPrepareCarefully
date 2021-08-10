@@ -148,7 +148,7 @@ namespace EdB.PrepareCarefully {
         }
 
         protected void InitializeProviders() {
-            // Initialize providers.  Note that the initialize order may matter as some providers depend on others.
+            // Initialize providers.  Note that the initialization order may matter as some providers depend on others.
             // TODO: For providers that do depend on other providers, consider adding constructor arguments for those
             // required providers so that they don't need to go back to this singleton to get the references.
             // If those dependencies get complicated, we might want to separate out the provider construction from
@@ -171,6 +171,15 @@ namespace EdB.PrepareCarefully {
             Providers.PawnLayers = new ProviderPawnLayers();
             Providers.AgeLimits = new ProviderAgeLimits();
             Providers.Backstories = new ProviderBackstories();
+            Providers.Beards = new ProviderBeards() {
+                AlienRaceProvider = Providers.AlienRaces
+            };
+            Providers.FaceTattoos = new ProviderFaceTattoos() {
+                AlienRaceProvider = Providers.AlienRaces
+            };
+            Providers.BodyTattoos = new ProviderBodyTattoos() {
+                AlienRaceProvider = Providers.AlienRaces
+            };
         }
 
         // TODO:
@@ -239,6 +248,10 @@ namespace EdB.PrepareCarefully {
                     int count = (int)animalCountField.GetValue(animal);
                     for (int i = 0; i < count; i++) {
                         PawnKindDef animalKindDef = RandomPet(animal);
+                        if (animalKindDef == null) {
+                            Logger.Warning("Could not add random pet");
+                            continue;
+                        }
                         equipmentDatabase.PreloadDefinition(animalKindDef.race);
 
                         List<EquipmentRecord> entries = PrepareCarefully.Instance.EquipmentDatabase.Animals.FindAll((EquipmentRecord e) => {
@@ -260,12 +273,33 @@ namespace EdB.PrepareCarefully {
         }
 
         private static PawnKindDef RandomPet(ScenPart_StartingAnimal startingAnimal) {
-            FieldInfo animalKindField = typeof(ScenPart_StartingAnimal).GetField("animalKind", BindingFlags.Instance | BindingFlags.NonPublic);
-
-            PawnKindDef animalKindDef = (PawnKindDef)animalKindField.GetValue(startingAnimal);
+            PawnKindDef animalKindDef = QuietReflectionUtil.GetFieldValue<PawnKindDef>(startingAnimal, "animalKind");
+            if (animalKindDef != null) {
+                return animalKindDef;
+            }
             if (animalKindDef == null) {
                 IEnumerable<PawnKindDef> animalKindDefs = Reflection.ScenPart_StartingAnimal.RandomPets(startingAnimal);
-                animalKindDef = animalKindDefs.RandomElementByWeight((PawnKindDef td) => td.RaceProps.petness);
+                if (animalKindDefs != null) {
+                    var enumerator = animalKindDefs.GetEnumerator();
+                    if (enumerator != null) {
+                        List<PawnKindDef> validAnimalKindDefs = new List<PawnKindDef>();
+                        try {
+                            while (enumerator.MoveNext()) {
+                                PawnKindDef kindDef = enumerator.Current;
+                                if (kindDef != null) {
+                                    validAnimalKindDefs.Add(kindDef);
+                                }
+                            }
+                        }
+                        catch (Exception) {
+                            Logger.Error("There was an error while selecting a random pet.  We could not select from the full range of available animals.  " +
+                                "This may be caused by a bad definition in another mod, or you may be missing a mod that's required by another mod.");
+                        }
+                        if (validAnimalKindDefs.Count > 0) {
+                            animalKindDef = validAnimalKindDefs.RandomElementByWeight((PawnKindDef td) => td.RaceProps.petness);
+                        }
+                    }
+                }
             }
             return animalKindDef;
         }
@@ -517,31 +551,82 @@ namespace EdB.PrepareCarefully {
             }
         }
 
-        public void InitializePawns() {
-            this.customPawnToOriginalPawnMap.Clear();
-            this.originalPawnToCustomPawnMap.Clear();
-            int pawnCount = Verse.Find.GameInitData.startingAndOptionalPawns.Count;
-            int startingPawnCount = Verse.Find.GameInitData.startingPawnCount;
-            foreach (Pawn originalPawn in Verse.Find.GameInitData.startingAndOptionalPawns) {
-                Pawn copiedPawn = originalPawn.Copy();
-                CustomPawn customPawn = new CustomPawn(copiedPawn);
-                customPawnToOriginalPawnMap.Add(customPawn, originalPawn);
-                originalPawnToCustomPawnMap.Add(originalPawn, customPawn);
+        public class PawnPayload : IExposable {
+            public List<Pawn> pawns = new List<Pawn>();
+            public List<Pawn> worldPawns = new List<Pawn>();
+            void IExposable.ExposeData() {
+                Scribe_Collections.Look<Pawn>(ref this.pawns, "pawns", LookMode.Deep, null);
+                Scribe_Collections.Look<Pawn>(ref this.worldPawns, "worldPawns", LookMode.Deep, null);
             }
+        }
+
+        public Dictionary<string, IExposable> PopulateCrossReferencesForInitialPawnCopying() {
+            var crossRefs = new Dictionary<string, IExposable>();
+            foreach (var i in Verse.Find.World.ideoManager.IdeosListForReading) {
+                crossRefs.Add(i.GetUniqueLoadID(), i);
+            }
+            foreach (var i in Verse.Find.World.factionManager.AllFactions) {
+                crossRefs.Add(i.GetUniqueLoadID(), i);
+            }
+            return crossRefs;
+        }
+
+        public void InitializePawns() {
+            //Verse.Find.World.worldPawns.LogWorldPawns();
+            PawnPayload payload = new PawnPayload() {
+                pawns = Verse.Find.GameInitData.startingAndOptionalPawns.ConvertAll(o => o),
+                worldPawns = Verse.Find.World.worldPawns.AllPawnsAliveOrDead.FindAll(o => !o.DestroyedOrNull())
+            };
+            PawnPayload copiedPayload = UtilityCopy.CopyExposable(payload, PopulateCrossReferencesForInitialPawnCopying());
+
+            int startingPawnCount = Verse.Find.GameInitData.startingPawnCount;
+            int pawnCount = Verse.Find.GameInitData.startingAndOptionalPawns.Count;
             for (int i = 0; i < pawnCount; i++) {
-                Pawn originalPawn = Verse.Find.GameInitData.startingAndOptionalPawns[i];
-                CustomPawn customPawn = originalPawnToCustomPawnMap[originalPawn];
-                customPawn.Type = i < startingPawnCount ? CustomPawnType.Colonist : CustomPawnType.World;
+                Pawn copiedPawn = copiedPayload.pawns[i];
+                CustomPawn customPawn = new CustomPawn(copiedPawn) {
+                    Type = i < startingPawnCount ? CustomPawnType.Colonist : CustomPawnType.World
+                };
                 this.AddPawn(customPawn);
+            }
+
+            copiedPawnToOriginalPawnLookup.Clear();
+            originalPawnToCopiedPawnLookup.Clear();
+            int index = -1;
+            foreach (var hiddenPawn in copiedPayload.worldPawns) {
+                index++;
+                CustomPawn customPawn = new CustomPawn(hiddenPawn) {
+                    Type = CustomPawnType.Hidden
+                };
+                this.AddPawn(customPawn);
+                copiedPawnToOriginalPawnLookup.Add(customPawn, payload.worldPawns[index]);
+                originalPawnToCopiedPawnLookup.Add(payload.worldPawns[index], customPawn);
+            }
+        }
+
+        private Dictionary<CustomPawn, Pawn> copiedPawnToOriginalPawnLookup = new Dictionary<CustomPawn, Pawn>();
+        private Dictionary<Pawn, CustomPawn> originalPawnToCopiedPawnLookup = new Dictionary<Pawn, CustomPawn>();
+
+        public Pawn FindOriginalPawnFromCopy(CustomPawn customPawn) {
+            if (copiedPawnToOriginalPawnLookup.ContainsKey(customPawn)) {
+                return copiedPawnToOriginalPawnLookup[customPawn];
+            }
+            else {
+                return null;
+            }
+        }
+
+        public CustomPawn FindCopiedPawnFromOriginal(Pawn pawn) {
+            if (originalPawnToCopiedPawnLookup.ContainsKey(pawn)) {
+                return originalPawnToCopiedPawnLookup[pawn];
+            }
+            else {
+                return null;
             }
         }
 
         public void InitializeRelationshipManager(List<CustomPawn> pawns) {
-            List<CustomPawn> customPawns = new List<CustomPawn>();
-            foreach (Pawn pawn in Verse.Find.GameInitData.startingAndOptionalPawns) {
-                customPawns.Add(originalPawnToCustomPawnMap[pawn]);
-            }
-            relationshipManager = new RelationshipManager(Verse.Find.GameInitData.startingAndOptionalPawns, customPawns);
+            relationshipManager = new RelationshipManager();
+            relationshipManager.InitializeWithPawns(pawns);
         }
 
     }

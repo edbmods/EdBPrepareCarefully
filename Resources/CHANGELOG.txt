@@ -1,5 +1,27 @@
  _____________________________________________________________________________
  
+   Version 1.3.1
+ _____________________________________________________________________________
+
+  - Added support for game version 1.3
+    - Added beard layer
+    - Added tatoo layers
+    - Added eye covering layer
+    - Added favorite color selector when the Ideology expansion is enabled
+  - Moved around the button for loading pawns into the pawn list panel to
+    make room for the favorite color selector.
+  - The "Add..." button in the pawn list panel now adds a pawn from a faction
+    template.  Use the "[+]" button at the top of the panel to quickly add a
+    new colonist without popping open the extra dialog.
+  - Changed the way that color selection works for apparel made from "stuff".
+    Apparel is no longer "tinted" based on the material color and can instead
+    be given any color that you want.
+  - Changed the way that copies of pawns are made when starting the mod.
+    Hopefully it will be  more flexible in the way that it interacts with
+    other mods.
+
+ _____________________________________________________________________________
+ 
    Version 1.2.1
  _____________________________________________________________________________
 

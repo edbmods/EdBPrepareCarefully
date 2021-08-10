@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Text.RegularExpressions;
+using UnityEngine;
 using Verse;
 namespace EdB.PrepareCarefully {
     public class ControllerPawns {
@@ -307,7 +308,8 @@ namespace EdB.PrepareCarefully {
                     Faction = faction,
                     KindDef = kindDef,
                     Context = PawnGenerationContext.NonPlayer,
-                    WorldPawnFactionDoesntMatter = false
+                    WorldPawnFactionDoesntMatter = false,
+                    FixedIdeology = Faction.OfPlayerSilentFail?.ideos?.PrimaryIdeo
                 }.Request);
                 if (pawn.equipment != null) {
                     pawn.equipment.DestroyAllEquipment(DestroyMode.Vanish);
@@ -369,6 +371,10 @@ namespace EdB.PrepareCarefully {
         }
         public void AddImplant(Implant implant) {
             state.CurrentPawn.AddImplant(implant);
+        }
+
+        public void UpdateFavoriteColor(Color? color) {
+            state.CurrentPawn.Pawn.story.favoriteColor = color;
         }
     }
 }
