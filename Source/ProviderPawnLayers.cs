@@ -39,9 +39,15 @@ namespace EdB.PrepareCarefully {
                 InitializeHairLayer(pawnDef, gender),
                 InitializeBeardLayer(pawnDef, gender),
                 InitializeHeadLayer(pawnDef, gender),
-                InitializeBodyLayer(pawnDef, gender),
-                InitializeFaceTattooLayer(pawnDef, gender),
-                InitializeBodyTattooLayer(pawnDef, gender),
+                InitializeBodyLayer(pawnDef, gender)
+            };
+
+            if (ModsConfig.IdeologyActive) {
+                defaultLayers.Add(InitializeFaceTattooLayer(pawnDef, gender));
+                defaultLayers.Add(InitializeBodyTattooLayer(pawnDef, gender));
+            }
+
+            defaultLayers.AddRange(new PawnLayer[] {
                 pantsLayer,
                 bottomClothingLayer,
                 middleClothingLayer,
@@ -49,7 +55,8 @@ namespace EdB.PrepareCarefully {
                 hatLayer,
                 accessoryLayer,
                 eyeCoveringLayer
-            };
+            });
+
             return defaultLayers;
         }
         private List<PawnLayer> InitializeAlienPawnLayers(ThingDef pawnDef, Gender gender, AlienRace race) {
@@ -82,10 +89,12 @@ namespace EdB.PrepareCarefully {
                 }
             }
 
-            layers.AddRange(new PawnLayer[] {
-                InitializeFaceTattooLayer(pawnDef, gender),
-                InitializeBodyTattooLayer(pawnDef, gender),
-            });
+            if (ModsConfig.IdeologyActive) {
+                    layers.AddRange(new PawnLayer[] {
+                    InitializeFaceTattooLayer(pawnDef, gender),
+                    InitializeBodyTattooLayer(pawnDef, gender),
+                });
+            }
 
             layers.AddRange(new PawnLayer[] {
                 pantsLayer,

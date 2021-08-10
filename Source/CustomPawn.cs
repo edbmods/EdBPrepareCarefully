@@ -171,8 +171,10 @@ namespace EdB.PrepareCarefully {
                 return pawn.style.FaceTattoo;
             }
             set {
-                pawn.style.FaceTattoo = value;
-                MarkPortraitAsDirty();
+                if (ModsConfig.IdeologyActive) {
+                    pawn.style.FaceTattoo = value;
+                    MarkPortraitAsDirty();
+                }
             }
         }
 
@@ -181,8 +183,10 @@ namespace EdB.PrepareCarefully {
                 return pawn.style.BodyTattoo;
             }
             set {
-                pawn.style.BodyTattoo = value;
-                MarkPortraitAsDirty();
+                if (ModsConfig.IdeologyActive) {
+                    pawn.style.BodyTattoo = value;
+                    MarkPortraitAsDirty();
+                }
             }
         }
 
