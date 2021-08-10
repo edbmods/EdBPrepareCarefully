@@ -62,6 +62,7 @@ namespace EdB.PrepareCarefully {
         private List<PawnLayer> InitializeAlienPawnLayers(ThingDef pawnDef, Gender gender, AlienRace race) {
             List<PawnLayer> layers = new List<PawnLayer>() {
                 InitializeHairLayer(pawnDef, gender),
+                InitializeBeardLayer(pawnDef, gender),
                 InitializeHeadLayer(pawnDef, gender),
                 InitializeBodyLayer(pawnDef, gender),
             };
