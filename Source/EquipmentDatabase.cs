@@ -90,7 +90,13 @@ namespace EdB.PrepareCarefully {
 
         protected void UpdateLoadingPhase(LoadingPhase phase) {
             if (phase != LoadingPhase.Loaded) {
-                LoadingProgress.enumerator = DefDatabase<ThingDef>.AllDefs.GetEnumerator();
+                // Get all of the same equipment available from ScenPart_ThingCount.PossibleThingDefs()
+                LoadingProgress.enumerator = DefDatabase<ThingDef>.AllDefs
+                    .Where((ThingDef d) => (d.category == ThingCategory.Item
+                            && d.scatterableOnMapGen && !d.destroyOnDrop)
+                            || (d.category == ThingCategory.Building && d.Minifiable)
+                            || (d.category == ThingCategory.Building && d.scatterableOnMapGen))
+                    .GetEnumerator();
             }
             LoadingProgress.phase = phase;
         }
@@ -215,33 +221,46 @@ namespace EdB.PrepareCarefully {
             return false;
         }
 
+        private void DiscardDebug(ThingDef def, string message) {
+            //Logger.Warning(String.Format("{0}: {1}", def.defName, message));
+        }
+
         public EquipmentType ClassifyThingDef(ThingDef def) {
             if (def.mote != null) {
+                DiscardDebug(def, "Discarding because it is a mote");
                 return TypeDiscard;
             }
             if (def.isUnfinishedThing) {
+                DiscardDebug(def, "Discarding because it is an unfinished thing");
                 return TypeDiscard;
             }
             if (!def.scatterableOnMapGen) {
+                DiscardDebug(def, "Discarding because it is not scatterable");
                 return TypeDiscard;
             }
             if (def.destroyOnDrop) {
+                DiscardDebug(def, "Discarding because it is destroyed on drop");
                 return TypeDiscard;
             }
             if (BelongsToCategoryOrParentCategory(def, ThingCategoryDefOf.Corpses)) {
+                DiscardDebug(def, "Discarding because it is a corpse");
                 return TypeDiscard;
             }
             if (BelongsToCategoryOrParentCategory(def, ThingCategoryDefOf.Chunks)) {
+                DiscardDebug(def, "Discarding because it is a chunk");
                 return TypeDiscard;
             }
             if (def.IsBlueprint) {
+                DiscardDebug(def, "Discarding because it is a blueprint");
                 return TypeDiscard;
             }
             if (def.IsFrame) {
+                DiscardDebug(def, "Discarding because it is a frame");
                 return TypeDiscard;
             }
             if (def.plant != null) {
-                return TypeDiscard;
+                //DiscardDebug(def, "Discarding because it is a plant");
+                return TypeResources;
             }
             if (def.IsApparel) {
                 return TypeApparel;
@@ -325,7 +344,7 @@ namespace EdB.PrepareCarefully {
                 return TypeResources;
             }
 
-            return null;
+            return TypeResources;
         }
 
         // A duplicate of ThingDef.IsWithinCategory(), but with checks to prevent infinite recursion.

@@ -269,12 +269,6 @@ namespace EdB.PrepareCarefully {
         }
 
         protected void ReplaceScenarioParts(Scenario actualScenario, Scenario vanillaFriendlyScenario) {
-            // Create a lookup of all of the scenario types that we want to replace.
-            HashSet<string> scenarioPartsToReplace = new HashSet<string>() {
-                typeof(RimWorld.ScenPart_StartingThing_Defined).FullName,
-                typeof(RimWorld.ScenPart_ScatterThingsNearPlayerStart).FullName,
-                typeof(RimWorld.ScenPart_StartingAnimal).FullName
-            };
 
             // Create lists to hold the new scenario parts.
             List<ScenPart> actualScenarioParts = new List<ScenPart>();
@@ -289,16 +283,17 @@ namespace EdB.PrepareCarefully {
             // Replace the pawn count in the configure pawns scenario part to reflect the number of
             // pawns that were selected in Prepare Carefully.
             foreach (var part in originalParts) {
-                ScenPart_ConfigPage_ConfigureStartingPawns configurePawnPart = part as ScenPart_ConfigPage_ConfigureStartingPawns;
-                if (configurePawnPart == null) {
+                if (!(part is ScenPart_ConfigPage_ConfigureStartingPawns configurePawnPart)) {
                     continue;
                 }
                 configurePawnPart.pawnCount = Find.GameInitData.startingPawnCount;
             }
 
-            // Fill in each part list with only the scenario parts that we're not going to replace. 
+            // Fill in each part list with only the scenario parts that we're not going to replace.
+            int index = -1;
             foreach (var part in originalParts) {
-                if (!scenarioPartsToReplace.Contains(part.GetType().FullName)) {
+                index++;
+                if (!PrepareCarefully.Instance.ReplacedScenarioPartIndices.Contains(index)) {
                     actualScenarioParts.Add(part);
                     vanillaFriendlyScenarioParts.Add(part);
                 }

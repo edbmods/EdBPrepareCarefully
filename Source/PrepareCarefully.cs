@@ -192,10 +192,18 @@ namespace EdB.PrepareCarefully {
             return equipmentDatabase.AddThingDefWithStuff(key.ThingDef, key.StuffDef, type);
         }
 
+        // Use this set to keep track of which scenario parts we're replacing with our custom ones
+        public HashSet<int> ReplacedScenarioPartIndices = new HashSet<int>();
+
         protected void InitializeDefaultEquipment() {
+            int index = -1;
+            ReplacedScenarioPartIndices.Clear();
+
             // Go through all of the scenario steps that scatter resources near the player starting location and add
             // them to the resource/equipment list.
             foreach (ScenPart part in Verse.Find.Scenario.AllParts) {
+                index++;
+
                 ScenPart_ScatterThingsNearPlayerStart nearPlayerStart = part as ScenPart_ScatterThingsNearPlayerStart;
                 if (nearPlayerStart != null) {
                     FieldInfo thingDefField = typeof(ScenPart_ScatterThingsNearPlayerStart).GetField("thingDef", BindingFlags.Instance | BindingFlags.NonPublic);
@@ -214,6 +222,7 @@ namespace EdB.PrepareCarefully {
                     }
                     if (record != null) {
                         AddEquipment(record, count);
+                        ReplacedScenarioPartIndices.Add(index);
                     }
                 }
 
@@ -237,6 +246,7 @@ namespace EdB.PrepareCarefully {
                     }
                     if (entry != null) {
                         AddEquipment(entry, count);
+                        ReplacedScenarioPartIndices.Add(index);
                     }
                 }
 
@@ -263,6 +273,7 @@ namespace EdB.PrepareCarefully {
                         }
                         if (entry != null) {
                             AddEquipment(entry);
+                            ReplacedScenarioPartIndices.Add(index);
                         }
                         else {
                             Logger.Warning("Failed to add the expected scenario animal to list of selected equipment");
