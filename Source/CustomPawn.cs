@@ -995,7 +995,7 @@ namespace EdB.PrepareCarefully {
                         // if the user has selected another piece of apparel for that layer.  If so, check
                         // to see if it covers any of the same body parts.  If it does, it's a conflict.
                         PawnLayer disallowedLayer = PrepareCarefully.Instance.Providers.PawnLayers.FindLayerForApparelLayer(apparelLayer);
-                        if (this.selectedApparel[disallowedLayer] != null) {
+                        if (disallowedLayer != null && this.selectedApparel[disallowedLayer] != null) {
                             foreach (var group in this.selectedApparel[disallowedLayer].apparel.bodyPartGroups) {
                                 if (apparel.apparel.bodyPartGroups.Contains(group)) {
                                     ApparelConflict conflict = new ApparelConflict();
