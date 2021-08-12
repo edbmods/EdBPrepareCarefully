@@ -96,7 +96,9 @@ namespace EdB.PrepareCarefully {
                     string fullPath = text + "/" + current;
                     CustomHeadType headType = CreateHumanHeadTypeFromGenderedGraphicPath(fullPath);
                     result.AddHeadType(headType);
-                    pathDictionary.Add(fullPath, headType);
+                    if (!pathDictionary.ContainsKey(fullPath)) {
+                        pathDictionary.Add(fullPath, headType);
+                    }
                 }
             }
             return result;

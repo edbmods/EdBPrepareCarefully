@@ -249,6 +249,7 @@ namespace EdB.PrepareCarefully {
                         else {
                             result.PrimaryColors = new List<Color>();
                         }
+
                         if (secondaryGenerator != null) {
                             result.HasSecondaryColor = true;
                             result.SecondaryColors = secondaryGenerator.GetColorList();
