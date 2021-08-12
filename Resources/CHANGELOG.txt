@@ -1,5 +1,16 @@
  _____________________________________________________________________________
  
+   Version 1.3.2
+ _____________________________________________________________________________
+
+  - Fixed the beard layer when the Alien Races mod is enabled
+  - Things added to a scenario that do no appear in the equipment list are no
+    longer lost when spawning items on the map.
+  - Fixed two issues that were causing Prepare Carefully to fail to initialize
+    when using certain alien races mods.
+
+ _____________________________________________________________________________
+ 
    Version 1.3.1
  _____________________________________________________________________________
 
