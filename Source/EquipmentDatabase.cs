@@ -95,7 +95,9 @@ namespace EdB.PrepareCarefully {
                     .Where((ThingDef d) => (d.category == ThingCategory.Item
                             && d.scatterableOnMapGen && !d.destroyOnDrop)
                             || (d.category == ThingCategory.Building && d.Minifiable)
-                            || (d.category == ThingCategory.Building && d.scatterableOnMapGen))
+                            || (d.category == ThingCategory.Building && d.scatterableOnMapGen)
+                            || (d.race != null && d.race.Animal && d.race.trainability != TrainabilityDefOf.None)
+                    )
                     .GetEnumerator();
             }
             LoadingProgress.phase = phase;
@@ -222,7 +224,7 @@ namespace EdB.PrepareCarefully {
         }
 
         private void DiscardDebug(ThingDef def, string message) {
-            //Logger.Warning(String.Format("{0}: {1}", def.defName, message));
+            //Logger.Debug(String.Format("{0}: {1}", def.defName, message));
         }
 
         public EquipmentType ClassifyThingDef(ThingDef def) {
@@ -259,8 +261,8 @@ namespace EdB.PrepareCarefully {
                 return TypeDiscard;
             }
             if (def.plant != null) {
-                //DiscardDebug(def, "Discarding because it is a plant");
-                return TypeResources;
+                DiscardDebug(def, "Discarding because it is a plant");
+                return TypeDiscard;
             }
             if (def.IsApparel) {
                 return TypeApparel;
