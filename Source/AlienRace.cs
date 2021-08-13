@@ -1,4 +1,4 @@
-﻿using RimWorld;
+using RimWorld;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -50,6 +50,12 @@ namespace EdB.PrepareCarefully {
             get; set;
         }
         public bool HasHair {
+            get; set;
+        }
+        public bool HasBeards {
+            get; set;
+        }
+        public bool HasTattoos {
             get; set;
         }
         public HashSet<string> HairTags {

@@ -52,7 +52,7 @@ namespace EdB.PrepareCarefully {
             if (alienRace == null) {
                 return HumanlikeBeards;
             }
-            if (!alienRace.HasHair) {
+            if (!alienRace.HasBeards) {
                 return noBeards;
             }
             return HumanlikeBeards;

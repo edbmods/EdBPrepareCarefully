@@ -60,12 +60,15 @@ namespace EdB.PrepareCarefully {
             return defaultLayers;
         }
         private List<PawnLayer> InitializeAlienPawnLayers(ThingDef pawnDef, Gender gender, AlienRace race) {
-            List<PawnLayer> layers = new List<PawnLayer>() {
-                InitializeHairLayer(pawnDef, gender),
-                InitializeBeardLayer(pawnDef, gender),
-                InitializeHeadLayer(pawnDef, gender),
-                InitializeBodyLayer(pawnDef, gender),
-            };
+            List<PawnLayer> layers = new List<PawnLayer>();
+            if (race.HasHair) {
+                layers.Add(InitializeHairLayer(pawnDef, gender));
+            }
+            if (race.HasBeards) {
+                layers.Add(InitializeBeardLayer(pawnDef, gender));
+            }
+            layers.Add(InitializeHeadLayer(pawnDef, gender));
+            layers.Add(InitializeBodyLayer(pawnDef, gender));
 
             if (race.Addons != null) {
                 OptionsHair optionsHair = PrepareCarefully.Instance.Providers.Hair.GetHairsForRace(pawnDef);
@@ -90,8 +93,8 @@ namespace EdB.PrepareCarefully {
                 }
             }
 
-            if (ModLister.IdeologyInstalled) {
-                    layers.AddRange(new PawnLayer[] {
+            if (ModLister.IdeologyInstalled && race.HasTattoos) {
+                layers.AddRange(new PawnLayer[] {
                     InitializeFaceTattooLayer(pawnDef, gender),
                     InitializeBodyTattooLayer(pawnDef, gender),
                 });

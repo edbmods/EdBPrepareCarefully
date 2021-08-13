@@ -260,25 +260,52 @@ namespace EdB.PrepareCarefully {
                     }
                 }
 
-                // Hair properties.
-                object hairSettingsValue = GetFieldValue(raceDef, alienRaceObject, "hairSettings", true);
+                // Style settings
+                object styleSettingsValue = GetFieldValue(raceDef, alienRaceObject, "styleSettings", true);
+
                 result.HasHair = true;
-                if (hairSettingsValue != null) {
-                    bool? hasHair = GetFieldValueAsBool(raceDef, hairSettingsValue, "hasHair");
-                    if (hasHair != null) {
-                        result.HasHair = hasHair.Value;
-                    }
-                    var hairTagCollection = GetFieldValueAsCollection(raceDef, hairSettingsValue, "hairTags");
-                    if (hairTagCollection != null) {
-                        var hairTags = new HashSet<string>();
-                        foreach (var o in hairTagCollection) {
-                            string tag = o as string;
-                            if (tag != null) {
-                                hairTags.Add(tag);
+                result.HasBeards = true;
+                result.HasTattoos = true;
+                if (styleSettingsValue is System.Collections.IDictionary styleSettings) {
+
+                    // Hair properties.
+                    if (styleSettings.Contains(typeof(HairDef))) {
+                        object hairSettings = styleSettings[typeof(HairDef)];
+                        bool? hasStyle = GetFieldValueAsBool(raceDef, hairSettings, "hasStyle");
+                        if (hasStyle.HasValue && !hasStyle.Value) {
+                            result.HasHair = false;
+                        }
+
+                        var hairTagCollection = GetFieldValueAsCollection(raceDef, hairSettings, "styleTagsOverride");
+                        if (hairTagCollection != null) {
+                            var hairTags = new HashSet<string>();
+                            foreach (var o in hairTagCollection) {
+                                string tag = o as string;
+                                if (tag != null) {
+                                    hairTags.Add(tag);
+                                }
+                            }
+                            if (hairTags.Count > 0) {
+                                result.HairTags = hairTags;
                             }
                         }
-                        if (hairTags.Count > 0) {
-                            result.HairTags = hairTags;
+                    }
+
+                    // Beard properties.
+                    if (styleSettings.Contains(typeof(BeardDef))) {
+                        object settings = styleSettings[typeof(BeardDef)];
+                        bool? hasBeards = GetFieldValueAsBool(raceDef, settings, "hasStyle");
+                        if (hasBeards.HasValue && !hasBeards.Value) {
+                            result.HasBeards = false;
+                        }
+                    }
+
+                    // Tattoo properties.
+                    if (styleSettings.Contains(typeof(TattooDef))) {
+                        object settings = styleSettings[typeof(TattooDef)];
+                        bool? hasTattoos = GetFieldValueAsBool(raceDef, settings, "hasStyle");
+                        if (hasTattoos.HasValue && !hasTattoos.Value) {
+                            result.HasTattoos = false;
                         }
                     }
                 }
