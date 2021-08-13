@@ -241,12 +241,15 @@ namespace EdB.PrepareCarefully {
                     EquipmentKey key = new EquipmentKey(thingDef, stuffDef);
                     EquipmentRecord entry = equipmentDatabase.LookupEquipmentRecord(key);
                     if (entry == null) {
-                        Logger.Warning("Couldn't initialize all scenario equipment.  Didn't find an equipment entry for " + thingDef.defName);
                         entry = AddNonStandardScenarioEquipmentEntry(key);
                     }
                     if (entry != null) {
                         AddEquipment(entry, count);
                         ReplacedScenarioPartIndices.Add(index);
+                    }
+                    else {
+                        Logger.Warning(String.Format("Couldn't initialize all scenario equipment.  Didn't find an equipment entry for {0} ({1})",
+                            thingDef.defName, stuffDef != null ? stuffDef.defName : "no material"));
                     }
                 }
 
