@@ -96,7 +96,7 @@ namespace EdB.PrepareCarefully {
                             && d.scatterableOnMapGen && !d.destroyOnDrop)
                             || (d.category == ThingCategory.Building && d.Minifiable)
                             || (d.category == ThingCategory.Building && d.scatterableOnMapGen)
-                            || (d.race != null && d.race.Animal && d.race.trainability != TrainabilityDefOf.None)
+                            || (d.race != null && d.race.Animal)
                     )
                     .GetEnumerator();
             }
