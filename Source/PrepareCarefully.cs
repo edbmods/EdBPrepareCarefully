@@ -193,11 +193,11 @@ namespace EdB.PrepareCarefully {
         }
 
         // Use this set to keep track of which scenario parts we're replacing with our custom ones
-        public HashSet<int> ReplacedScenarioPartIndices = new HashSet<int>();
+        public HashSet<ScenPart> ReplacedScenarioParts = new HashSet<ScenPart>();
 
         protected void InitializeDefaultEquipment() {
             int index = -1;
-            ReplacedScenarioPartIndices.Clear();
+            ReplacedScenarioParts.Clear();
 
             // Go through all of the scenario steps that scatter resources near the player starting location and add
             // them to the resource/equipment list.
@@ -222,7 +222,7 @@ namespace EdB.PrepareCarefully {
                     }
                     if (record != null) {
                         AddEquipment(record, count);
-                        ReplacedScenarioPartIndices.Add(index);
+                        ReplacedScenarioParts.Add(part);
                     }
                 }
 
@@ -245,7 +245,7 @@ namespace EdB.PrepareCarefully {
                     }
                     if (entry != null) {
                         AddEquipment(entry, count);
-                        ReplacedScenarioPartIndices.Add(index);
+                        ReplacedScenarioParts.Add(part);
                     }
                     else {
                         Logger.Warning(String.Format("Couldn't initialize all scenario equipment.  Didn't find an equipment entry for {0} ({1})",
@@ -276,7 +276,7 @@ namespace EdB.PrepareCarefully {
                         }
                         if (entry != null) {
                             AddEquipment(entry);
-                            ReplacedScenarioPartIndices.Add(index);
+                            ReplacedScenarioParts.Add(part);
                         }
                         else {
                             Logger.Warning("Failed to add the expected scenario animal to list of selected equipment");
@@ -284,6 +284,12 @@ namespace EdB.PrepareCarefully {
                     }
                 }
             }
+
+            //index = 0;
+            //foreach (ScenPart part in Verse.Find.Scenario.AllParts) {
+            //    Logger.Debug(String.Format("[{0}] Replaced? {1}: {2} {3}", index, ReplacedScenarioParts.Contains(part), part.Label, String.Join(", ", part.GetSummaryListEntries("PlayerStartsWith"))));
+            //    index++;
+            //}
         }
 
         private static PawnKindDef RandomPet(ScenPart_StartingAnimal startingAnimal) {

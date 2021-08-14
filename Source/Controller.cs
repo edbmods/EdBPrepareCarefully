@@ -116,13 +116,17 @@ namespace EdB.PrepareCarefully {
             // vanilla versions of those parts that can safely be saved without forcing a dependency on
             // the mod.  The GenStep_RemovePrepareCarefullyScenario class is responsible for switching out
             // the actual scenario with the vanilla-friendly version at the end of the map generation process.
-            Scenario actualScenario = UtilityCopy.CopyExposable(Find.Scenario);
-            Scenario vanillaFriendlyScenario = UtilityCopy.CopyExposable(Find.Scenario);
+            Scenario originalScenario = Find.Scenario;
+            Scenario actualScenario = UtilityCopy.CopyExposable(originalScenario);
+            Scenario vanillaFriendlyScenario = UtilityCopy.CopyExposable(originalScenario);
             Current.Game.Scenario = actualScenario;
             PrepareCarefully.OriginalScenario = vanillaFriendlyScenario;
 
             // Remove equipment scenario parts.
-            ReplaceScenarioParts(actualScenario, vanillaFriendlyScenario);
+            ReplaceScenarioParts(originalScenario, actualScenario, vanillaFriendlyScenario);
+
+            //Logger.Debug(actualScenario.GetFullInformationText());
+            //Logger.Debug(vanillaFriendlyScenario.GetFullInformationText());
         }
 
         protected void PrepareColonists() {
@@ -268,35 +272,47 @@ namespace EdB.PrepareCarefully {
             pawn.Faction.Faction.leader = pawn.Pawn;
         }
 
-        protected void ReplaceScenarioParts(Scenario actualScenario, Scenario vanillaFriendlyScenario) {
+        // The three arguments are:
+        // - originalScenario: the original, unmodified scenario
+        // - actualScenario: this is the scenario that will be used to spawn into the map.  It contains Prepare Carefully-specific scenario part that should not be saved into a save file.
+        // - vanillaFriendlyScenario: this is the scenario that will be saved into the game save.  It will be a copy of actualScenario, but with all of the Prepare Carefully-specific
+        //      parts replaced by vanilla parts.
+        protected void ReplaceScenarioParts(Scenario originalScenario, Scenario actualScenario, Scenario vanillaFriendlyScenario) {
 
             // Create lists to hold the new scenario parts.
             List<ScenPart> actualScenarioParts = new List<ScenPart>();
             List<ScenPart> vanillaFriendlyScenarioParts = new List<ScenPart>();
 
-            // Get the list of parts from the original scenario.  The actual scenario and the vanilla-friendly
-            // scenario will both be copies of the original scenario and equivalent at this point, so we only
-            // need to look at the parts in one of them.
+            // Get the list of parts from the original scenario.  We do this using reflection because the "AllParts" property
+            // will include an extra "player faction" part that we don't want.
             FieldInfo partsField = typeof(Scenario).GetField("parts", BindingFlags.NonPublic | BindingFlags.Instance);
-            List<ScenPart> originalParts = (List<ScenPart>)partsField.GetValue(actualScenario);
-            
-            // Replace the pawn count in the configure pawns scenario part to reflect the number of
-            // pawns that were selected in Prepare Carefully.
+            List<ScenPart> originalParts = (List<ScenPart>)partsField.GetValue(originalScenario);
+
+            // Fill in the part lists with the scenario parts that we're not going to replace.  We won't need to modify any of these.
+            int index = -1;
             foreach (var part in originalParts) {
+                index++;
+                bool partReplaced = PrepareCarefully.Instance.ReplacedScenarioParts.Contains(part);
+                if (!partReplaced) {
+                    actualScenarioParts.Add(part);
+                    vanillaFriendlyScenarioParts.Add(part);
+                }
+                //Logger.Debug(String.Format("[{0}] Replaced? {1}: {2} {3}", index, partReplaced, part.Label, String.Join(", ", part.GetSummaryListEntries("PlayerStartsWith"))));
+            }
+
+            // Replace the pawn count in the configure pawns scenario parts to reflect the number of
+            // pawns that were selected in Prepare Carefully.
+            foreach (var part in actualScenarioParts) {
                 if (!(part is ScenPart_ConfigPage_ConfigureStartingPawns configurePawnPart)) {
                     continue;
                 }
                 configurePawnPart.pawnCount = Find.GameInitData.startingPawnCount;
             }
-
-            // Fill in each part list with only the scenario parts that we're not going to replace.
-            int index = -1;
-            foreach (var part in originalParts) {
-                index++;
-                if (!PrepareCarefully.Instance.ReplacedScenarioPartIndices.Contains(index)) {
-                    actualScenarioParts.Add(part);
-                    vanillaFriendlyScenarioParts.Add(part);
+            foreach (var part in vanillaFriendlyScenarioParts) {
+                if (!(part is ScenPart_ConfigPage_ConfigureStartingPawns configurePawnPart)) {
+                    continue;
                 }
+                configurePawnPart.pawnCount = Find.GameInitData.startingPawnCount;
             }
 
             // Sort the equipment from highest count to lowest so that gear is less likely to get blocked
