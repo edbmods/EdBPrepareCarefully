@@ -306,13 +306,15 @@ namespace EdB.PrepareCarefully {
                 if (!(part is ScenPart_ConfigPage_ConfigureStartingPawns configurePawnPart)) {
                     continue;
                 }
-                configurePawnPart.pawnCount = Find.GameInitData.startingPawnCount;
+                configurePawnPart.pawnCount = PrepareCarefully.Instance.ColonyPawns.Count;
+                configurePawnPart.pawnChoiceCount = configurePawnPart.pawnCount;
             }
             foreach (var part in vanillaFriendlyScenarioParts) {
                 if (!(part is ScenPart_ConfigPage_ConfigureStartingPawns configurePawnPart)) {
                     continue;
                 }
-                configurePawnPart.pawnCount = Find.GameInitData.startingPawnCount;
+                configurePawnPart.pawnCount = PrepareCarefully.Instance.ColonyPawns.Count;
+                configurePawnPart.pawnChoiceCount = configurePawnPart.pawnCount;
             }
 
             // Sort the equipment from highest count to lowest so that gear is less likely to get blocked
