@@ -15,7 +15,6 @@ namespace EdB.PrepareCarefully {
         public MethodInfo CharacterCardUtility_WorkTagsFrom { get; set; }
         public MethodInfo GenFilePaths_FolderUnderSaveData { get; set; }
         public MethodInfo PawnBioAndNameGenerator_BioSelectionWeight { get; set; }
-        public MethodInfo PawnBioAndNameGenerator_FillBackstorySlotShuffled { get; set; }
         public MethodInfo PawnBioAndNameGenerator_GetBackstoryCategoryFiltersFor { get; set; }
         public MethodInfo PawnBioAndNameGenerator_IsBioUseable { get; set; }
         public MethodInfo PawnBioAndNameGenerator_TryGetRandomUnusedSolidBioFor { get; set; }
@@ -43,9 +42,6 @@ namespace EdB.PrepareCarefully {
             CharacterCardUtility_WorkTagsFrom = ReflectionUtil.RequiredMethod(typeof(CharacterCardUtility), "WorkTagsFrom");
             GraphicDatabaseHeadRecords_BuildDatabaseIfNecessary = ReflectionUtil.RequiredMethod(typeof(GraphicDatabaseHeadRecords), "BuildDatabaseIfNecessary");
             GenFilePaths_FolderUnderSaveData = ReflectionUtil.RequiredMethod(typeof(GenFilePaths), "FolderUnderSaveData", new Type[] { typeof(string) });
-
-            PawnBioAndNameGenerator_FillBackstorySlotShuffled = ReflectionUtil.RequiredMethod(typeof(PawnBioAndNameGenerator), "FillBackstorySlotShuffled",
-                new Type[] { typeof(Pawn), typeof(BackstorySlot), typeof(Backstory).MakeByRefType(), typeof(Backstory), typeof(List<BackstoryCategoryFilter>), typeof(FactionDef), typeof(Nullable<BackstorySlot>) });
 
             PawnBioAndNameGenerator_GetBackstoryCategoryFiltersFor = ReflectionUtil.RequiredMethod(typeof(PawnBioAndNameGenerator), "GetBackstoryCategoryFiltersFor",
                 new Type[] { typeof(Pawn), typeof(FactionDef) });

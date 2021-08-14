@@ -53,13 +53,6 @@ namespace EdB.PrepareCarefully {
                     new object[] { b }
                 );
             }
-            public static void FillBackstorySlotShuffled(Verse.Pawn pawn, BackstorySlot slot, ref Backstory backstory, Backstory backstoryOtherSlot, List<BackstoryCategoryFilter> backstoryCategories, FactionDef factionType) {
-                ReflectionCache.Instance.PawnBioAndNameGenerator_FillBackstorySlotShuffled.Invoke(null,
-                    new object[] {
-                        pawn, slot, backstory, backstoryOtherSlot, backstoryCategories, factionType, null
-                    }
-                );
-            }
             public static List<BackstoryCategoryFilter> GetBackstoryCategoryFiltersFor(Verse.Pawn pawn, FactionDef faction) {
                 return (List<BackstoryCategoryFilter>)ReflectionCache.Instance.PawnBioAndNameGenerator_GetBackstoryCategoryFiltersFor.Invoke(null,
                     new object[] { pawn, faction }
