@@ -1,5 +1,14 @@
  _____________________________________________________________________________
  
+   Version 1.3.5
+ _____________________________________________________________________________
+
+  - Added favorite color and ideology apparel color to apparel color swatches.
+  - No longer accidentally saving all world pawns when saving presets.  This
+    could cause a lot of unexpected errors when loading the preset later.
+
+ _____________________________________________________________________________
+ 
    Version 1.3.4
  _____________________________________________________________________________
 
