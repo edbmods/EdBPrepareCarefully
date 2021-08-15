@@ -35,8 +35,10 @@ namespace EdB.PrepareCarefully {
                 SaveRecordPresetV5 preset = new SaveRecordPresetV5();
                 preset.mods = GenText.ToCommaList(Enumerable.Select<ModContentPack, string>(LoadedModManager.RunningMods, (Func<ModContentPack, string>)(mod => mod.Name)), true);
                 foreach (CustomPawn customPawn in data.Pawns) {
-                    SaveRecordPawnV5 pawn = new SaveRecordPawnV5(customPawn);
-                    preset.pawns.Add(pawn);
+                    if (customPawn.Type != CustomPawnType.Hidden) {
+                        SaveRecordPawnV5 pawn = new SaveRecordPawnV5(customPawn);
+                        preset.pawns.Add(pawn);
+                    }
                 }
                 foreach (var g in data.RelationshipManager.ParentChildGroups) {
                     foreach (var parent in g.Parents) {
