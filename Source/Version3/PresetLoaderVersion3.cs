@@ -545,7 +545,8 @@ namespace EdB.PrepareCarefully {
                     //pawn.originalPassions[def] = record.originalPassions[i];
                 }
             }
-            
+
+            pawn.ClearApparel();
             foreach (var layer in PrepareCarefully.Instance.Providers.PawnLayers.GetLayersForPawn(pawn)) {
                 if (layer.Apparel) {
                     pawn.SetSelectedApparel(layer, null);

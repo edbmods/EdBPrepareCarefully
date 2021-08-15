@@ -440,6 +440,7 @@ namespace EdB.PrepareCarefully {
                 pawn.SetUnmodifiedSkillLevel(def, skill.value);
             }
 
+            pawn.ClearApparel();
             foreach (var layer in PrepareCarefully.Instance.Providers.PawnLayers.GetLayersForPawn(pawn)) {
                 if (layer.Apparel) {
                     pawn.SetSelectedApparel(layer, null);

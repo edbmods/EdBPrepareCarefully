@@ -407,6 +407,10 @@ namespace EdB.PrepareCarefully {
             }
         }
 
+        public void ClearApparel() {
+            this.pawn.apparel.DestroyAll();
+        }
+
         public void CopyAppearance(Pawn pawn) {
             this.HairDef = pawn.story.hairDef;
             this.pawn.story.hairColor = pawn.story.hairColor;
