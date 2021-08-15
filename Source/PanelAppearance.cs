@@ -407,8 +407,14 @@ namespace EdB.PrepareCarefully {
         }
 
         public IEnumerable<Color> PrependFavoriteAndIdeologyColors(Color? color) {
-            if (currentPawn.Pawn.story.favoriteColor.HasValue) {
-                yield return currentPawn.Pawn.story.favoriteColor.Value;
+            if (currentPawn.FavoriteColor.HasValue) {
+                yield return currentPawn.FavoriteColor.Value;
+            }
+            if (ModsConfig.IdeologyActive) {
+                Color? ideoColor = currentPawn.Pawn?.ideo?.Ideo.ApparelColor;
+                if (ideoColor.HasValue) {
+                    yield return ideoColor.Value;
+                }
             }
             if (color.HasValue) {
                 yield return color.Value;
@@ -416,8 +422,14 @@ namespace EdB.PrepareCarefully {
         }
 
         public IEnumerable<Color> PrependFavoriteAndIdeologyColors(IEnumerable<Color> colors) {
-            if (currentPawn.Pawn.story.favoriteColor.HasValue) {
-                yield return currentPawn.Pawn.story.favoriteColor.Value;
+            if (currentPawn.FavoriteColor.HasValue) {
+                yield return currentPawn.FavoriteColor.Value;
+            }
+            if (ModsConfig.IdeologyActive) {
+                Color? ideoColor = currentPawn.Pawn?.ideo?.Ideo.ApparelColor;
+                if (ideoColor.HasValue) {
+                    yield return ideoColor.Value;
+                }
             }
             if (colors != null) {
                 foreach (var color in colors) {

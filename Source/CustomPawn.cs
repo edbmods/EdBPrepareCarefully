@@ -1226,6 +1226,22 @@ namespace EdB.PrepareCarefully {
             }
         }
 
+        public Color? FavoriteColor {
+            get {
+                if (ModsConfig.IdeologyActive) {
+                    return Pawn.story.favoriteColor;
+                }
+                else {
+                    return null;
+                }
+            }
+            set {
+                if (ModsConfig.IdeologyActive) {
+                    Pawn.story.favoriteColor = value;
+                }
+            }
+        }
+
         public Color SkinColor {
             get {
                 return pawn.story.SkinColor;
