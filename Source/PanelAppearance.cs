@@ -327,10 +327,10 @@ namespace EdB.PrepareCarefully {
                     if (def != null && def.HasComp(typeof(CompColorable))) {
                         if (def.MadeFromStuff) {
                             ThingDef stuffDef = customPawn.GetSelectedStuff(selectedPawnLayer);
-                            DrawColorSelectorForStuff(customPawn, cursorY, stuffDef);
+                            DrawColorSelectorForApparelStuff(customPawn, cursorY, stuffDef);
                         }
                         else {
-                            DrawColorSelector(customPawn, cursorY, def.colorGenerator);
+                            DrawColorSelectorForApparel(customPawn, cursorY, def.colorGenerator);
                         }
                     }
                 }
@@ -400,23 +400,34 @@ namespace EdB.PrepareCarefully {
             }
         }
 
-        protected Dictionary<ThingDef, List<Color>> stuffColorListLookup = new Dictionary<ThingDef, List<Color>>();
-
         // When drawing the color selector for apparel made from stuff, we display a color swatch for the material's default color.
         // If we don't do this, it's difficult to get back to the default color when we change it.
-        protected void DrawColorSelectorForStuff(CustomPawn customPawn, float cursorY, ThingDef stuffDef) {
-            List<Color> colorAsList = null;
-            if (stuffDef != null) {
-                if (!stuffColorListLookup.TryGetValue(stuffDef, out colorAsList)) {
-                    colorAsList = new List<Color>(new Color[] { stuffDef.stuffProps.color });
-                    stuffColorListLookup[stuffDef] = colorAsList;
-                }
-            }
-            DrawColorSelector(customPawn, cursorY, colorAsList, true);
+        protected void DrawColorSelectorForApparelStuff(CustomPawn customPawn, float cursorY, ThingDef stuffDef) {
+            DrawColorSelector(customPawn, cursorY, PrependFavoriteAndIdeologyColors(stuffDef?.stuffProps?.color), true);
         }
 
-        protected void DrawColorSelector(CustomPawn customPawn, float cursorY, ColorGenerator generator) {
-            DrawColorSelector(customPawn, cursorY, generator != null ? generator.GetColorList() : null, true);
+        public IEnumerable<Color> PrependFavoriteAndIdeologyColors(Color? color) {
+            if (currentPawn.Pawn.story.favoriteColor.HasValue) {
+                yield return currentPawn.Pawn.story.favoriteColor.Value;
+            }
+            if (color.HasValue) {
+                yield return color.Value;
+            }
+        }
+
+        public IEnumerable<Color> PrependFavoriteAndIdeologyColors(IEnumerable<Color> colors) {
+            if (currentPawn.Pawn.story.favoriteColor.HasValue) {
+                yield return currentPawn.Pawn.story.favoriteColor.Value;
+            }
+            if (colors != null) {
+                foreach (var color in colors) {
+                    yield return color;
+                }
+            }
+        }
+
+        protected void DrawColorSelectorForApparel(CustomPawn customPawn, float cursorY, ColorGenerator generator) {
+            DrawColorSelector(customPawn, cursorY, PrependFavoriteAndIdeologyColors(generator != null ? generator.GetColorList() : null), true);
         }
 
         protected static float SwatchLimit = 210;
@@ -425,7 +436,7 @@ namespace EdB.PrepareCarefully {
         protected static Vector2 SwatchSpacing = new Vector2(21, 21);
         protected static Color ColorSwatchBorder = new Color(0.77255f, 0.77255f, 0.77255f);
         protected static Color ColorSwatchSelection = new Color(0.9098f, 0.9098f, 0.9098f);
-        protected void DrawColorSelector(CustomPawn customPawn, float cursorY, List<Color> colors, bool allowAnyColor) {
+        protected void DrawColorSelector(CustomPawn customPawn, float cursorY, IEnumerable<Color> colors, bool allowAnyColor) {
             Color currentColor = customPawn.GetColor(selectedPawnLayer);
             Rect rect = new Rect(SwatchPosition.x, cursorY, SwatchSize.x, SwatchSize.y);
             if (colors != null) {
