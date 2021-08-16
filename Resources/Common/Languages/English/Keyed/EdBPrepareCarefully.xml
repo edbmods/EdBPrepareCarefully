@@ -1,5 +1,9 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
 <!-- CHANGE NOTES -->
+<!-- v1.3.6 -->
+<!-- REMOVED: EdB.PC.Panel.Traits.Warning.TooManyTraits -->
+
+<!-- CHANGE NOTES -->
 <!-- v1.3.1 -->
 <!-- NEW: EdB.PC.Dialog.FavoriteColor.Header -->
 <!-- NEW: EdB.PC.Panel.PawnList.Add -->
@@ -327,7 +331,6 @@ You can play the game with your colonists as they are, but you will be asked to 
   <EdB.PC.Panel.Skills.ClearTip>Clear all skills and passions by setting them to their lowest possible levels</EdB.PC.Panel.Skills.ClearTip>
   
   <EdB.PC.Panel.Traits.None>No traits</EdB.PC.Panel.Traits.None>
-  <EdB.PC.Panel.Traits.Warning.TooManyTraits>Normally, three traits is the maximum allowed per character.  You can add more here, but those traits may not be displayed properly in all of the character information screens in the game.</EdB.PC.Panel.Traits.Warning.TooManyTraits>
   <EdB.PC.Panel.Traits.Tip.Conflict>{0}\n\nConflicts with:\n{1}</EdB.PC.Panel.Traits.Tip.Conflict>
   <EdB.PC.Panel.Traits.Tip.Conflict.List.1> - {0}</EdB.PC.Panel.Traits.Tip.Conflict.List.1>
   <EdB.PC.Panel.Traits.Tip.Conflict.List.2> - {0}\n - {1}</EdB.PC.Panel.Traits.Tip.Conflict.List.2>

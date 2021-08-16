@@ -145,8 +145,8 @@ namespace EdB.PrepareCarefully {
             cost.marketValue += levelCost * passionLevelCount;
 
             // Calculate trait cost.
-            if (pawn.TraitCount > Constraints.MaxVanillaTraits) {
-                int extraTraitCount = pawn.TraitCount - Constraints.MaxVanillaTraits;
+            if (pawn.TraitCount > 3) {
+                int extraTraitCount = pawn.TraitCount - 3;
                 double extraTraitCost = 100;
                 for (int i=0; i< extraTraitCount; i++) {
                     cost.marketValue += extraTraitCost;

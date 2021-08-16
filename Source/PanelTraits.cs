@@ -82,12 +82,6 @@ namespace EdB.PrepareCarefully {
             CustomPawn currentPawn = state.CurrentPawn;
             tipCache.CheckPawn(currentPawn);
 
-            if (currentPawn.TraitCount > Constraints.MaxVanillaTraits) {
-                Warning = "EdB.PC.Panel.Traits.Warning.TooManyTraits".Translate();
-            }
-            else {
-                Warning = null;
-            }
             base.DrawPanelContent(state);
 
             Action clickAction = null;
