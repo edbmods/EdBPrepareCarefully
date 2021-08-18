@@ -482,16 +482,10 @@ namespace EdB.PrepareCarefully {
 
         public CustomPawn CreateNewTemporaryPawn(Gender gender) {
             CustomPawn pawn = new CustomPawn(new Randomizer().GeneratePawn(new PawnGenerationRequestWrapper() {
+                Faction = null,
+                Context = PawnGenerationContext.NonPlayer,
                 FixedGender = gender
             }.Request));
-            Faction faction;
-            Find.World.factionManager.TryGetRandomNonColonyHumanlikeFaction(out faction, true, true, TechLevel.Undefined);
-            if (faction == null) {
-                faction = Find.World.factionManager.OfAncients;
-            }
-            if (faction != null) {
-                pawn.Pawn.SetFactionDirect(faction);
-            }
             pawn.Type = CustomPawnType.Temporary;
             pawn.Index = NextTemporaryParentChildIndex;
             return pawn;

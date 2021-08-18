@@ -30,7 +30,11 @@ namespace EdB.PrepareCarefully {
         }
 
         public Pawn GenerateColonist() {
-            Pawn result = AttemptToGeneratePawn(new PawnGenerationRequestWrapper() { }.Request);
+            Pawn result = AttemptToGeneratePawn(new PawnGenerationRequestWrapper() {
+                KindDef = Find.FactionManager.OfPlayer.def.basicMemberKind,
+                Faction = Find.FactionManager.OfPlayer,
+                Context = PawnGenerationContext.PlayerStarter
+            }.Request);
             return result;
         }
 
@@ -60,33 +64,29 @@ namespace EdB.PrepareCarefully {
         }
 
         public Pawn GenerateKindOfPawn(PawnKindDef kindDef) {
-            FactionDef factionDef = kindDef.defaultFactionType;
-            if (factionDef == null) {
-                factionDef = Faction.OfPlayer.def;
+            var wrapper = new PawnGenerationRequestWrapper() {
+                Faction = null,
+                KindDef = kindDef
+            };
+            Ideo ideo = Find.FactionManager.OfPlayer.ideos.GetRandomIdeoForNewPawn();
+            if (ideo != null) {
+                wrapper.FixedIdeology = ideo;
             }
-            Faction faction = PrepareCarefully.Instance.Providers.Factions.GetFaction(factionDef);
-            PawnGenerationRequest req = new PawnGenerationRequestWrapper() {
-                Faction = faction,
-                KindDef = kindDef,
-                FixedIdeology = faction.ideos.GetRandomIdeoForNewPawn()
-            }.Request;
-            Pawn result = AttemptToGeneratePawn(req);
+            Pawn result = AttemptToGeneratePawn(wrapper.Request);
             return result;
         }
 
         public Pawn GenerateKindAndGenderOfPawn(PawnKindDef kindDef, Gender gender) {
-            FactionDef factionDef = kindDef.defaultFactionType;
-            if (factionDef == null) {
-                factionDef = Faction.OfPlayer.def;
-            }
-            Faction faction = PrepareCarefully.Instance.Providers.Factions.GetFaction(factionDef);
-            PawnGenerationRequest req = new PawnGenerationRequestWrapper() {
-                Faction = faction,
+            var wrapper = new PawnGenerationRequestWrapper() {
+                Faction = null,
                 KindDef = kindDef,
-                FixedGender = gender,
-                FixedIdeology = faction.ideos.GetRandomIdeoForNewPawn()
-            }.Request;
-            Pawn result = AttemptToGeneratePawn(req);
+                FixedGender = gender
+            };
+            Ideo ideo = Find.FactionManager.OfPlayer.ideos.GetRandomIdeoForNewPawn();
+            if (ideo != null) {
+                wrapper.FixedIdeology = ideo;
+            }
+            Pawn result = AttemptToGeneratePawn(wrapper.Request);
             return result;
         }
 

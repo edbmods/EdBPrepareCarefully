@@ -48,15 +48,11 @@ namespace EdB.PrepareCarefully {
         }
 
         public void RandomizeAll() {
-            // Start by picking a new pawn kind def from the faction.
-            FactionDef factionDef = state.CurrentPawn.Pawn.kindDef.defaultFactionType;
-            if (factionDef == null) {
-                factionDef = Faction.OfPlayer.def;
-            }
-            //PawnKindDef kindDef = PrepareCarefully.Instance.Providers.Factions.GetPawnKindsForFactionDefLabel(factionDef)
-            //    .RandomElementWithFallback(factionDef.basicMemberKind);
             // Create the pawn.
             Pawn pawn = randomizer.GenerateKindOfPawn(state.CurrentPawn.Pawn.kindDef);
+            if (pawn.Faction != Faction.OfPlayer) {
+                pawn.SetFactionDirect(Faction.OfPlayer);
+            }
             state.CurrentPawn.InitializeWithPawn(pawn);
             state.CurrentPawn.GenerateId();
             PawnReplaced(state.CurrentPawn);
@@ -98,28 +94,35 @@ namespace EdB.PrepareCarefully {
         public void RandomizeBackstories() {
             CustomPawn currentPawn = state.CurrentPawn;
             PawnKindDef kindDef = currentPawn.Pawn.kindDef;
-            FactionDef factionDef = kindDef.defaultFactionType;
+            FactionDef factionDef = kindDef?.defaultFactionType;
             if (factionDef == null) {
                 factionDef = Faction.OfPlayer.def;
             }
+
+            var providerAlienRaces = PrepareCarefully.Instance.Providers.AlienRaces;
+            AlienRace alienRace = providerAlienRaces.GetAlienRace(currentPawn.Pawn.def);
+            float adultStoryAge = alienRace == null ? providerAlienRaces.DefaultMinAgeForAdulthood : alienRace.MinAgeForAdulthood;
+            //Logger.Debug(String.Format("Adulthood age for {0} is {1}", state.CurrentPawn.Pawn.def.defName, adultStoryAge));
+
             List<BackstoryCategoryFilter> backstoryCategoryFiltersFor = Reflection.PawnBioAndNameGenerator.GetBackstoryCategoryFiltersFor(currentPawn.Pawn, factionDef);
             // Generate a bio from which to get the backstories
             if (!Reflection.PawnBioAndNameGenerator.TryGetRandomUnusedSolidBioFor(backstoryCategoryFiltersFor, kindDef, currentPawn.Gender, null, out PawnBio pawnBio)) {
                 // Other mods are patching the vanilla method in ways that cause it to return false.  If that happens,
                 // we use our duplicate implementation instead.
+                var providerBackstories = PrepareCarefully.Instance.Providers.Backstories;
                 if (!PawnBioGenerator.TryGetRandomUnusedSolidBioFor(backstoryCategoryFiltersFor, kindDef, currentPawn.Gender, null, out pawnBio)) {
                     // If we still can't get a bio with our duplicate implementation, we pick backstories completely at random.
-                    currentPawn.Childhood = PrepareCarefully.Instance.Providers.Backstories.GetChildhoodBackstoriesForPawn(currentPawn).RandomElement();
-                    if (currentPawn.BiologicalAge >= 20) {
-                        currentPawn.Adulthood = PrepareCarefully.Instance.Providers.Backstories.GetAdulthoodBackstoriesForPawn(currentPawn).RandomElement();
+                    //Logger.Debug(String.Format("Using fallback method to get solid random backstories for kindDef {0} \"{1}\" and faction {2} \"{3}\"",
+                    //    kindDef.defName, kindDef.LabelCap, factionDef.defName, factionDef.LabelCap));
+                    currentPawn.Childhood = providerBackstories.GetChildhoodBackstoriesForPawn(currentPawn).RandomElement();
+                    if (currentPawn.BiologicalAge >= (int) adultStoryAge) {
+                        currentPawn.Adulthood = providerBackstories.GetAdulthoodBackstoriesForPawn(currentPawn).RandomElement();
                     }
                     return;
                 }
             }
             currentPawn.Childhood = pawnBio.childhood;
-            // TODO: Can we remove the hard-coded adult age and get the value from a provider instead?
-            // Probably not in vanilla, but maybe if other mods somehow override the "20" that's hard-coded in the vanilla code.
-            if (currentPawn.BiologicalAge >= 20) {
+            if (currentPawn.BiologicalAge >= (int) adultStoryAge) {
                 currentPawn.Adulthood = pawnBio.adulthood;
             }
         }
@@ -292,9 +295,6 @@ namespace EdB.PrepareCarefully {
             state.AddMessage("SavedAs".Translate(filename));
         }
         public void AddFactionPawn(PawnKindDef kindDef, bool startingPawn) {
-            FactionDef factionDef = kindDef.defaultFactionType;
-            Faction faction = PrepareCarefully.Instance.Providers.Factions.GetFaction(factionDef);
-
             // Workaround to force pawn generation to skip adding weapons to the pawn.
             // Might be a slightly risky hack, but the finally block should guarantee that
             // the weapons money range always gets set back to its original value.
@@ -304,13 +304,19 @@ namespace EdB.PrepareCarefully {
             kindDef.weaponMoney = new FloatRange(0, 0);
             Pawn pawn = null;
             try {
-                pawn = randomizer.GeneratePawn(new PawnGenerationRequestWrapper() {
-                    Faction = faction,
+                //Logger.Debug("Adding new pawn with kindDef = " + kindDef.defName);
+                var wrapper = new PawnGenerationRequestWrapper() {
+                    Faction = null,
                     KindDef = kindDef,
                     Context = PawnGenerationContext.NonPlayer,
-                    WorldPawnFactionDoesntMatter = false,
-                    FixedIdeology = Faction.OfPlayerSilentFail?.ideos?.PrimaryIdeo
-                }.Request);
+                    WorldPawnFactionDoesntMatter = true
+                };
+                Ideo ideo = Find.FactionManager.OfPlayer?.ideos?.GetRandomIdeoForNewPawn();
+
+                if (ideo != null) {
+                    wrapper.FixedIdeology = ideo;
+                }
+                pawn = randomizer.GeneratePawn(wrapper.Request);
                 if (pawn.equipment != null) {
                     pawn.equipment.DestroyAllEquipment(DestroyMode.Vanish);
                 }
@@ -344,8 +350,11 @@ namespace EdB.PrepareCarefully {
 
             CustomPawn customPawn = new CustomPawn(pawn);
             customPawn.OriginalKindDef = kindDef;
-            customPawn.OriginalFactionDef = faction.def;
-            pawn.SetFaction(Faction.OfPlayer);
+            FactionDef factionDef = kindDef.defaultFactionType;
+            customPawn.OriginalFactionDef = factionDef;
+            if (pawn.Faction != Faction.OfPlayer) {
+                pawn.SetFaction(Faction.OfPlayer);
+            }
 
             customPawn.Type = startingPawn ? CustomPawnType.Colonist : CustomPawnType.World;
             if (!startingPawn) {

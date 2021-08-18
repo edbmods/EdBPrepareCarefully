@@ -107,7 +107,9 @@ namespace EdB.PrepareCarefully {
                 fixedIdeology, //Ideo fixedIdeo = null
                 false, //bool forceNoIdeo = false
                 false //bool forceNoBackstory = false
-            );
+            ) {
+                ForbidAnyTitle = true
+            };
         }
         public PawnGenerationRequest Request {
             get {

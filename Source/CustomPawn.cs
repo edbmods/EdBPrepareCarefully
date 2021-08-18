@@ -422,6 +422,7 @@ namespace EdB.PrepareCarefully {
             }
             this.HeadGraphicPath = pawn.story.HeadGraphicPath;
             this.MelaninLevel = pawn.story.melanin;
+            this.Pawn.apparel.DestroyAll();
             foreach (var layer in PrepareCarefully.Instance.Providers.PawnLayers.GetLayersForPawn(this)) {
                 if (layer.Apparel) {
                     this.SetSelectedStuff(layer, null);
@@ -740,7 +741,13 @@ namespace EdB.PrepareCarefully {
 
         public bool IsAdult {
             get {
-                return this.BiologicalAge > 19;
+                var provider = PrepareCarefully.Instance.Providers.AlienRaces;
+                if (this.alienRace != null) {
+                    return this.BiologicalAge >= (int) this.alienRace.MinAgeForAdulthood;
+                }
+                else {
+                    return this.BiologicalAge >= (int)provider.DefaultMinAgeForAdulthood;
+                }
             }
         }
 

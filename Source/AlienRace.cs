@@ -75,5 +75,6 @@ namespace EdB.PrepareCarefully {
                 addons = value;
             }
         }
+        public float MinAgeForAdulthood { get; set; }
     }
 }

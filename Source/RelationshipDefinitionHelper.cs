@@ -67,8 +67,8 @@ namespace EdB.PrepareCarefully {
         // We try to determine the inverse of a relationship by adding the relationship between two pawns.  If we're able to add
         // the relationship, the target pawn should have the inverse relationship.
         public PawnRelationDef TryToComputeInverseRelationship(PawnRelationDef def) {
-            Pawn source = randomizer.GenerateColonist();
-            Pawn target = randomizer.GenerateColonist();
+            Pawn source = randomizer.GenerateKindOfPawn(Find.FactionManager.OfPlayer.def.basicMemberKind);
+            Pawn target = randomizer.GenerateKindOfPawn(Find.FactionManager.OfPlayer.def.basicMemberKind);
             MethodInfo info = def.workerClass.GetMethod("CreateRelation", BindingFlags.Instance | BindingFlags.Public | BindingFlags.DeclaredOnly);
             if (info == null) {
                 return null;

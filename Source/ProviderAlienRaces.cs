@@ -11,8 +11,17 @@ using Verse.Sound;
 namespace EdB.PrepareCarefully {
     public class ProviderAlienRaces {
         protected Dictionary<ThingDef, AlienRace> lookup = new Dictionary<ThingDef, AlienRace>();
-        public ProviderAlienRaces() {
+        protected float defaultMinAgeForAdulthood = 20f;
 
+        public float DefaultMinAgeForAdulthood {
+            get { return defaultMinAgeForAdulthood; }
+        }
+
+        public ProviderAlienRaces() {
+            defaultMinAgeForAdulthood = ReflectionUtil.GetNonPublicStatic<float>(typeof(PawnBioAndNameGenerator), "MinAgeForAdulthood");
+            if (defaultMinAgeForAdulthood <= 0f) {
+                defaultMinAgeForAdulthood = 20.0f;
+            }
         }
         public AlienRace GetAlienRace(ThingDef def) {
             AlienRace result;
@@ -166,6 +175,12 @@ namespace EdB.PrepareCarefully {
                 result.ThingDef = raceDef;
 
                 //Logger.Debug("InitializeAlienRace: " + raceDef.defName);
+
+                float minAgeForAdulthood = ReflectionUtil.GetFieldValue<float>(generalSettingsObject, "minAgeForAdulthood");
+                if (minAgeForAdulthood <= 0) {
+                    minAgeForAdulthood = DefaultMinAgeForAdulthood;
+                }
+                result.MinAgeForAdulthood = minAgeForAdulthood;
 
                 // Get the list of body types.
                 System.Collections.ICollection alienBodyTypesCollection = GetFieldValueAsCollection(raceDef, alienPartGeneratorObject, "alienbodytypes");
