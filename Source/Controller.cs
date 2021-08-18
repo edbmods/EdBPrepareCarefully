@@ -287,6 +287,7 @@ namespace EdB.PrepareCarefully {
             // will include an extra "player faction" part that we don't want.
             FieldInfo partsField = typeof(Scenario).GetField("parts", BindingFlags.NonPublic | BindingFlags.Instance);
             List<ScenPart> originalParts = (List<ScenPart>)partsField.GetValue(originalScenario);
+            List<ScenPart> copiedParts = (List<ScenPart>)partsField.GetValue(actualScenario);
 
             // Fill in the part lists with the scenario parts that we're not going to replace.  We won't need to modify any of these.
             int index = -1;
@@ -294,8 +295,8 @@ namespace EdB.PrepareCarefully {
                 index++;
                 bool partReplaced = PrepareCarefully.Instance.ReplacedScenarioParts.Contains(part);
                 if (!partReplaced) {
-                    actualScenarioParts.Add(part);
-                    vanillaFriendlyScenarioParts.Add(part);
+                    actualScenarioParts.Add(copiedParts[index]);
+                    vanillaFriendlyScenarioParts.Add(copiedParts[index]);
                 }
                 //Logger.Debug(String.Format("[{0}] Replaced? {1}: {2} {3}", index, partReplaced, part.Label, String.Join(", ", part.GetSummaryListEntries("PlayerStartsWith"))));
             }
