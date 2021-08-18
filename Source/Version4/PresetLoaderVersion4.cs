@@ -313,10 +313,15 @@ namespace EdB.PrepareCarefully {
             PawnGenerationRequestWrapper generationRequest = new PawnGenerationRequestWrapper() {
                 FixedBiologicalAge = record.biologicalAge,
                 FixedChronologicalAge = record.chronologicalAge,
-                FixedGender = record.gender
+                FixedGender = record.gender,
+                Context = PawnGenerationContext.NonPlayer,
+                WorldPawnFactionDoesntMatter = true
             };
-            Faction playerFaction = Faction.OfPlayerSilentFail;
-            generationRequest.FixedIdeology = playerFaction?.ideos?.PrimaryIdeo;
+            Faction playerFaction = Find.FactionManager.OfPlayer;
+            Ideo playerFactionIdeology = playerFaction?.ideos?.PrimaryIdeo;
+            if (playerFactionIdeology != null) {
+                generationRequest.FixedIdeology = playerFactionIdeology;
+            }
 
             if (pawnKindDef != null) {
                 generationRequest.KindDef = pawnKindDef;

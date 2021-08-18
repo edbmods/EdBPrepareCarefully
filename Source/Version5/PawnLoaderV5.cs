@@ -144,39 +144,27 @@ namespace EdB.PrepareCarefully {
                     pawnThingDef = thingDef;
                 }
                 else {
-                    Logger.Warning("Pawn's thing definition {" + record.thingDef + "} was not found.  Defaulting to Human thing definition.");
+                    Logger.Warning("Pawn's thing definition {" + record.thingDef + "} was not found.");
                 }
             }
             else {
-                Logger.Warning("Pawn's thing definition was null.  Defaulting to the thing definition for humans.");
+                Logger.Warning("Pawn's thing definition was null.");
             }
 
             // Create the pawn generation request.
             PawnGenerationRequestWrapper generationRequest = new PawnGenerationRequestWrapper() {
                 FixedBiologicalAge = record.biologicalAge,
                 FixedChronologicalAge = record.chronologicalAge,
-                FixedGender = record.gender
+                FixedGender = record.gender,
+                Context = PawnGenerationContext.NonPlayer,
+                WorldPawnFactionDoesntMatter = true
             };
-            Faction playerFaction = Faction.OfPlayerSilentFail;
-            generationRequest.FixedIdeology = playerFaction?.ideos?.PrimaryIdeo;
-
-            // Add a faction to the generation request, if possible.
-            if (record.originalFactionDef != null) {
-                FactionDef factionDef = DefDatabase<FactionDef>.GetNamedSilentFail(record.originalFactionDef);
-                if (factionDef != null) {
-                    Faction faction = PrepareCarefully.Instance.Providers.Factions.GetFaction(factionDef);
-                    if (faction != null) {
-                        generationRequest.Faction = faction;
-                        generationRequest.FixedIdeology = faction?.ideos?.PrimaryIdeo;
-                    }
-                    else {
-                        Logger.Warning("No faction found for faction definition {" + record.originalFactionDef + "}");
-                    }
-                }
-                else {
-                    Logger.Warning("No faction defition defition found for {" + record.originalFactionDef + "}");
-                }
+            Faction playerFaction = Find.FactionManager.OfPlayer;
+            Ideo playerFactionIdeology = playerFaction?.ideos?.PrimaryIdeo;
+            if (playerFactionIdeology != null) {
+                generationRequest.FixedIdeology = playerFactionIdeology;
             }
+
             // Add a pawn kind definition to the generation request, if possible.
             if (pawnKindDef != null) {
                 generationRequest.KindDef = pawnKindDef;
