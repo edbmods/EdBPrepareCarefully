@@ -1,5 +1,18 @@
  _____________________________________________________________________________
  
+   Version 1.3.6
+ _____________________________________________________________________________
+
+  - Fixed an issue with "Add..." button.
+  - Fixed a handful of issues with the randomize buttons.
+  - The age at which to allow an adulthood backstory now properly comes from
+    the alien race mod settings, when applicable.
+  - Removed the "too many traits" warning.
+  - Moved the appearance dialogs over to the right so that you can see the
+    changes on the pawn as you select them.
+
+ _____________________________________________________________________________
+ 
    Version 1.3.5
  _____________________________________________________________________________
 
