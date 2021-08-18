@@ -939,6 +939,11 @@ namespace EdB.PrepareCarefully {
             }
         }
 
+        protected float CalculateDialogPositionX() {
+            return Find.WindowStack.currentlyDrawnWindow.windowRect.x + PanelRect.xMax + 24f;
+        }
+
+
         protected void ShowPawnLayerOptionsDialog(CustomPawn customPawn) {
             List<PawnLayerOption> options = selectedPawnLayer.Options;
             Dialog_Options<PawnLayerOption> dialog = new Dialog_Options<PawnLayerOption>(options) {
@@ -952,7 +957,8 @@ namespace EdB.PrepareCarefully {
                     selectedPawnLayer.SelectOption(customPawn, option);
                     this.pawnLayerLabel = option.Label;
                 },
-                CloseAction = () => { }
+                CloseAction = () => { },
+                InitialPositionX = CalculateDialogPositionX()
             };
             Find.WindowStack.Add(dialog);
         }
@@ -986,7 +992,8 @@ namespace EdB.PrepareCarefully {
                     customPawn.SetSelectedApparel(layer, null);
                     customPawn.SetSelectedStuff(layer, null);
                     this.pawnLayerLabel = "EdB.PC.Panel.Appearance.NoneSelected".Translate();
-                }
+                },
+                InitialPositionX = CalculateDialogPositionX()
             };
             Find.WindowStack.Add(dialog);
         }
@@ -1006,7 +1013,8 @@ namespace EdB.PrepareCarefully {
                 },
                 SelectAction = (ThingDef stuff) => {
                     customPawn.SetSelectedStuff(layer, stuff);
-                }
+                },
+                InitialPositionX = CalculateDialogPositionX()
             };
             Find.WindowStack.Add(dialog);
         }

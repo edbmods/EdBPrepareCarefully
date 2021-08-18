@@ -1,4 +1,4 @@
-﻿using RimWorld;
+using RimWorld;
 using System;
 using System.Collections.Generic;
 using UnityEngine;
@@ -23,6 +23,9 @@ namespace EdB.PrepareCarefully {
         protected IEnumerable<T> options;
         protected bool confirmButtonClicked = false;
         protected float WindowPadding = 18;
+
+        public float? InitialPositionX { get; set; } = null;
+        public float? InitialPositionY { get; set; } = null;
 
         public bool IncludeNone = false;
 
@@ -89,6 +92,14 @@ namespace EdB.PrepareCarefully {
 
         public void ScrollToTop() {
             this.ScrollView.ScrollToTop();
+        }
+
+        protected override void SetInitialSizeAndPosition() {
+            Vector2 initialSize = InitialSize;
+            float x = InitialPositionX.HasValue ? InitialPositionX.Value : ((float)UI.screenWidth - initialSize.x) / 2f;
+            float y = InitialPositionY.HasValue ? InitialPositionY.Value : ((float)UI.screenHeight - initialSize.y) / 2f;
+            windowRect = new Rect(x, y, initialSize.x, initialSize.y);
+            windowRect = windowRect.Rounded();
         }
 
         protected void ComputeSizes() {
