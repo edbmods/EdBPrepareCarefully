@@ -254,6 +254,7 @@
   <ItemGroup>
     <Content Include="Resources\About\Manifest.xml" />
     <Content Include="Resources\LoadFolders.xml" />
+    <Content Include="Resources\Common\Languages\English\Keyed\EdBPrepareCarefully.xml" />
   </ItemGroup>
   <ItemGroup>
     <None Include=".editorconfig" />
@@ -261,23 +262,9 @@
     <None Include="Resources\About\About.xml">
       <SubType>Designer</SubType>
     </None>
-    <None Include="Resources\Languages\English\Keyed\EdBPrepareCarefully.xml" />
-    <None Include="Resources\Textures\EdB\PrepareCarefully\ButtonDelete.png" />
-    <None Include="Resources\Textures\EdB\PrepareCarefully\ButtonNext.png" />
-    <None Include="Resources\Textures\EdB\PrepareCarefully\ButtonPrevious.png" />
-    <None Include="Resources\Textures\EdB\PrepareCarefully\ButtonRandom.png" />
-    <None Include="Resources\Textures\EdB\PrepareCarefully\CharMakerPortraitBG.png" />
-    <None Include="Resources\Textures\EdB\PrepareCarefully\FieldAtlas.png" />
-    <None Include="Resources\Textures\EdB\PrepareCarefully\NoPassion.png" />
-    <None Include="Resources\Defs\CarefullyPawnRelationDefs\CarefullyPawnRelations_FamilyByBlood.xml" />
-    <None Include="Resources\Defs\CarefullyPawnRelationDefs\CarefullyPawnRelations_FamilyByChoice.xml" />
-    <None Include="Resources\Defs\CarefullyPawnRelationDefs\CarefullyPawnRelations_Misc.xml" />
-    <None Include="Resources\Defs\MapGeneratorDefs\MapGenerators.xml" />
     <None Include="LICENSE" />
     <None Include="README.md" />
     <None Include="Libraries\README.md" />
-    <None Include="Resources\Defs\Scenarios\ScenParts_Fixed.xml" />
-    <None Include="Resources\Defs\ThingDefs\EdBPrepareCarefully.xml" />
   </ItemGroup>
   <ItemGroup />
 </Project>
