@@ -1110,8 +1110,9 @@ namespace EdB.PrepareCarefully {
                 return headType;
             }
             set {
-                this.headType = value; 
-                this.pawn.story.crownType = value.CrownType;
+                this.headType = value;
+                //Logger.Debug("Setting pawn headType to " + value);
+                this.pawn.story.crownType = value.CrownType != CrownType.Undefined ? value.CrownType : CrownType.Average;
                 ThingComp alienComp = ProviderAlienRaces.FindAlienCompForPawn(pawn);
                 if (alienComp != null) {
                     ReflectionUtil.GetPublicField(alienComp, "crownType").SetValue(alienComp, headType.AlienCrownType);
@@ -1126,7 +1127,6 @@ namespace EdB.PrepareCarefully {
                 return pawn.story.HeadGraphicPath;
             }
             set {
-                //Logger.Debug("Setting HeadGraphicPath  " + value + " for " + pawn.def.defName);
                 CustomHeadType headType = PrepareCarefully.Instance.Providers.HeadTypes.FindHeadType(pawn.def, value);
                 if (headType != null) {
                     HeadType = headType;
@@ -1134,7 +1134,7 @@ namespace EdB.PrepareCarefully {
                 else {
                     // Set the graphic path on the pawn directly if no head type was found.
                     SetHeadGraphicPathOnPawn(pawn, value);
-                    Logger.Warning("Could not find a head type the graphic path: " + value);
+                    Logger.Warning("Could not find a head type for the graphic path: " + value);
                 }
                 ResetCachedHead();
                 MarkPortraitAsDirty();
