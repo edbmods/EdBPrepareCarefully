@@ -179,9 +179,10 @@ namespace EdB.PrepareCarefully {
                 return;
             }
 
-            // Killing a pawn adds it to the world
+            // Killing a pawn adds it to the world, but we want to set the KeepForever flag
             if (pawn.Type == CustomPawnType.Temporary) {
                 if (!pawn.Pawn.Dead) {
+                    Find.WorldPawns.PassToWorld(pawn.Pawn, RimWorld.Planet.PawnDiscardDecideMode.KeepForever);
                     pawn.Pawn.Kill(null, null);
                 }
                 return;

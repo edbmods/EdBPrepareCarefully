@@ -208,6 +208,8 @@ namespace EdB.PrepareCarefully {
                 FixedBiologicalAge = age,
                 FixedGender = gender
             }.Request));
+            // Killing a pawn will pass it to the world, but not with the KeepForever flag set, so we have to do it manually.
+            Find.WorldPawns.PassToWorld(parent.Pawn, RimWorld.Planet.PawnDiscardDecideMode.KeepForever);
             parent.Pawn.Kill(null, null);
             parent.Type = CustomPawnType.Temporary;
             return parent;
