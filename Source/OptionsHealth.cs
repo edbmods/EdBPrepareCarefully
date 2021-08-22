@@ -22,6 +22,7 @@ namespace EdB.PrepareCarefully {
         protected Dictionary<BodyPartDef, List<UniqueBodyPart>> bodyPartDefLookup = new Dictionary<BodyPartDef, List<UniqueBodyPart>>();
         protected Dictionary<RecipeDef, List<UniqueBodyPart>> implantRecipeLookup = new Dictionary<RecipeDef, List<UniqueBodyPart>>();
         protected Dictionary<BodyPartRecord, UniqueBodyPart> bodyPartRecordLookup = new Dictionary<BodyPartRecord, UniqueBodyPart>();
+        protected Dictionary<string, List<UniqueBodyPart>> bodyPartGroupLookup = new Dictionary<string, List<UniqueBodyPart>>();
 
         protected List<RecipeDef> implantRecipes = new List<RecipeDef>();
         protected Dictionary<HediffDef, InjuryOption> injuryOptionsByHediff = new Dictionary<HediffDef, InjuryOption>();
@@ -41,6 +42,20 @@ namespace EdB.PrepareCarefully {
             }
             partsForRecord.Add(part);
             bodyPartRecordLookup.Add(part.Record, part);
+            foreach (var group in part.Record.groups) {
+                if (!bodyPartGroupLookup.ContainsKey(group.defName)) {
+                    bodyPartGroupLookup.Add(group.defName, new List<UniqueBodyPart>());
+                }
+                bodyPartGroupLookup[group.defName].Add(part);
+            }
+        }
+        public List<UniqueBodyPart> PartsForBodyPartGroup(string bodyPartGroup) {
+            if (bodyPartGroupLookup.TryGetValue(bodyPartGroup, out List<UniqueBodyPart> parts)) {
+                return parts;
+            }
+            else {
+                return null;
+            }
         }
         public int CountOfMatchingBodyParts(BodyPartDef def) {
             List<UniqueBodyPart> result;
@@ -114,6 +129,33 @@ namespace EdB.PrepareCarefully {
             else {
                 return null;
             }
+        }
+        public IEnumerable<RecipeDef> FindImplantRecipesThatAddHediff(Hediff hediff) {
+            return ImplantRecipes.Where((RecipeDef def) => {
+                if (def.addsHediff == null) {
+                    return false;
+                }
+                if (def.addsHediff != hediff.def) {
+                    return false;
+                }
+                if (hediff.Part != null) {
+                    if (def.appliedOnFixedBodyParts.Contains(hediff.Part.def)) {
+                        return true;
+                    }
+                    foreach (var group in def.appliedOnFixedBodyPartGroups) {
+                        var parts = this.PartsForBodyPartGroup(group.defName);
+                        if (parts != null) {
+                            if (parts.ConvertAll(p => p.Record.def).Contains(hediff.Part.def)) {
+                                return true;
+                            }
+                        }
+                    }
+                }
+                else if (def.appliedOnFixedBodyParts.Count == 0 && def.appliedOnFixedBodyPartGroups.Count == 0) {
+                    return true;
+                }
+                return false;
+            });
         }
         public IEnumerable<UniqueBodyPart> SkinCoveredBodyParts {
             get {

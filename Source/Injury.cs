@@ -92,13 +92,14 @@ namespace EdB.PrepareCarefully {
 
         public override void AddToPawn(CustomPawn customPawn, Pawn pawn) {
             if (Option.Giver != null) {
+                //Logger.Debug("Adding injury {" + Option.Label + "} to part {" + BodyPartRecord?.LabelCap + "} using giver {" + Option.Giver.GetType().FullName + "}");
                 Hediff hediff = HediffMaker.MakeHediff(Option.HediffDef, pawn, BodyPartRecord);
                 hediff.Severity = this.Severity;
-                pawn.health.AddHediff(hediff, BodyPartRecord, null);
+                pawn.health.AddHediff(hediff, BodyPartRecord);
                 this.hediff = hediff;
             }
             else if (Option.IsOldInjury) {
-                Hediff hediff = HediffMaker.MakeHediff(Option.HediffDef, pawn, null);
+                Hediff hediff = HediffMaker.MakeHediff(Option.HediffDef, pawn);
                 hediff.Severity = this.Severity;
 
                 HediffComp_GetsPermanent getsPermanent = hediff.TryGetComp<HediffComp_GetsPermanent>();
@@ -108,13 +109,20 @@ namespace EdB.PrepareCarefully {
                     //ReflectionUtil.SetNonPublicField(getsPermanent, "painFactor", painFactor == null ? 0 : painFactor.Value);
                 }
 
-                pawn.health.AddHediff(hediff, BodyPartRecord, null);
+                pawn.health.AddHediff(hediff, BodyPartRecord);
+                this.hediff = hediff;
+            }
+            else if (Option.HediffDef.defName == "MissingBodyPart") {
+                //Logger.Debug("Adding {" + Option.Label + "} to part {" + BodyPartRecord?.LabelCap);
+                Hediff hediff = HediffMaker.MakeHediff(Option.HediffDef, pawn, BodyPartRecord);
+                hediff.Severity = this.Severity;
+                pawn.health.AddHediff(hediff, BodyPartRecord);
                 this.hediff = hediff;
             }
             else {
-                Hediff hediff = HediffMaker.MakeHediff(Option.HediffDef, pawn, null);
+                Hediff hediff = HediffMaker.MakeHediff(Option.HediffDef, pawn);
                 hediff.Severity = this.Severity;
-                pawn.health.AddHediff(hediff, null, null);
+                pawn.health.AddHediff(hediff);
                 this.hediff = hediff;
             }
             pawn.health.capacities.Clear();

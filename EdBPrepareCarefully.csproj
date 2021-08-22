@@ -75,6 +75,7 @@
     <Compile Include="Source\ExtensionsBackstory.cs" />
     <Compile Include="Source\FilterBackstoryMatchesFaction.cs" />
     <Compile Include="Source\InitializationException.cs" />
+    <Compile Include="Source\InjurySeverity.cs" />
     <Compile Include="Source\PanelFavoriteColor.cs" />
     <Compile Include="Source\ParentChildGroup.cs" />
     <Compile Include="Source\CustomPawnType.cs" />

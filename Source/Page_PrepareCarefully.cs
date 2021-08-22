@@ -224,58 +224,65 @@ namespace EdB.PrepareCarefully {
             Text.Anchor = TextAnchor.UpperRight;
             GUI.color = Color.white;
             Text.Font = GameFont.Small;
-            if (costLabelWidth == null) {
-                string max = Int32.MaxValue.ToString();
-                string translated1 = "EdB.PC.Page.Points.Spent".Translate(max);
-                string translated2 = "EdB.PC.Page.Points.Remaining".Translate(max);
-                costLabelWidth = Mathf.Max(Text.CalcSize(translated1).x, Text.CalcSize(translated2).x);
-            }
-            CostDetails cost = PrepareCarefully.Instance.Cost;
-            string label;
-            if (Config.pointsEnabled) {
-                int points = PrepareCarefully.Instance.PointsRemaining;
-                if (points < 0) {
-                    GUI.color = Color.yellow;
+            try {
+                if (costLabelWidth == null) {
+                    string max = Int32.MaxValue.ToString();
+                    string translated1 = "EdB.PC.Page.Points.Spent".Translate(max);
+                    string translated2 = "EdB.PC.Page.Points.Remaining".Translate(max);
+                    costLabelWidth = Mathf.Max(Text.CalcSize(translated1).x, Text.CalcSize(translated2).x);
+                }
+                CostDetails cost = PrepareCarefully.Instance.Cost;
+                string label;
+                if (Config.pointsEnabled) {
+                    int points = PrepareCarefully.Instance.PointsRemaining;
+                    if (points < 0) {
+                        GUI.color = Color.yellow;
+                    }
+                    else {
+                        GUI.color = Style.ColorText;
+                    }
+                    label = "EdB.PC.Page.Points.Remaining".Translate(points);
                 }
                 else {
+                    double points = cost.total;
                     GUI.color = Style.ColorText;
+                    label = "EdB.PC.Page.Points.Spent".Translate(points);
                 }
-                label = "EdB.PC.Page.Points.Remaining".Translate(points);
-            }
-            else {
-                double points = cost.total;
+                Rect rect = new Rect(parentRect.width - costLabelWidth.Value, 2, costLabelWidth.Value, 32);
+                Widgets.Label(rect, label);
+
+                string tooltipText = "";
+                tooltipText += "EdB.PC.Page.Points.ScenarioPoints".Translate(PrepareCarefully.Instance.StartingPoints);
+                tooltipText += "\n\n";
+                foreach (var c in cost.colonistDetails) {
+                    tooltipText += "EdB.PC.Page.Points.CostSummary.Colonist".Translate(c.name, (c.total - c.apparel - c.bionics)) + "\n";
+                }
+                tooltipText += "\n" + "EdB.PC.Page.Points.CostSummary.Apparel".Translate(cost.colonistApparel) + "\n"
+                    + "EdB.PC.Page.Points.CostSummary.Implants".Translate(cost.colonistBionics) + "\n"
+                    + "EdB.PC.Page.Points.CostSummary.Equipment".Translate(cost.equipment) + "\n\n"
+                    + "EdB.PC.Page.Points.CostSummary.Total".Translate(cost.total);
+                TipSignal tip = new TipSignal(() => tooltipText, tooltipText.GetHashCode());
+                TooltipHandler.TipRegion(rect, tip);
+
                 GUI.color = Style.ColorText;
-                label = "EdB.PC.Page.Points.Spent".Translate(points);
+                Text.Anchor = TextAnchor.UpperLeft;
+                Text.Font = GameFont.Small;
+
+                string optionLabel;
+                float optionTop = rect.y;
+                optionLabel = "EdB.PC.Page.Points.UsePoints".Translate();
+                Vector2 size = Text.CalcSize(optionLabel);
+                Rect optionRect = new Rect(parentRect.width - costLabelWidth.Value - size.x - 100, optionTop, size.x + 10, 32);
+                Widgets.Label(optionRect, optionLabel);
+                GUI.color = Color.white;
+                TooltipHandler.TipRegion(optionRect, "EdB.PC.Page.Points.UsePoints.Tip".Translate());
+                Widgets.Checkbox(new Vector2(optionRect.x + optionRect.width, optionRect.y - 3), ref Config.pointsEnabled, 24, false);
             }
-            Rect rect = new Rect(parentRect.width - costLabelWidth.Value, 2, costLabelWidth.Value, 32);
-            Widgets.Label(rect, label);
-
-            string tooltipText = "";
-            tooltipText += "EdB.PC.Page.Points.ScenarioPoints".Translate(PrepareCarefully.Instance.StartingPoints);
-            tooltipText += "\n\n";
-            foreach (var c in cost.colonistDetails) {
-                tooltipText += "EdB.PC.Page.Points.CostSummary.Colonist".Translate(c.name, (c.total - c.apparel - c.bionics)) + "\n";
+            finally {
+                Text.Anchor = TextAnchor.UpperLeft;
+                GUI.color = Color.white;
+                Text.Font = GameFont.Small;
             }
-            tooltipText += "\n" + "EdB.PC.Page.Points.CostSummary.Apparel".Translate(cost.colonistApparel) + "\n"
-                + "EdB.PC.Page.Points.CostSummary.Implants".Translate(cost.colonistBionics) + "\n"
-                + "EdB.PC.Page.Points.CostSummary.Equipment".Translate(cost.equipment) + "\n\n"
-                + "EdB.PC.Page.Points.CostSummary.Total".Translate(cost.total);
-            TipSignal tip = new TipSignal(() => tooltipText, tooltipText.GetHashCode());
-            TooltipHandler.TipRegion(rect, tip);
-
-            GUI.color = Style.ColorText;
-            Text.Anchor = TextAnchor.UpperLeft;
-            Text.Font = GameFont.Small;
-
-            string optionLabel;
-            float optionTop = rect.y;
-            optionLabel = "EdB.PC.Page.Points.UsePoints".Translate();
-            Vector2 size = Text.CalcSize(optionLabel);
-            Rect optionRect = new Rect(parentRect.width - costLabelWidth.Value - size.x - 100, optionTop, size.x + 10, 32);
-            Widgets.Label(optionRect, optionLabel);
-            GUI.color = Color.white;
-            TooltipHandler.TipRegion(optionRect, "EdB.PC.Page.Points.UsePoints.Tip".Translate());
-            Widgets.Checkbox(new Vector2(optionRect.x + optionRect.width, optionRect.y - 3), ref Config.pointsEnabled, 24, false);
         }
 
         protected void SelectPawn(CustomPawn pawn) {

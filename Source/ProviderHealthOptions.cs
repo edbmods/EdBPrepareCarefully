@@ -58,7 +58,8 @@ namespace EdB.PrepareCarefully {
             // Find all recipes that replace a body part.
             List<RecipeDef> recipes = new List<RecipeDef>();
             recipes.AddRange(DefDatabase<RecipeDef>.AllDefs.Where((RecipeDef def) => {
-                if (def.addsHediff != null && def.appliedOnFixedBodyParts != null && def.appliedOnFixedBodyParts.Count > 0
+                if (def.addsHediff != null
+                        && ((def.appliedOnFixedBodyParts != null && def.appliedOnFixedBodyParts.Count > 0) || (def.appliedOnFixedBodyPartGroups != null && def.appliedOnFixedBodyPartGroups.Count > 0))
                         && (def.recipeUsers.NullOrEmpty() || def.recipeUsers.Contains(pawnThingDef))) {
                     return true;
                 }
@@ -86,10 +87,21 @@ namespace EdB.PrepareCarefully {
             foreach (var r in recipes) {
                 // Add all of the body parts for that recipe to the list.
                 foreach (var bodyPartDef in r.appliedOnFixedBodyParts) {
-                    List<UniqueBodyPart> validBodyParts = options.FindBodyPartsForDef(bodyPartDef);
-                    if (validBodyParts != null && validBodyParts.Count > 0) {
-                        options.AddImplantRecipe(r, validBodyParts);
-                        foreach (var part in validBodyParts) {
+                    List<UniqueBodyPart> fixedParts = options.FindBodyPartsForDef(bodyPartDef);
+                    if (fixedParts != null && fixedParts.Count > 0) {
+                        //Logger.Debug("Adding recipe for " + r.defName + " for fixed parts " + String.Join(", ", fixedParts.ConvertAll(p => p.Record.LabelCap)));
+                        options.AddImplantRecipe(r, fixedParts);
+                        foreach (var part in fixedParts) {
+                            part.Replaceable = true;
+                        }
+                    }
+                }
+                foreach (var group in r.appliedOnFixedBodyPartGroups) {
+                    List<UniqueBodyPart> partsFromGroup = options.PartsForBodyPartGroup(group.defName);
+                    if (partsFromGroup != null && partsFromGroup.Count > 0) {
+                        //Logger.Debug("Adding recipe for " + r.defName + " for group " + group.defName + " for parts " + String.Join(", ", partsFromGroup.ConvertAll(p => p.Record.LabelCap)));
+                        options.AddImplantRecipe(r, partsFromGroup);
+                        foreach (var part in partsFromGroup) {
                             part.Replaceable = true;
                         }
                     }
@@ -132,6 +144,25 @@ namespace EdB.PrepareCarefully {
             }
             options.AddInjury(option);
         }
+
+        protected InjuryOption CreateMissingPartInjuryOption(OptionsHealth options, HediffDef hd, ThingDef pawnThingDef) {
+            InjuryOption option = new InjuryOption();
+            option.HediffDef = hd;
+            option.Label = hd.LabelCap;
+
+            HashSet<BodyPartDef> uniquenessLookup = new HashSet<BodyPartDef>();
+            List<BodyPartDef> validParts = new List<BodyPartDef>();
+            foreach (var p in pawnThingDef.race.body.AllParts.Where(p => p.def.canSuggestAmputation)) {
+                if (!uniquenessLookup.Contains(p.def)) {
+                    validParts.Add(p.def);
+                    uniquenessLookup.Add(p.def);
+                }
+            }
+            option.ValidParts = validParts;
+            //Logger.Debug("For pawn of {" + pawnThingDef.defName + "} missing parts allowed are {" + String.Join(", ", option.ValidParts) + "}");
+            return option;
+        }
+
         protected void InitializeInjuryOptions(OptionsHealth options, ThingDef pawnThingDef) {
             HashSet<HediffDef> addedDefs = new HashSet<HediffDef>();
             // Go through all of the hediff giver sets for the pawn's race and intialize injuries from
@@ -175,7 +206,8 @@ namespace EdB.PrepareCarefully {
                 try {
                     // TODO: Missing body part seems to be a special case.  The hediff giver doesn't itself remove
                     // limbs, so disable it until we can add special-case handling.
-                    if (hd.defName == "MissingBodyPart") {
+                    if (hd.hediffClass == typeof(Hediff_MissingPart)) {
+                        options.AddInjury(CreateMissingPartInjuryOption(options, hd, pawnThingDef));
                         continue;
                     }
                     // Filter out defs that were already added via the hediff giver sets.
@@ -190,6 +222,13 @@ namespace EdB.PrepareCarefully {
                     // If it's an old injury, use the old injury properties to get the label.
                     HediffCompProperties p = hd.CompPropsFor(typeof(HediffComp_GetsPermanent));
                     HediffCompProperties_GetsPermanent getsPermanentProperties = p as HediffCompProperties_GetsPermanent;
+
+                    if (getsPermanentProperties == null) {
+                        if (!hd.scenarioCanAdd) {
+                            continue;
+                        }
+                    }
+
                     String label;
                     if (getsPermanentProperties != null) {
                         if (getsPermanentProperties.permanentLabel != null) {
@@ -245,6 +284,19 @@ namespace EdB.PrepareCarefully {
                         option.Label = label;
                     }
                 }
+            }
+            foreach (var option in options.InjuryOptions) {
+                List<UniqueBodyPart> uniqueParts = new List<UniqueBodyPart>();
+                if (option.ValidParts != null && option.ValidParts.Count > 0) {
+                    foreach (var part in option.ValidParts) {
+                        HashSet<BodyPartDef> uniquenessLookup = new HashSet<BodyPartDef>();
+                        if (!uniquenessLookup.Contains(part)) {
+                            uniquenessLookup.Add(part);
+                            uniqueParts.AddRange(options.FindBodyPartsForDef(part));
+                        }
+                    }
+                }
+                option.UniqueParts = uniqueParts;
             }
         }
     }

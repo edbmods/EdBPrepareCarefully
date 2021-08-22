@@ -85,52 +85,6 @@ namespace EdB.PrepareCarefully {
             RectButtonAdd = new Rect(PanelRect.width - 27, 12, 16, 16);
         }
 
-        protected class InjurySeverity {
-            public InjurySeverity(float value) {
-                this.value = value;
-            }
-            public InjurySeverity(float value, HediffStage stage) {
-                this.value = value;
-                this.stage = stage;
-            }
-            protected float value = 0;
-            protected HediffStage stage = null;
-            protected int? variant = null;
-            public float Value {
-                get {
-                    return this.value;
-                }
-            }
-            public HediffStage Stage {
-                get {
-                    return this.stage;
-                }
-            }
-            public int? Variant {
-                get {
-                    return this.variant;
-                }
-                set {
-                    this.variant = value;
-                }
-            }
-            public string Label {
-                get {
-                    if (stage != null) {
-                        if (variant == null) {
-                            return stage.label.CapitalizeFirst();
-                        }
-                        else {
-                            return "EdB.PC.Dialog.Severity.Stage.Label.".Translate(stage.label.CapitalizeFirst(), variant.Value);
-                        }
-                    }
-                    else {
-                        return ("EdB.PC.Dialog.Severity.OldInjury.Label." + value).Translate();
-                    }
-                }
-            }
-        }
-
         protected override void DrawPanelContent(State state) {
             base.DrawPanelContent(state);
             CustomPawn customPawn = state.CurrentPawn;
@@ -426,16 +380,33 @@ namespace EdB.PrepareCarefully {
 
         protected void ResetDisabledInjuryOptions(CustomPawn pawn) {
             disabledInjuryOptions.Clear();
-            foreach (var injuryOption in PrepareCarefully.Instance.Providers.Health.GetOptions(pawn).InjuryOptions) {
+            OptionsHealth optionsHealth = PrepareCarefully.Instance.Providers.Health.GetOptions(pawn);
+            foreach (var injuryOption in optionsHealth.InjuryOptions) {
                 InjuryOption option = injuryOption;
                 if (option.IsOldInjury) {
                     continue;
                 }
-                Injury injury = pawn.Injuries.FirstOrDefault((Injury i) => {
-                    return (i.Option == option);
-                });
-                if (injury != null) {
-                    disabledInjuryOptions.Add(injuryOption);
+                
+                if (option.ValidParts != null && option.ValidParts.Count > 0) {
+                    HashSet<BodyPartRecord> records = new HashSet<BodyPartRecord>(optionsHealth.BodyPartsForInjury(injuryOption));
+                    int recordCount = records.Count;
+                    int injuryCountForThatPart = pawn.Injuries.Where((Injury i) => {
+                        return (i.Option == option);
+                    }).Count();
+                    if (injuryCountForThatPart >= recordCount) {
+                        disabledInjuryOptions.Add(injuryOption);
+                    }
+                    else {
+                        continue;
+                    }
+                }
+                else {
+                    Injury injury = pawn.Injuries.FirstOrDefault((Injury i) => {
+                        return (i.Option == option);
+                    });
+                    if (injury != null) {
+                        disabledInjuryOptions.Add(injuryOption);
+                    }
                 }
             }
         }
@@ -447,6 +418,14 @@ namespace EdB.PrepareCarefully {
                 UniqueBodyPart uniquePart = healthOptions.FindBodyPartsForRecord(part);
                 if (pawn.HasPartBeenReplaced(part) || pawn.HasAtLeastOnePartBeenReplaced(uniquePart.Ancestors.Select((UniqueBodyPart p) => { return p.Record; }))) {
                     disabledBodyParts.Add(part);
+                }
+                else {
+                    Injury injury = pawn.Injuries.FirstOrDefault((Injury i) => {
+                        return i.BodyPartRecord == part;
+                    });
+                    if (injury != null) {
+                        disabledBodyParts.Add(part);
+                    }
                 }
             }
         }
@@ -474,55 +453,12 @@ namespace EdB.PrepareCarefully {
 
         protected void ResetSeverityOptions(InjuryOption injuryOption) {
             severityOptions.Clear();
-
-            // Don't add stages for addictions since they are handled sort of differently.
-            if (injuryOption.HediffDef.hediffClass != null && typeof(Hediff_Addiction).IsAssignableFrom(injuryOption.HediffDef.hediffClass)) {
-                return;
+            if (injuryOption.SeverityOptions().Any(s => s != null)) {
+                severityOptions.AddRange(injuryOption.SeverityOptions());
+                //Logger.Debug("{" + injuryOption.Label + "} has severity options: " + string.Join(", ", severityOptions.Select(o => o.Label)));
             }
-
-            // If the injury has no stages, add the old injury severity options.
-            // TODO: Is this right?
-            if (injuryOption.HediffDef.stages == null || injuryOption.HediffDef.stages.Count == 0) {
-                severityOptions.AddRange(permanentInjurySeverities);
-                return;
-            }
-
-            int variant = 1;
-            InjurySeverity previous = null;
-
-            foreach (var stage in injuryOption.HediffDef.stages) {
-                // Filter out a stage if it will definitely kill the pawn.
-                if (injuryOption.HediffDef.DoesStageDefinitelyKillPawn(stage)) {
-                    continue;
-                }
-                // Filter out hidden stages.
-                if (!stage.becomeVisible) {
-                    continue;
-                }
-                InjurySeverity value = null;
-                if (stage.minSeverity == 0) {
-                    float severity = injuryOption.HediffDef.initialSeverity > 0 ? injuryOption.HediffDef.initialSeverity : 0.001f;
-                    value = new InjurySeverity(severity, stage);
-                }
-                else {
-                    value = new InjurySeverity(stage.minSeverity, stage);
-                }
-                if (previous == null) {
-                    previous = value;
-                    variant = 1;
-                }
-                else {
-                    if (previous.Stage.label == stage.label) {
-                        previous.Variant = variant;
-                        variant++;
-                        value.Variant = variant;
-                    }
-                    else {
-                        previous = value;
-                        variant = 1;
-                    }
-                }
-                severityOptions.Add(value);
+            else {
+                //Logger.Debug("{" + injuryOption.Label + "} has no severity options");
             }
         }
 

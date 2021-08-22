@@ -296,9 +296,27 @@ namespace EdB.PrepareCarefully {
             OptionsHealth healthOptions = PrepareCarefully.Instance.Providers.Health.GetOptions(this);
             List<Injury> injuries = new List<Injury>();
             List<Implant> implants = new List<Implant>();
+
+            // Create a lookup of all of the body parts that are missing
+            HashSet<BodyPartRecord> missingParts = new HashSet<BodyPartRecord>();
+            foreach (var hediff in pawn.health.hediffSet.hediffs) {
+                if (hediff is Hediff_MissingPart || hediff is Hediff_AddedPart) {
+                    missingParts.Add(hediff.Part);
+                }
+            }
+
             foreach (var hediff in pawn.health.hediffSet.hediffs) {
                 InjuryOption option = healthOptions.FindInjuryOptionByHediffDef(hediff.def);
                 if (option != null) {
+                    //Logger.Debug("Found injury option for {" + hediff.def.defName + "} for part {" + hediff.Part?.LabelCap + "}");
+
+                    // If the hediff is a missing part and the part's parent is also missing, we don't add a missing part hediff for the child part.
+                    if (hediff is Hediff_MissingPart) {
+                        if (hediff.Part.parent != null && missingParts.Contains(hediff.Part.parent)) {
+                            continue;
+                        }
+                    }
+
                     Injury injury = new Injury();
                     injury.BodyPartRecord = hediff.Part;
                     injury.Option = option;
@@ -310,18 +328,20 @@ namespace EdB.PrepareCarefully {
                     injuries.Add(injury);
                 }
                 else {
-                    //Logger.Debug("Looking for implant recipes for part {" + hediff.Part?.def + "}");
-                    RecipeDef implantRecipe = healthOptions.ImplantRecipes.Where((RecipeDef def) => {
-                        return (def.addsHediff != null && def.addsHediff == hediff.def && def.appliedOnFixedBodyParts.Contains(hediff.Part?.def));
-                    }).RandomElementWithFallback(null);
+                    //Logger.Debug("Did not find injury option for {" + hediff.def.defName + "} for part {" + hediff.Part?.LabelCap + "}");
+                    RecipeDef implantRecipe = healthOptions.FindImplantRecipesThatAddHediff(hediff).RandomElementWithFallback(null);
                     if (implantRecipe != null) {
                         Implant implant = new Implant();
                         implant.recipe = implantRecipe;
                         implant.BodyPartRecord = hediff.Part;
                         implants.Add(implant);
+                        //Logger.Debug("Found implant recipes for {" + hediff.def.defName + "} for part {" + hediff.Part?.LabelCap + "}");
                     }
                     else if (hediff.def.defName != "MissingBodyPart") {
                         Logger.Warning("Could not add hediff {" + hediff.def.defName + "} to the pawn because no recipe adds it to the body part {" + (hediff.Part?.def?.defName ?? "WholeBody") + "}");
+                    }
+                    else {
+                        Logger.Warning("Could not add hediff {" + hediff.def.defName + "} to the pawn.  It is not currently supported");
                     }
                 }
             }
