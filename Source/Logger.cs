@@ -11,6 +11,11 @@ namespace EdB.PrepareCarefully {
                 Log.Message("<color='#33ff33'>" + message + "</color>");
             }
         }
+        public static void Debug(string message, params object[] arguments) {
+            if (DebugEnabled) {
+                Log.Message(String.Format("<color='#33ff33'>" + message + "</color>", arguments));
+            }
+        }
 
         public static void Message(string message) {
             Log.Message(Prefix + message);

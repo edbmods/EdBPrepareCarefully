@@ -4,11 +4,17 @@
  _____________________________________________________________________________
 
  - Fixed an issue where "crown type" was being to set to "Undefined" for some
-   alien races, causing errors/issues when displaying head graphics.
+   alien races (i.e. the Anthro Race Mod), causing errors/issues when
+   displaying head graphics.
  - Fixed implant recipes to enable recipes that are applied to body part
    groups, i.e. venom talons, venom fangs.
- - Removed some problematic injury/health condition options.
- - Enabled the "MissingBodyPart" injury/health condition option.
+ - Removed the ability to assign some problematic injury/health condition 
+   options.  Most of them didn't work properly because they need more
+   configuration than we're able to provide in the current user interface.
+ - Enabled the "MissingBodyPart" injury/health condition option.  It's not
+   perfect--you can't select the damage type that caused the body part to
+   be missing.. For example, it will say that the eye is "gone" instead of
+   "cut out".
 
  _____________________________________________________________________________
  
