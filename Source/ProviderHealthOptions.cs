@@ -203,6 +203,13 @@ namespace EdB.PrepareCarefully {
             
             // Add injury options.
             foreach (var hd in DefDatabase<HediffDef>.AllDefs) {
+                //Logger.Debug("{0} ({1}), comps = {2}, givers = {3} tags = {4}",
+                //    hd.LabelCap,
+                //    hd.defName,
+                //    string.Join(", ", hd?.comps?.Select(c => c.compClass.FullName) ?? new string[] { "none" }),
+                //    string.Join(", ", hd?.hediffGivers?.Select(g => g.GetType().FullName) ?? new string[] { "none" }),
+                //    string.Join(", ", hd?.tags ?? new List<string>(new string[] { "none" }))
+                //);
                 try {
                     // TODO: Missing body part seems to be a special case.  The hediff giver doesn't itself remove
                     // limbs, so disable it until we can add special-case handling.
@@ -223,9 +230,12 @@ namespace EdB.PrepareCarefully {
                     HediffCompProperties p = hd.CompPropsFor(typeof(HediffComp_GetsPermanent));
                     HediffCompProperties_GetsPermanent getsPermanentProperties = p as HediffCompProperties_GetsPermanent;
 
+                    bool warning = false;
                     if (getsPermanentProperties == null) {
                         if (!hd.scenarioCanAdd) {
-                            continue;
+                            if (hd.comps != null && hd.comps.Count > 0) {
+                                warning = true;
+                            }
                         }
                     }
 
@@ -247,6 +257,7 @@ namespace EdB.PrepareCarefully {
                     InjuryOption option = new InjuryOption();
                     option.HediffDef = hd;
                     option.Label = label;
+                    option.Warning = warning;
                     if (getsPermanentProperties != null) {
                         option.IsOldInjury = true;
                     }

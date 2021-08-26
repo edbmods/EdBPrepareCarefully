@@ -24,6 +24,8 @@ namespace EdB.PrepareCarefully {
         public InjuryOption() {
         }
 
+        public bool Warning { get; set; } = false;
+
         public HediffDef HediffDef {
             get { return hediffDef; }
             set { hediffDef = value; }
