@@ -1,5 +1,22 @@
  _____________________________________________________________________________
  
+   Version 1.3.8
+ _____________________________________________________________________________
+
+ - Added all colony factions to the list of "faction templates" so that more
+   pawn kinds are available when using the "Add..." button to add a new pawn.
+ - The list of pawn kinds in the "faction templates" list now displays the
+   default race of the pawn kind so that it's easier to distinguish between
+   pawn kinds.  You may not see this change if you have any mods enabled that
+   dynamically change the default race of a pawn kind, leaving the value
+   unreliable for we want to use it.
+ - Reverted the change that removed injury/health conditions from the list of
+   those that you can add to a pawn.  You can add these hediff's to your
+   pawns again.  Some of them will work fine.  Others may not work properly.
+ - Fixed the content of the manifest XML file
+
+ _____________________________________________________________________________
+ 
    Version 1.3.7
  _____________________________________________________________________________
 
