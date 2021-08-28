@@ -18,21 +18,25 @@ namespace EdB.PrepareCarefully {
         private CustomFaction randomFaction;
         public ProviderFactions() {
             foreach (var kindDef in DefDatabase<PawnKindDef>.AllDefs) {
+                //Logger.Debug("pawnKindDef {0}, {1}", kindDef.defName, kindDef.LabelCap);
                 if (kindDef == null) {
                     continue;
                 }
                 try {
                     // Exclude animals, mechanoids and other non-human pawn kinds.
                     if (!kindDef.RaceProps.Humanlike) {
+                        //Logger.Debug("Excluding pawnKindDef because it's non-human {0}, {1}", kindDef.defName, kindDef.LabelCap);
                         continue;
                     }
                     // Exclude any pawn kind that has no faction.
                     Faction faction = GetFaction(kindDef);
                     if (faction == null) {
+                        //Logger.Debug("Excluding pawnKindDef because it has no faction {0}, {1}", kindDef.defName, kindDef.LabelCap);
                         continue;
                     }
                     // Double-check that it's a humanlike pawn by looking at the value on the faction.
                     if (!faction.def.humanlikeFaction) {
+                        //Logger.Debug("Excluding pawnKindDef because its faction is not humanlike {0}, {1}", kindDef.defName, kindDef.LabelCap);
                         continue;
                     }
                     // Create a lookup of where you can get the list of pawn kinds given a faction def.

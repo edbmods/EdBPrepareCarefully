@@ -1,4 +1,4 @@
-﻿using RimWorld;
+using RimWorld;
 using System;
 using System.Collections.Generic;
 using UnityEngine;
@@ -26,6 +26,7 @@ namespace EdB.PrepareCarefully {
         protected bool resizeDirtyFlag = true;
         protected bool confirmed = false;
         protected PawnKindDef scrollTo = null;
+        protected LabelTrimmer labelTrimmer = new LabelTrimmer();
         public DialogPawnKinds() {
             this.closeOnCancel = true;
             this.doCloseX = true;
@@ -120,6 +121,8 @@ namespace EdB.PrepareCarefully {
             float radioWidth = 36;
             Vector2 nameSize = new Vector2(ContentRect.width - radioWidth, 42);
 
+            labelTrimmer.Rect = new Rect(0, 0, nameSize.x, nameSize.y);
+
             table = new WidgetTable<PawnKindDef>();
             table.Rect = new Rect(Vector2.zero, ContentRect.size);
             table.RowHeight = 42;
@@ -141,7 +144,19 @@ namespace EdB.PrepareCarefully {
                 DrawAction = (PawnKindDef pawnKind, Rect rect, WidgetTable<PawnKindDef>.Metadata metadata) => {
                     Text.Anchor = TextAnchor.MiddleLeft;
                     Text.Font = GameFont.Small;
-                    Widgets.Label(new Rect(rect.x + nameOffset, rect.y + 1, rect.width, nameSize.y), pawnKind.LabelCap);
+                    if (this.ShowRace && pawnKind.race != null) {
+                        Rect nameRect = new Rect(rect.x + nameOffset, rect.y + 5, rect.width, 22);
+                        Widgets.Label(nameRect, labelTrimmer.TrimLabelIfNeeded(pawnKind.LabelCap));
+                        Rect raceRect = new Rect(rect.x + nameOffset, nameRect.yMax - 5, rect.width, nameSize.y - 25);
+                        Text.Font = GameFont.Tiny;
+                        GUI.color = Style.ColorTextSecondary;
+                        Widgets.Label(raceRect, labelTrimmer.TrimLabelIfNeeded(pawnKind.race.LabelCap));
+                        GUI.color = Color.white;
+                        Text.Font = GameFont.Small;
+                    }
+                    else {
+                        Widgets.Label(new Rect(rect.x + nameOffset, rect.y + 1, rect.width, nameSize.y), pawnKind.LabelCap);
+                    }
                     Text.Anchor = TextAnchor.UpperLeft;
                 }
             });
@@ -179,6 +194,8 @@ namespace EdB.PrepareCarefully {
         public IEnumerable<WidgetTable<PawnKindDef>.RowGroup> RowGroups {
             get; set;
         }
+
+        public bool ShowRace { get; set; }
 
         public override Vector2 InitialSize {
             get {

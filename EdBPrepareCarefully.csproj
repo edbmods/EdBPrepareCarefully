@@ -117,6 +117,7 @@
     <Compile Include="Source\PawnBioGenerator.cs" />
     <Compile Include="Source\PawnCompRules.cs" />
     <Compile Include="Source\PawnGenerationRequestWrapper.cs" />
+    <Compile Include="Source\ProviderPawnKinds.cs" />
     <Compile Include="Source\PawnLayer.cs" />
     <Compile Include="Source\PawnLayerAlienAddon.cs" />
     <Compile Include="Source\PawnLayerBodyTattoo.cs" />

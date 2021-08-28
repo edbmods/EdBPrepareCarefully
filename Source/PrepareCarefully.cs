@@ -180,6 +180,7 @@ namespace EdB.PrepareCarefully {
             Providers.BodyTattoos = new ProviderBodyTattoos() {
                 AlienRaceProvider = Providers.AlienRaces
             };
+            Providers.PawnKinds = new ProviderPawnKinds();
         }
 
         // TODO:

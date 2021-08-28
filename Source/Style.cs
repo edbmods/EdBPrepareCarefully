@@ -1,8 +1,9 @@
-﻿using System;
+using System;
 using UnityEngine;
 namespace EdB.PrepareCarefully {
     public static class Style {
         public static Color ColorText = new Color(0.80f, 0.80f, 0.80f);
+        public static Color ColorTextSecondary = new Color(0.50f, 0.50f, 0.50f);
         public static Color ColorTextPanelHeader = new Color(207f/255f, 207f/255f, 207f/255f);
 
         public static Color ColorPanelBackground = new Color(36f/255f, 37f/255f, 38f/255f);

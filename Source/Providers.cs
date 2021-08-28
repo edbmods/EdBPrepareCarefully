@@ -44,5 +44,8 @@ namespace EdB.PrepareCarefully {
         public ProviderAgeLimits AgeLimits {
             get; set;
         }
+        public ProviderPawnKinds PawnKinds {
+            get; set;
+        }
     }
 }

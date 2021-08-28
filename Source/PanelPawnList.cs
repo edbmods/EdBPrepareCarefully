@@ -370,6 +370,19 @@ namespace EdB.PrepareCarefully {
             }
         }
 
+        public IEnumerable<PawnKindDef> AllPawnKinds(PawnKindDef basicKind, IEnumerable<PawnKindDef> factionKinds) {
+            if (basicKind != null) {
+                yield return basicKind;
+            }
+            if (factionKinds != null) {
+                foreach (var f in factionKinds) {
+                    if (f != basicKind) {
+                        yield return f;
+                    }
+                }
+            }
+        }
+
         protected List<WidgetTable<PawnKindDef>.RowGroup> rowGroups = new List<WidgetTable<PawnKindDef>.RowGroup>();
         protected void ShowPawnKindDialog() {
             HashSet<PawnKindDef> disabled = new HashSet<PawnKindDef>();
@@ -377,28 +390,33 @@ namespace EdB.PrepareCarefully {
 
             PawnKindDef selected = PrepareCarefully.Instance.State.LastSelectedPawnKindDef;
 
-            // Create a pawn kind group for colony pawn kinds.
-            Faction playerFaction = Find.GameInitData.playerFaction;
-            IEnumerable<PawnKindDef> playerFactionKinds = PrepareCarefully.Instance.Providers.Factions.GetPawnKindsForFactionDef(Find.FactionManager.OfPlayer.def);
-            PawnKindDef basicKind = Faction.OfPlayer?.def?.basicMemberKind;
-            IEnumerable<PawnKindDef> colonyKindDefs = ColonyKindDefs(basicKind, playerFactionKinds);
-            if (colonyKindDefs != null) {
-                PawnKindDef defaultSelected = colonyKindDefs.FirstOrDefault();
-                rowGroups.Add(new WidgetTable<PawnKindDef>.RowGroup("<b>" + Find.FactionManager.OfPlayer.Name + "</b>", colonyKindDefs));
-                if (selected == null) {
-                    selected = defaultSelected;
+            List<ProviderPawnKinds.FactionPawnKinds> factionPawnKindsList = new List<ProviderPawnKinds.FactionPawnKinds>(PrepareCarefully.Instance.Providers.PawnKinds.PawnKindsByFaction);
+            // Sort the pawn kinds to put the colony faction at the top.
+            factionPawnKindsList.Sort((a, b) => {
+                if (a.Faction == Find.FactionManager.OfPlayer.def && b.Faction != Find.FactionManager.OfPlayer.def) {
+                    return -1;
                 }
+                else if (b.Faction == Find.FactionManager.OfPlayer.def && a.Faction != Find.FactionManager.OfPlayer.def) {
+                    return 1;
+                }
+                else {
+                    return string.Compare(a.Faction.LabelCap, b.Faction.LabelCap);
+                }
+            });
+            //Logger.Debug(String.Join("\n", factionPawnKindsList.Select(k => k.Faction.LabelCap + ", " + k.Faction.defName)));
+
+            // If no pawn kind has been selected, select the colony's basic pawn kind by default.
+            if (selected == null) {
+                selected = factionPawnKindsList?.FirstOrDefault(f => f != null)?.PawnKinds?.FirstOrDefault(k => k != null);
             }
 
-            List<FactionDef> factionDefs = PrepareCarefully.Instance.Providers.Factions.NonPlayerHumanlikeFactionDefs;
-            foreach (var factionDef in factionDefs) {
-                var pawnKindsEnumerable = PrepareCarefully.Instance.Providers.Factions.GetPawnKindsForFactionDef(factionDef);
-                if (pawnKindsEnumerable != null) {
-                    List<PawnKindDef> pawnKinds = pawnKindsEnumerable.ToList();
-                    if (pawnKinds.Count > 0) {
-                        rowGroups.Add(new WidgetTable<PawnKindDef>.RowGroup("<b>" + factionDef.LabelCap.ToString() + "</b>", pawnKinds));
-                    }
+            foreach (var factionPawnKinds in factionPawnKindsList) {
+                if (factionPawnKinds.PawnKinds.Count > 0) {
+                    rowGroups.Add(new WidgetTable<PawnKindDef>.RowGroup("<b>" + factionPawnKinds.Faction.LabelCap.ToString() + "</b>", factionPawnKinds.PawnKinds));
                 }
+            }
+            if (!PrepareCarefully.Instance.Providers.PawnKinds.PawnKindsWithNoFaction.EnumerableNullOrEmpty()) {
+                rowGroups.Add(new WidgetTable<PawnKindDef>.RowGroup("<b>Other</b>", PrepareCarefully.Instance.Providers.PawnKinds.PawnKindsWithNoFaction));
             }
 
             DialogPawnKinds dialog = new DialogPawnKinds() {
@@ -413,7 +431,8 @@ namespace EdB.PrepareCarefully {
                         AddingPawnWithPawnKind(selected, StartingPawns);
                     }
                 },
-                Selected = selected
+                Selected = selected,
+                ShowRace = PrepareCarefully.Instance.Providers.PawnKinds.AnyNonHumanPawnKinds && !PawnKindRaceDiversificationEnabled
             };
             dialog.ScrollTo(PrepareCarefully.Instance.State.LastSelectedPawnKindDef);
             Find.WindowStack.Add(dialog);
@@ -422,6 +441,11 @@ namespace EdB.PrepareCarefully {
         public void ScrollToBottom() {
             scrollView.ScrollToBottom();
         }
-        
+
+        public bool PawnKindRaceDiversificationEnabled {
+            get {
+                return ModsConfig.ActiveModsInLoadOrder?.FirstOrDefault(m => m.PackageId == "solidwires.pawnkindracediversification") != null;
+            }
+        }
     }
 }
