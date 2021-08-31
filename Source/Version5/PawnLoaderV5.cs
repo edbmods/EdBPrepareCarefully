@@ -385,7 +385,7 @@ namespace EdB.PrepareCarefully {
                 }
             }
             HashSet<string> savedComps = record.savedComps != null ? new HashSet<string>(record.savedComps) : new HashSet<string>();
-            DefaultPawnCompRules.PostLoadModifiers.Apply(pawn.Pawn, compLookup, savedComps);
+            DefaultPawnCompRules.PostLoadModifiers.Apply(pawn, compLookup, savedComps);
 
             pawn.ClearTraits();
             if (record.traits != null) {

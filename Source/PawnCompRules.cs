@@ -12,20 +12,34 @@ namespace EdB.PrepareCarefully {
     }
 
     public delegate void ModifyPawnCompPostLoad(Pawn pawn, Dictionary<string, ThingComp> thingCompLookup, HashSet<string> loadedComps);
+    public delegate void ModifyCustomPawnCompPostLoad(CustomPawn pawn, Dictionary<string, ThingComp> thingCompLookup, HashSet<string> loadedComps);
 
     public class PawnCompPostLoadModifiers {
-        public static List<ModifyPawnCompPostLoad> functions = new List<ModifyPawnCompPostLoad>();
+        public static List<ModifyPawnCompPostLoad> pawnFunctions = new List<ModifyPawnCompPostLoad>();
+        public static List<ModifyCustomPawnCompPostLoad> customPawnFunctions = new List<ModifyCustomPawnCompPostLoad>();
 
         public PawnCompPostLoadModifiers Add(ModifyPawnCompPostLoad func) {
-            functions.Add(func);
+            pawnFunctions.Add(func);
             return this;
         }
 
-        public void Apply(Pawn pawn, Dictionary<string, ThingComp> thingCompLookup, HashSet<string> loadedComps) {
-            foreach (var fn in functions) {
+        public PawnCompPostLoadModifiers Add(ModifyCustomPawnCompPostLoad func) {
+            customPawnFunctions.Add(func);
+            return this;
+        }
+
+        public void Apply(CustomPawn pawn, Dictionary<string, ThingComp> thingCompLookup, HashSet<string> loadedComps) {
+            foreach (var fn in pawnFunctions) {
+                fn(pawn.Pawn, thingCompLookup, loadedComps);
+            }
+            foreach (var fn in customPawnFunctions) {
                 fn(pawn, thingCompLookup, loadedComps);
             }
         }
+    }
+
+    public class CustomPawnCompPostLoadModifiers {
+
     }
 
     public static class DefaultPawnCompRules {
@@ -100,6 +114,7 @@ namespace EdB.PrepareCarefully {
             postLoadModifiers = new PawnCompPostLoadModifiers();
             postLoadModifiers.Add(RemoveDefaultVanillaHairExtendedBeard);
             postLoadModifiers.Add(RemoveDefaultFacialStuff);
+            postLoadModifiers.Add(ValidateAlienCrownType);
         }
 
         public static void RemoveDefaultVanillaHairExtendedBeard(Pawn pawn, Dictionary<string, ThingComp> compLookup, HashSet<string> savedComps) {
@@ -157,6 +172,22 @@ namespace EdB.PrepareCarefully {
                         }
                         else {
                             ReflectionUtil.SetFieldValue(pawnFace, "_moustacheDef", defaultStacheDef);
+                        }
+                    }
+                }
+            }
+        }
+
+        public static void ValidateAlienCrownType(CustomPawn pawn, Dictionary<string, ThingComp> compLookup, HashSet<string> savedComps) {
+            // If the pawn was saved when vanilla hair expanded was not enabled, but it was enabled when they load the pawn,
+            // then they may end up with a beard by default.  This post-load action clears out that default beard.
+            if (!savedComps.Contains("AlienRace.AlienPartGenerator+AlienComp")) {
+                if (compLookup.TryGetValue("AlienRace.AlienPartGenerator+AlienComp", out ThingComp c)) {
+                    string crownType = ReflectionUtil.GetFieldValue<string>(c, "crownType");
+                    if (crownType != null) {
+                        CustomHeadType headType = pawn.HeadType;
+                        if (headType != null && headType.AlienCrownType != crownType) {
+                            ReflectionUtil.SetFieldValue(c, "crownType", null);
                         }
                     }
                 }

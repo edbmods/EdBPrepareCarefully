@@ -196,12 +196,36 @@ namespace EdB.PrepareCarefully {
                 return default(T);
             }
             if (typeof(T).IsAssignableFrom(o.GetType())) {
-                return (T)property.GetValue(target);
+                return (T)o;
             }
             else {
                 Logger.Warning("Could not cast the value from property {" + name + "} whose type is {" + o.GetType().FullName + "} to the specified type {" + typeof(T).FullName + "}");
             }
             return default(T);
+        }
+
+        public static T GetStaticPropertyValue<T>(Type target, string name) {
+            if (target == null) {
+                Logger.Warning("Could not get value from property {" + name + "} using reflection because the target was null");
+                return default;
+            }
+            PropertyInfo property = Property(target, name);
+            if (property == null) {
+                Logger.Warning("Could not get value from property {" + name + "} using reflection because we could not find the property on the target's type");
+                return default;
+            }
+            object o = property.GetValue(null);
+            if (o == null) {
+                //Logger.Debug("Got the value from property {" + name + "} using reflection, but it was null");
+                return default;
+            }
+            if (typeof(T).IsAssignableFrom(o.GetType())) {
+                return (T)o;
+            }
+            else {
+                Logger.Warning("Could not cast the value from property {" + name + "} whose type is {" + o.GetType().FullName + "} to the specified type {" + typeof(T).FullName + "}");
+            }
+            return default;
         }
 
         public static void InvokeActionMethod(object target, string name, object[] args = null) {

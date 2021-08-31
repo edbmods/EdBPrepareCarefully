@@ -25,8 +25,10 @@ namespace EdB.PrepareCarefully {
         public void AddHeadType(CustomHeadType headType) {
             headTypes.Add(headType);
             //Logger.Debug(headType.ToString());
-            pathDictionary.Add(headType.GraphicPath, headType);
-            if (headType.AlternateGraphicPath != null) {
+            if (!headType.GraphicPath.NullOrEmpty() && !pathDictionary.ContainsKey(headType.GraphicPath)) {
+                pathDictionary.Add(headType.GraphicPath, headType);
+            }
+            if (!headType.AlternateGraphicPath.NullOrEmpty() && !pathDictionary.ContainsKey(headType.AlternateGraphicPath)) {
                 pathDictionary.Add(headType.AlternateGraphicPath, headType);
             }
         }

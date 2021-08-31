@@ -1152,8 +1152,6 @@ namespace EdB.PrepareCarefully {
                     HeadType = headType;
                 }
                 else {
-                    // Set the graphic path on the pawn directly if no head type was found.
-                    SetHeadGraphicPathOnPawn(pawn, value);
                     Logger.Warning("Could not find a head type for the graphic path: " + value);
                 }
                 ResetCachedHead();
