@@ -1,10 +1,10 @@
-﻿using System;
+using System;
 using UnityEngine;
 using Verse;
 
 namespace EdB.PrepareCarefully {
     public class ScrollViewVertical {
-        public static readonly float ScrollbarSize = 15;
+        public static readonly float ScrollbarSize = 16;
         private float contentHeight;
         private Vector2 position = Vector2.zero;
         private Rect viewRect;
@@ -21,6 +21,13 @@ namespace EdB.PrepareCarefully {
         public float ViewWidth {
             get {
                 return viewRect.width;
+            }
+        }
+
+        // The current width of the view, adjusted based on whether or not the scrollbars are visible
+        public float CurrentViewWidth {
+            get {
+                return !ScrollbarsVisible ? viewRect.width : viewRect.width - ScrollbarSize;
             }
         }
 

@@ -1,42 +1,49 @@
-﻿using RimWorld;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Reflection;
+using System.Text;
+using System.Threading.Tasks;
 using UnityEngine;
+using RimWorld;
 using Verse;
 using Verse.Sound;
+
 namespace EdB.PrepareCarefully {
-    public class PanelFaction : PanelBase {
-        private Field FieldFaction = new Field();
-        private Rect RectFactionField;
-        private ProviderFactions providerFactions = PrepareCarefully.Instance.Providers.Factions;
-        private LabelTrimmer labelTrimmer = new LabelTrimmer();
-        public PanelFaction() {
-        }
-        public override string PanelHeader {
-            get {
-                return "Faction".Translate();
-            }
-        }
+    public class PanelModuleFaction : PanelModule {
+        public static readonly float FieldPadding = 6;
 
-        public override void Resize(Rect rect) {
-            base.Resize(rect);
-            float top = 36;
-            float labelPadding = 12;
-            float fieldWidth = rect.width - labelPadding * 2;
-            float fieldHeight = 22;
-            RectFactionField = new Rect(labelPadding, top, fieldWidth, fieldHeight);
-            FieldFaction.Rect = RectFactionField;
-            labelTrimmer.Rect = FieldFaction.Rect.InsetBy(8, 0);
+        public Rect FieldRect;
+        protected Field FieldFaction = new Field();
+        protected ProviderFactions providerFactions = PrepareCarefully.Instance.Providers.Factions;
+        protected LabelTrimmer labelTrimmer = new LabelTrimmer();
+
+        public override void Resize(float width) {
+            base.Resize(width);
+            FieldRect = new Rect(FieldPadding, 0, width - FieldPadding * 2, Style.FieldHeight);
         }
 
-        protected override void DrawPanelContent(State state) {
-            base.DrawPanelContent(state);
+        public float Measure() {
+            return 0;
+        }
 
+        public bool Visible(State state) {
             CustomPawn pawn = state.CurrentPawn;
+            return pawn.Type != CustomPawnType.Colonist;
+        }
 
-            GUI.color = Color.white;
+        public override float Draw(State state, float y) {
+            CustomPawn pawn = state.CurrentPawn;
+            if (pawn.Type == CustomPawnType.Colonist) {
+                return 0;
+            }
+
+            float top = y;
+            y += Margin.y;
+
+            y += DrawHeader(y, Width, "Faction".Translate().Resolve());
+
+            FieldFaction.Rect = FieldRect.OffsetBy(0, y);
+            labelTrimmer.Rect = FieldFaction.Rect.InsetBy(8, 0);
             if (pawn.Type == CustomPawnType.Colonist) {
                 FieldFaction.Label = "Colony".Translate();
                 FieldFaction.Enabled = false;
@@ -50,10 +57,15 @@ namespace EdB.PrepareCarefully {
                 };
             }
             FieldFaction.Draw();
-            
+            y += FieldRect.height;
+
             Text.Font = GameFont.Small;
             GUI.color = Color.white;
             Text.Anchor = TextAnchor.UpperLeft;
+
+
+            y += Margin.y;
+            return y - top;
         }
 
         protected List<WidgetTable<CustomFaction>.RowGroup> rowGroups = new List<WidgetTable<CustomFaction>.RowGroup>();
@@ -77,6 +89,5 @@ namespace EdB.PrepareCarefully {
             factionDialog.ScrollTo(selectedFaction);
             Find.WindowStack.Add(factionDialog);
         }
-
     }
 }

@@ -1,12 +1,18 @@
-using RimWorld;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
 using UnityEngine;
+using RimWorld;
 using Verse;
 using Verse.Sound;
+
 namespace EdB.PrepareCarefully {
-    public class PanelTraits : PanelBase {
+    public class PanelModuleTraits : PanelModule {
+        public Rect FieldRect;
+        public static readonly float FieldPadding = 6;
+
         public delegate void RandomizeTraitsHandler();
         public delegate void AddTraitHandler(Trait trait);
         public delegate void UpdateTraitHandler(int index, Trait trait);
@@ -22,197 +28,139 @@ namespace EdB.PrepareCarefully {
         protected List<Field> fields = new List<Field>();
         protected List<Trait> traitsToRemove = new List<Trait>();
         protected HashSet<TraitDef> disallowedTraitDefs = new HashSet<TraitDef>();
-        protected Dictionary<Trait,string> conflictingTraitList = new Dictionary<Trait, string>();
-
-        protected Vector2 SizeField;
-        protected Vector2 SizeTrait;
-        protected Vector2 SizeFieldPadding = new Vector2(5, 6);
-        protected Vector2 SizeTraitMargin = new Vector2(4, -6);
-        protected Rect RectScrollFrame;
-        protected Rect RectScrollView;
-
-        public class TipCache {
-            public Dictionary<Trait, string> Lookup = new Dictionary<Trait, string>();
-            private CustomPawn pawn = null;
-            private bool ready = false;
-            public void CheckPawn(CustomPawn pawn) {
-                if (this.pawn != pawn) {
-                    this.pawn = pawn;
-                    Invalidate();
-                }
-            }
-            public void Invalidate() {
-                this.ready = false;
-                Lookup.Clear();
-            }
-            public void MakeReady() {
-                this.ready = true;
-            }
-            public bool Ready {
-                get {
-                    return ready;
-                }
-            }
-        }
+        protected Dictionary<Trait, string> conflictingTraitList = new Dictionary<Trait, string>();
         protected TipCache tipCache = new TipCache();
 
-        public PanelTraits() {
+        public override void Resize(float width) {
+            base.Resize(width);
+            FieldRect = new Rect(FieldPadding, 0, width - FieldPadding * 2, Style.FieldHeight);
         }
 
-        public override string PanelHeader {
-            get {
-                return "Traits".Translate();
-            }
+        public float Measure() {
+            return 0;
         }
 
-        public override void Resize(Rect rect) {
-            base.Resize(rect);
+        public override float Draw(State state, float y) {
+            float top = y;
+            y += Margin.y;
 
-            float panelPadding = 10;
-            float fieldHeight = Style.FieldHeight;
-            SizeTrait = new Vector2(PanelRect.width - panelPadding * 2, fieldHeight + SizeFieldPadding.y * 2);
-            SizeField = new Vector2(SizeTrait.x - SizeFieldPadding.x * 2, SizeTrait.y - SizeFieldPadding.y * 2);
+            y += DrawHeader(y, Width, "Traits".Translate().Resolve());
 
-            RectScrollFrame = new Rect(panelPadding, BodyRect.y,
-                PanelRect.width - panelPadding * 2, BodyRect.height - panelPadding);
-            RectScrollView = new Rect(0, 0, RectScrollFrame.width, RectScrollFrame.height);
-        }
-
-        protected override void DrawPanelContent(State state) {
             CustomPawn currentPawn = state.CurrentPawn;
-            tipCache.CheckPawn(currentPawn);
-
-            base.DrawPanelContent(state);
-
+            int index = 0;
             Action clickAction = null;
-            float cursor = 0;
-            GUI.color = Color.white;
-            GUI.BeginGroup(RectScrollFrame);
-            try {
-                if (currentPawn.Traits.Count() == 0) {
-                    GUI.color = Style.ColorText;
-                    Widgets.Label(RectScrollView.InsetBy(6, 0, 0, 0), "EdB.PC.Panel.Traits.None".Translate());
+            foreach (Trait trait in currentPawn.Traits) {
+                if (index > 0) {
+                    y += FieldPadding;
                 }
-                GUI.color = Color.white;
+                if (index >= fields.Count) {
+                    fields.Add(new Field());
+                }
+                Field field = fields[index];
 
-                scrollView.Begin(RectScrollView);
+                Rect fieldRect = FieldRect.OffsetBy(0, y);
+                field.Rect = fieldRect;
+                Rect fieldClickRect = fieldRect;
+                fieldClickRect.width -= 36;
+                field.ClickRect = fieldClickRect;
 
-                int index = 0;
-                foreach (Trait trait in currentPawn.Traits) {
-                    if (index >= fields.Count) {
-                        fields.Add(new Field());
-                    }
-                    Field field = fields[index];
-
-                    GUI.color = Style.ColorPanelBackgroundItem;
-                    Rect traitRect = new Rect(0, cursor, SizeTrait.x - (scrollView.ScrollbarsVisible ? 16 : 0), SizeTrait.y);
-                    GUI.DrawTexture(traitRect, BaseContent.WhiteTex);
-                    GUI.color = Color.white;
-
-                    Rect fieldRect = new Rect(SizeFieldPadding.x, cursor + SizeFieldPadding.y, SizeField.x, SizeField.y);
-                    if (scrollView.ScrollbarsVisible) {
-                        fieldRect.width = fieldRect.width - 16;
-                    }
-                    field.Rect = fieldRect;
-                    Rect fieldClickRect = fieldRect;
-                    fieldClickRect.width = fieldClickRect.width - 36;
-                    field.ClickRect = fieldClickRect;
-
-                    if (trait != null) {
-                        field.Label = trait.LabelCap;
-                        field.Tip = GetTraitTip(trait, currentPawn);
-                    }
-                    else {
-                        field.Label = null;
-                        field.Tip = null;
-                    }
-                    Trait localTrait = trait;
-                    int localIndex = index;
-                    field.ClickAction = () => {
-                        Trait originalTrait = localTrait;
-                        Trait selectedTrait = originalTrait;
-                        ComputeDisallowedTraits(currentPawn, originalTrait);
-                        Dialog_Options<Trait> dialog = new Dialog_Options<Trait>(providerTraits.Traits) {
-                            NameFunc = (Trait t) => {
-                                return t.LabelCap;
-                            },
-                            DescriptionFunc = (Trait t) => {
-                                return GetTraitTip(t, currentPawn);
-                            },
-                            SelectedFunc = (Trait t) => {
-                                if ((selectedTrait == null || t == null) && selectedTrait != t) {
-                                    return false;
-                                }
-                                return selectedTrait.def == t.def && selectedTrait.Label == t.Label;
-                            },
-                            SelectAction = (Trait t) => {
-                                selectedTrait = t;
-                            },
-                            EnabledFunc = (Trait t) => {
-                                return !disallowedTraitDefs.Contains(t.def);
-                            },
-                            CloseAction = () => {
-                                TraitUpdated(localIndex, selectedTrait);
-                            },
-                            NoneSelectedFunc = () => {
-                                return selectedTrait == null;
-                            },
-                            SelectNoneAction = () => {
-                                selectedTrait = null;
+                if (trait != null) {
+                    field.Label = trait.LabelCap;
+                    field.Tip = GetTraitTip(trait, currentPawn);
+                }
+                else {
+                    field.Label = null;
+                    field.Tip = null;
+                }
+                Trait localTrait = trait;
+                int localIndex = index;
+                field.ClickAction = () => {
+                    Trait originalTrait = localTrait;
+                    Trait selectedTrait = originalTrait;
+                    ComputeDisallowedTraits(currentPawn, originalTrait);
+                    Dialog_Options<Trait> dialog = new Dialog_Options<Trait>(providerTraits.Traits) {
+                        NameFunc = (Trait t) => {
+                            return t.LabelCap;
+                        },
+                        DescriptionFunc = (Trait t) => {
+                            return GetTraitTip(t, currentPawn);
+                        },
+                        SelectedFunc = (Trait t) => {
+                            if ((selectedTrait == null || t == null) && selectedTrait != t) {
+                                return false;
                             }
-                        };
-                        Find.WindowStack.Add(dialog);
+                            return selectedTrait.def == t.def && selectedTrait.Label == t.Label;
+                        },
+                        SelectAction = (Trait t) => {
+                            selectedTrait = t;
+                        },
+                        EnabledFunc = (Trait t) => {
+                            return !disallowedTraitDefs.Contains(t.def);
+                        },
+                        CloseAction = () => {
+                            TraitUpdated(localIndex, selectedTrait);
+                        },
+                        NoneSelectedFunc = () => {
+                            return selectedTrait == null;
+                        },
+                        SelectNoneAction = () => {
+                            selectedTrait = null;
+                        }
                     };
-                    field.PreviousAction = () => {
-                        var capturedIndex = index;
-                        clickAction = () => {
-                            SelectPreviousTrait(currentPawn, capturedIndex);
-                        };
+                    Find.WindowStack.Add(dialog);
+                };
+                field.PreviousAction = () => {
+                    var capturedIndex = index;
+                    clickAction = () => {
+                        SelectPreviousTrait(currentPawn, capturedIndex);
                     };
-                    field.NextAction = () => {
-                        var capturedIndex = index;
-                        clickAction = () => {
-                            SelectNextTrait(currentPawn, capturedIndex);
-                        };
+                };
+                field.NextAction = () => {
+                    var capturedIndex = index;
+                    clickAction = () => {
+                        SelectNextTrait(currentPawn, capturedIndex);
                     };
-                    field.Draw();
+                };
+                field.Draw();
 
-                    // Remove trait button.
-                    Rect deleteRect = new Rect(field.Rect.xMax - 32, field.Rect.y + field.Rect.HalfHeight() - 6, 12, 12);
-                    if (deleteRect.Contains(Event.current.mousePosition)) {
-                        GUI.color = Style.ColorButtonHighlight;
-                    }
-                    else {
-                        GUI.color = Style.ColorButton;
-                    }
-                    GUI.DrawTexture(deleteRect, Textures.TextureButtonDelete);
-                    if (Widgets.ButtonInvisible(deleteRect, false)) {
-                        SoundDefOf.Tick_Tiny.PlayOneShotOnCamera();
-                        traitsToRemove.Add(trait);
-                    }
-
-                    index++;
-
-                    cursor += SizeTrait.y + SizeTraitMargin.y;
+                // Remove trait button.
+                Rect deleteRect = new Rect(field.Rect.xMax - 32, field.Rect.y + field.Rect.HalfHeight() - 6, 12, 12);
+                if (deleteRect.Contains(Event.current.mousePosition)) {
+                    GUI.color = Style.ColorButtonHighlight;
                 }
-                cursor -= SizeTraitMargin.y;
-            }
-            finally {
-                scrollView.End(cursor);
-                GUI.EndGroup();
+                else {
+                    GUI.color = Style.ColorButton;
+                }
+                GUI.DrawTexture(deleteRect, Textures.TextureButtonDelete);
+                if (Widgets.ButtonInvisible(deleteRect, false)) {
+                    SoundDefOf.Tick_Tiny.PlayOneShotOnCamera();
+                    traitsToRemove.Add(trait);
+                }
+
+                index++;
+
+                y += FieldRect.height;
             }
 
             tipCache.MakeReady();
 
+            // If the index is still zero, then the pawn has no traits.  Draw the "none" label.
+            if (index == 0) {
+                GUI.color = Style.ColorText;
+                Widgets.Label(FieldRect.InsetBy(6, 0).OffsetBy(0, y - 4), "EdB.PC.Panel.Traits.None".Translate());
+                y += FieldRect.height - 4;
+            }
+
             GUI.color = Color.white;
 
+            // Fire any action that was triggered
             if (clickAction != null) {
                 clickAction();
                 clickAction = null;
             }
 
             // Randomize traits button.
-            Rect randomizeRect = new Rect(PanelRect.width - 32, 9, 22, 22);
+            Rect randomizeRect = new Rect(Width - 32, top + 9, 22, 22);
             if (randomizeRect.Contains(Event.current.mousePosition)) {
                 GUI.color = Style.ColorButtonHighlight;
             }
@@ -227,7 +175,7 @@ namespace EdB.PrepareCarefully {
             }
 
             // Add trait button.
-            Rect addRect = new Rect(randomizeRect.x - 24, 12, 16, 16);
+            Rect addRect = new Rect(randomizeRect.x - 24, top + 12, 16, 16);
             Style.SetGUIColorForButton(addRect);
             int traitCount = state.CurrentPawn.Traits.Count();
             bool addButtonEnabled = (state.CurrentPawn != null && traitCount < Constraints.MaxTraits);
@@ -266,6 +214,7 @@ namespace EdB.PrepareCarefully {
                 Find.WindowStack.Add(dialog);
             }
 
+            // Remove any traits that were marked for deletion
             if (traitsToRemove.Count > 0) {
                 foreach (var trait in traitsToRemove) {
                     TraitRemoved(trait);
@@ -273,7 +222,11 @@ namespace EdB.PrepareCarefully {
                 traitsToRemove.Clear();
                 tipCache.Invalidate();
             }
+
+            y += Margin.y;
+            return y - top;
         }
+
 
         protected string GetTraitTip(Trait trait, CustomPawn pawn) {
             if (!tipCache.Ready || !tipCache.Lookup.ContainsKey(trait)) {
@@ -406,12 +359,28 @@ namespace EdB.PrepareCarefully {
             tipCache.Invalidate();
         }
 
-        public void ScrollToTop() {
-            scrollView.ScrollToTop();
-        }
-
-        public void ScrollToBottom() {
-            scrollView.ScrollToBottom();
+        public class TipCache {
+            public Dictionary<Trait, string> Lookup = new Dictionary<Trait, string>();
+            private CustomPawn pawn = null;
+            private bool ready = false;
+            public void CheckPawn(CustomPawn pawn) {
+                if (this.pawn != pawn) {
+                    this.pawn = pawn;
+                    Invalidate();
+                }
+            }
+            public void Invalidate() {
+                this.ready = false;
+                Lookup.Clear();
+            }
+            public void MakeReady() {
+                this.ready = true;
+            }
+            public bool Ready {
+                get {
+                    return ready;
+                }
+            }
         }
     }
 }

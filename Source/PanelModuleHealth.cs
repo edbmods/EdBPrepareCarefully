@@ -1,142 +1,182 @@
-using RimWorld;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Reflection;
+using System.Text;
+using System.Threading.Tasks;
+using RimWorld;
 using UnityEngine;
 using Verse;
 using Verse.Sound;
+
 namespace EdB.PrepareCarefully {
-    public class PanelHealth : PanelBase {
+    public class PanelModuleHealth : PanelModule {
+        protected static readonly string HediffTypeInjury = "HediffTypeInjury";
+        protected static readonly string HediffTypeImplant = "HediffTypeImplant";
+
         public delegate void AddInjuryHandler(Injury injury);
         public delegate void AddImplantHandler(Implant implant);
+        public delegate void RemoveHediffHandler(Hediff hediff);
 
         public event AddInjuryHandler InjuryAdded;
         public event AddImplantHandler ImplantAdded;
+        public event RemoveHediffHandler HediffRemoved;
 
-        protected static readonly string HediffTypeInjury = "HediffTypeInjury";
-        protected static readonly string HediffTypeImplant = "HediffTypeImplant";
-        protected string selectedHediffType = HediffTypeImplant;
-
-        protected float HeightEntrySpacing = 4;
-        protected Vector2 SizeEntry;
-        protected Vector2 SizeField;
-        protected Rect RectScrollFrame;
-        protected Rect RectScrollView;
-        protected Rect RectItem;
-        protected Rect RectField;
+        protected Rect FieldRect;
         protected Rect RectButtonDelete;
-        protected Rect RectButtonAdd;
-
-        protected ScrollViewVertical scrollView = new ScrollViewVertical();
+        protected float FieldPadding = 6;
+        protected string selectedHediffType = HediffTypeImplant;
         protected List<Field> fields = new List<Field>();
-
-        public List<CustomBodyPart> partRemovalList = new List<CustomBodyPart>();
+        protected List<Hediff> hediffRemovalList = new List<Hediff>();
         protected HashSet<BodyPartRecord> disabledBodyParts = new HashSet<BodyPartRecord>();
         protected HashSet<InjuryOption> disabledInjuryOptions = new HashSet<InjuryOption>();
         protected HashSet<RecipeDef> disabledImplantRecipes = new HashSet<RecipeDef>();
-
         protected List<InjurySeverity> severityOptions = new List<InjurySeverity>();
         protected List<InjurySeverity> permanentInjurySeverities = new List<InjurySeverity>();
-
         protected LabelTrimmer labelTrimmer = new LabelTrimmer();
 
-        public PanelHealth() {
+        public PanelModuleHealth() {
             permanentInjurySeverities.Add(new InjurySeverity(2));
             permanentInjurySeverities.Add(new InjurySeverity(3));
             permanentInjurySeverities.Add(new InjurySeverity(4));
             permanentInjurySeverities.Add(new InjurySeverity(5));
             permanentInjurySeverities.Add(new InjurySeverity(6));
         }
-        public override string PanelHeader {
-            get {
-                return "Health".Translate();
-            }
-        }
 
-        public void ScrollToTop() {
-            scrollView.ScrollToTop();
-        }
-        public void ScrollToBottom() {
-            scrollView.ScrollToBottom();
-        }
-
-        public override void Resize(Rect rect) {
-            base.Resize(rect);
-
-            float panelPadding = 10;
-            float fieldHeight = Style.FieldHeight;
-            float buttonPadding = 8;
+        public override void Resize(float width) {
+            base.Resize(width);
             Vector2 buttonSize = new Vector2(12, 12);
-            Vector2 itemPadding = new Vector2(8, 6);
-            Vector2 contentSize = new Vector2(PanelRect.width - panelPadding * 2, BodyRect.height - panelPadding);
+            float buttonPadding = 8;
+            FieldRect = new Rect(FieldPadding, 0, width - FieldPadding * 2, Style.FieldHeight);
 
-            SizeEntry = new Vector2(contentSize.x, fieldHeight + itemPadding.y * 2);
-            RectItem = new Rect(0, 0, SizeEntry.x, SizeEntry.y);
-            RectField = new Rect(itemPadding.x, itemPadding.y, contentSize.x - itemPadding.x * 2, fieldHeight);
-            RectButtonDelete = new Rect(RectField.xMax - buttonPadding - buttonSize.x,
-                RectField.y + RectField.height * 0.5f - buttonSize.y * 0.5f,
+            RectButtonDelete = new Rect(FieldRect.xMax - buttonPadding - buttonSize.x,
+                FieldRect.height * 0.5f - buttonSize.y * 0.5f,
                 buttonSize.x, buttonSize.y);
-            labelTrimmer.Width = RectField.width - (RectField.xMax - RectButtonDelete.xMin) * 2 - 10;
 
-            RectScrollFrame = new Rect(panelPadding, BodyRect.y, contentSize.x, contentSize.y);
-            RectScrollView = new Rect(0, 0, RectScrollFrame.width, RectScrollFrame.height);
-
-            RectButtonAdd = new Rect(PanelRect.width - 27, 12, 16, 16);
+            labelTrimmer.Width = FieldRect.width - (FieldRect.xMax - RectButtonDelete.xMin) * 2 - 10;
         }
 
-        protected override void DrawPanelContent(State state) {
-            base.DrawPanelContent(state);
-            CustomPawn customPawn = state.CurrentPawn;
+        public override float Draw(State state, float y) {
+            float top = y;
+            y += Margin.y;
 
-            bool wasScrolling = scrollView.ScrollbarsVisible;
+            y += DrawHeader(y, Width, "Health".Translate().Resolve());
 
-            float cursor = 0;
-            GUI.BeginGroup(RectScrollFrame);
+            CustomPawn currentPawn = state.CurrentPawn;
+            int index = 0;
+            IEnumerable<IGrouping<BodyPartRecord, Hediff>> groupedHediffs = ReflectionUtil.Method(typeof(HealthCardUtility), "VisibleHediffGroupsInOrder")
+                .Invoke(null, new object[] { currentPawn.Pawn, false }) as IEnumerable<IGrouping<BodyPartRecord, Hediff>>;
+            foreach (var group in groupedHediffs) {
+                foreach (var hediff in group) {
+                    if (index >= fields.Count) {
+                        fields.Add(new Field());
+                    }
 
-            if (customPawn.BodyParts.Count == 0) {
-                GUI.color = Style.ColorText;
-                Widgets.Label(RectScrollView.InsetBy(1, 0, 0, 0), "EdB.PC.Panel.Health.None".Translate());
-            }
-            GUI.color = Color.white;
+                    if (index != 0) {
+                        y += FieldPadding;
+                    }
+                    y += DrawHediff(currentPawn, hediff, fields[index], y, Width);
 
-            scrollView.Begin(RectScrollView);
-
-            cursor = DrawCustomBodyParts(cursor);
-
-            scrollView.End(cursor);
-            GUI.EndGroup();
-
-            DrawAddButton();
-
-            if (partRemovalList.Count > 0) {
-                foreach (var x in partRemovalList) {
-                    customPawn.RemoveCustomBodyParts(x);
+                    index++;
                 }
-                partRemovalList.Clear();
             }
 
-            // If the addition or removal of an item changed whether or not the scrollbars are visible, then we
-            // need to resize the label trimmer.
-            if (wasScrolling && !scrollView.ScrollbarsVisible) {
-                labelTrimmer.Width += 16;
+            // If the index is still zero, then the pawn has no hediffs.  Draw the "none" label.
+            if (index == 0) {
+                GUI.color = Style.ColorText;
+                Widgets.Label(FieldRect.InsetBy(6, 0).OffsetBy(0, y - 4), "EdB.PC.Panel.Health.None".Translate());
+                y += FieldRect.height - 4;
             }
-            else if (!wasScrolling && scrollView.ScrollbarsVisible) {
-                labelTrimmer.Width -= 16;
+
+            if (hediffRemovalList.Count > 0) {
+                foreach (var x in hediffRemovalList) {
+                    HediffRemoved(x);
+                }
+                hediffRemovalList.Clear();
             }
+
+            DrawAddButton(top, Width);
+
+            return y - top;
         }
 
-        public void DrawAddButton() {
-            if (RectButtonAdd.Contains(Event.current.mousePosition)) {
+        protected string GetTooltipForPart(Pawn pawn, BodyPartRecord part) {
+            StringBuilder stringBuilder = new StringBuilder();
+            stringBuilder.Append(part.LabelCap + ": ");
+            stringBuilder.AppendLine(" " + pawn.health.hediffSet.GetPartHealth(part) + " / " + part.def.GetMaxHealth(pawn));
+            float num = PawnCapacityUtility.CalculatePartEfficiency(pawn.health.hediffSet, part);
+            if (num != 1f) {
+                stringBuilder.AppendLine("Efficiency".Translate() + ": " + num.ToStringPercent());
+            }
+            return stringBuilder.ToString();
+        }
+
+        public float DrawHediff(CustomPawn currentPawn, Hediff hediff, Field field, float y, float width) {
+            float top = y;
+            Pawn pawn = currentPawn.Pawn;
+            BodyPartRecord part = hediff.Part;
+            float labelWidth = ((part != null) ? Text.CalcHeight(part.LabelCap, width) : Text.CalcHeight("WholeBody".Translate(), width));
+            Color partColor = HealthUtility.RedColor;
+            if (part != null) {
+                partColor = HealthUtility.GetPartConditionLabel(pawn, part).Second;
+            }
+
+            string partLabel = part != null ? part.LabelCap : "WholeBody".Translate().Resolve();
+            string hediffLabel = hediff.LabelCap;
+            Color changeColor = hediff.LabelColor;
+
+            Rect fieldRect = FieldRect.OffsetBy(0, y);
+            field.Rect = fieldRect;
+            Rect fieldClickRect = fieldRect;
+            fieldClickRect.width -= 36;
+            field.ClickRect = fieldClickRect;
+
+            if (part != null) {
+                field.Label = labelTrimmer.TrimLabelIfNeeded(new HealthPanelLabelProvider(partLabel, hediffLabel, partColor, changeColor));
+            }
+            else {
+                string trimmedLabel = labelTrimmer.TrimLabelIfNeeded(hediffLabel);
+                field.Label = "<color=#" + ColorUtility.ToHtmlStringRGBA(changeColor) + ">" + trimmedLabel + "</color>";
+            }
+            field.TipAction = (rect) => {
+                TooltipHandler.TipRegion(rect, new TipSignal(() => hediff.GetTooltip(pawn, false), (int)y + 127857, TooltipPriority.Default));
+                if (part != null) {
+                    TooltipHandler.TipRegion(rect, new TipSignal(() => GetTooltipForPart(pawn, part), (int)y + 127858, TooltipPriority.Pawn));
+                }
+            };
+
+            field.Draw();
+
+            Rect deleteRect = RectButtonDelete.OffsetBy(0, y);
+            if (deleteRect.Contains(Event.current.mousePosition)) {
                 GUI.color = Style.ColorButtonHighlight;
             }
             else {
                 GUI.color = Style.ColorButton;
             }
-            GUI.DrawTexture(RectButtonAdd, Textures.TextureButtonAdd);
+            GUI.DrawTexture(deleteRect, Textures.TextureButtonDelete);
+            if (Widgets.ButtonInvisible(deleteRect, false)) {
+                SoundDefOf.Tick_Tiny.PlayOneShotOnCamera();
+                hediffRemovalList.Add(hediff);
+            }
+            GUI.color = Color.white;
+
+            y += FieldRect.height;
+
+            return y - top;
+        }
+
+        public void DrawAddButton(float y, float width) {
+            Rect rect = new Rect(width - 27, y + 12, 16, 16);
+            if (rect.Contains(Event.current.mousePosition)) {
+                GUI.color = Style.ColorButtonHighlight;
+            }
+            else {
+                GUI.color = Style.ColorButton;
+            }
+            GUI.DrawTexture(rect, Textures.TextureButtonAdd);
 
             // Add button.
-            if (Widgets.ButtonInvisible(RectButtonAdd, false)) {
+            if (Widgets.ButtonInvisible(rect, false)) {
                 CustomPawn customPawn = PrepareCarefully.Instance.State.CurrentPawn;
 
                 Action addEntryAction = () => { };
@@ -152,7 +192,6 @@ namespace EdB.PrepareCarefully {
                 Dialog_Options<InjurySeverity> severityDialog;
                 Dialog_Options<BodyPartRecord> bodyPartDialog;
                 Dialog_Options<InjuryOption> injuryOptionDialog;
-                //Dialog_Options<RecipeDef> implantRecipeDialog;
                 DialogManageImplants manageImplantsDialog;
                 Dialog_Options<string> hediffTypeDialog;
 
@@ -386,7 +425,7 @@ namespace EdB.PrepareCarefully {
                 if (option.IsOldInjury) {
                     continue;
                 }
-                
+
                 if (option.ValidParts != null && option.ValidParts.Count > 0) {
                     HashSet<BodyPartRecord> records = new HashSet<BodyPartRecord>(optionsHealth.BodyPartsForInjury(injuryOption));
                     int recordCount = records.Count;
@@ -462,20 +501,6 @@ namespace EdB.PrepareCarefully {
             }
         }
 
-        public float DrawCustomBodyParts(float cursor) {
-            CustomPawn customPawn = PrepareCarefully.Instance.State.CurrentPawn;
-            int index = 0;
-            foreach (var i in customPawn.BodyParts) {
-                if (index >= fields.Count) {
-                    fields.Add(new Field());
-                }
-                cursor = DrawCustomBodyPart(cursor, i, fields[index]);
-                index++;
-            }
-            cursor -= HeightEntrySpacing;
-            return cursor;
-        }
-
         // Custom label provider for health diffs that properly maintains the rich text/html tags while trimming.
         public struct HealthPanelLabelProvider : LabelTrimmer.LabelProvider {
             private static readonly int PART_NAME = 0;
@@ -483,30 +508,22 @@ namespace EdB.PrepareCarefully {
             private int elementToTrim;
             private string partName;
             private string changeName;
-            private readonly string color;
-            public HealthPanelLabelProvider(string partName, string changeName, Color color) {
+            private readonly string partColor;
+            private readonly string changeColor;
+            public HealthPanelLabelProvider(string partName, string changeName, Color partColor, Color changeColor) {
                 this.partName = partName;
                 this.changeName = changeName;
-                this.color = ColorUtility.ToHtmlStringRGBA(color);
+                this.partColor = ColorUtility.ToHtmlStringRGBA(partColor);
+                this.changeColor = ColorUtility.ToHtmlStringRGBA(changeColor);
                 this.elementToTrim = CHANGE_NAME;
             }
             public string Current {
                 get {
-                    if (elementToTrim == CHANGE_NAME) {
-                        return partName + ": <color=#" + color + ">" + changeName + "</color>";
-                    }
-                    else {
-                        return partName;
-                    }
+                     return "<color=#" + partColor + ">"+ partName + "</color>: <color=#" + changeColor + ">" + changeName + "</color>";
                 }
             }
             public string CurrentWithSuffix(string suffix) {
-                if (elementToTrim == CHANGE_NAME) {
-                    return partName + ": <color=#" + color + ">" + changeName + suffix + "</color>";
-                }
-                else {
-                    return partName + suffix;
-                }
+                return "<color=#" + partColor + ">" + partName + "</color>: <color=#" + changeColor + ">" + changeName + suffix + "</color>";
             }
             public string Trim() {
                 if (elementToTrim == CHANGE_NAME) {
@@ -536,58 +553,6 @@ namespace EdB.PrepareCarefully {
             private bool TrimPartName() {
                 return TrimString(ref partName);
             }
-        }
-
-        public float DrawCustomBodyPart(float cursor, CustomBodyPart customPart, Field field) {
-            bool willScroll = scrollView.ScrollbarsVisible;
-            Rect entryRect = RectItem;
-            entryRect.y = entryRect.y + cursor;
-            entryRect.width = entryRect.width - (willScroll ? 16 : 0);
-            GUI.color = Style.ColorPanelBackgroundItem;
-            GUI.DrawTexture(entryRect, BaseContent.WhiteTex);
-
-            // Draw background box.
-            GUI.BeginGroup(entryRect);
-            
-            // Draw field
-            Rect fieldRect = RectField;
-            fieldRect.width = fieldRect.width - (willScroll ? 16 : 0);
-            field.Rect = fieldRect;
-            if (customPart.BodyPartRecord != null) {
-                field.Label = labelTrimmer.TrimLabelIfNeeded(new HealthPanelLabelProvider(customPart.PartName, customPart.ChangeName, customPart.LabelColor));
-                field.Color = Color.white;
-            }
-            else {
-                field.Label = labelTrimmer.TrimLabelIfNeeded(customPart.ChangeName);
-                field.Color = customPart.LabelColor;
-            }
-            
-            if (customPart.HasTooltip) {
-                field.Tip = customPart.Tooltip;
-            }
-            else {
-                field.Tip = null;
-            }
-            field.Draw();
-
-            // Delete the option.
-            Rect deleteRect = RectButtonDelete;
-            if (willScroll) {
-                deleteRect.x = deleteRect.x - 16;
-            }
-            Style.SetGUIColorForButton(deleteRect);
-            GUI.DrawTexture(deleteRect, Textures.TextureButtonDelete);
-            if (Widgets.ButtonInvisible(deleteRect, false)) {
-                SoundDefOf.Tick_Tiny.PlayOneShotOnCamera();
-                partRemovalList.Add(customPart);
-            }
-
-            GUI.color = Color.white;
-            Text.Anchor = TextAnchor.UpperLeft;
-
-            GUI.EndGroup();
-
-            return cursor + RectItem.height + HeightEntrySpacing;
         }
     }
 }

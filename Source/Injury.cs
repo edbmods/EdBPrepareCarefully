@@ -27,6 +27,11 @@ namespace EdB.PrepareCarefully {
             }
         }
 
+        public Hediff Hediff {
+            get => hediff;
+            set => hediff = value;
+        }
+
         protected float severity = 0;
 
         protected string stageLabel = null;
@@ -125,7 +130,6 @@ namespace EdB.PrepareCarefully {
                 pawn.health.AddHediff(hediff);
                 this.hediff = hediff;
             }
-            pawn.health.capacities.Clear();
         }
 
         // EVERY RELEASE:

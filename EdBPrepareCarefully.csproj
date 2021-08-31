@@ -74,9 +74,15 @@
     <Compile Include="Source\DialogFavoriteColor.cs" />
     <Compile Include="Source\ExtensionsBackstory.cs" />
     <Compile Include="Source\FilterBackstoryMatchesFaction.cs" />
+    <Compile Include="Source\PanelModule.cs" />
+    <Compile Include="Source\PanelModuleBackstory.cs" />
+    <Compile Include="Source\PanelModuleFaction.cs" />
+    <Compile Include="Source\PanelModuleHealth.cs" />
+    <Compile Include="Source\PanelModuleTraits.cs" />
     <Compile Include="Source\InitializationException.cs" />
     <Compile Include="Source\InjurySeverity.cs" />
     <Compile Include="Source\PanelFavoriteColor.cs" />
+    <Compile Include="Source\PanelScrollingContent.cs" />
     <Compile Include="Source\ParentChildGroup.cs" />
     <Compile Include="Source\CustomPawnType.cs" />
     <Compile Include="Source\DialogFactions.cs" />
@@ -109,7 +115,6 @@
     <Compile Include="Source\OptionsApparel.cs" />
     <Compile Include="Source\OptionsHealth.cs" />
     <Compile Include="Source\PanelColonyPawnList.cs" />
-    <Compile Include="Source\PanelFaction.cs" />
     <Compile Include="Source\PanelRelationshipsOther.cs" />
     <Compile Include="Source\PanelRelationshipsParentChild.cs" />
     <Compile Include="Source\HarmonyPatches.cs" />
@@ -226,9 +231,6 @@
     <Compile Include="Source\Style.cs" />
     <Compile Include="Source\PanelAge.cs" />
     <Compile Include="Source\PanelAppearance.cs" />
-    <Compile Include="Source\PanelBackstory.cs" />
-    <Compile Include="Source\PanelTraits.cs" />
-    <Compile Include="Source\PanelHealth.cs" />
     <Compile Include="Source\PanelSkills.cs" />
     <Compile Include="Source\PanelIncapableOf.cs" />
     <Compile Include="Source\PanelLoadSave.cs" />

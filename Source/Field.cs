@@ -13,6 +13,7 @@ namespace EdB.PrepareCarefully {
         private Action nextAction;
         private Action previousAction;
         private Action clickAction;
+        private Action<Rect> tipAction;
         private Color color = Style.ColorText;
         private bool enabled = true;
         public Field() {
@@ -68,6 +69,10 @@ namespace EdB.PrepareCarefully {
             set {
                 nextAction = value;
             }
+        }
+        public Action<Rect> TipAction {
+            get => tipAction;
+            set => tipAction = value;
         }
         public Color Color {
             get {
@@ -133,6 +138,9 @@ namespace EdB.PrepareCarefully {
                 // Handle the tooltip.
                 if (tip != null) {
                     TooltipHandler.TipRegion(fieldRect, tip);
+                }
+                if (TipAction != null) {
+                    TipAction(ClickRect.HasValue ? ClickRect.Value : fieldRect);
                 }
 
                 // Draw the previous button and handle any click events on it.

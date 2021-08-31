@@ -291,9 +291,8 @@ namespace EdB.PrepareCarefully {
                 SoundDefOf.Tick_Tiny.PlayOneShotOnCamera();
                 controller.SubcontrollerCharacters.SelectPawn(pawn);
                 tabViewPawns.PanelName.ClearSelection();
-                tabViewPawns.PanelTraits.ScrollToTop();
+                tabViewPawns.PanelFlexible.ScrollToTop();
                 tabViewPawns.PanelSkills.ScrollToTop();
-                tabViewPawns.PanelHealth.ScrollToTop();
                 tabViewPawns.PanelAppearance.UpdatePawnLayers();
             }
         }
@@ -381,9 +380,8 @@ namespace EdB.PrepareCarefully {
             pawnController.PawnReplaced += (CustomPawn pawn) => { pawnController.CheckPawnCapabilities(); };
 
             tabViewPawns.PanelHealth.InjuryAdded += pawnController.AddInjury;
-            tabViewPawns.PanelHealth.InjuryAdded += (Injury i) => { tabViewPawns.PanelHealth.ScrollToBottom(); };
             tabViewPawns.PanelHealth.ImplantAdded += pawnController.AddImplant;
-            tabViewPawns.PanelHealth.ImplantAdded += (Implant i) => { tabViewPawns.PanelHealth.ScrollToBottom(); };
+            tabViewPawns.PanelHealth.HediffRemoved += pawnController.RemoveHediff;
 
             tabViewPawns.PanelName.FirstNameUpdated += pawnController.UpdateFirstName;
             tabViewPawns.PanelName.NickNameUpdated += pawnController.UpdateNickName;
@@ -405,11 +403,9 @@ namespace EdB.PrepareCarefully {
             tabViewPawns.PanelSkills.SkillsCleared += pawnController.ClearSkills;
 
             tabViewPawns.PanelTraits.TraitAdded += pawnController.AddTrait;
-            tabViewPawns.PanelTraits.TraitAdded += (Trait t) => { tabViewPawns.PanelTraits.ScrollToBottom(); };
             tabViewPawns.PanelTraits.TraitUpdated += pawnController.UpdateTrait;
             tabViewPawns.PanelTraits.TraitRemoved += pawnController.RemoveTrait;
             tabViewPawns.PanelTraits.TraitsRandomized += pawnController.RandomizeTraits;
-            tabViewPawns.PanelTraits.TraitsRandomized += () => { tabViewPawns.PanelTraits.ScrollToTop(); };
 
             // Instrument the equipment tab view.
             ControllerEquipment equipment = controller.SubcontrollerEquipment;

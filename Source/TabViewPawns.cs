@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using UnityEngine;
 using Verse;
 namespace EdB.PrepareCarefully {
@@ -9,30 +10,18 @@ namespace EdB.PrepareCarefully {
         public PanelName PanelName { get; set; }
         public PanelAge PanelAge { get; set; }
         public PanelAppearance PanelAppearance { get; set; }
-        public PanelFaction PanelFaction { get; set; }
-        public PanelBackstory PanelBackstory { get; set; }
-        public PanelTraits PanelTraits { get; set; }
-        public PanelHealth PanelHealth { get; set; }
         public PanelSkills PanelSkills { get; set; }
         public PanelIncapableOf PanelIncapable { get; set; }
         public PanelLoadSave PanelSaveLoad { get; set; }
         public PanelFavoriteColor PanelFavoriteColor { get; set; }
+        public PanelScrollingContent PanelFlexible { get; set; }
+        public PanelModuleBackstory PanelBackstory { get; set; }
+        public PanelModuleTraits PanelTraits { get; set; }
+        public PanelModuleHealth PanelHealth { get; set; }
+        public PanelModuleFaction PanelFaction { get; set; }
 
         public TabViewPawns() {
-            PanelColonyPawns = new PanelColonyPawnList();
-            PanelWorldPawns = new PanelWorldPawnList();
-            PanelRandomize = new PanelRandomize();
-            PanelName = new PanelName();
-            PanelAge = new PanelAge();
-            PanelAppearance = new PanelAppearance();
-            PanelFaction = new PanelFaction();
-            PanelBackstory = new PanelBackstory();
-            PanelTraits = new PanelTraits();
-            PanelHealth = new PanelHealth();
-            PanelSkills = new PanelSkills();
-            PanelIncapable = new PanelIncapableOf();
-            PanelSaveLoad = new PanelLoadSave();
-            PanelFavoriteColor = new PanelFavoriteColor();
+            InitializePanels();
         }
 
         public override string Name {
@@ -41,11 +30,32 @@ namespace EdB.PrepareCarefully {
             }
         }
 
+        protected void InitializePanels() {
+            PanelColonyPawns = new PanelColonyPawnList();
+            PanelWorldPawns = new PanelWorldPawnList();
+            PanelRandomize = new PanelRandomize();
+            PanelName = new PanelName();
+            PanelAge = new PanelAge();
+            PanelAppearance = new PanelAppearance();
+            PanelSkills = new PanelSkills();
+            PanelIncapable = new PanelIncapableOf();
+            PanelSaveLoad = new PanelLoadSave();
+            PanelFavoriteColor = new PanelFavoriteColor();
+            PanelBackstory = new PanelModuleBackstory();
+            PanelTraits = new PanelModuleTraits();
+            PanelHealth = new PanelModuleHealth();
+            PanelFaction = new PanelModuleFaction();
+            PanelFlexible = new PanelScrollingContent() {
+                Modules = new List<PanelModule>() {
+                    PanelFaction, PanelBackstory, PanelTraits, PanelHealth
+                }
+            };
+        }
+
         public override void Draw(State state, Rect rect) {
             base.Draw(state, rect);
 
             // Draw the panels.
-            PawnListMode pawnListMode = PrepareCarefully.Instance.State.PawnListMode;
             PanelColonyPawns.Draw(state);
             PanelWorldPawns.Draw(state);
             if (state.CurrentPawn != null) {
@@ -57,12 +67,7 @@ namespace EdB.PrepareCarefully {
                 PanelSaveLoad.Draw(state);
                 PanelAge.Draw(state);
                 PanelAppearance.Draw(state);
-                if (pawnListMode == PawnListMode.WorldPawnsMaximized) {
-                    PanelFaction.Draw(state);
-                }
-                PanelBackstory.Draw(state);
-                PanelTraits.Draw(state);
-                PanelHealth.Draw(state);
+                PanelFlexible.Draw(state);
                 PanelSkills.Draw(state);
                 PanelIncapable.Draw(state);
             }
@@ -115,21 +120,11 @@ namespace EdB.PrepareCarefully {
 
             // Faction, Backstory, Traits and Health
             float columnSize2 = 304;
-            float factionPanelHeight = pawnListMode == PawnListMode.WorldPawnsMaximized ? 70 : 0;
-            PanelFaction.Resize(new Rect(PanelAge.PanelRect.xMax + panelMargin.x, PanelAge.PanelRect.yMin,
-                columnSize2, factionPanelHeight));
-            float backstoryTop = PanelFaction.PanelRect.yMax + (pawnListMode == PawnListMode.WorldPawnsMaximized ? panelMargin.y : 0);
-            PanelBackstory.Resize(new Rect(PanelFaction.PanelRect.xMin, backstoryTop,
-                columnSize2, 95));
-            PanelTraits.Resize(new Rect(PanelBackstory.PanelRect.xMin, PanelBackstory.PanelRect.yMax + panelMargin.y,
-                columnSize2, 142));
-            float healthHeight = pawnListMode == PawnListMode.WorldPawnsMaximized ? 147 : 229;
-            PanelHealth.Resize(new Rect(PanelBackstory.PanelRect.xMin, PanelTraits.PanelRect.yMax + panelMargin.y,
-                columnSize2, healthHeight));
+            PanelFlexible.Resize(new Rect(PanelAppearance.PanelRect.xMax + panelMargin.x, PanelRandomize.PanelRect.yMax + panelMargin.y, columnSize2, rect.height - PanelName.PanelRect.height - panelMargin.y));
             
             // Skills and Incapable Of
             float columnSize3 = 218;
-            PanelSkills.Resize(new Rect(PanelFaction.PanelRect.xMax + panelMargin.x, PanelFaction.PanelRect.yMin,
+            PanelSkills.Resize(new Rect(PanelFlexible.PanelRect.xMax + panelMargin.x, PanelFlexible.PanelRect.yMin,
                 columnSize3, 362));
             PanelIncapable.Resize(new Rect(PanelSkills.PanelRect.xMin, PanelSkills.PanelRect.yMax + panelMargin.y,
                 columnSize3, 116));

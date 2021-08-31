@@ -321,6 +321,7 @@ namespace EdB.PrepareCarefully {
                     injury.BodyPartRecord = hediff.Part;
                     injury.Option = option;
                     injury.Severity = hediff.Severity;
+                    injury.Hediff = hediff;
                     HediffComp_GetsPermanent getsPermanent = hediff.TryGetComp<HediffComp_GetsPermanent>();
                     if (getsPermanent != null) {
                         injury.PainFactor = getsPermanent.PainFactor;
@@ -334,6 +335,7 @@ namespace EdB.PrepareCarefully {
                         Implant implant = new Implant();
                         implant.recipe = implantRecipe;
                         implant.BodyPartRecord = hediff.Part;
+                        implant.Hediff = hediff;
                         implants.Add(implant);
                         //Logger.Debug("Found implant recipes for {" + hediff.def.defName + "} for part {" + hediff.Part?.LabelCap + "}");
                     }
@@ -1118,6 +1120,12 @@ namespace EdB.PrepareCarefully {
                     pawn.story.adulthood = null;
                 }
                 ResetBackstories();
+            }
+        }
+
+        public bool HasAdulthoodBackstory {
+            get {
+                return Adulthood != null;
             }
         }
 

@@ -376,10 +376,31 @@ namespace EdB.PrepareCarefully {
 
         // Health-related actions.
         public void AddInjury(Injury injury) {
-            state.CurrentPawn.AddInjury(injury);
+            CustomPawn currentPawn = state.CurrentPawn;
+            if (currentPawn != null) {
+                state.CurrentPawn.AddInjury(injury);
+            }
         }
+
         public void AddImplant(Implant implant) {
-            state.CurrentPawn.AddImplant(implant);
+            CustomPawn currentPawn = state.CurrentPawn;
+            if (currentPawn != null) {
+                currentPawn.AddImplant(implant);
+            }
+        }
+
+        public void RemoveHediff(Hediff hediff) {
+            CustomPawn currentPawn = state.CurrentPawn;
+            if (currentPawn != null) {
+                Injury injury = currentPawn.Injuries.FirstOrDefault(i => i.Hediff == hediff);
+                Implant implant = currentPawn.Implants.FirstOrDefault(i => i.Hediff == hediff);
+                if (injury != null) {
+                    currentPawn.RemoveCustomBodyParts(injury);
+                }
+                if (implant != null) {
+                    currentPawn.RemoveCustomBodyParts(implant);
+                }
+            }
         }
 
         public void UpdateFavoriteColor(Color? color) {

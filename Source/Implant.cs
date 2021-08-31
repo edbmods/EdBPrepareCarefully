@@ -1,4 +1,4 @@
-﻿using RimWorld;
+using RimWorld;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -26,6 +26,11 @@ namespace EdB.PrepareCarefully {
                 bodyPartRecord = value;
                 tooltip = null;
             }
+        }
+
+        public Hediff Hediff {
+            get => hediff;
+            set => hediff = value;
         }
 
         override public string ChangeName {
@@ -102,7 +107,6 @@ namespace EdB.PrepareCarefully {
             if (recipe != null && BodyPartRecord != null) {
                 this.hediff = HediffMaker.MakeHediff(recipe.addsHediff, pawn, BodyPartRecord);
                 pawn.health.AddHediff(hediff, BodyPartRecord, new DamageInfo?());
-                pawn.health.capacities.Clear();
             }
         }
 

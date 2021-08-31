@@ -1,29 +1,30 @@
-using RimWorld;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading.Tasks;
 using UnityEngine;
+using RimWorld;
 using Verse;
 using Verse.Sound;
+
 namespace EdB.PrepareCarefully {
-    public class PanelBackstory : PanelBase {
+    public class PanelModuleBackstory : PanelModule {
+        protected Rect LabelRect { get; set; }
+        protected Rect FieldRect { get; set; }
+        protected Field FieldChildhood = new Field();
+        protected Field FieldAdulthood = new Field();
+        protected ProviderBackstories providerBackstories = PrepareCarefully.Instance.Providers.Backstories;
+        protected List<Filter<Backstory>> availableFilters = new List<Filter<Backstory>>();
+        protected List<Filter<Backstory>> activeFilters = new List<Filter<Backstory>>();
+
         public delegate void UpdateBackstoryHandler(BackstorySlot slot, Backstory backstory);
         public delegate void RandomizeBackstoriesHandler();
 
         public event UpdateBackstoryHandler BackstoryUpdated;
         public event RandomizeBackstoriesHandler BackstoriesRandomized;
 
-        private ProviderBackstories providerBackstories = PrepareCarefully.Instance.Providers.Backstories;
-        private Rect RectAdulthoodLabel;
-        private Rect RectChildhoodLabel;
-        private Rect RectAdulthoodField;
-        private Rect RectChildhoodField;
-        private Field FieldChildhood = new Field();
-        private Field FieldAdulthood = new Field();
-        private List<Filter<Backstory>> availableFilters = new List<Filter<Backstory>>();
-        private List<Filter<Backstory>> activeFilters = new List<Filter<Backstory>>();
-        public PanelBackstory() {
+        public PanelModuleBackstory() {
             availableFilters.Add(new FilterBackstoryMatchesFaction());
             availableFilters.Add(new FilterBackstoryNoDisabledWorkTypes());
             availableFilters.Add(new FilterBackstoryNoPenalties());
@@ -33,58 +34,39 @@ namespace EdB.PrepareCarefully {
                 availableFilters.Add(new FilterBackstorySkillAdjustment(s, 5));
             }
         }
-        public override string PanelHeader {
-            get {
-                return "Backstory".Translate();
-            }
-        }
-        public override void Resize(Rect rect) {
-            base.Resize(rect);
-
-            float fieldHeight = Style.FieldHeight;
-            float fieldPadding = 3;
-            float expandedFieldHeight = fieldHeight + fieldPadding * 2;
-            float contentHeight = expandedFieldHeight * 2;
-            float top = BodyRect.MiddleY() - contentHeight * 0.5f - 2;
-
+        public override void Resize(float width) {
+            base.Resize(width);
             float panelPadding = 12;
-            float contentWidth = PanelRect.width - panelPadding - panelPadding;
+            float fieldPadding = 8;
 
+            // The width of the label is the widest of the childhood/adulthood text
             GameFont savedFont = Text.Font;
             Text.Font = GameFont.Small;
             Vector2 sizeChildhood = Text.CalcSize("Childhood".Translate());
             Vector2 sizeAdulthood = Text.CalcSize("Adulthood".Translate());
             Text.Font = savedFont;
-
             float labelWidth = Mathf.Max(sizeChildhood.x, sizeAdulthood.x);
-            float labelPadding = 8;
-            float extendedTextWidth = labelWidth + labelPadding;
-            float fieldWidth = contentWidth - extendedTextWidth;
 
-            RectChildhoodLabel = new Rect(panelPadding, top + 1, labelWidth, fieldHeight);
-            RectAdulthoodLabel = new Rect(panelPadding, top + expandedFieldHeight + 1, labelWidth, fieldHeight);
-            RectChildhoodField = new Rect(RectChildhoodLabel.xMax + labelPadding, top, fieldWidth, fieldHeight);
-            RectAdulthoodField = new Rect(RectAdulthoodLabel.xMax + labelPadding, top + expandedFieldHeight, fieldWidth, fieldHeight);
-            FieldChildhood.Rect = RectChildhoodField;
-            FieldAdulthood.Rect = RectAdulthoodField;
+            LabelRect = new Rect(panelPadding, 0, labelWidth, Style.FieldHeight);
+            FieldRect = new Rect(LabelRect.xMax + fieldPadding, 0, width - LabelRect.xMax - fieldPadding * 2, Style.FieldHeight);
         }
-        protected override void DrawPanelContent(State state) {
-            base.DrawPanelContent(state);
 
-            CustomPawn pawn = state.CurrentPawn;
-            bool isAdult = pawn.Adulthood != null;
+        public float Measure() {
+            return 0;
+        }
 
+        protected float DrawChildhood(CustomPawn pawn, float y, float width) {
+            // Draw the label
             Text.Font = GameFont.Small;
             GUI.color = Style.ColorText;
             Text.Anchor = TextAnchor.MiddleCenter;
-            Widgets.Label(RectChildhoodLabel, "Childhood".Translate());
-            if (!isAdult) {
-                GUI.color = Style.ColorControlDisabled;
-            }
-            Widgets.Label(RectAdulthoodLabel, "Adulthood".Translate());
+            Rect labelRect = LabelRect.OffsetBy(0, y);
+            Widgets.Label(labelRect, "Childhood".Translate());
             Text.Anchor = TextAnchor.UpperLeft;
             GUI.color = Color.white;
 
+            // Draw the field
+            FieldChildhood.Rect = FieldRect.OffsetBy(0, y);
             if (pawn.Childhood != null) {
                 FieldChildhood.Label = pawn.Childhood.TitleCapFor(pawn.Gender);
             }
@@ -101,9 +83,27 @@ namespace EdB.PrepareCarefully {
             FieldChildhood.NextAction = () => {
                 NextBackstory(pawn, BackstorySlot.Childhood, 1);
             };
+            FieldChildhood.Draw();
 
-            FieldAdulthood.Enabled = isAdult;
-            if (isAdult) {
+            return FieldRect.height;
+        }
+
+        protected float DrawAdulthood(CustomPawn pawn, float y, float width) {
+            Text.Font = GameFont.Small;
+            GUI.color = Style.ColorText;
+            Text.Anchor = TextAnchor.MiddleCenter;
+            if (!pawn.HasAdulthoodBackstory) {
+                GUI.color = Style.ColorControlDisabled;
+            }
+            Rect labelRect = LabelRect.OffsetBy(0, y);
+            Widgets.Label(labelRect, "Adulthood".Translate());
+            Text.Anchor = TextAnchor.UpperLeft;
+            GUI.color = Color.white;
+
+            // Draw the field
+            FieldAdulthood.Rect = FieldRect.OffsetBy(0, y);
+            FieldAdulthood.Enabled = pawn.HasAdulthoodBackstory;
+            if (FieldAdulthood.Enabled) {
                 FieldAdulthood.Label = pawn.Adulthood.TitleCapFor(pawn.Gender);
                 FieldAdulthood.Tip = pawn.Adulthood.CheckedDescriptionFor(pawn.Pawn);
                 FieldAdulthood.ClickAction = () => {
@@ -123,27 +123,43 @@ namespace EdB.PrepareCarefully {
                 FieldAdulthood.PreviousAction = () => { };
                 FieldAdulthood.NextAction = () => { };
             }
-
-            FieldChildhood.Draw();
             FieldAdulthood.Draw();
 
+            return FieldRect.height;
+        }
+
+        public void DrawRandomizeButton(float y, float width) {
             // Randomize button.
-            Rect randomRect = new Rect(PanelRect.width - 32, 9, 22, 22);
-            if (randomRect.Contains(Event.current.mousePosition)) {
+            Rect randomizeRect = new Rect(width - 32, y + 9, 22, 22);
+            if (randomizeRect.Contains(Event.current.mousePosition)) {
                 GUI.color = Style.ColorButtonHighlight;
             }
             else {
                 GUI.color = Style.ColorButton;
             }
-            GUI.DrawTexture(randomRect, Textures.TextureButtonRandom);
-            if (Widgets.ButtonInvisible(randomRect, false)) {
+            GUI.DrawTexture(randomizeRect, Textures.TextureButtonRandom);
+            if (Widgets.ButtonInvisible(randomizeRect, false)) {
                 SoundDefOf.Tick_Low.PlayOneShotOnCamera();
                 BackstoriesRandomized();
             }
-
             Text.Font = GameFont.Small;
             GUI.color = Color.white;
             Text.Anchor = TextAnchor.UpperLeft;
+        }
+
+        public override float Draw(State state, float y) {
+            float top = y;
+            y += Margin.y;
+
+            CustomPawn pawn = state.CurrentPawn;
+            DrawRandomizeButton(y, Width);
+            y += DrawHeader(y, Width, "Backstory".Translate().Resolve());
+            y += DrawChildhood(pawn, y, Width);
+            y += 6;
+            y += DrawAdulthood(pawn, y, Width);
+
+            y += Margin.y;
+            return y - top;
         }
 
         protected void ShowBackstoryDialog(CustomPawn customPawn, BackstorySlot slot) {
