@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using UnityEngine;
+using Verse;
 
 namespace EdB.PrepareCarefully {
     public class PanelScrollingContent : PanelBase {
@@ -53,9 +54,13 @@ namespace EdB.PrepareCarefully {
                 try {
                     int visibleModules = 0;
                     foreach (var module in Modules) {
-                        if (module.Visible) {
+                        if (module.IsVisible(state)) {
                             if (visibleModules > 0) {
                                 y += 6;
+                                GUI.color = Style.ColorTabViewBackground;
+                                GUI.DrawTexture(new Rect(0, y, PanelRect.width, 2), BaseContent.WhiteTex);
+                                GUI.color = Color.white;
+                                y += 2;
                             }
                             y += module.Draw(state, y);
                             visibleModules++;
