@@ -16,10 +16,8 @@ namespace EdB.PrepareCarefully {
             protected set;
         }
 
-        public virtual bool Visible {
-            get {
-                return true;
-            }
+        public virtual bool IsVisible(State state) {
+            return true;
         }
 
         public virtual void Resize(float width) {

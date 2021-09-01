@@ -19,6 +19,7 @@ namespace EdB.PrepareCarefully {
         public PanelModuleTraits PanelTraits { get; set; }
         public PanelModuleHealth PanelHealth { get; set; }
         public PanelModuleFaction PanelFaction { get; set; }
+        public PanelModuleIdeo PanelIdeo { get; set; }
 
         public TabViewPawns() {
             InitializePanels();
@@ -45,9 +46,10 @@ namespace EdB.PrepareCarefully {
             PanelTraits = new PanelModuleTraits();
             PanelHealth = new PanelModuleHealth();
             PanelFaction = new PanelModuleFaction();
+            PanelIdeo = new PanelModuleIdeo();
             PanelFlexible = new PanelScrollingContent() {
                 Modules = new List<PanelModule>() {
-                    PanelFaction, PanelBackstory, PanelTraits, PanelHealth
+                    PanelFaction, PanelIdeo, PanelBackstory, PanelTraits, PanelHealth
                 }
             };
         }

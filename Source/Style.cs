@@ -23,7 +23,8 @@ namespace EdB.PrepareCarefully {
         public static Color ColorTableRow1 = new Color(47f / 255f, 49f / 255f, 50f/255f);
         public static Color ColorTableRow2 = new Color(54f / 255f, 56f / 255f, 57f/255f);
         public static Color ColorTableRowSelected = new Color(12f / 255f, 12f / 255f, 12f/255f);
-        
+        public static Color ColorTabViewBackground = new Color(42f / 255f, 43f / 255f, 44f / 255f);
+
         public static Color ColorWindowBackground = new Color(21f / 255f, 25f / 255f, 29f / 255f);
 
         public static Vector2 SizePanelMargin = new Vector2(12, 12);

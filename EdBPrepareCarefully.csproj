@@ -36,7 +36,8 @@
     <Reference Include="0Harmony">
       <HintPath>Libraries\Harmony\2.0\0Harmony.dll</HintPath>
     </Reference>
-    <Reference Include="Assembly-CSharp">
+    <Reference Include="Assembly-CSharp, Version=1.3.7907.24831, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
       <HintPath>Libraries\Assembly-CSharp.dll</HintPath>
     </Reference>
     <Reference Include="System" />
@@ -62,6 +63,8 @@
     <Compile Include="Source\AnimalDatabase.cs" />
     <Compile Include="Source\AnimalRecord.cs" />
     <Compile Include="Source\AnimalRecordKey.cs" />
+    <Compile Include="Source\DialogIdeos.cs" />
+    <Compile Include="Source\PanelModuleAbilities.cs" />
     <Compile Include="Source\ColonistFiles.cs" />
     <Compile Include="Source\ColonistSaver.cs" />
     <Compile Include="Source\ColorSelectorType.cs" />
@@ -78,6 +81,7 @@
     <Compile Include="Source\PanelModuleBackstory.cs" />
     <Compile Include="Source\PanelModuleFaction.cs" />
     <Compile Include="Source\PanelModuleHealth.cs" />
+    <Compile Include="Source\PanelModuleIdeo.cs" />
     <Compile Include="Source\PanelModuleTraits.cs" />
     <Compile Include="Source\InitializationException.cs" />
     <Compile Include="Source\InjurySeverity.cs" />

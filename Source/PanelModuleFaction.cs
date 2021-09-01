@@ -26,22 +26,17 @@ namespace EdB.PrepareCarefully {
             return 0;
         }
 
-        public bool Visible(State state) {
-            CustomPawn pawn = state.CurrentPawn;
-            return pawn.Type != CustomPawnType.Colonist;
+        public override bool IsVisible(State state) {
+            return state.CurrentPawn.Type != CustomPawnType.Colonist;
         }
 
         public override float Draw(State state, float y) {
-            CustomPawn pawn = state.CurrentPawn;
-            if (pawn.Type == CustomPawnType.Colonist) {
-                return 0;
-            }
-
             float top = y;
             y += Margin.y;
 
             y += DrawHeader(y, Width, "Faction".Translate().Resolve());
 
+            CustomPawn pawn = state.CurrentPawn;
             FieldFaction.Rect = FieldRect.OffsetBy(0, y);
             labelTrimmer.Rect = FieldFaction.Rect.InsetBy(8, 0);
             if (pawn.Type == CustomPawnType.Colonist) {
