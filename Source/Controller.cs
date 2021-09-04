@@ -160,11 +160,14 @@ namespace EdB.PrepareCarefully {
 
             // Add related pawns who are not already in the world to the world
             foreach (var customPawn in relatedPawns) {
-                if (PrepareCarefully.Instance.RelationshipManager.TemporaryPawns.Exists((p) => p == customPawn)) {
-                    continue;
-                }
-                else {
-                    AddPawnToWorld(customPawn);
+                AddPawnToWorld(customPawn);
+
+                // For any pawn for which relationships have been defined, we want to make sure they are protected from world garbage collection.
+                // We don't have to worry about it for non-colony pawns, but we have to do it manually for all other pawns:
+                if (customPawn.Type != CustomPawnType.Colonist) {
+                    if (!Find.WorldPawns.ForcefullyKeptPawns.Contains(customPawn.Pawn)) {
+                        Find.WorldPawns.ForcefullyKeptPawns.Add(customPawn.Pawn);
+                    }
                 }
             }
         }
@@ -174,6 +177,7 @@ namespace EdB.PrepareCarefully {
             if (pawn.Type == CustomPawnType.Colonist) {
                 return;
             }
+
             // Don't add hidden pawns to the world--they should already be there
             if (pawn.Type == CustomPawnType.Hidden) {
                 return;
@@ -191,6 +195,12 @@ namespace EdB.PrepareCarefully {
 
             // If we have a custom faction setting, handle that.
             if (pawn.Faction != null && pawn.Faction != PrepareCarefully.Instance.Providers.Factions.RandomFaction) {
+                // If someone has gone to the trouble of defining a custom faction for a world pawn, make sure that
+                // the pawn isn't going to get garbage collected
+                if (!Find.WorldPawns.ForcefullyKeptPawns.Contains(pawn.Pawn)) {
+                    Find.WorldPawns.ForcefullyKeptPawns.Add(pawn.Pawn);
+                }
+
                 // If they are assigned to a specific faction, assign them either as a leader or as a regular pawn.
                 if (pawn.Faction.Faction != null) {
                     if (pawn.Faction.Leader) {

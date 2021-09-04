@@ -16,6 +16,8 @@
    a character that used a modded alien race.  If the character was loaded
    later when the mod was no longer enabled, the pawn would have a missing
    head graphic.  It should now display head graphics properly.
+ - Fixed an issue where relationships would disappear after some time due
+   to the world pawn garbage collection process.
 
  _____________________________________________________________________________
  
