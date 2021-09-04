@@ -1,0 +1,25 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.31605.320
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EdBPrepareCarefully", "EdBPrepareCarefully.csproj", "{C4D9D81E-B96C-450A-B885-2D71F78FCB1B}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{C4D9D81E-B96C-450A-B885-2D71F78FCB1B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C4D9D81E-B96C-450A-B885-2D71F78FCB1B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C4D9D81E-B96C-450A-B885-2D71F78FCB1B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C4D9D81E-B96C-450A-B885-2D71F78FCB1B}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {C24AE068-D077-4F69-A5FC-85BDDF5784D1}
+	EndGlobalSection
+EndGlobal

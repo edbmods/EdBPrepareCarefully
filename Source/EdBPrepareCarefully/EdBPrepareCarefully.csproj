@@ -1,0 +1,275 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{C4D9D81E-B96C-450A-B885-2D71F78FCB1B}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>EdBPrepareCarefully</RootNamespace>
+    <AssemblyName>EdBPrepareCarefully</AssemblyName>
+    <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <Deterministic>true</Deterministic>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>..\..\1.3\Assemblies\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>none</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>..\..\1.3\Assemblies\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="0Harmony, Version=2.1.1.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>packages\Lib.Harmony.2.1.1\lib\net472\0Harmony.dll</HintPath>
+    </Reference>
+    <Reference Include="Assembly-CSharp">
+      <HintPath>..\..\..\..\RimWorldWin64_Data\Managed\Assembly-CSharp.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="System" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Net.Http" />
+    <Reference Include="System.Xml" />
+    <Reference Include="UnityEngine.CoreModule">
+      <HintPath>..\..\..\..\RimWorldWin64_Data\Managed\UnityEngine.CoreModule.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="UnityEngine.IMGUIModule">
+      <HintPath>..\..\..\..\RimWorldWin64_Data\Managed\UnityEngine.IMGUIModule.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="UnityEngine.InputLegacyModule">
+      <HintPath>..\..\..\..\RimWorldWin64_Data\Managed\UnityEngine.InputLegacyModule.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="UnityEngine.TextRenderingModule">
+      <HintPath>..\..\..\..\RimWorldWin64_Data\Managed\UnityEngine.TextRenderingModule.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="EdBPrepareCarefully\AlienRace.cs" />
+    <Compile Include="EdBPrepareCarefully\AlienRaceBodyAddon.cs" />
+    <Compile Include="EdBPrepareCarefully\AnimalDatabase.cs" />
+    <Compile Include="EdBPrepareCarefully\AnimalRecord.cs" />
+    <Compile Include="EdBPrepareCarefully\AnimalRecordKey.cs" />
+    <Compile Include="EdBPrepareCarefully\DialogAbilities.cs" />
+    <Compile Include="EdBPrepareCarefully\DialogIdeos.cs" />
+    <Compile Include="EdBPrepareCarefully\ColonistFiles.cs" />
+    <Compile Include="EdBPrepareCarefully\ColonistSaver.cs" />
+    <Compile Include="EdBPrepareCarefully\ColorSelectorType.cs" />
+    <Compile Include="EdBPrepareCarefully\ColorValidator.cs" />
+    <Compile Include="EdBPrepareCarefully\Configuration.cs" />
+    <Compile Include="EdBPrepareCarefully\Controller.cs" />
+    <Compile Include="EdBPrepareCarefully\ControllerRelationships.cs" />
+    <Compile Include="EdBPrepareCarefully\CostCalculator.cs" />
+    <Compile Include="EdBPrepareCarefully\CustomFaction.cs" />
+    <Compile Include="EdBPrepareCarefully\DialogFavoriteColor.cs" />
+    <Compile Include="EdBPrepareCarefully\ExtensionsBackstory.cs" />
+    <Compile Include="EdBPrepareCarefully\FilterBackstoryMatchesFaction.cs" />
+    <Compile Include="EdBPrepareCarefully\PanelModule.cs" />
+    <Compile Include="EdBPrepareCarefully\PanelModuleAbilities.cs" />
+    <Compile Include="EdBPrepareCarefully\PanelModuleAge.cs" />
+    <Compile Include="EdBPrepareCarefully\PanelModuleBackstory.cs" />
+    <Compile Include="EdBPrepareCarefully\PanelModuleFaction.cs" />
+    <Compile Include="EdBPrepareCarefully\PanelModuleHealth.cs" />
+    <Compile Include="EdBPrepareCarefully\PanelModuleIdeo.cs" />
+    <Compile Include="EdBPrepareCarefully\PanelModuleTraits.cs" />
+    <Compile Include="EdBPrepareCarefully\InitializationException.cs" />
+    <Compile Include="EdBPrepareCarefully\InjurySeverity.cs" />
+    <Compile Include="EdBPrepareCarefully\PanelFavoriteColor.cs" />
+    <Compile Include="EdBPrepareCarefully\PanelScrollingContent.cs" />
+    <Compile Include="EdBPrepareCarefully\ParentChildGroup.cs" />
+    <Compile Include="EdBPrepareCarefully\CustomPawnType.cs" />
+    <Compile Include="EdBPrepareCarefully\DialogFactions.cs" />
+    <Compile Include="EdBPrepareCarefully\DialogInitializationError.cs" />
+    <Compile Include="EdBPrepareCarefully\DialogManageImplants.cs" />
+    <Compile Include="EdBPrepareCarefully\DialogPawnKinds.cs" />
+    <Compile Include="EdBPrepareCarefully\DialogSelectPawn.cs" />
+    <Compile Include="EdBPrepareCarefully\DialogSelectParentChildPawn.cs" />
+    <Compile Include="EdBPrepareCarefully\Dialog_Colonist.cs" />
+    <Compile Include="EdBPrepareCarefully\Dialog_LoadColonist.cs" />
+    <Compile Include="EdBPrepareCarefully\Dialog_LoadPreset.cs" />
+    <Compile Include="EdBPrepareCarefully\Dialog_Preset.cs" />
+    <Compile Include="EdBPrepareCarefully\Dialog_SaveColonist.cs" />
+    <Compile Include="EdBPrepareCarefully\Dialog_SavePreset.cs" />
+    <Compile Include="EdBPrepareCarefully\DragSlider.cs" />
+    <Compile Include="EdBPrepareCarefully\EquipmentDatabase.cs" />
+    <Compile Include="EdBPrepareCarefully\EquipmentRecord.cs" />
+    <Compile Include="EdBPrepareCarefully\ExtensionsColorGenerator.cs" />
+    <Compile Include="EdBPrepareCarefully\ExtensionsHediffDef.cs" />
+    <Compile Include="EdBPrepareCarefully\ExtensionsPawn.cs" />
+    <Compile Include="EdBPrepareCarefully\ExtensionsThing.cs" />
+    <Compile Include="EdBPrepareCarefully\Filter.cs" />
+    <Compile Include="EdBPrepareCarefully\FilterBackstoryNoDisabledWorkTypes.cs" />
+    <Compile Include="EdBPrepareCarefully\FilterBackstoryNoPenalties.cs" />
+    <Compile Include="EdBPrepareCarefully\FilterBackstorySkillAdjustment.cs" />
+    <Compile Include="EdBPrepareCarefully\GenStep_CustomScatterThings.cs" />
+    <Compile Include="EdBPrepareCarefully\CustomHeadType.cs" />
+    <Compile Include="EdBPrepareCarefully\IRelationshipWorker.cs" />
+    <Compile Include="EdBPrepareCarefully\LabelTrimmer.cs" />
+    <Compile Include="EdBPrepareCarefully\OptionsApparel.cs" />
+    <Compile Include="EdBPrepareCarefully\OptionsHealth.cs" />
+    <Compile Include="EdBPrepareCarefully\PanelColonyPawnList.cs" />
+    <Compile Include="EdBPrepareCarefully\PanelRelationshipsOther.cs" />
+    <Compile Include="EdBPrepareCarefully\PanelRelationshipsParentChild.cs" />
+    <Compile Include="EdBPrepareCarefully\HarmonyPatches.cs" />
+    <Compile Include="EdBPrepareCarefully\PanelWorldPawnList.cs" />
+    <Compile Include="EdBPrepareCarefully\PawnBioGenerator.cs" />
+    <Compile Include="EdBPrepareCarefully\PawnCompRules.cs" />
+    <Compile Include="EdBPrepareCarefully\PawnGenerationRequestWrapper.cs" />
+    <Compile Include="EdBPrepareCarefully\ProviderPawnKinds.cs" />
+    <Compile Include="EdBPrepareCarefully\PawnLayer.cs" />
+    <Compile Include="EdBPrepareCarefully\PawnLayerAlienAddon.cs" />
+    <Compile Include="EdBPrepareCarefully\PawnLayerBodyTattoo.cs" />
+    <Compile Include="EdBPrepareCarefully\PawnLayerFaceTattoo.cs" />
+    <Compile Include="EdBPrepareCarefully\PawnLayerBody.cs" />
+    <Compile Include="EdBPrepareCarefully\PawnLayerHair.cs" />
+    <Compile Include="EdBPrepareCarefully\PawnLayerBeard.cs" />
+    <Compile Include="EdBPrepareCarefully\PawnLayerHead.cs" />
+    <Compile Include="EdBPrepareCarefully\PawnLayerOption.cs" />
+    <Compile Include="EdBPrepareCarefully\PawnLayerOptionAlienAddon.cs" />
+    <Compile Include="EdBPrepareCarefully\PawnLayerOptionTattoo.cs" />
+    <Compile Include="EdBPrepareCarefully\PawnLayerOptionBody.cs" />
+    <Compile Include="EdBPrepareCarefully\PawnLayerOptionHair.cs" />
+    <Compile Include="EdBPrepareCarefully\PawnLayerOptionBeard.cs" />
+    <Compile Include="EdBPrepareCarefully\PawnLayerOptionHead.cs" />
+    <Compile Include="EdBPrepareCarefully\PawnListMode.cs" />
+    <Compile Include="EdBPrepareCarefully\PrepareCarefully.cs" />
+    <Compile Include="EdBPrepareCarefully\PresetFiles.cs" />
+    <Compile Include="EdBPrepareCarefully\PresetLoader.cs" />
+    <Compile Include="EdBPrepareCarefully\PresetSaver.cs" />
+    <Compile Include="EdBPrepareCarefully\ProviderAgeLimits.cs" />
+    <Compile Include="EdBPrepareCarefully\ProviderAlienRaces.cs" />
+    <Compile Include="EdBPrepareCarefully\ProviderApparel.cs" />
+    <Compile Include="EdBPrepareCarefully\ProviderBodyTatoos.cs" />
+    <Compile Include="EdBPrepareCarefully\ProviderFaceTatoos.cs" />
+    <Compile Include="EdBPrepareCarefully\ProviderBeards.cs" />
+    <Compile Include="EdBPrepareCarefully\ProviderHealthOptions.cs" />
+    <Compile Include="EdBPrepareCarefully\ProviderBodyTypes.cs" />
+    <Compile Include="EdBPrepareCarefully\ProviderHair.cs" />
+    <Compile Include="EdBPrepareCarefully\ProviderHeadTypes.cs" />
+    <Compile Include="EdBPrepareCarefully\Providers.cs" />
+    <Compile Include="EdBPrepareCarefully\OptionsBodyType.cs" />
+    <Compile Include="EdBPrepareCarefully\OptionsHair.cs" />
+    <Compile Include="EdBPrepareCarefully\OptionsHeadType.cs" />
+    <Compile Include="EdBPrepareCarefully\Randomizer.cs" />
+    <Compile Include="EdBPrepareCarefully\Reflection.cs" />
+    <Compile Include="EdBPrepareCarefully\ReflectionCache.cs" />
+    <Compile Include="EdBPrepareCarefully\QuietReflectionUtil.cs" />
+    <Compile Include="EdBPrepareCarefully\ReflectionUtil.cs" />
+    <Compile Include="EdBPrepareCarefully\RelatedPawn.cs" />
+    <Compile Include="EdBPrepareCarefully\RelationshipBuilder.cs" />
+    <Compile Include="EdBPrepareCarefully\RelationshipGroup.cs" />
+    <Compile Include="EdBPrepareCarefully\RelationshipDefinitionHelper.cs" />
+    <Compile Include="EdBPrepareCarefully\RelationshipManager.cs" />
+    <Compile Include="EdBPrepareCarefully\ScenPart_CustomAnimal.cs" />
+    <Compile Include="EdBPrepareCarefully\ScenPart_CustomScatterThingsNearPlayerStart.cs" />
+    <Compile Include="EdBPrepareCarefully\ScrollViewHorizontal.cs" />
+    <Compile Include="EdBPrepareCarefully\SelectedAnimal.cs" />
+    <Compile Include="EdBPrepareCarefully\EquipmentSelection.cs" />
+    <Compile Include="EdBPrepareCarefully\SelectedPet.cs" />
+    <Compile Include="EdBPrepareCarefully\TabRecordExtensions.cs" />
+    <Compile Include="EdBPrepareCarefully\Version3\SaveRecordEquipmentV3.cs" />
+    <Compile Include="EdBPrepareCarefully\IEquipment.cs" />
+    <Compile Include="EdBPrepareCarefully\EquipmentKey.cs" />
+    <Compile Include="EdBPrepareCarefully\ScrollViewVertical.cs" />
+    <Compile Include="EdBPrepareCarefully\Dialog_Options.cs" />
+    <Compile Include="EdBPrepareCarefully\Textures.cs" />
+    <Compile Include="EdBPrepareCarefully\State.cs" />
+    <Compile Include="EdBPrepareCarefully\Logger.cs" />
+    <Compile Include="EdBPrepareCarefully\RelationshipList.cs" />
+    <Compile Include="EdBPrepareCarefully\CustomRelationship.cs" />
+    <Compile Include="EdBPrepareCarefully\Implant.cs" />
+    <Compile Include="EdBPrepareCarefully\CustomBodyPart.cs" />
+    <Compile Include="EdBPrepareCarefully\CarefullyPawnRelationDef.cs" />
+    <Compile Include="EdBPrepareCarefully\UtilityCopy.cs" />
+    <Compile Include="EdBPrepareCarefully\ExtensionsObject.cs" />
+    <Compile Include="EdBPrepareCarefully\Version4\ColonistLoaderVersion4.cs" />
+    <Compile Include="EdBPrepareCarefully\Version4\PresetLoaderVersion4.cs" />
+    <Compile Include="EdBPrepareCarefully\Version4\SaveRecordAlienV4.cs" />
+    <Compile Include="EdBPrepareCarefully\Version4\SaveRecordFactionV4.cs" />
+    <Compile Include="EdBPrepareCarefully\Version3\PresetLoaderVersion3.cs" />
+    <Compile Include="EdBPrepareCarefully\Version3\SaveRecordParentChildGroupV3.cs" />
+    <Compile Include="EdBPrepareCarefully\Version3\SaveRecordPawnV3.cs" />
+    <Compile Include="EdBPrepareCarefully\Version3\SaveRecordRelationshipV3.cs" />
+    <Compile Include="EdBPrepareCarefully\Version3\SaveRecordImplantV3.cs" />
+    <Compile Include="EdBPrepareCarefully\Version3\SaveRecordInjuryV3.cs" />
+    <Compile Include="EdBPrepareCarefully\Version3\ColonistLoaderVersion3.cs" />
+    <Compile Include="EdBPrepareCarefully\Version4\SaveRecordApparelV4.cs" />
+    <Compile Include="EdBPrepareCarefully\Version4\SaveRecordPawnV4.cs" />
+    <Compile Include="EdBPrepareCarefully\Version4\SaveRecordPresetV4.cs" />
+    <Compile Include="EdBPrepareCarefully\Version4\SaveRecordSkillV4.cs" />
+    <Compile Include="EdBPrepareCarefully\PawnCompsLoader.cs" />
+    <Compile Include="EdBPrepareCarefully\PawnCompsSaver.cs" />
+    <Compile Include="EdBPrepareCarefully\Version5\PawnLoaderV5.cs" />
+    <Compile Include="EdBPrepareCarefully\Version5\PresetLoaderV5.cs" />
+    <Compile Include="EdBPrepareCarefully\Version5\SaveRecordIdeoV5.cs" />
+    <Compile Include="EdBPrepareCarefully\Version5\SaveRecordPawnV5.cs" />
+    <Compile Include="EdBPrepareCarefully\Version5\SaveRecordPresetV5.cs" />
+    <Compile Include="EdBPrepareCarefully\Version5\SaveRecordTraitV5.cs" />
+    <Compile Include="EdBPrepareCarefully\ColonistLoader.cs" />
+    <Compile Include="EdBPrepareCarefully\Injury.cs" />
+    <Compile Include="EdBPrepareCarefully\InjuryOption.cs" />
+    <Compile Include="EdBPrepareCarefully\CustomPawn.cs" />
+    <Compile Include="EdBPrepareCarefully\PawnColorUtils.cs" />
+    <Compile Include="EdBPrepareCarefully\Dialog_Confirm.cs" />
+    <Compile Include="EdBPrepareCarefully\ThingCache.cs" />
+    <Compile Include="EdBPrepareCarefully\Page_PrepareCarefully.cs" />
+    <Compile Include="EdBPrepareCarefully\ITabView.cs" />
+    <Compile Include="EdBPrepareCarefully\TabViewPawns.cs" />
+    <Compile Include="EdBPrepareCarefully\TabViewEquipment.cs" />
+    <Compile Include="EdBPrepareCarefully\TabViewBase.cs" />
+    <Compile Include="EdBPrepareCarefully\IPanel.cs" />
+    <Compile Include="EdBPrepareCarefully\PanelPawnList.cs" />
+    <Compile Include="EdBPrepareCarefully\PanelRandomize.cs" />
+    <Compile Include="EdBPrepareCarefully\PanelName.cs" />
+    <Compile Include="EdBPrepareCarefully\PanelBase.cs" />
+    <Compile Include="EdBPrepareCarefully\Style.cs" />
+    <Compile Include="EdBPrepareCarefully\PanelAge.cs" />
+    <Compile Include="EdBPrepareCarefully\PanelAppearance.cs" />
+    <Compile Include="EdBPrepareCarefully\PanelSkills.cs" />
+    <Compile Include="EdBPrepareCarefully\PanelIncapableOf.cs" />
+    <Compile Include="EdBPrepareCarefully\PanelLoadSave.cs" />
+    <Compile Include="EdBPrepareCarefully\ControllerPawns.cs" />
+    <Compile Include="EdBPrepareCarefully\ProviderBackstories.cs" />
+    <Compile Include="EdBPrepareCarefully\Constraints.cs" />
+    <Compile Include="EdBPrepareCarefully\ProviderTraits.cs" />
+    <Compile Include="EdBPrepareCarefully\ProviderPawnLayers.cs" />
+    <Compile Include="EdBPrepareCarefully\ExtensionsRect.cs" />
+    <Compile Include="EdBPrepareCarefully\Field.cs" />
+    <Compile Include="EdBPrepareCarefully\PanelEquipmentAvailable.cs" />
+    <Compile Include="EdBPrepareCarefully\PanelEquipmentSelected.cs" />
+    <Compile Include="EdBPrepareCarefully\ProviderEquipment.cs" />
+    <Compile Include="EdBPrepareCarefully\EquipmentType.cs" />
+    <Compile Include="EdBPrepareCarefully\WidgetEquipmentIcon.cs" />
+    <Compile Include="EdBPrepareCarefully\WidgetNumberField.cs" />
+    <Compile Include="EdBPrepareCarefully\WidgetTable.cs" />
+    <Compile Include="EdBPrepareCarefully\ControllerEquipment.cs" />
+    <Compile Include="EdBPrepareCarefully\ExtensionsVector.cs" />
+    <Compile Include="EdBPrepareCarefully\WidgetDropdown.cs" />
+    <Compile Include="EdBPrepareCarefully\ProviderFactions.cs" />
+    <Compile Include="EdBPrepareCarefully\TabViewRelationships.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="packages.config" />
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+</Project>
