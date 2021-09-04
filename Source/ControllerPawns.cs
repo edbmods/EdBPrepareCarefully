@@ -149,6 +149,22 @@ namespace EdB.PrepareCarefully {
             }
         }
 
+        public void RemoveAbility(Ability ability) {
+            state.CurrentPawn.Pawn.abilities?.RemoveAbility(ability.def);
+        }
+        public void AddAbility(AbilityDef def) {
+            state.CurrentPawn.Pawn.abilities?.GainAbility(def);
+        }
+        public void SetAbilities(IEnumerable<AbilityDef> abilities) {
+            List<AbilityDef> toRemove = new List<AbilityDef>(state.CurrentPawn.Pawn.abilities.abilities.Select(a => a.def));
+            foreach (var def in toRemove) {
+                state.CurrentPawn.Pawn.abilities.RemoveAbility(def);
+            }
+            foreach (var a in abilities) {
+                state.CurrentPawn.Pawn.abilities.GainAbility(a);
+            }
+        }
+
         // Age-related actions.
         public void UpdateBiologicalAge(int age) {
             int min = ProviderAgeLimits.MinAgeForPawn(state.CurrentPawn.Pawn);

@@ -129,8 +129,8 @@ namespace EdB.PrepareCarefully {
             if (record.pawnKindDef != null) {
                 pawnKindDef = DefDatabase<PawnKindDef>.GetNamedSilentFail(record.pawnKindDef);
                 if (pawnKindDef == null) {
-                    Logger.Warning("Pawn kind definition for the saved character (" + record.pawnKindDef + ") not found.  Picking a random player colony pawn kind definition.");
-                    pawnKindDef = PrepareCarefully.Instance.Providers.Factions.GetPawnKindsForFactionDef(FactionDefOf.PlayerColony).RandomElement();
+                    Logger.Warning("Pawn kind definition for the saved character (" + record.pawnKindDef + ") not found.  Picking the basic colony pawn kind definition.");
+                    pawnKindDef = FactionDefOf.PlayerColony.basicMemberKind;
                     if (pawnKindDef == null) {
                         return null;
                     }
@@ -553,6 +553,31 @@ namespace EdB.PrepareCarefully {
                     injury.PainFactor = injuryRecord.PainFactor;
                 }
                 pawn.AddInjury(injury);
+            }
+
+            // Ideoligion Certainty
+            try {
+                if (record.ideo != null && ModsConfig.IdeologyActive && pawn.Pawn?.ideo != null) {
+                    pawn.Certainty = record.ideo.certainty;
+                }
+            }
+            catch (Exception e) {
+                Logger.Error("Failed to load ideoligion certainty", e);
+            }
+
+            // Abilities
+            try {
+                if (record.abilities != null && pawn.Pawn?.abilities != null) {
+                    foreach (string a in record.abilities) {
+                        AbilityDef def = DefDatabase<AbilityDef>.GetNamedSilentFail(a);
+                        if (def != null) {
+                            pawn.Pawn.abilities.GainAbility(def);
+                        }
+                    }
+                }
+            }
+            catch (Exception e) {
+                Logger.Error("Failed to load abilities", e);
             }
 
             pawn.CopySkillsAndPassionsToPawn();

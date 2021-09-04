@@ -63,8 +63,8 @@
     <Compile Include="Source\AnimalDatabase.cs" />
     <Compile Include="Source\AnimalRecord.cs" />
     <Compile Include="Source\AnimalRecordKey.cs" />
+    <Compile Include="Source\DialogAbilities.cs" />
     <Compile Include="Source\DialogIdeos.cs" />
-    <Compile Include="Source\PanelModuleAbilities.cs" />
     <Compile Include="Source\ColonistFiles.cs" />
     <Compile Include="Source\ColonistSaver.cs" />
     <Compile Include="Source\ColorSelectorType.cs" />
@@ -78,6 +78,8 @@
     <Compile Include="Source\ExtensionsBackstory.cs" />
     <Compile Include="Source\FilterBackstoryMatchesFaction.cs" />
     <Compile Include="Source\PanelModule.cs" />
+    <Compile Include="Source\PanelModuleAbilities.cs" />
+    <Compile Include="Source\PanelModuleAge.cs" />
     <Compile Include="Source\PanelModuleBackstory.cs" />
     <Compile Include="Source\PanelModuleFaction.cs" />
     <Compile Include="Source\PanelModuleHealth.cs" />
@@ -212,6 +214,7 @@
     <Compile Include="Source\PawnCompsSaver.cs" />
     <Compile Include="Source\Version5\PawnLoaderV5.cs" />
     <Compile Include="Source\Version5\PresetLoaderV5.cs" />
+    <Compile Include="Source\Version5\SaveRecordIdeoV5.cs" />
     <Compile Include="Source\Version5\SaveRecordPawnV5.cs" />
     <Compile Include="Source\Version5\SaveRecordPresetV5.cs" />
     <Compile Include="Source\Version5\SaveRecordTraitV5.cs" />

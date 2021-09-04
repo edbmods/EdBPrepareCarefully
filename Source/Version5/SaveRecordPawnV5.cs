@@ -42,6 +42,8 @@ namespace EdB.PrepareCarefully {
         public bool randomRelations = false;
         public List<SaveRecordImplantV3> implants = new List<SaveRecordImplantV3>();
         public List<SaveRecordInjuryV3> injuries = new List<SaveRecordInjuryV3>();
+        public SaveRecordIdeoV5 ideo;
+        public List<string> abilities = new List<string>();
         public string compsXml = null;
         public List<string> savedComps = new List<string>();
 
@@ -137,6 +139,18 @@ namespace EdB.PrepareCarefully {
                 }
                 this.injuries.Add(saveRecord);
             }
+            if (pawn.Pawn?.abilities != null) {
+                this.abilities.AddRange(pawn.Pawn.abilities.abilities.Select(a => a.def.defName));
+            }
+            if (ModsConfig.IdeologyActive && pawn.Pawn.ideo != null) {
+                this.ideo = new SaveRecordIdeoV5() {
+                    certainty = pawn.Pawn.ideo.Certainty,
+                    name = pawn.Pawn.ideo.Ideo?.name,
+                    sameAsColony = pawn.Pawn.ideo.Ideo == Find.FactionManager.OfPlayer.ideos.PrimaryIdeo,
+                    memes = new List<string>(pawn.Pawn.ideo.Ideo.memes.Select(m => m.defName))
+                };
+                Logger.Debug(string.Join(", ", pawn.Pawn.ideo.Ideo?.memes.Select(m => m.defName)));
+            }
 
             pawnCompsSaver = new PawnCompsSaver(pawn.Pawn, DefaultPawnCompRules.RulesForSaving);
         }
@@ -172,6 +186,8 @@ namespace EdB.PrepareCarefully {
             Scribe_Values.Look<int>(ref this.chronologicalAge, "chronologicalAge", 0, false);
             Scribe_Collections.Look<SaveRecordSkillV4>(ref this.skills, "skills", LookMode.Deep, null);
             Scribe_Collections.Look<SaveRecordApparelV4>(ref this.apparel, "apparel", LookMode.Deep, null);
+            Scribe_Deep.Look<SaveRecordIdeoV5>(ref this.ideo, "ideo", null, false);
+            Scribe_Collections.Look<string>(ref this.abilities, "abilities", LookMode.Value, null);
 
             if (Scribe.mode == LoadSaveMode.Saving) {
                 Scribe_Collections.Look<SaveRecordImplantV3>(ref this.implants, "implants", LookMode.Deep, null);

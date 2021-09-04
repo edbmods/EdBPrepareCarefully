@@ -15,7 +15,8 @@ namespace EdB.PrepareCarefully {
         public Rect FieldRect;
         public Rect CertaintyLabelRect;
         public Rect CertaintySliderRect;
-        protected Field FieldFaction = new Field();
+        public Rect PercentLabelRect;
+        protected Field FieldIdeo = new Field();
         protected LabelTrimmer labelTrimmer = new LabelTrimmer();
 
         public override void Resize(float width) {
@@ -26,13 +27,17 @@ namespace EdB.PrepareCarefully {
             GameFont savedFont = Text.Font;
             Text.Font = GameFont.Small;
             Vector2 sizeCertainty = Text.CalcSize("Certainty".Translate().CapitalizeFirst());
+            Text.Font = GameFont.Tiny;
+            Vector2 sizePercent = Text.CalcSize("100%");
             Text.Font = savedFont;
-            CertaintyLabelRect = new Rect(Margin.x, 0, sizeCertainty.x, sizeCertainty.y);
+            float labelHeight = Math.Max(sizeCertainty.y, sizePercent.y);
+            CertaintyLabelRect = new Rect(Margin.x, 0, sizeCertainty.x, labelHeight);
+            PercentLabelRect = new Rect(width - Margin.x - sizePercent.x, 1, sizePercent.x, labelHeight);
 
             float sliderHeight = 8f;
-
-            CertaintySliderRect = new Rect(CertaintyLabelRect.xMax + fieldPadding, CertaintyLabelRect.yMin + CertaintyLabelRect.height * 0.5f - sliderHeight * 0.5f,
-                width - sizeCertainty.x - fieldPadding - Margin.x * 2f, sliderHeight);
+            float sliderWidth = PercentLabelRect.xMin - CertaintyLabelRect.xMax - fieldPadding * 2f;
+            CertaintySliderRect = new Rect(CertaintyLabelRect.xMax + fieldPadding, CertaintyLabelRect.yMin + CertaintyLabelRect.height * 0.5f - sliderHeight * 0.5f - 1,
+                sliderWidth, sliderHeight);
         }
 
         public float Measure() {
@@ -53,26 +58,26 @@ namespace EdB.PrepareCarefully {
             Pawn_IdeoTracker ideoTracker = pawn.Pawn.ideo;
             Ideo ideo = ideoTracker?.Ideo;
 
-            FieldFaction.Rect = FieldRect.OffsetBy(0, y);
-            labelTrimmer.Rect = FieldFaction.Rect.InsetBy(8, 0);
+            FieldIdeo.Rect = FieldRect.OffsetBy(0, y);
+            labelTrimmer.Rect = FieldIdeo.Rect.InsetBy(8, 0);
 
             if (ideo != null) {
-                FieldFaction.Label = labelTrimmer.TrimLabelIfNeeded(ideo.name);
-                FieldFaction.Tip = ideo.description;
+                FieldIdeo.Label = labelTrimmer.TrimLabelIfNeeded(ideo.name);
+                FieldIdeo.Tip = ideo.description;
             }
-            FieldFaction.Enabled = true;
-            FieldFaction.ClickAction = () => {
+            FieldIdeo.Enabled = true;
+            FieldIdeo.ClickAction = () => {
                 var dialog = new DialogIdeos() {
                     Pawn = pawn
                 };
                 Find.WindowStack.Add(dialog);
             };
+            FieldIdeo.DrawIconFunc = (Rect rect) => {
+                ideo.DrawIcon(rect);
+            };
+            FieldIdeo.IconSizeFunc = () => new Vector2(32, 32);
 
-            FieldFaction.Draw();
-
-            Rect iconRect = FieldRect.OffsetBy(8, y).InsetBy(2);
-            iconRect = new Rect(iconRect.x, iconRect.y, 32, 32);
-            ideo.DrawIcon(iconRect);
+            FieldIdeo.Draw();
 
             y += FieldRect.height;
             y += FieldPadding.y;
@@ -81,8 +86,10 @@ namespace EdB.PrepareCarefully {
             Text.Font = GameFont.Small;
             GUI.color = Style.ColorText;
             Text.Anchor = TextAnchor.MiddleCenter;
-            Rect labelRect = CertaintyLabelRect.OffsetBy(0, y);
-            Widgets.Label(labelRect, "Certainty".Translate().CapitalizeFirst());
+            Widgets.Label(CertaintyLabelRect.OffsetBy(0, y), "Certainty".Translate().CapitalizeFirst());
+            Text.Anchor = TextAnchor.MiddleRight;
+            Text.Font = GameFont.Tiny;
+            Widgets.Label(PercentLabelRect.OffsetBy(0, y), ((int)(ideoTracker.Certainty * 100f)).ToString() + "%");
             Text.Anchor = TextAnchor.UpperLeft;
             GUI.color = Color.white;
             float certainty = GUI.HorizontalSlider(CertaintySliderRect.OffsetBy(0, y), ideoTracker.Certainty, 0, 1);
@@ -94,13 +101,36 @@ namespace EdB.PrepareCarefully {
 
             y += Margin.y;
 
-            if (ideoTracker.Certainty != certainty) {
-                float diff = ideoTracker.Certainty - certainty;
-                ideoTracker.Debug_ReduceCertainty(diff);
+            // Update the certainty based on the slider value
+            pawn.Certainty = certainty;
+
+            // Randomize button
+            Rect randomizeRect = new Rect(Width - 32, top + 9, 22, 22);
+            if (randomizeRect.Contains(Event.current.mousePosition)) {
+                GUI.color = Style.ColorButtonHighlight;
+            }
+            else {
+                GUI.color = Style.ColorButton;
+            }
+            GUI.DrawTexture(randomizeRect, Textures.TextureButtonRandom);
+            if (Widgets.ButtonInvisible(randomizeRect, false)) {
+                SoundDefOf.Tick_Low.PlayOneShotOnCamera();
+                SelectRandomIdeo(state);
             }
 
             return y - top;
         }
 
+        protected void SelectRandomIdeo(State state) {
+            CustomPawn pawn = state.CurrentPawn;
+            Pawn_IdeoTracker ideo = pawn.Pawn?.ideo;
+            if (ideo != null) {
+                Ideo currentIdeo = ideo.Ideo;
+                float certainty = ideo.Certainty;
+                Ideo newIdeo = Find.IdeoManager.IdeosInViewOrder.Where(i => i != currentIdeo).RandomElement();
+                ideo.SetIdeo(newIdeo);
+                pawn.Certainty = certainty;
+            }
+        }
     }
 }

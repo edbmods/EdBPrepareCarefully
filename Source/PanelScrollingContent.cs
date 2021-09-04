@@ -58,12 +58,17 @@ namespace EdB.PrepareCarefully {
                             if (visibleModules > 0) {
                                 y += 6;
                                 GUI.color = Style.ColorTabViewBackground;
-                                GUI.DrawTexture(new Rect(0, y, PanelRect.width, 2), BaseContent.WhiteTex);
+                                GUI.DrawTexture(new Rect(0, y, PanelRect.width, 4), BaseContent.WhiteTex);
                                 GUI.color = Color.white;
                                 y += 2;
                             }
-                            y += module.Draw(state, y);
-                            visibleModules++;
+                            try {
+                                y += module.Draw(state, y);
+                                visibleModules++;
+                            }
+                            catch (Exception e) {
+                                Logger.Error("Failed to draw module", e);
+                            }
                         }
                     }
                 }

@@ -15,9 +15,9 @@ namespace EdB.PrepareCarefully {
         public event PresetHandler PresetLoaded;
         public event PresetHandler PresetSaved;
 
-        private TabViewPawns tabViewPawns = new TabViewPawns();
-        private TabViewEquipment tabViewEquipment = new TabViewEquipment();
-        private TabViewRelationships tabViewRelationships = new TabViewRelationships();
+        private TabViewPawns tabViewPawns;
+        private TabViewEquipment tabViewEquipment;
+        private TabViewRelationships tabViewRelationships;
         private List<ITabView> tabViews = new List<ITabView>();
         private List<TabRecord> tabRecords = new List<TabRecord>();
         private bool pawnListActionThisFrame = false;
@@ -26,10 +26,32 @@ namespace EdB.PrepareCarefully {
 
         private Controller controller;
 
+        public bool LargeUI { get; set; }
+
         public override Vector2 InitialSize {
             get {
                 //Logger.Debug("Prepare Carefully window size: [" + Page.StandardSize.x + " x " + Page.StandardSize.y + "]");
-                return new Vector2(Page.StandardSize.x, Page.StandardSize.y);
+                //Logger.Debug("Screen: [" + Screen.width + ", " + Screen.height + "], dpi = " + Screen.dpi + ", resolution = " + Screen.currentResolution);
+                //Logger.Debug("Screen safe area: " + Screen.safeArea);
+                //Logger.Debug("UI scale: " + Prefs.UIScale);
+
+                Vector2 maxSize = new Vector2(Screen.safeArea.width / Prefs.UIScale, Screen.safeArea.height / Prefs.UIScale);
+                Vector2 minSize = Page.StandardSize / Prefs.UIScale;
+
+                Vector2 padding = new Vector2(64, 64) / Prefs.UIScale;
+                maxSize -= padding;
+
+                Vector2 largeSize = new Vector2(1350, Page.StandardSize.y);
+
+                if (maxSize.x >= largeSize.x && maxSize.y >= largeSize.y) {
+                    LargeUI = true;
+                    return largeSize;
+                }
+                else {
+                    LargeUI = false;
+                    return Page.StandardSize;
+                }
+
             }
         }
 
@@ -44,6 +66,11 @@ namespace EdB.PrepareCarefully {
             this.closeOnClickedOutside = false;
             this.doCloseButton = false;
             this.doCloseX = false;
+
+            Vector2 initialSize = InitialSize;
+            tabViewPawns = new TabViewPawns(LargeUI);
+            tabViewEquipment = new TabViewEquipment();
+            tabViewRelationships = new TabViewRelationships();
 
             // Add the tab views to the tab view list.
             tabViews.Add(tabViewPawns);
@@ -65,6 +92,7 @@ namespace EdB.PrepareCarefully {
                 currentTab.TabRecord = tabRecord;
                 tabRecords.Add(tabRecord);
             }
+
         }
 
         override public void OnAcceptKeyPressed() {
@@ -291,7 +319,8 @@ namespace EdB.PrepareCarefully {
                 SoundDefOf.Tick_Tiny.PlayOneShotOnCamera();
                 controller.SubcontrollerCharacters.SelectPawn(pawn);
                 tabViewPawns.PanelName.ClearSelection();
-                tabViewPawns.PanelFlexible.ScrollToTop();
+                tabViewPawns.PanelColumn1?.ScrollToTop();
+                tabViewPawns.PanelColumn2?.ScrollToTop();
                 tabViewPawns.PanelSkills.ScrollToTop();
                 tabViewPawns.PanelAppearance.UpdatePawnLayers();
             }
@@ -406,6 +435,10 @@ namespace EdB.PrepareCarefully {
             tabViewPawns.PanelTraits.TraitUpdated += pawnController.UpdateTrait;
             tabViewPawns.PanelTraits.TraitRemoved += pawnController.RemoveTrait;
             tabViewPawns.PanelTraits.TraitsRandomized += pawnController.RandomizeTraits;
+
+            tabViewPawns.PanelAbilities.AbilityAdded += pawnController.AddAbility;
+            tabViewPawns.PanelAbilities.AbilityRemoved += pawnController.RemoveAbility;
+            tabViewPawns.PanelAbilities.AbilitiesSet += pawnController.SetAbilities;
 
             // Instrument the equipment tab view.
             ControllerEquipment equipment = controller.SubcontrollerEquipment;
