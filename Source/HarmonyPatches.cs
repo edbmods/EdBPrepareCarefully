@@ -66,6 +66,15 @@ namespace EdB.PrepareCarefully {
                 float num = rect.height + 45f;
                 Rect rect4 = new Rect(rect.x + rect.width / 2f - BottomButSize.x / 2f, num, BottomButSize.x, BottomButSize.y);
                 if (Widgets.ButtonText(rect4, "EdB.PC.Page.Button.PrepareCarefully".Translate(), true, false, true)) {
+                    // Version check
+                    if (VersionControl.CurrentVersion < PrepareCarefully.MinimumGameVersion) {
+                        Find.WindowStack.Add(new DialogInitializationError(null));
+                        SoundDefOf.ClickReject.PlayOneShot(null);
+                        Logger.Warning("Prepare Carefully failed to initialize because it requires at least version " + PrepareCarefully.MinimumGameVersion
+                            + " of RimWorld.  You are running " + VersionControl.CurrentVersionString);
+                        return;
+                    }
+
                     try {
                         ReflectionCache.Instance.Initialize();
 

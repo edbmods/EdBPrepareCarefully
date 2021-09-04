@@ -12,6 +12,8 @@
  - Added an Abilities panel when abilities are available, i.e. when the
    Royalty expansion is enabled.
  - Added a Titles panel when the Royalty expansion is enabled.
+ - Added an error message if you are running a version of RimWorld less than
+   the version required by the mod.
  - Fixed an issue where a character's head graphics were broken when loading
    a character that used a modded alien race.  If the character was loaded
    later when the mod was no longer enabled, the pawn would have a missing

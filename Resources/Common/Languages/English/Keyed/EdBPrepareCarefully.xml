@@ -219,6 +219,14 @@
   <EdB.PC.Error.NotEnoughPoints>You've spent too many points.</EdB.PC.Error.NotEnoughPoints>
   <EdB.PC.Error.NotEnoughColonists1>You must have at least one colonist.</EdB.PC.Error.NotEnoughColonists1>
   <EdB.PC.Error.NotEnoughColonists>You must have at least {0} colonists.</EdB.PC.Error.NotEnoughColonists>
+  <EdB.PC.Error.GameVersion>Prepare Carefully failed to initialize.
+  
+This may be because you are running an older version of RimWorld than required.
+
+You are running version {0} of the game.  Prepare Carefully requires that you run at least version {1}.
+  
+Please update to the minimum required version or newer to see if it fixes your problem.
+  </EdB.PC.Error.GameVersion>
   <EdB.PC.Error.Initialization>Prepare Carefully failed to initialize.
 
 This is frequently caused by an unexpected issue between Prepare Carefully and another mod but could also be a caused by a bug in Prepare Carefully.

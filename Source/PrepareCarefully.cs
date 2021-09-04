@@ -6,6 +6,7 @@ using System.Reflection;
 using Verse;
 
 namespace EdB.PrepareCarefully {
+
     public enum SortField {
         Name,
         Cost
@@ -17,6 +18,7 @@ namespace EdB.PrepareCarefully {
     }
 
     public class PrepareCarefully {
+        public static readonly Version MinimumGameVersion = new Version(1, 3, 3102);
         protected static PrepareCarefully instance = null;
         public static PrepareCarefully Instance {
             get {
