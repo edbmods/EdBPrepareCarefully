@@ -1,5 +1,9 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
 <!-- CHANGE NOTES -->
+<!-- v1.3.9 -->
+<!-- ADDED: EdB.PC.Dialog.Abilities.Header -->
+<!-- ADDED: EdB.PC.Panel.Abilities.None -->
+
 <!-- v1.3.6 -->
 <!-- REMOVED: EdB.PC.Panel.Traits.Warning.TooManyTraits -->
 
@@ -130,6 +134,8 @@
   <EdB.PC.Common.Default>Default</EdB.PC.Common.Default>
   <EdB.PC.Common.Select>Select</EdB.PC.Common.Select>
 
+  <EdB.PC.Dialog.Abilities.Header>Select Abilities</EdB.PC.Dialog.Abilities.Header>
+  
   <EdB.PC.Dialog.Backstory.Filter.Add>Add Filter</EdB.PC.Dialog.Backstory.Filter.Add>
   <EdB.PC.Dialog.Backstory.Filter.NoDisabledWorkTypes>No Disabled Work Types</EdB.PC.Dialog.Backstory.Filter.NoDisabledWorkTypes>
   <EdB.PC.Dialog.Backstory.Filter.NoSkillPenalties>No Skill Penalties</EdB.PC.Dialog.Backstory.Filter.NoSkillPenalties>
@@ -273,6 +279,8 @@ Before reporting an error, please try to figure out which mod may be causing the
 Disable point limits to prepare your starting colonists with no limitations.
   </EdB.PC.Page.Points.UsePoints.Tip>
   <EdB.PC.Page.Title>Prepare Carefully</EdB.PC.Page.Title>
+
+  <EdB.PC.Panel.Abilities.None>No abilities</EdB.PC.Panel.Abilities.None>
   
   <EdB.PC.Panel.Age.Biological>Biological Age</EdB.PC.Panel.Age.Biological>
   <EdB.PC.Panel.Age.Chronological>Chronological Age</EdB.PC.Panel.Age.Chronological>

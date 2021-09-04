@@ -1,15 +1,33 @@
  _____________________________________________________________________________
  
+   Version 1.3.9
+ _____________________________________________________________________________
+
+ - Reworked the user interface to consist of scrolling columns so that more
+   content panels can be included.
+ - The Prepare Carefully window is now wider if you're playing with the
+   expansions and your screen is big enough to support it.  An additional
+   column has been added to the layout.
+ - Added an Ideoligion panel when the Ideology expansion is enabled.
+ - Added an Abilities panel when abilities are available, i.e. when the
+   Royalty expansion is enabled.
+ - Added a Titles panel when the Royalty expansion is enabled.
+ - Fixed an issue where a character's head graphics were broken when loading
+   a character that used a modded alien race.  If the character was loaded
+   later when the mod was no longer enabled, the pawn would have a missing
+   head graphic.  It should now display head graphics properly.
+
+ _____________________________________________________________________________
+ 
    Version 1.3.8
  _____________________________________________________________________________
 
  - Added all colony factions to the list of "faction templates" so that more
    pawn kinds are available when using the "Add..." button to add a new pawn.
- - The list of pawn kinds in the "faction templates" list now displays the
-   default race of the pawn kind so that it's easier to distinguish between
-   pawn kinds.  You may not see this change if you have any mods enabled that
-   dynamically change the default race of a pawn kind, leaving the value
-   unreliable for we want to use it.
+ - If you have alien races mods enabled, the list of pawn kinds in the
+   "Add..." list now displays the default race for each pawn kind so that you
+   can more easily to distinguish between them.  There are some mods that
+   mess with the way this works, so that value may be a little unreliable.
  - Reverted the change that removed injury/health conditions from the list of
    those that you can add to a pawn.  You can add these hediff's to your
    pawns again.  Some of them will work fine.  Others may not work properly.
