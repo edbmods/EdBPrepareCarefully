@@ -68,7 +68,9 @@ namespace EdB.PrepareCarefully {
                     continue;
                 }
                 if (kindDef.defaultFactionType != null) {
-                    uniquePawnKindsByFaction[kindDef.defaultFactionType].Add(kindDef);
+                    if (uniquePawnKindsByFaction.ContainsKey(kindDef.defaultFactionType)) {
+                        uniquePawnKindsByFaction[kindDef.defaultFactionType].Add(kindDef);
+                    }
                 }
                 else {
                     otherPawnKinds.Add(kindDef);
