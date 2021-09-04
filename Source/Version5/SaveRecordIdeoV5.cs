@@ -13,6 +13,9 @@ namespace EdB.PrepareCarefully {
         public bool sameAsColony;
         public List<string> memes;
 
+        public SaveRecordIdeoV5() {
+        }
+
         public void ExposeData() {
             Scribe_Values.Look<string>(ref this.name, "name", null, false);
             Scribe_Values.Look<float>(ref this.certainty, "certainty", 0.85f, false);

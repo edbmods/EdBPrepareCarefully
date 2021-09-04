@@ -186,7 +186,7 @@ namespace EdB.PrepareCarefully {
             Scribe_Values.Look<int>(ref this.chronologicalAge, "chronologicalAge", 0, false);
             Scribe_Collections.Look<SaveRecordSkillV4>(ref this.skills, "skills", LookMode.Deep, null);
             Scribe_Collections.Look<SaveRecordApparelV4>(ref this.apparel, "apparel", LookMode.Deep, null);
-            Scribe_Deep.Look<SaveRecordIdeoV5>(ref this.ideo, "ideo", null, false);
+            Scribe_Deep.Look<SaveRecordIdeoV5>(ref this.ideo, "ideo");
             Scribe_Collections.Look<string>(ref this.abilities, "abilities", LookMode.Value, null);
 
             if (Scribe.mode == LoadSaveMode.Saving) {
