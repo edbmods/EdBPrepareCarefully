@@ -146,6 +146,20 @@ namespace EdB.PrepareCarefully {
             }
         }
 
+        public float Certainty {
+            get {
+                return pawn.ideo?.Certainty ?? 0.75f;
+            }
+            set {
+                if (pawn.ideo != null) {
+                    float current = pawn.ideo.Certainty;
+                    if (current != value) {
+                        pawn.ideo.Debug_ReduceCertainty(current - value);
+                    }
+                }
+            }
+        }
+
         public Color HairColor {
             get {
                 return pawn.story.hairColor;
