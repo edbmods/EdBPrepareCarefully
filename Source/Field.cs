@@ -90,6 +90,9 @@ namespace EdB.PrepareCarefully {
                 enabled = value;
             }
         }
+        public Action<Rect> DrawIconFunc = null;
+        public Func<Vector2> IconSizeFunc = null;
+
         public void Draw() {
             TextAnchor saveAnchor = Text.Anchor;
             Color saveColor = GUI.color;
@@ -116,7 +119,16 @@ namespace EdB.PrepareCarefully {
 
                 // Draw the label.
                 Text.Anchor = TextAnchor.MiddleCenter;
-                Rect textRect = new Rect(rect.x, rect.y + 1, rect.width, rect.height);
+                Rect iconRect = new Rect();
+                Rect fullRect = new Rect(rect.x, rect.y + 1, rect.width, rect.height);
+                Rect textRect = fullRect;
+                bool drawIcon = DrawIconFunc != null && IconSizeFunc != null;
+                if (drawIcon) {
+                    Vector2 iconSize = IconSizeFunc();
+                    textRect = textRect.InsetBy(iconSize.x * 2f, 0).OffsetBy(4, 0);
+                    Vector2 textSize = Text.CalcSize(label);
+                    iconRect = new Rect(fullRect.x + fullRect.width / 2f - textSize.x / 2f - iconSize.x - 4, fullRect.y + fullRect.height / 2 - iconSize.y / 2, iconSize.x, iconSize.y);
+                }
                 if (!enabled) {
                     GUI.color = Style.ColorControlDisabled;
                 }
@@ -125,6 +137,9 @@ namespace EdB.PrepareCarefully {
                 }
                 else {
                     GUI.color = this.Color;
+                }
+                if (drawIcon) {
+                    DrawIconFunc(iconRect);
                 }
                 if (label != null) {
                     Widgets.Label(textRect, label);
@@ -137,7 +152,7 @@ namespace EdB.PrepareCarefully {
 
                 // Handle the tooltip.
                 if (tip != null) {
-                    TooltipHandler.TipRegion(fieldRect, tip);
+                    TooltipHandler.TipRegion(ClickRect.HasValue ? ClickRect.Value : fieldRect, tip);
                 }
                 if (TipAction != null) {
                     TipAction(ClickRect.HasValue ? ClickRect.Value : fieldRect);

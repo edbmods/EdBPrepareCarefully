@@ -72,6 +72,9 @@ namespace EdB.PrepareCarefully {
         public Func<IEnumerable<T>, IEnumerable<T>> FilterOptions = (IEnumerable<T> options) => {
             return options;
         };
+        public Func<Vector2> IconSizeFunc = null;
+        public Action<T, Rect> DrawIconFunc = null;
+
 
         public Dialog_Options(IEnumerable<T> options) {
             this.closeOnCancel = true;
@@ -173,6 +176,11 @@ namespace EdB.PrepareCarefully {
                 cursor += height;
                 cursor += 2;
             }
+            bool drawIcon = DrawIconFunc != null && IconSizeFunc != null;
+            Vector2 iconSize = new Vector2(0, 0);
+            if (IconSizeFunc != null) {
+                iconSize = IconSizeFunc();
+            }
 
             Rect itemRect = new Rect(0, cursor, ContentSize.x - 32, 0);
             IEnumerable<T> filteredOptions = FilterOptions(options);
@@ -193,20 +201,28 @@ namespace EdB.PrepareCarefully {
                 size.y = height;
 
                 if (cursor + height >= ScrollView.Position.y && cursor <= ScrollView.Position.y + ScrollView.ViewHeight) {
-                    if (enabled) {
+                    GUI.color = Color.white;
+                    if (!enabled) {
+                        GUI.color = new Color(0.65f, 0.65f, 0.65f);
+                    }
+                    Rect labelRect = new Rect(0, cursor + 2, ContentSize.x - 32, height);
+                    if (drawIcon) {
+                        Rect iconRect = new Rect(0, cursor + 2 + height / 2 - iconSize.y / 2, iconSize.x, iconSize.y);
+                        DrawIconFunc(option, iconRect);
+                        labelRect = labelRect.InsetBy(iconSize.x + 4, 0);
+                    }
+                    Widgets.Label(labelRect, name);
+                    Vector2 radioButtonPosition = new Vector2(itemRect.x + itemRect.width - 24, itemRect.y + itemRect.height / 2 - 12);
+                    if (!enabled) {
+                        Texture2D image = Textures.TextureRadioButtonOff;
+                        GUI.color = new Color(1, 1, 1, 0.28f);
+                        GUI.DrawTexture(new Rect(radioButtonPosition.x, radioButtonPosition.y, 24, 24), image);
                         GUI.color = Color.white;
-                        if (Widgets.RadioButtonLabeled(itemRect, name, selected)) {
-                            SelectAction(option);
-                        }
                     }
                     else {
-                        GUI.color = new Color(0.65f, 0.65f, 0.65f);
-                        Widgets.Label(new Rect(0, cursor + 2, ContentSize.x - 32, height), name);
-                        Texture2D image = Textures.TextureRadioButtonOff;
-                        Vector2 topLeft = new Vector2(itemRect.x + itemRect.width - 24, itemRect.y + itemRect.height / 2 - 12);
-                        GUI.color = new Color(1, 1, 1, 0.28f);
-                        GUI.DrawTexture(new Rect(topLeft.x, topLeft.y, 24, 24), image);
-                        GUI.color = Color.white;
+                        if (Widgets.RadioButton(radioButtonPosition, selected) || Widgets.ButtonInvisible(labelRect)) {
+                            SelectAction(option);
+                        }
                     }
 
                     if (DescriptionFunc != null) {
