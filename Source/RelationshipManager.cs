@@ -482,7 +482,7 @@ namespace EdB.PrepareCarefully {
 
         public CustomPawn CreateNewTemporaryPawn(Gender gender) {
             CustomPawn pawn = new CustomPawn(new Randomizer().GeneratePawn(new PawnGenerationRequestWrapper() {
-                Faction = null,
+                Faction = Find.FactionManager.OfPlayer,
                 KindDef = Find.FactionManager.OfPlayer.def.basicMemberKind,
                 Context = PawnGenerationContext.NonPlayer,
                 FixedGender = gender
