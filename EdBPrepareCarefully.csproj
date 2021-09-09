@@ -75,7 +75,9 @@
     <Compile Include="Source\CostCalculator.cs" />
     <Compile Include="Source\CustomFaction.cs" />
     <Compile Include="Source\DialogFavoriteColor.cs" />
+    <Compile Include="Source\DialogTitles.cs" />
     <Compile Include="Source\ExtensionsBackstory.cs" />
+    <Compile Include="Source\ExtensionsDictionary.cs" />
     <Compile Include="Source\FilterBackstoryMatchesFaction.cs" />
     <Compile Include="Source\PanelModule.cs" />
     <Compile Include="Source\PanelModuleAbilities.cs" />
@@ -84,6 +86,7 @@
     <Compile Include="Source\PanelModuleFaction.cs" />
     <Compile Include="Source\PanelModuleHealth.cs" />
     <Compile Include="Source\PanelModuleIdeo.cs" />
+    <Compile Include="Source\PanelModuleTitles.cs" />
     <Compile Include="Source\PanelModuleTraits.cs" />
     <Compile Include="Source\InitializationException.cs" />
     <Compile Include="Source\InjurySeverity.cs" />
@@ -163,6 +166,7 @@
     <Compile Include="Source\OptionsBodyType.cs" />
     <Compile Include="Source\OptionsHair.cs" />
     <Compile Include="Source\OptionsHeadType.cs" />
+    <Compile Include="Source\ProviderTitles.cs" />
     <Compile Include="Source\Randomizer.cs" />
     <Compile Include="Source\Reflection.cs" />
     <Compile Include="Source\ReflectionCache.cs" />

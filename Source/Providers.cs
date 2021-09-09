@@ -47,5 +47,8 @@ namespace EdB.PrepareCarefully {
         public ProviderPawnKinds PawnKinds {
             get; set;
         }
+        public ProviderTitles Titles {
+            get; set;
+        }
     }
 }

@@ -1,4 +1,4 @@
-﻿using RimWorld;
+using RimWorld;
 using System;
 using UnityEngine;
 using Verse;
@@ -45,7 +45,6 @@ namespace EdB.PrepareCarefully {
         public static Texture2D TextureGenderFemaleLarge;
         public static Texture2D TextureGenderMaleLarge;
         public static Texture2D TextureGenderlessLarge;
-        public static Texture2D TextureButtonInfo;
         public static Texture2D TextureCheckbox;
         public static Texture2D TextureCheckboxSelected;
         public static Texture2D TextureCheckboxPartiallySelected;
@@ -57,6 +56,17 @@ namespace EdB.PrepareCarefully {
         public static Texture2D TextureFilterAtlas1;
         public static Texture2D TextureFilterAtlas2;
         public static Texture2D TextureButtonCloseSmall;
+
+        public static Texture2D TextureWhite {
+            get {
+                return BaseContent.WhiteTex;
+            }
+        }
+        public static Texture2D TextureButtonInfo {
+            get {
+                return TexButton.Info;
+            }
+        }
 
         static Textures() {
             LoadTextures();
@@ -124,7 +134,6 @@ namespace EdB.PrepareCarefully {
             TextureButtonBGAtlas = ContentFinder<Texture2D>.Get("UI/Widgets/ButtonBG", true);
             TextureButtonBGAtlasMouseover = ContentFinder<Texture2D>.Get("UI/Widgets/ButtonBGMouseover", true);
             TextureButtonBGAtlasClick = ContentFinder<Texture2D>.Get("UI/Widgets/ButtonBGClick", true);
-            TextureButtonInfo = ContentFinder<Texture2D>.Get("UI/Buttons/InfoButton", true);
 
             TextureAlternateRow = SolidColorMaterials.NewSolidColorTexture(new Color(1, 1, 1, 0.05f));
             TextureSkillBarFill = SolidColorMaterials.NewSolidColorTexture(new Color(1f, 1f, 1f, 0.1f));

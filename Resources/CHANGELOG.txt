@@ -5,13 +5,9 @@
 
  - Reworked the user interface to consist of scrolling columns so that more
    content panels can be included.
- - The Prepare Carefully window is now wider if you're playing with the
-   expansions and your screen is big enough to support it.  An additional
-   column has been added to the layout.
  - Added an Ideoligion panel when the Ideology expansion is enabled.
  - Added an Abilities panel when abilities are available, i.e. when the
    Royalty expansion is enabled.
- - Added a Titles panel when the Royalty expansion is enabled.
  - Added an error message if you are running a version of RimWorld less than
    the version required by the mod.
  - Fixed an issue where a character's head graphics were broken when loading

@@ -183,6 +183,7 @@ namespace EdB.PrepareCarefully {
                 AlienRaceProvider = Providers.AlienRaces
             };
             Providers.PawnKinds = new ProviderPawnKinds();
+            Providers.Titles = new ProviderTitles();
         }
 
         // TODO:

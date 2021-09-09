@@ -12,6 +12,7 @@ namespace EdB.PrepareCarefully {
 
         protected Rect RectScrollFrame;
         protected Rect RectScrollView;
+        protected float ModuleWidth;
 
         public List<PanelModule> Modules { get; set; } = new List<PanelModule>();
 
@@ -37,20 +38,26 @@ namespace EdB.PrepareCarefully {
             RectScrollFrame = new Rect(0, BodyRect.y, contentSize.x, contentSize.y);
             RectScrollView = new Rect(0, 0, RectScrollFrame.width, RectScrollFrame.height);
 
-            Modules.ForEach(m => { m.Resize(rect.width); });
+            ResizeModules(rect.width);
+        }
+
+        protected void ResizeModules(float width) {
+            ModuleWidth = width;
+            Modules.ForEach(m => { m.Resize(ModuleWidth); });
         }
 
         protected override void DrawPanelContent(State state) {
             base.DrawPanelContent(state);
             CustomPawn currentPawn = state.CurrentPawn;
 
-            bool wasScrolling = scrollView.ScrollbarsVisible;
-
             float y = 0;
             GUI.BeginGroup(RectScrollFrame);
 
             try {
                 scrollView.Begin(RectScrollView);
+                if (scrollView.CurrentViewWidth != ModuleWidth) {
+                    ResizeModules(scrollView.CurrentViewWidth);
+                }
                 try {
                     int visibleModules = 0;
                     foreach (var module in Modules) {
@@ -78,17 +85,6 @@ namespace EdB.PrepareCarefully {
             }
             finally {
                 GUI.EndGroup();
-            }
-
-            float? newWidth = null;
-            if (wasScrolling && !scrollView.ScrollbarsVisible) {
-                newWidth = PanelRect.width;
-            }
-            else if (!wasScrolling && scrollView.ScrollbarsVisible) {
-                newWidth = PanelRect.width - ScrollViewVertical.ScrollbarSize;
-            }
-            if (newWidth.HasValue) {
-                Modules.ForEach(m => { m.Resize(newWidth.Value); });
             }
         }
     }

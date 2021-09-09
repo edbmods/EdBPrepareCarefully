@@ -65,7 +65,7 @@ namespace EdB.PrepareCarefully {
 
         public Pawn GenerateKindOfPawn(PawnKindDef kindDef) {
             var wrapper = new PawnGenerationRequestWrapper() {
-                Faction = null,
+                Faction = Find.FactionManager.OfPlayer,
                 KindDef = kindDef
             };
             Ideo ideo = Find.FactionManager.OfPlayer.ideos.GetRandomIdeoForNewPawn();
@@ -78,7 +78,7 @@ namespace EdB.PrepareCarefully {
 
         public Pawn GenerateKindAndGenderOfPawn(PawnKindDef kindDef, Gender gender) {
             var wrapper = new PawnGenerationRequestWrapper() {
-                Faction = null,
+                Faction = Find.FactionManager.OfPlayer,
                 KindDef = kindDef,
                 FixedGender = gender
             };

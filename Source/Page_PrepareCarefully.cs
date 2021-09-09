@@ -35,23 +35,25 @@ namespace EdB.PrepareCarefully {
                 //Logger.Debug("Screen safe area: " + Screen.safeArea);
                 //Logger.Debug("UI scale: " + Prefs.UIScale);
 
-                Vector2 maxSize = new Vector2(Screen.safeArea.width / Prefs.UIScale, Screen.safeArea.height / Prefs.UIScale);
-                Vector2 minSize = Page.StandardSize / Prefs.UIScale;
+                //Vector2 maxSize = new Vector2(Screen.safeArea.width / Prefs.UIScale, Screen.safeArea.height / Prefs.UIScale);
+                //Vector2 minSize = Page.StandardSize / Prefs.UIScale;
 
-                Vector2 padding = new Vector2(64, 64) / Prefs.UIScale;
-                maxSize -= padding;
+                //Vector2 padding = new Vector2(64, 64) / Prefs.UIScale;
+                //maxSize -= padding;
 
-                Vector2 largeSize = new Vector2(1350, Page.StandardSize.y);
+                //Vector2 largeSize = new Vector2(1350, Page.StandardSize.y);
 
-                if (maxSize.x >= largeSize.x && maxSize.y >= largeSize.y) {
-                    LargeUI = true;
-                    return largeSize;
-                }
-                else {
-                    LargeUI = false;
-                    return Page.StandardSize;
-                }
+                //if (maxSize.x >= largeSize.x && maxSize.y >= largeSize.y) {
+                //    LargeUI = true;
+                //    return largeSize;
+                //}
+                //else {
+                //    LargeUI = false;
+                //    return Page.StandardSize;
+                //}
 
+                LargeUI = false;
+                return Page.StandardSize;
             }
         }
 

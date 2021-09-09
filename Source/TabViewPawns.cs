@@ -9,6 +9,7 @@ namespace EdB.PrepareCarefully {
         public PanelWorldPawnList PanelWorldPawns { get; set; }
         public PanelRandomize PanelRandomize { get; set; }
         public PanelName PanelName { get; set; }
+        public PanelAge PanelAge { get; set; }
         public PanelAppearance PanelAppearance { get; set; }
         public PanelSkills PanelSkills { get; set; }
         public PanelIncapableOf PanelIncapable { get; set; }
@@ -22,7 +23,8 @@ namespace EdB.PrepareCarefully {
         public PanelModuleAbilities PanelAbilities { get; set; }
         public PanelScrollingContent PanelColumn1 { get; set; }
         public PanelScrollingContent PanelColumn2 { get; set; }
-        public PanelModuleAge PanelAge { get; set; }
+        //public PanelModuleAge PanelAge { get; set; }
+        public PanelModuleTitles PanelTitles { get; set; }
 
         public TabViewPawns(bool largeUI) {
             this.LargeUI = largeUI;
@@ -51,25 +53,35 @@ namespace EdB.PrepareCarefully {
             PanelFaction = new PanelModuleFaction();
             PanelIdeo = new PanelModuleIdeo();
             PanelAbilities = new PanelModuleAbilities();
-            PanelAge = new PanelModuleAge();
+            PanelAge = new PanelAge();
+            //PanelAge = new PanelModuleAge();
+            PanelTitles = new PanelModuleTitles();
             if (largeUI) {
                 PanelColumn1 = new PanelScrollingContent() {
                     Modules = new List<PanelModule>() {
-                        PanelAge, PanelFaction, PanelIdeo, PanelHealth
+                        /*PanelAge,*/ PanelFaction, PanelIdeo, PanelAbilities
                     }
                 };
                 PanelColumn2 = new PanelScrollingContent() {
                     Modules = new List<PanelModule>() {
-                        PanelBackstory, PanelTraits, PanelAbilities
+                        PanelBackstory, PanelTraits, PanelTitles, PanelHealth
                     }
                 };
             }
             else {
                 PanelColumn1 = new PanelScrollingContent() {
-                    Modules = new List<PanelModule>() {
-                        PanelAge, PanelFaction, PanelIdeo, PanelBackstory, PanelTraits, PanelAbilities, PanelHealth
-                    }
+                    Modules = new List<PanelModule>()
                 };
+                //PanelColumn1.Modules.Add(PanelAge);
+                PanelColumn1.Modules.Add(PanelFaction);
+                if (ModsConfig.IdeologyActive) {
+                    PanelColumn1.Modules.Add(PanelIdeo);
+                }
+                PanelColumn1.Modules.Add(PanelBackstory);
+                PanelColumn1.Modules.Add(PanelTraits);
+                //PanelColumn1.Modules.Add(PanelTitles);
+                PanelColumn1.Modules.Add(PanelHealth);
+                //PanelColumn1.Modules.Add(PanelAbilities);
             }
         }
 
@@ -86,6 +98,7 @@ namespace EdB.PrepareCarefully {
                     PanelFavoriteColor.Draw(state);
                 }
                 PanelSaveLoad.Draw(state);
+                PanelAge.Draw(state);
                 PanelAppearance.Draw(state);
                 PanelColumn1.Draw(state);
                 PanelColumn2?.Draw(state);
@@ -118,7 +131,7 @@ namespace EdB.PrepareCarefully {
                 PanelWorldPawns.Resize(new Rect(PanelColonyPawns.PanelRect.x, PanelColonyPawns.PanelRect.yMax + panelMargin.y, pawnListWidth, listHeight));
             }
 
-            // Randomize, Age and Save/Load
+            // Randomize, Name and Save/Load
             PanelRandomize.Resize(new Rect(PanelColonyPawns.PanelRect.xMax + panelMargin.x,
                 PanelColonyPawns.PanelRect.yMin, 64, 64));
             float namePanelWidth = 532;
@@ -135,9 +148,11 @@ namespace EdB.PrepareCarefully {
             float x = PanelColonyPawns.PanelRect.xMax + panelMargin.x;
             float top = PanelRandomize.PanelRect.yMax + panelMargin.y;
 
-            // Appearance
+            // Age and Appearance
             float columnSize1 = 226;
-            PanelAppearance.Resize(new Rect(x, top, columnSize1, 490));
+            PanelAge.Resize(new Rect(PanelColonyPawns.PanelRect.xMax + panelMargin.x,  PanelRandomize.PanelRect.yMax + panelMargin.y, columnSize1, 64));
+            PanelAppearance.Resize(new Rect(PanelAge.PanelRect.xMin, PanelAge.PanelRect.yMax + panelMargin.y, columnSize1, 414));
+            //PanelAppearance.Resize(new Rect(x, top, columnSize1, 490));
             x += columnSize1 + panelMargin.x;
 
             float columnSize2 = 304;

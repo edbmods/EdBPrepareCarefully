@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using UnityEngine;
 namespace EdB.PrepareCarefully {
     public static class ExtensionsRect {
@@ -41,10 +41,25 @@ namespace EdB.PrepareCarefully {
         public static Rect InsetBy(this Rect rect, float xAmount, float yAmount) {
             return rect.InsetBy(new Vector2(xAmount, yAmount), new Vector2(xAmount, yAmount));
         }
+        public static Rect ShrinkBy(this Rect rect, float amount) {
+            return new Rect(rect.x, rect.y, rect.width - amount, rect.height - amount);
+        }
+        public static Rect ShrinkBy(this Rect rect, float xAmount, float yAmount) {
+            return new Rect(rect.x, rect.y, rect.width - xAmount, rect.height - yAmount);
+        }
+        public static Rect InsetToRight(this Rect rect, float amount) {
+            return new Rect(rect.xMax - amount, rect.y, rect.width - amount, rect.height);
+        }
+        public static Rect InsetToBottom(this Rect rect, float amount) {
+            return new Rect(rect.x, rect.yMax - amount, rect.width, rect.height - amount);
+        }
         public static Rect Combined(this Rect rect, Rect other) {
             Vector2 min = new Vector2(Mathf.Min(rect.xMin, other.xMin), Mathf.Min(rect.yMin, other.yMin));
             Vector2 max = new Vector2(Mathf.Max(rect.xMax, other.xMax), Mathf.Max(rect.yMax, other.yMax));
             return new Rect(min, max - min);
+        }
+        public static Rect ResizeTo(this Rect rect, float width, float height) {
+            return new Rect(rect.x, rect.y, width, height);
         }
         public static bool Mouseover(this Rect rect) {
             return rect.Contains(Event.current.mousePosition);

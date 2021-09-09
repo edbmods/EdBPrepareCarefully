@@ -2,7 +2,10 @@
 <!-- CHANGE NOTES -->
 <!-- v1.3.9 -->
 <!-- ADDED: EdB.PC.Dialog.Abilities.Header -->
+<!-- ADDED: EdB.PC.Dialog.Titles.Header -->
 <!-- ADDED: EdB.PC.Panel.Abilities.None -->
+<!-- ADDED: EdB.PC.Panel.Titles.None -->
+<!-- ADDED: EdB.PC.Panel.Header.None -->
 
 <!-- v1.3.6 -->
 <!-- REMOVED: EdB.PC.Panel.Traits.Warning.TooManyTraits -->
@@ -198,6 +201,8 @@
   <EdB.PC.Dialog.Severity.OldInjury.Label.6>6 Damage</EdB.PC.Dialog.Severity.OldInjury.Label.6>
   <EdB.PC.Dialog.Severity.Stage.Label.>{0} {1}</EdB.PC.Dialog.Severity.Stage.Label.>
 
+  <EdB.PC.Dialog.Titles.Header>Add a Title</EdB.PC.Dialog.Titles.Header>
+  
   <EdB.PC.Dialog.UnrecoverableError.Header>Unrecoverable Error</EdB.PC.Dialog.UnrecoverableError.Header>
   <EdB.PC.Dialog.UnrecoverableError.Message>Something went wrong, and Prepare Carefully was not able to recover.  The following error message may help identify the problem:
 
@@ -345,6 +350,9 @@ You can play the game with your colonists as they are, but you will be asked to 
 
   <EdB.PC.Panel.Skills.ResetTip>Reset all skills and passions to their original values</EdB.PC.Panel.Skills.ResetTip>
   <EdB.PC.Panel.Skills.ClearTip>Clear all skills and passions by setting them to their lowest possible levels</EdB.PC.Panel.Skills.ClearTip>
+
+  <EdB.PC.Panel.Titles.Header>Titles</EdB.PC.Panel.Titles.Header>
+  <EdB.PC.Panel.Titles.None>No titles</EdB.PC.Panel.Titles.None>
   
   <EdB.PC.Panel.Traits.None>No traits</EdB.PC.Panel.Traits.None>
   <EdB.PC.Panel.Traits.Tip.Conflict>{0}\n\nConflicts with:\n{1}</EdB.PC.Panel.Traits.Tip.Conflict>

@@ -27,8 +27,21 @@ namespace EdB.PrepareCarefully {
 
         public static Color ColorWindowBackground = new Color(21f / 255f, 25f / 255f, 29f / 255f);
 
+        public static readonly float DialogHeaderHeight = 36;
+        public static readonly Vector2 DialogMargin = new Vector2(10, 18);
+        public static readonly Color DialogTextColor = Color.white;
+        public static readonly Color DialogHeaderColor = DialogTextColor;
+        public static readonly Color DialogGroupColor = DialogTextColor;
+        public static readonly Color DialogAlternatingRowColor = new Color(28f / 255f, 32f / 255f, 36f / 255f);
+        public static readonly float DialogAlternatingRowInset = 16;
+        public static readonly Vector2 DialogButtonSize = new Vector2(140f, 40f);
+        public static readonly float DialogFooterHeight = 40;
+        public static readonly float DialogFooterPadding = 16;
+
         public static Vector2 SizePanelMargin = new Vector2(12, 12);
         public static Vector2 SizePanelPadding = new Vector2(12, 12);
+
+        public static float RadioButtonSize = 24f;
 
         public static Vector2 SizeTextFieldArrowMargin = new Vector2(4, 0);
 
