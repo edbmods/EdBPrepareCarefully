@@ -17,6 +17,8 @@ namespace EdB.PrepareCarefully {
         public Dictionary<string, ReplacementBodyPart> bodyPartReplacements = new Dictionary<string, ReplacementBodyPart>();
         Dictionary<string, List<string>> skillDefReplacementLookup = new Dictionary<string, List<string>>();
 
+        public Dictionary<string, Ideo> IdeoMap { get; set; } = new Dictionary<string, Ideo>();
+
         public class ReplacementBodyPart {
             public BodyPartDef def;
             public int index = 0;
@@ -160,9 +162,18 @@ namespace EdB.PrepareCarefully {
                 WorldPawnFactionDoesntMatter = true
             };
             Faction playerFaction = Find.FactionManager.OfPlayer;
-            Ideo playerFactionIdeology = playerFaction?.ideos?.PrimaryIdeo;
-            if (playerFactionIdeology != null) {
-                generationRequest.FixedIdeology = playerFactionIdeology;
+            Ideo ideology = playerFaction?.ideos?.PrimaryIdeo;
+
+            if (record.ideo != null) {
+                if (!record.ideo.sameAsColony && IdeoMap != null) {
+                    if (IdeoMap.TryGetValue(record.ideo.name, out Ideo ideo)) {
+                        ideology = ideo;
+                    }
+                }
+            }
+
+            if (ideology != null) {
+                generationRequest.FixedIdeology = ideology;
             }
 
             // Add a pawn kind definition to the generation request, if possible.

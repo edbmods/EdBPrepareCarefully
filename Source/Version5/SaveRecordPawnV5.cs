@@ -143,12 +143,16 @@ namespace EdB.PrepareCarefully {
                 this.abilities.AddRange(pawn.Pawn.abilities.abilities.Select(a => a.def.defName));
             }
             if (ModsConfig.IdeologyActive && pawn.Pawn.ideo != null) {
+                Ideo ideo = pawn.Pawn.ideo.Ideo;
                 this.ideo = new SaveRecordIdeoV5() {
                     certainty = pawn.Pawn.ideo.Certainty,
-                    name = pawn.Pawn.ideo.Ideo?.name,
-                    sameAsColony = pawn.Pawn.ideo.Ideo == Find.FactionManager.OfPlayer.ideos.PrimaryIdeo,
-                    memes = new List<string>(pawn.Pawn.ideo.Ideo.memes.Select(m => m.defName))
+                    name = ideo?.name,
+                    sameAsColony = ideo == Find.FactionManager.OfPlayer.ideos.PrimaryIdeo,
+                    culture = ideo?.culture.defName
                 };
+                if (ideo != null) {
+                    this.ideo.memes = new List<string>(ideo.memes.Select(m => m.defName));
+                }
                 Logger.Debug(string.Join(", ", pawn.Pawn.ideo.Ideo?.memes.Select(m => m.defName)));
             }
 

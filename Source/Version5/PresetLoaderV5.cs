@@ -19,6 +19,10 @@ namespace EdB.PrepareCarefully {
                 Scribe.loader.InitLoading(PresetFiles.FilePathForSavedPreset(presetName));
                 preset.ExposeData();
 
+                if (ModsConfig.IdeologyActive) {
+                    pawnLoader.IdeoMap = ResolveIdeoMap(preset);
+                }
+
                 if (preset.equipment != null) {
                     List<EquipmentSelection> equipment = new List<EquipmentSelection>(preset.equipment.Count);
                     foreach (var e in preset.equipment) {
@@ -89,7 +93,7 @@ namespace EdB.PrepareCarefully {
                 }
             }
             catch (Exception e) {
-                Logger.Error("Failed to load preset file");
+                Logger.Error("Failed to load preset file", e);
                 throw e;
             }
             finally {
@@ -215,6 +219,105 @@ namespace EdB.PrepareCarefully {
             return true;
         }
 
+        protected Dictionary<string, Ideo> ResolveIdeoMap(SaveRecordPresetV5 preset) {
+            Dictionary<string, Ideo> ideoMap = new Dictionary<string, Ideo>();
+            Dictionary<string, SaveRecordIdeoV5> uniqueSaveRecordsToResolve = new Dictionary<string, SaveRecordIdeoV5>();
+            // Go through the pawns and look at their ideo record.  If their saved ideo was not the same as the colony ideo, we'll need to
+            // try to find a matching ideo in the world.  Create a collection of all of the ideo save records that we need to match.
+            foreach (var p in preset.pawns) {
+                if (p.ideo != null && p.ideo.name != null && !p.ideo.sameAsColony) {
+                    if (!uniqueSaveRecordsToResolve.ContainsKey(p.ideo.name)) {
+                        uniqueSaveRecordsToResolve.Add(p.ideo.name, p.ideo);
+                    }
+                }
+            }
+
+            // If there are any save records that we need to match, do the matching
+            if (uniqueSaveRecordsToResolve.Count > 0) {
+                // Create a set of all of the ideos in the world.  Every time we match against one of them, we remove it from the set.
+                HashSet<Ideo> ideosToMatchAgainst = new HashSet<Ideo>(Find.World.ideoManager.IdeosInViewOrder);
+                // We remove the colony's ideo from those that we're matching against.
+                Ideo primaryIdeo = Find.World.factionManager.OfPlayer?.ideos?.PrimaryIdeo;
+                if (primaryIdeo != null) {
+                    ideosToMatchAgainst.Remove(primaryIdeo);
+                }
+                
+                // Find the best matching ideo for the save record.  As we find matches, we'll remove the save record from the unique save records
+                // to keep track of which ones we failed to match.
+                foreach (var r in uniqueSaveRecordsToResolve.Values.ToList()) {
+                    // Validate the culture and memes in the save record so that we're only matching against values that are actually in the game.
+                    if (r.culture != null && DefDatabase<CultureDef>.GetNamedSilentFail(r.culture) == null) {
+                        r.culture = null;
+                    }
+                    List<string> validatedMemes;
+                    if (r.memes != null) {
+                        validatedMemes = r.memes.Where(m => m != null && DefDatabase<MemeDef>.GetNamedSilentFail(m) != null).ToList();
+                    }
+                    else {
+                        validatedMemes = new List<string>();
+                    }
+                    r.memes = validatedMemes;
+
+                    Ideo ideo = FindBestMatch(r, ideosToMatchAgainst);
+                    if (ideo != null) {
+                        ideoMap.Add(r.name, ideo);
+                        ideosToMatchAgainst.Remove(ideo);
+                        uniqueSaveRecordsToResolve.Remove(r.name);
+                        //Logger.Debug(string.Format("Found match for ideo \"{0}\" with memes ({1}) => ideo \"{2}\" with memes ({3})", r.name, string.Join(", ", r.memes),
+                        //    ideo.name, string.Join(", ", ideo.memes.Select(m => m.defName))));
+                    }
+                    else {
+                        //Logger.Debug(string.Format("Found no match for ideo \"{0}\" with memes ({1})", r.name, string.Join(", ", r.memes)));
+                    }
+                }
+
+                // For any save record that we failed to match, pick a random ideo from the remaining available ideos in the world.
+                if (uniqueSaveRecordsToResolve.Count > 0) {
+                    foreach (var r in uniqueSaveRecordsToResolve.Values) {
+                        if (ideosToMatchAgainst.Count < 1) {
+                            //Logger.Debug(string.Format("No ideos left available for matching.  Could not match ideo \"{0}\" with memes ({1})", r.name, string.Join(", ", r.memes)));
+                            break;
+                        }
+                        Ideo ideo = ideosToMatchAgainst.RandomElement();
+                        ideoMap.Add(r.name, ideo);
+                        ideosToMatchAgainst.Remove(ideo);
+                        //Logger.Debug(string.Format("Picked random ideo to match ideo \"{0}\" with memes ({1}) => ideo \"{2}\" with memes ({3})", r.name, string.Join(", ", r.memes),
+                        //    ideo.name, string.Join(", ", ideo.memes.Select(m => m.defName))));
+                    }
+                }
+
+            }
+            return ideoMap;
+        }
+
+        protected Ideo FindBestMatch(SaveRecordIdeoV5 record, HashSet<Ideo> ideosToMatchAgainst) {
+            float bestScore = 0;
+            Ideo bestMatch = null;
+            // To find the best match we try to find the ideo with a matching culture and the most matching memes.
+            foreach (var ideo in ideosToMatchAgainst) {
+                float score = 0;
+                // We don't think that the name matters too much in the matching.  Faction ideos will be different for every world generation, so unless the same faction ideos
+                // get restored thanks to a mod, they should be different every time.  Even so, we add a little score for a matching name so that it wins any ties.
+                if (ideo.name == record.name) {
+                    score += 0.1f;
+                }
+                if (record.culture != null && record.culture == ideo.culture.defName) {
+                    score += 1.0f;
+                }
+                foreach (var memeName in record.memes) {
+                    if (ideo.memes.Select(m => m.defName).Contains(memeName)) {
+                        score += 1.0f;
+                    }
+                }
+                // An ideo with the same culture should win ties.
+                if (score > bestScore || (score == bestScore && record.culture == ideo.culture.defName)) {
+                    bestScore = score;
+                    bestMatch = ideo;
+                }
+            }
+            return bestMatch;
+        }
+        
         protected CustomPawn FindPawnById(string id, List<CustomPawn> colonistPawns, List<CustomPawn> hiddenPawns) {
             CustomPawn result = colonistPawns.FirstOrDefault((CustomPawn c) => {
                 return id == c.Id;
