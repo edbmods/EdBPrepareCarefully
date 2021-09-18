@@ -6,14 +6,20 @@
  - Reworked the user interface to consist of scrolling columns so that more
    content panels can be included.
  - Added an Ideoligion panel when the Ideology expansion is enabled.
- - Added an Abilities panel when abilities are available, i.e. when the
-   Royalty expansion is enabled.
+   - Select from the ideoligions available in the world.
+   - Configure the pawn's ideoligion certainty value.
+   - After saving a preset where pawns have an ideoligion different from that
+     of the colony, we will attempt to find a similar ideoligion when loading
+     that preset by looking at the ideoligion's culture and memes.
+   - When loading a single pawn, it will always be assigned to the ideoligion
+     of the colony
  - Added an error message if you are running a version of RimWorld less than
    the version required by the mod.
+ - Fixed some hediffs related to Psylink abilities.
  - Fixed an issue where a character's head graphics were broken when loading
-   a character that used a modded alien race.  If the character was loaded
-   later when the mod was no longer enabled, the pawn would have a missing
-   head graphic.  It should now display head graphics properly.
+   a character that used certain modded alien races.  If the character was
+   loaded later when the mod was no longer enabled, the pawn would have a
+   missing head graphic.  It should now display head graphics properly.
  - Fixed an issue where relationships would disappear after some time due
    to the world pawn garbage collection process.
 
