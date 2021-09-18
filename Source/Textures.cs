@@ -20,6 +20,7 @@ namespace EdB.PrepareCarefully {
         public static Texture2D TextureButtonDelete;
         public static Texture2D TextureButtonDeleteTab;
         public static Texture2D TextureButtonDeleteTabHighlight;
+        public static Texture2D TextureButtonEdit;
         public static Texture2D TextureButtonGenderFemale;
         public static Texture2D TextureButtonGenderMale;
         public static Texture2D TextureButtonReset;
@@ -96,13 +97,15 @@ namespace EdB.PrepareCarefully {
             TextureButtonRandom = ContentFinder<Texture2D>.Get("EdB/PrepareCarefully/ButtonRandom", true);
             TextureButtonRandomLarge = ContentFinder<Texture2D>.Get("EdB/PrepareCarefully/ButtonRandomLarge", true);
             TexturePassionNone = ContentFinder<Texture2D>.Get("EdB/PrepareCarefully/NoPassion", true);
+            TextureButtonClearSkills = ContentFinder<Texture2D>.Get("EdB/PrepareCarefully/ButtonClear", true);
+            TextureButtonCloseSmall = ContentFinder<Texture2D>.Get("EdB/PrepareCarefully/ButtonCloseSmall", true);
             TextureButtonDelete = ContentFinder<Texture2D>.Get("EdB/PrepareCarefully/ButtonDelete", true);
             TextureButtonDeleteTab = ContentFinder<Texture2D>.Get("EdB/PrepareCarefully/ButtonDeleteTab", true);
             TextureButtonDeleteTabHighlight = ContentFinder<Texture2D>.Get("EdB/PrepareCarefully/ButtonDeleteTabHighlight", true);
+            TextureButtonEdit = ContentFinder<Texture2D>.Get("EdB/PrepareCarefully/ButtonEdit", true);
             TextureButtonGenderFemale = ContentFinder<Texture2D>.Get("EdB/PrepareCarefully/ButtonGenderFemale", true);
             TextureButtonGenderMale = ContentFinder<Texture2D>.Get("EdB/PrepareCarefully/ButtonGenderMale", true);
             TextureButtonReset = ContentFinder<Texture2D>.Get("EdB/PrepareCarefully/ButtonReset", true);
-            TextureButtonClearSkills = ContentFinder<Texture2D>.Get("EdB/PrepareCarefully/ButtonClear", true);
             TextureDropdownIndicator = ContentFinder<Texture2D>.Get("EdB/PrepareCarefully/DropdownIndicator", true);
             TextureAlert = ContentFinder<Texture2D>.Get("EdB/PrepareCarefully/Alert", true);
             TextureAlertSmall = ContentFinder<Texture2D>.Get("EdB/PrepareCarefully/AlertSmall", true);
@@ -127,7 +130,6 @@ namespace EdB.PrepareCarefully {
             TextureButtonColonyPawn = ContentFinder<Texture2D>.Get("EdB/PrepareCarefully/ButtonColonyPawn", true);
             TextureFilterAtlas1 = ContentFinder<Texture2D>.Get("EdB/PrepareCarefully/FilterAtlas1", true);
             TextureFilterAtlas2 = ContentFinder<Texture2D>.Get("EdB/PrepareCarefully/FilterAtlas2", true);
-            TextureButtonCloseSmall = ContentFinder<Texture2D>.Get("EdB/PrepareCarefully/ButtonCloseSmall", true);
 
             TextureTabAtlas = ContentFinder<Texture2D>.Get("UI/Widgets/TabAtlas", true);
 

@@ -125,8 +125,19 @@ namespace EdB.PrepareCarefully {
                 this.hediff = hediff;
             }
             else {
-                Hediff hediff = HediffMaker.MakeHediff(Option.HediffDef, pawn);
+                Hediff hediff = HediffMaker.MakeHediff(Option.HediffDef, pawn, this.bodyPartRecord);
                 hediff.Severity = this.Severity;
+                if (hediff is Hediff_Level hediffLevel) {
+                    // The default psylink behavior adds a random ability when you gain a level.  We don't want to do that, so we
+                    // just set the level field directly.  For any other level-based hediff, we call SetLevelTo() in case the behavior
+                    // defined in that method is required.
+                    if (hediff is Hediff_Psylink) {
+                        hediffLevel.level = (int)Mathf.Clamp(Severity, hediff.def.minSeverity, hediff.def.maxSeverity);
+                    }
+                    else {
+                        hediffLevel.SetLevelTo((int)Severity);
+                    }
+                }
                 pawn.health.AddHediff(hediff);
                 this.hediff = hediff;
             }

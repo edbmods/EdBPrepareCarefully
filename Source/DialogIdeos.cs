@@ -59,28 +59,6 @@ namespace EdB.PrepareCarefully {
     }
 }
 
-//Rect fillRect,
-//ref Vector2 scrollPosition_list,
-//ref float scrollViewHeight_list,
-//ref Vector2 scrollPosition_details,
-//ref float scrollViewHeight_details,
-//bool editMode = false,
-//bool showCreateIdeoButton = false,
-//List<Pawn> pawns = null,
-//Ideo onlyEditIdeo = null,
-//Action createCustomBtnActOverride = null,
-//bool forArchonexusRestart = false,
-//Func<Pawn, Ideo> pawnIdeoGetter = null,
-//Action<Ideo> ideoLoadedFromFile = null,
-//bool showLoadExistingIdeoBtn = false,
-//bool allowLoad = true,
-//Action createFluidBtnAct = null)
-
-
-
-
-
-
 
 
 

@@ -54,6 +54,7 @@ namespace EdB.PrepareCarefully {
             ancestors.Remove(part);
             return index;
         }
+
         protected void InitializeImplantRecipes(OptionsHealth options, ThingDef pawnThingDef) {
             // Find all recipes that replace a body part.
             List<RecipeDef> recipes = new List<RecipeDef>();
@@ -108,6 +109,33 @@ namespace EdB.PrepareCarefully {
                 }
             }
         }
+
+        protected bool InitializeHediffGivenByUseEffect(OptionsHealth options, CompProperties_UseEffectInstallImplant useEffect) {
+            InjuryOption option = new InjuryOption();
+            HediffDef hediffDef = DefDatabase<HediffDef>.GetNamedSilentFail("PsychicAmplifier");
+            if (hediffDef == null) {
+                return false;
+            }
+            option.HediffDef = hediffDef;
+            option.Label = useEffect.hediffDef.LabelCap;
+            if (useEffect.bodyPart == null) {
+                Logger.Debug("Body part was null for hediff use effect: " + hediffDef.defName);
+                return false;
+            }
+            if (useEffect.bodyPart != null) {
+                List<BodyPartDef> validParts = new List<BodyPartDef>() { useEffect.bodyPart };
+                List<UniqueBodyPart> parts = options.FindBodyPartsForDef(useEffect.bodyPart);
+                if (parts == null || parts.Count == 0) {
+                    Logger.Debug("Found no valid body parts for hediff use effect: " + hediffDef.defName + ", " + useEffect.bodyPart.defName);
+                    return false;
+                }
+                option.ValidParts = validParts;
+            }
+            Logger.Debug($"Add hediff option given by use effect. Hediff = {option.HediffDef.defName}, Label = {option.Label}, BodyPart = {string.Join(", ", option.ValidParts)}");
+            options.AddInjury(option);
+            return true;
+        }
+
         protected void InitializeHediffGiverInjuries(OptionsHealth options, HediffGiver giver) {
             if (giver == null) {
                 Logger.Warning("Could not add injury/health condition because a HediffGiver was null");
@@ -195,6 +223,16 @@ namespace EdB.PrepareCarefully {
                 }
             }
 
+            // Go through all thing defs with a CompProperties_UseEffectInstallImplant
+            foreach (var def in DefDatabase<ThingDef>.AllDefs.Where(d => d.HasComp(typeof(CompUsableImplant)))) {
+                CompProperties_UseEffectInstallImplant props = def.GetCompProperties<CompProperties_UseEffectInstallImplant>();
+                if (props != null) {
+                    if (InitializeHediffGivenByUseEffect(options, props)) {
+                        addedDefs.Add(props.hediffDef);
+                    }
+                }
+            }
+
             // Get all of the hediffs that can be added via the "forced hediff" scenario part and
             // add them to a hash set so that we can quickly look them up.
             ScenPart_ForcedHediff scenPart = new ScenPart_ForcedHediff();
@@ -219,6 +257,7 @@ namespace EdB.PrepareCarefully {
                     }
                     // Filter out defs that were already added via the hediff giver sets.
                     if (addedDefs.Contains(hd)) {
+                        Logger.Debug($"Skipping hediff because it was already added: {hd.defName}");
                         continue;
                     }
                     // Filter out implants.

@@ -39,10 +39,16 @@ namespace EdB.PrepareCarefully {
                 this.variant = value;
             }
         }
+        public bool SeverityRepresentsLevel {
+            get; set;
+        }
         public string Label {
             get {
                 if (stage != null) {
-                    if (variant == null) {
+                    if (SeverityRepresentsLevel) {
+                        return "Level".Translate().CapitalizeFirst() + " " + (int)stage.minSeverity;
+                    }
+                    else if (variant == null) {
                         return stage.label.CapitalizeFirst();
                     }
                     else {

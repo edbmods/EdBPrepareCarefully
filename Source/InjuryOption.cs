@@ -86,7 +86,21 @@ namespace EdB.PrepareCarefully {
 
         protected List<InjurySeverity> severityStages = null;
 
+        protected void InitializeLevels() {
+            severityStages = new List<InjurySeverity>();
+            foreach (var stage in HediffDef.stages) {
+                severityStages.Add(new InjurySeverity(stage.minSeverity, stage) {
+                    SeverityRepresentsLevel = true
+                });
+            }
+        }
+
         protected void InitializeSeverityStages() {
+            if (typeof(Hediff_Level).IsAssignableFrom(this.hediffDef.hediffClass)) {
+                InitializeLevels();
+                return;
+            }
+
             severityStages = new List<InjurySeverity>();
 
             int variant = 1;
