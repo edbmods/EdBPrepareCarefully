@@ -25,6 +25,11 @@ namespace EdB.PrepareCarefully {
             return;
         }
 
+        // Leaving here for compatibility with any patches that used the old method for drawing, but don't use it.
+        [Obsolete("DrawPanelContent is deprecated.  Patch the Draw() method instead")]
+        protected virtual void DrawPanelContent(State state) {
+        }
+
         public virtual float Draw(State state, float y) {
             return 0;
         }

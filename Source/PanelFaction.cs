@@ -9,7 +9,7 @@ using Verse;
 using Verse.Sound;
 
 namespace EdB.PrepareCarefully {
-    public class PanelModuleFaction : PanelModule {
+    public class PanelFaction : PanelModule {
         public static readonly float FieldPadding = 6;
 
         public Rect FieldRect;

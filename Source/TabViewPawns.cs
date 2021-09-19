@@ -15,16 +15,16 @@ namespace EdB.PrepareCarefully {
         public PanelIncapableOf PanelIncapable { get; set; }
         public PanelLoadSave PanelSaveLoad { get; set; }
         public PanelFavoriteColor PanelFavoriteColor { get; set; }
-        public PanelModuleBackstory PanelBackstory { get; set; }
-        public PanelModuleTraits PanelTraits { get; set; }
-        public PanelModuleHealth PanelHealth { get; set; }
-        public PanelModuleFaction PanelFaction { get; set; }
-        public PanelModuleIdeo PanelIdeo { get; set; }
-        public PanelModuleAbilities PanelAbilities { get; set; }
+        public PanelBackstory PanelBackstory { get; set; }
+        public PanelTraits PanelTraits { get; set; }
+        public PanelHealth PanelHealth { get; set; }
+        public PanelFaction PanelFaction { get; set; }
+        public PanelIdeo PanelIdeo { get; set; }
+        public PanelAbilities PanelAbilities { get; set; }
         public PanelScrollingContent PanelColumn1 { get; set; }
         public PanelScrollingContent PanelColumn2 { get; set; }
         //public PanelModuleAge PanelAge { get; set; }
-        public PanelModuleTitles PanelTitles { get; set; }
+        public PanelTitles PanelTitles { get; set; }
 
         public TabViewPawns(bool largeUI) {
             this.LargeUI = largeUI;
@@ -47,42 +47,50 @@ namespace EdB.PrepareCarefully {
             PanelIncapable = new PanelIncapableOf();
             PanelSaveLoad = new PanelLoadSave();
             PanelFavoriteColor = new PanelFavoriteColor();
-            PanelBackstory = new PanelModuleBackstory();
-            PanelTraits = new PanelModuleTraits();
-            PanelHealth = new PanelModuleHealth();
-            PanelFaction = new PanelModuleFaction();
-            PanelIdeo = new PanelModuleIdeo();
-            PanelAbilities = new PanelModuleAbilities();
+            PanelBackstory = new PanelBackstory();
+            PanelTraits = new PanelTraits();
+            PanelHealth = new PanelHealth();
+            PanelFaction = new PanelFaction();
+            PanelIdeo = new PanelIdeo();
+            PanelAbilities = new PanelAbilities();
             PanelAge = new PanelAge();
             //PanelAge = new PanelModuleAge();
-            PanelTitles = new PanelModuleTitles();
+            PanelTitles = new PanelTitles();
             if (largeUI) {
-                PanelColumn1 = new PanelScrollingContent() {
-                    Modules = new List<PanelModule>() {
-                        /*PanelAge,*/ PanelFaction, PanelIdeo, PanelAbilities
-                    }
-                };
-                PanelColumn2 = new PanelScrollingContent() {
-                    Modules = new List<PanelModule>() {
-                        PanelBackstory, PanelTraits, PanelTitles, PanelHealth
-                    }
-                };
+                TwoColumnLayout();
             }
             else {
-                PanelColumn1 = new PanelScrollingContent() {
-                    Modules = new List<PanelModule>()
-                };
-                //PanelColumn1.Modules.Add(PanelAge);
-                PanelColumn1.Modules.Add(PanelFaction);
-                if (ModsConfig.IdeologyActive) {
-                    PanelColumn1.Modules.Add(PanelIdeo);
-                }
-                PanelColumn1.Modules.Add(PanelBackstory);
-                PanelColumn1.Modules.Add(PanelTraits);
-                //PanelColumn1.Modules.Add(PanelTitles);
-                PanelColumn1.Modules.Add(PanelHealth);
-                //PanelColumn1.Modules.Add(PanelAbilities);
+                OneColumnLayout();
             }
+        }
+
+        public void OneColumnLayout() {
+            PanelColumn1 = new PanelScrollingContent() {
+                Modules = new List<PanelModule>()
+            };
+            //PanelColumn1.Modules.Add(PanelAge);
+            PanelColumn1.Modules.Add(PanelFaction);
+            if (ModsConfig.IdeologyActive) {
+                PanelColumn1.Modules.Add(PanelIdeo);
+            }
+            PanelColumn1.Modules.Add(PanelBackstory);
+            PanelColumn1.Modules.Add(PanelTraits);
+            //PanelColumn1.Modules.Add(PanelTitles);
+            PanelColumn1.Modules.Add(PanelHealth);
+            //PanelColumn1.Modules.Add(PanelAbilities);
+        }
+
+        public void TwoColumnLayout() {
+            PanelColumn1 = new PanelScrollingContent() {
+                Modules = new List<PanelModule>() {
+                        /*PanelAge,*/ PanelFaction, PanelIdeo, PanelAbilities
+                    }
+            };
+            PanelColumn2 = new PanelScrollingContent() {
+                Modules = new List<PanelModule>() {
+                        PanelBackstory, PanelTraits, PanelTitles, PanelHealth
+                    }
+            };
         }
 
         public override void Draw(State state, Rect rect) {

@@ -9,7 +9,7 @@ using Verse;
 using Verse.Sound;
 
 namespace EdB.PrepareCarefully {
-    public class PanelModuleBackstory : PanelModule {
+    public class PanelBackstory : PanelModule {
         protected Rect LabelRect { get; set; }
         protected Rect FieldRect { get; set; }
         protected Field FieldChildhood = new Field();
@@ -24,7 +24,7 @@ namespace EdB.PrepareCarefully {
         public event UpdateBackstoryHandler BackstoryUpdated;
         public event RandomizeBackstoriesHandler BackstoriesRandomized;
 
-        public PanelModuleBackstory() {
+        public PanelBackstory() {
             availableFilters.Add(new FilterBackstoryMatchesFaction());
             availableFilters.Add(new FilterBackstoryNoDisabledWorkTypes());
             availableFilters.Add(new FilterBackstoryNoPenalties());
@@ -147,6 +147,11 @@ namespace EdB.PrepareCarefully {
             Text.Anchor = TextAnchor.UpperLeft;
         }
 
+        // Deprecated
+        // Leave here for compatibility with any patches that used the old method for drawing
+        protected override void DrawPanelContent(State state) {
+        }
+
         public override float Draw(State state, float y) {
             float top = y;
             y += Margin.y;
@@ -159,6 +164,16 @@ namespace EdB.PrepareCarefully {
             y += DrawAdulthood(pawn, y, Width);
 
             y += Margin.y;
+
+            // For backwards compatibility with any patches that used the old method for drawing
+            GUI.BeginGroup(new Rect(0, top, Width, y - top));
+            try {
+                DrawPanelContent(state);
+            }
+            finally {
+                GUI.EndGroup();
+            }
+
             return y - top;
         }
 

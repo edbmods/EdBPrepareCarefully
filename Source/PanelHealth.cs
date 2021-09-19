@@ -9,7 +9,7 @@ using Verse;
 using Verse.Sound;
 
 namespace EdB.PrepareCarefully {
-    public class PanelModuleHealth : PanelModule {
+    public class PanelHealth : PanelModule {
         protected static readonly string HediffTypeInjury = "HediffTypeInjury";
         protected static readonly string HediffTypeImplant = "HediffTypeImplant";
 
@@ -34,7 +34,7 @@ namespace EdB.PrepareCarefully {
         protected List<InjurySeverity> permanentInjurySeverities = new List<InjurySeverity>();
         protected LabelTrimmer labelTrimmer = new LabelTrimmer();
 
-        public PanelModuleHealth() {
+        public PanelHealth() {
             permanentInjurySeverities.Add(new InjurySeverity(2));
             permanentInjurySeverities.Add(new InjurySeverity(3));
             permanentInjurySeverities.Add(new InjurySeverity(4));
