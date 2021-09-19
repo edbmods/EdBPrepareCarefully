@@ -53,13 +53,13 @@ namespace EdB.PrepareCarefully {
                 return PrepareCarefully.Instance.Providers.PawnLayers.FindLayerForApparel(def);
             }
         }
-        protected void AddApparel(OptionsApparel options, string defName) {
+        protected void AddApparelToOptions(OptionsApparel options, string defName) {
             ThingDef def = DefDatabase<ThingDef>.GetNamedSilentFail(defName);
             if (def != null) {
-                AddApparel(options, def);
+                AddApparelToOptions(options, def);
             }
         }
-        protected void AddApparel(OptionsApparel options, ThingDef def) {
+        protected void AddApparelToOptions(OptionsApparel options, ThingDef def) {
             PawnLayer layer = LayerForApparel(def);
             if (layer != null) {
                 options.Add(layer, def);
@@ -70,24 +70,31 @@ namespace EdB.PrepareCarefully {
             if (alienRace == null) {
                 return HumanlikeApparel;
             }
-            // If the alien race does not have a restricted set of apparel, then we'll re-use the
-            // humanlike apparel options.
-            if (!alienRace.RestrictedApparelOnly && alienRace.RestrictedApparel == null) {
-                return HumanlikeApparel;
-            }
             OptionsApparel result = new OptionsApparel();
             HashSet<string> addedAlready = new HashSet<string>();
-            if (alienRace.RestrictedApparel != null) {
-                foreach (var defName in alienRace.RestrictedApparel) {
-                    AddApparel(result, defName);
-                    addedAlready.Add(defName);
+            // Add all race-specific apparel.
+            foreach (var a in alienRace.RaceSpecificApparel ?? Enumerable.Empty<string>()) {
+                if (!addedAlready.Contains(a)) {
+                    AddApparelToOptions(result, a);
+                    addedAlready.Add(a);
                 }
             }
-            if (!alienRace.RestrictedApparelOnly) {
-                OptionsApparel humanApparel = HumanlikeApparel;
-                foreach (var def in humanApparel.AllApparel) {
-                    if (!addedAlready.Contains(def.defName)) {
-                        AddApparel(result, def);
+            // Even if we're only allowed to use race-specific apparel, we're also allowed to use anything in the allowed list.
+            if (alienRace.RaceSpecificApparelOnly) {
+                HashSet<string> allowed = alienRace.AllowedApparel ?? new HashSet<string>();
+                foreach (var def in HumanlikeApparel.AllApparel ?? Enumerable.Empty<ThingDef>()) {
+                    if (allowed.Contains(def.defName) && !addedAlready.Contains(def.defName)) {
+                        AddApparelToOptions(result, def);
+                        addedAlready.Add(def.defName);
+                    }
+                }
+            }
+            // Even if we're allowed to use more than just race-specific apparel, we can't use anything in the disallowed list.
+            else {
+                HashSet<string> disallowed = alienRace.DisallowedApparel ?? new HashSet<string>();
+                foreach (var def in HumanlikeApparel.AllApparel ?? Enumerable.Empty<ThingDef>()) {
+                    if (!addedAlready.Contains(def.defName) && !disallowed.Contains(def.defName)) {
+                        AddApparelToOptions(result, def);
                         addedAlready.Add(def.defName);
                     }
                 }
@@ -113,8 +120,11 @@ namespace EdB.PrepareCarefully {
                 if (alienRace == null) {
                     continue;
                 }
-                if (alienRace.RestrictedApparel != null) {
-                    foreach (var defName in alienRace.RestrictedApparel) {
+                if (alienRace?.ThingDef?.defName == "Human") {
+                    continue;
+                }
+                if (alienRace?.AllowedApparel != null) {
+                    foreach (var defName in alienRace.RaceSpecificApparel) {
                         nonHumanApparel.Add(defName);
                     }
                 }
@@ -125,7 +135,7 @@ namespace EdB.PrepareCarefully {
                     continue;
                 }
                 if (!nonHumanApparel.Contains(apparelDef.defName)) {
-                    AddApparel(result, apparelDef);
+                    AddApparelToOptions(result, apparelDef);
                 }
             }
             result.Sort();

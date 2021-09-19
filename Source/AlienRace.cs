@@ -61,10 +61,16 @@ namespace EdB.PrepareCarefully {
         public HashSet<string> HairTags {
             get; set;
         }
-        public bool RestrictedApparelOnly {
+        public bool RaceSpecificApparelOnly {
             get; set;
         }
-        public HashSet<string> RestrictedApparel {
+        public HashSet<string> RaceSpecificApparel {
+            get; set;
+        }
+        public HashSet<string> AllowedApparel {
+            get; set;
+        }
+        public HashSet<string> DisallowedApparel {
             get; set;
         }
         public List<AlienRaceBodyAddon> Addons {

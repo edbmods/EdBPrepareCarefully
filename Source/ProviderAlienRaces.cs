@@ -335,23 +335,49 @@ namespace EdB.PrepareCarefully {
 
                 // Apparel properties.
                 object restrictionSettingsValue = GetFieldValue(raceDef, alienRaceObject, "raceRestriction", true);
-                result.RestrictedApparelOnly = false;
+                result.RaceSpecificApparelOnly = false;
+                result.RaceSpecificApparel = new HashSet<string>();
+                result.AllowedApparel = new HashSet<string>();
+                result.DisallowedApparel = new HashSet<string>();
                 if (restrictionSettingsValue != null) {
                     bool? restrictedApparelOnly = GetFieldValueAsBool(raceDef, restrictionSettingsValue, "onlyUseRaceRestrictedApparel");
                     if (restrictedApparelOnly != null) {
-                        result.RestrictedApparelOnly = restrictedApparelOnly.Value;
+                        result.RaceSpecificApparelOnly = restrictedApparelOnly.Value;
                     }
+
                     var restrictedApparelCollection = GetFieldValueAsCollection(raceDef, restrictionSettingsValue, "apparelList");
                     if (restrictedApparelCollection != null) {
-                        var apparel = new HashSet<string>();
                         foreach (var o in restrictedApparelCollection) {
-                            string defName = o as string;
-                            if (defName != null) {
-                                apparel.Add(defName);
+                            if (o is ThingDef def) {
+                                result.RaceSpecificApparel.Add(def.defName);
                             }
                         }
-                        if (apparel.Count > 0) {
-                            result.RestrictedApparel = apparel;
+                    }
+
+                    var legacyRestrictedApparelCollection = GetFieldValueAsCollection(raceDef, restrictionSettingsValue, "apparelRestricted");
+                    if (legacyRestrictedApparelCollection != null) {
+                        foreach (var o in legacyRestrictedApparelCollection) {
+                            if (o is ThingDef def) {
+                                result.RaceSpecificApparel.Add(def.defName);
+                            }
+                        }
+                    }
+
+                    var allowedApparelCollection = GetFieldValueAsCollection(raceDef, restrictionSettingsValue, "whiteApparelList");
+                    if (allowedApparelCollection != null) {
+                        foreach (var o in allowedApparelCollection) {
+                            if (o is ThingDef def) {
+                                result.AllowedApparel.Add(def.defName);
+                            }
+                        }
+                    }
+
+                    var disallowedApparelCollection = GetFieldValueAsCollection(raceDef, restrictionSettingsValue, "blackApparelList");
+                    if (disallowedApparelCollection != null) {
+                        foreach (var o in disallowedApparelCollection) {
+                            if (o is ThingDef def) {
+                                result.DisallowedApparel.Add(def.defName);
+                            }
                         }
                     }
                 }
