@@ -6,7 +6,7 @@ using System.Runtime.CompilerServices;
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("")]
 [assembly: AssemblyProduct("EdB Prepare Carefully Mod")]
-[assembly: AssemblyCopyright("Copyright © 2014-2020")]
+[assembly: AssemblyCopyright("Copyright © 2014-2021")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 

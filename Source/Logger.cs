@@ -3,7 +3,7 @@ using Verse;
 
 namespace EdB.PrepareCarefully {
     public static class Logger {
-        private static readonly bool DebugEnabled = true;
+        private static readonly bool DebugEnabled = false;
         private static readonly string Prefix = "[Prepare Carefully] ";
 
         public static void Debug(string message) {
