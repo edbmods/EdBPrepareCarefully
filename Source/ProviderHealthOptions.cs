@@ -249,15 +249,19 @@ namespace EdB.PrepareCarefully {
                 //    string.Join(", ", hd?.tags ?? new List<string>(new string[] { "none" }))
                 //);
                 try {
-                    // TODO: Missing body part seems to be a special case.  The hediff giver doesn't itself remove
-                    // limbs, so disable it until we can add special-case handling.
+                    // Exclude hediffs that are added by wearing apparel
+                    if (hd.comps != null && hd.comps.Where(c => c is HediffCompProperties_RemoveIfApparelDropped).Any()) {
+                        Logger.Debug($"Skipping hediff because it is removed when the pawn drops apparel: {hd.defName}");
+                        continue;
+                    }
+
                     if (hd.hediffClass == typeof(Hediff_MissingPart)) {
                         options.AddInjury(CreateMissingPartInjuryOption(options, hd, pawnThingDef));
                         continue;
                     }
                     // Filter out defs that were already added via the hediff giver sets.
                     if (addedDefs.Contains(hd)) {
-                        Logger.Debug($"Skipping hediff because it was already added: {hd.defName}");
+                        //Logger.Debug($"Skipping hediff because it was already added: {hd.defName}");
                         continue;
                     }
                     // Filter out implants.
