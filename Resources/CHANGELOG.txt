@@ -4,6 +4,7 @@
  _____________________________________________________________________________
 
  - Fixed a compatibility issue with the Psychology mod.
+ - Fixed issue with missing relationships when loading presets.
 
  _____________________________________________________________________________
  
