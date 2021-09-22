@@ -594,9 +594,6 @@ namespace EdB.PrepareCarefully {
             pawn.CopySkillsAndPassionsToPawn();
             pawn.ClearPawnCaches();
 
-            // Regenerate the id just in case we're loading multiple copies of the same saved character into our starting colonists.
-            pawn.GenerateId();
-
             return pawn;
         }
 

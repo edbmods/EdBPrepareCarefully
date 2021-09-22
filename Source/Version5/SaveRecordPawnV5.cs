@@ -153,7 +153,7 @@ namespace EdB.PrepareCarefully {
                 if (ideo != null) {
                     this.ideo.memes = new List<string>(ideo.memes.Select(m => m.defName));
                 }
-                Logger.Debug(string.Join(", ", pawn.Pawn.ideo.Ideo?.memes.Select(m => m.defName)));
+                //Logger.Debug(string.Join(", ", pawn.Pawn.ideo.Ideo?.memes.Select(m => m.defName)));
             }
 
             pawnCompsSaver = new PawnCompsSaver(pawn.Pawn, DefaultPawnCompRules.RulesForSaving);

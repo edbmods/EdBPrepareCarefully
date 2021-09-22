@@ -298,6 +298,8 @@ namespace EdB.PrepareCarefully {
             }
             bool colonyPawn = state.PawnListMode == PawnListMode.ColonyPawnsMaximized;
             pawn.Type = colonyPawn ? CustomPawnType.Colonist : CustomPawnType.World;
+            // Regenerate a unique id in case the user is loading the same pawn more than once.
+            pawn.GenerateId();
             PrepareCarefully.Instance.AddPawn(pawn);
             state.CurrentPawn = pawn;
             PawnAdded(pawn);
@@ -322,7 +324,7 @@ namespace EdB.PrepareCarefully {
             try {
                 //Logger.Debug("Adding new pawn with kindDef = " + kindDef.defName);
                 var wrapper = new PawnGenerationRequestWrapper() {
-                    Faction = null,
+                    Faction = Find.World.factionManager.OfPlayer,
                     KindDef = kindDef,
                     Context = PawnGenerationContext.NonPlayer,
                     WorldPawnFactionDoesntMatter = true

@@ -119,19 +119,19 @@ namespace EdB.PrepareCarefully {
             option.HediffDef = hediffDef;
             option.Label = useEffect.hediffDef.LabelCap;
             if (useEffect.bodyPart == null) {
-                Logger.Debug("Body part was null for hediff use effect: " + hediffDef.defName);
+                //Logger.Debug("Body part was null for hediff use effect: " + hediffDef.defName);
                 return false;
             }
             if (useEffect.bodyPart != null) {
                 List<BodyPartDef> validParts = new List<BodyPartDef>() { useEffect.bodyPart };
                 List<UniqueBodyPart> parts = options.FindBodyPartsForDef(useEffect.bodyPart);
                 if (parts == null || parts.Count == 0) {
-                    Logger.Debug("Found no valid body parts for hediff use effect: " + hediffDef.defName + ", " + useEffect.bodyPart.defName);
+                    //Logger.Debug("Found no valid body parts for hediff use effect: " + hediffDef.defName + ", " + useEffect.bodyPart.defName);
                     return false;
                 }
                 option.ValidParts = validParts;
             }
-            Logger.Debug($"Add hediff option given by use effect. Hediff = {option.HediffDef.defName}, Label = {option.Label}, BodyPart = {string.Join(", ", option.ValidParts)}");
+            //Logger.Debug($"Add hediff option given by use effect. Hediff = {option.HediffDef.defName}, Label = {option.Label}, BodyPart = {string.Join(", ", option.ValidParts)}");
             options.AddInjury(option);
             return true;
         }
