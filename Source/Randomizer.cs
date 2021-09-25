@@ -18,12 +18,37 @@ namespace EdB.PrepareCarefully {
 
         protected Pawn AttemptToGeneratePawn(PawnGenerationRequest request) {
             Exception lastException = null;
+            Faction savedRequestFaction = request.Faction;
             for (int i = 0; i < MaxAttempts; i++) {
                 try {
-                    return PawnGenerator.GeneratePawn(request);
+                    Pawn pawn = PawnGenerator.GeneratePawn(request);
+
+                    // We're trying to always generate pawns with a faction to avoid issues with some mods that patch pawn generation
+                    // but don't bother to do null checks on the faction.  Unfortunately, setting the faction to the colony faction
+                    // when creating a pawn from a different pawn kind results in bad apparel generation, i.e. synthread tribalwear
+                    // or too much missing clothing.  So after we generate the pawn with the colony faction, we temporarily set the
+                    // pawns faction to null and regenerate the apparel.
+                    pawn.apparel?.DestroyAll(DestroyMode.Vanish);
+                    pawn.equipment?.DestroyAllEquipment(DestroyMode.Vanish);
+                    pawn.inventory?.DestroyAll(DestroyMode.Vanish);
+                    request.Faction = null;
+                    Faction faction = pawn.Faction;
+                    // We only need to null out the faction if the pawn kind def is not the colony's pawn kind def.
+                    if (request.KindDef != null && request.KindDef.defaultFactionType != Find.World.factionManager.OfPlayer.def) {
+                        pawn.SetFaction(null);
+                    }
+                    PawnApparelGenerator.Reset();
+                    PawnApparelGenerator.GenerateStartingApparelFor(pawn, request);
+                    if (pawn.Faction != faction) {
+                        pawn.SetFaction(faction);
+                    }
+                    return pawn;
                 }
                 catch (Exception e) {
                     lastException = e;
+                }
+                finally {
+                    request.Faction = savedRequestFaction;
                 }
             }
             throw lastException;
@@ -58,6 +83,7 @@ namespace EdB.PrepareCarefully {
 
         public Pawn GenerateKindOfColonist(PawnKindDef kindDef) {
             Pawn result = AttemptToGeneratePawn(new PawnGenerationRequestWrapper() {
+                Faction = Find.FactionManager.OfPlayer,
                 KindDef = kindDef
             }.Request);
             return result;
@@ -72,8 +98,8 @@ namespace EdB.PrepareCarefully {
             if (ideo != null) {
                 wrapper.FixedIdeology = ideo;
             }
-            Pawn result = AttemptToGeneratePawn(wrapper.Request);
-            return result;
+            Pawn pawn = AttemptToGeneratePawn(wrapper.Request);
+            return pawn;
         }
 
         public Pawn GenerateKindAndGenderOfPawn(PawnKindDef kindDef, Gender gender) {

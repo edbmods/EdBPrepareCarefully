@@ -188,12 +188,10 @@ namespace EdB.PrepareCarefully {
                     return null;
                 }
                 List<BodyTypeDef> bodyTypes = new List<BodyTypeDef>();
-                //Logger.Debug("Body Types for " + raceDef.defName + ":");
                 if (alienBodyTypesCollection.Count > 0) {
                     foreach (object o in alienBodyTypesCollection) {
                         if (o.GetType() == typeof(BodyTypeDef)) {
                             BodyTypeDef def = o as BodyTypeDef;
-                            //Logger.Debug("  - " + def.defName + ", " + def.LabelCap);
                             bodyTypes.Add((BodyTypeDef)o);
                         }
                     }
@@ -201,6 +199,7 @@ namespace EdB.PrepareCarefully {
                 else {
                     //Logger.Debug("  none");
                 }
+                //Logger.Debug($"Body types for alien race {raceDef.defName}: {string.Join(", ", bodyTypes.Select(b => b.defName + ", " + b.LabelCap))}");
                 result.BodyTypes = bodyTypes;
 
                 // Determine if the alien races uses gender-specific heads.
@@ -348,15 +347,6 @@ namespace EdB.PrepareCarefully {
                     var restrictedApparelCollection = GetFieldValueAsCollection(raceDef, restrictionSettingsValue, "apparelList");
                     if (restrictedApparelCollection != null) {
                         foreach (var o in restrictedApparelCollection) {
-                            if (o is ThingDef def) {
-                                result.RaceSpecificApparel.Add(def.defName);
-                            }
-                        }
-                    }
-
-                    var legacyRestrictedApparelCollection = GetFieldValueAsCollection(raceDef, restrictionSettingsValue, "apparelRestricted");
-                    if (legacyRestrictedApparelCollection != null) {
-                        foreach (var o in legacyRestrictedApparelCollection) {
                             if (o is ThingDef def) {
                                 result.RaceSpecificApparel.Add(def.defName);
                             }

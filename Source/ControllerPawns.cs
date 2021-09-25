@@ -313,13 +313,6 @@ namespace EdB.PrepareCarefully {
             state.AddMessage("SavedAs".Translate(filename));
         }
         public void AddFactionPawn(PawnKindDef kindDef, bool startingPawn) {
-            // Workaround to force pawn generation to skip adding weapons to the pawn.
-            // Might be a slightly risky hack, but the finally block should guarantee that
-            // the weapons money range always gets set back to its original value.
-            // TODO: Try to remove this at a later date.  It would be nice if the pawn generation
-            // request gave you an option to skip weapon and equipment generation.
-            FloatRange savedWeaponsMoney = kindDef.weaponMoney;
-            kindDef.weaponMoney = new FloatRange(0, 0);
             Pawn pawn = null;
             try {
                 //Logger.Debug("Adding new pawn with kindDef = " + kindDef.defName);
@@ -335,12 +328,6 @@ namespace EdB.PrepareCarefully {
                     wrapper.FixedIdeology = ideo;
                 }
                 pawn = randomizer.GeneratePawn(wrapper.Request);
-                if (pawn.equipment != null) {
-                    pawn.equipment.DestroyAllEquipment(DestroyMode.Vanish);
-                }
-                if (pawn.inventory != null) {
-                    pawn.inventory.DestroyAll(DestroyMode.Vanish);
-                }
             }
             catch (Exception e) {
                 Logger.Warning("Failed to create faction pawn of kind " + kindDef.defName, e);
@@ -349,9 +336,6 @@ namespace EdB.PrepareCarefully {
                 }
                 state.AddError("EdB.PC.Panel.PawnList.Error.FactionPawnFailed".Translate());
                 return;
-            }
-            finally {
-                kindDef.weaponMoney = savedWeaponsMoney;
             }
 
             // Reset the quality and damage of all apparel.
@@ -362,9 +346,9 @@ namespace EdB.PrepareCarefully {
 
             // TODO: Revisit this if we add a UI to edit titles.
             // Clear out all titles.
-            if (pawn.royalty != null) {
-                pawn.royalty = new Pawn_RoyaltyTracker(pawn);
-            }
+            //if (pawn.royalty != null) {
+            //    pawn.royalty = new Pawn_RoyaltyTracker(pawn);
+            //}
 
             CustomPawn customPawn = new CustomPawn(pawn);
             customPawn.OriginalKindDef = kindDef;
