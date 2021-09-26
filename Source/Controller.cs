@@ -108,25 +108,15 @@ namespace EdB.PrepareCarefully {
             PrepareColonists();
             PrepareWorldPawns();
 
-            // This needs some explaining.  We need custom scenario parts to handle animal spawning
-            // and scattered things.  However, we don't want the scenario that gets saved with a game
-            // to include any Prepare Carefully-specific parts (because the save would become bound to
-            // the mod).  We work around this by creating two copies of the actual scenario.  The first
-            // copy includes the customized scenario parts needed to do the spawning.  The second contains
-            // vanilla versions of those parts that can safely be saved without forcing a dependency on
-            // the mod.  The GenStep_RemovePrepareCarefullyScenario class is responsible for switching out
-            // the actual scenario with the vanilla-friendly version at the end of the map generation process.
-            Scenario originalScenario = Find.Scenario;
-            Scenario actualScenario = UtilityCopy.CopyExposable(originalScenario);
-            Scenario vanillaFriendlyScenario = UtilityCopy.CopyExposable(originalScenario);
-            Current.Game.Scenario = actualScenario;
-            PrepareCarefully.OriginalScenario = vanillaFriendlyScenario;
-
-            // Remove equipment scenario parts.
-            ReplaceScenarioParts(originalScenario, actualScenario, vanillaFriendlyScenario);
-
-            //Logger.Debug(actualScenario.GetFullInformationText());
-            //Logger.Debug(vanillaFriendlyScenario.GetFullInformationText());
+            // When replacing the scenario parts, we'll get a list of parts that will be added to the scenario to spawn the new game.
+            // We also get back a set of vanilla-friendly parts that match the actual parts used.  Once we've finishing spawning the
+            // scenario parts into the map, we'll replace the actual parts with the vanilla-friendly ones instead.  We do this because
+            // the actual parts may have Prepare Carefully-specific scene parts.  We want to make sure that the scenario that's saved with
+            // the game does not have anything specific to Prepare Carefully so that saves are not dependent on the mod.
+            (var actualParts, var vanillaFriendlyParts) = ReplaceScenarioParts(Find.Scenario);
+            Scenario scenario = Current.Game.Scenario;
+            scenario.SetPrivateField("parts", actualParts);
+            PrepareCarefully.OriginalScenarioParts = vanillaFriendlyParts;
         }
 
         protected void PrepareColonists() {
@@ -282,22 +272,11 @@ namespace EdB.PrepareCarefully {
             pawn.Faction.Faction.leader = pawn.Pawn;
         }
 
-        // The three arguments are:
-        // - originalScenario: the original, unmodified scenario
-        // - actualScenario: this is the scenario that will be used to spawn into the map.  It contains Prepare Carefully-specific scenario part that should not be saved into a save file.
-        // - vanillaFriendlyScenario: this is the scenario that will be saved into the game save.  It will be a copy of actualScenario, but with all of the Prepare Carefully-specific
-        //      parts replaced by vanilla parts.
-        protected void ReplaceScenarioParts(Scenario originalScenario, Scenario actualScenario, Scenario vanillaFriendlyScenario) {
-
-            // Create lists to hold the new scenario parts.
-            List<ScenPart> actualScenarioParts = new List<ScenPart>();
-            List<ScenPart> vanillaFriendlyScenarioParts = new List<ScenPart>();
-
-            // Get the list of parts from the original scenario.  We do this using reflection because the "AllParts" property
-            // will include an extra "player faction" part that we don't want.
-            FieldInfo partsField = typeof(Scenario).GetField("parts", BindingFlags.NonPublic | BindingFlags.Instance);
-            List<ScenPart> originalParts = (List<ScenPart>)partsField.GetValue(originalScenario);
-            List<ScenPart> copiedParts = (List<ScenPart>)partsField.GetValue(actualScenario);
+        protected Tuple<List<ScenPart>, List<ScenPart>> ReplaceScenarioParts(Scenario originalScenario) {
+            // Get a list of all of the original scenario parts
+            List<ScenPart> originalParts = ReflectionUtil.GetFieldValue<List<ScenPart>>(Find.Scenario, "parts");
+            List<ScenPart> actualParts = new List<ScenPart>();
+            List<ScenPart> vanillaFriendlyParts = new List<ScenPart>();
 
             // Fill in the part lists with the scenario parts that we're not going to replace.  We won't need to modify any of these.
             int index = -1;
@@ -305,27 +284,22 @@ namespace EdB.PrepareCarefully {
                 index++;
                 bool partReplaced = PrepareCarefully.Instance.ReplacedScenarioParts.Contains(part);
                 if (!partReplaced) {
-                    actualScenarioParts.Add(copiedParts[index]);
-                    vanillaFriendlyScenarioParts.Add(copiedParts[index]);
+                    actualParts.Add(originalParts[index]);
+                    vanillaFriendlyParts.Add(originalParts[index]);
                 }
                 //Logger.Debug(String.Format("[{0}] Replaced? {1}: {2} {3}", index, partReplaced, part.Label, String.Join(", ", part.GetSummaryListEntries("PlayerStartsWith"))));
             }
 
             // Replace the pawn count in the configure pawns scenario parts to reflect the number of
             // pawns that were selected in Prepare Carefully.
-            foreach (var part in actualScenarioParts) {
-                if (!(part is ScenPart_ConfigPage_ConfigureStartingPawns configurePawnPart)) {
-                    continue;
-                }
-                configurePawnPart.pawnCount = PrepareCarefully.Instance.ColonyPawns.Count;
-                configurePawnPart.pawnChoiceCount = configurePawnPart.pawnCount;
-            }
-            foreach (var part in vanillaFriendlyScenarioParts) {
-                if (!(part is ScenPart_ConfigPage_ConfigureStartingPawns configurePawnPart)) {
-                    continue;
-                }
-                configurePawnPart.pawnCount = PrepareCarefully.Instance.ColonyPawns.Count;
-                configurePawnPart.pawnChoiceCount = configurePawnPart.pawnCount;
+            ScenPart_ConfigPage_ConfigureStartingPawns originalStartingPawnsPart = originalParts.FirstOrDefault(p => p is ScenPart_ConfigPage_ConfigureStartingPawns) as ScenPart_ConfigPage_ConfigureStartingPawns;
+            if (originalStartingPawnsPart != null) {
+                ScenPart_ConfigPage_ConfigureStartingPawns actualStartingPawnsPart = UtilityCopy.CopyExposable(originalStartingPawnsPart);
+                int pawnCount = PrepareCarefully.Instance.ColonyPawns.Count;
+                actualStartingPawnsPart.pawnCount = pawnCount;
+                actualStartingPawnsPart.pawnChoiceCount = pawnCount;
+                actualParts.Add(actualStartingPawnsPart);
+                vanillaFriendlyParts.Add(actualStartingPawnsPart);
             }
 
             // Sort the equipment from highest count to lowest so that gear is less likely to get blocked
@@ -339,7 +313,8 @@ namespace EdB.PrepareCarefully {
             // Create all of the scatter things scenario parts that we need.  Make note of the maximum number of stacks
             // that could be created.  We must use a custom scatter scenario part because we need to customize the spawn
             // radius when there are large numbers of resources.
-            List<ScenPart_CustomScatterThingsNearPlayerStart> scatterParts = new List<ScenPart_CustomScatterThingsNearPlayerStart>();
+            //List<ScenPart_CustomScatterThingsNearPlayerStart> scatterParts = new List<ScenPart_CustomScatterThingsNearPlayerStart>();
+            List<ScenPart_ScatterThingsNearPlayerStart> scatterParts = new List<ScenPart_ScatterThingsNearPlayerStart>();
             int scatterStackCount = 0;
             foreach (var e in PrepareCarefully.Instance.Equipment) {
                 if (e.record.animal) {
@@ -348,26 +323,15 @@ namespace EdB.PrepareCarefully {
                 if (!PlayerStartsWith(e)) {
                     int stacks = Mathf.CeilToInt((float)e.Count / (float)e.ThingDef.stackLimit);
                     scatterStackCount += stacks;
-                    ScenPart_CustomScatterThingsNearPlayerStart part = new ScenPart_CustomScatterThingsNearPlayerStart();
-                    part.ThingDef = e.ThingDef;
-                    part.StuffDef = e.StuffDef;
-                    part.Count = e.Count;
-                    scatterParts.Add(part);
-
-                    ScenPart_ScatterThingsNearPlayerStart vanillaPart = new ScenPart_ScatterThingsNearPlayerStart();
-                    vanillaPart.def = ScenPartDefOf.ScatterThingsNearPlayerStart;
-                    vanillaPart.SetPrivateField("thingDef", e.ThingDef);
-                    vanillaPart.SetPrivateField("stuff", e.StuffDef);
-                    vanillaPart.SetPrivateField("count", e.Count);
-                    vanillaFriendlyScenarioParts.Add(vanillaPart);
+                    ScenPart_ScatterThingsNearPlayerStart part = new ScenPart_ScatterThingsNearPlayerStart();
+                    part.def = ScenPartDefOf.ScatterThingsNearPlayerStart;
+                    part.SetPrivateField("thingDef", e.ThingDef);
+                    part.SetPrivateField("stuff", e.StuffDef);
+                    part.SetPrivateField("count", e.Count);
+                    actualParts.Add(part);
+                    vanillaFriendlyParts.Add(part);
                 }
             }
-
-            // Get the non-public fields that we'll need to set on the new starting thing scenario parts
-            // that we're going to add.
-            FieldInfo thingDefField = typeof(ScenPart_StartingThing_Defined).GetField("thingDef", BindingFlags.Instance | BindingFlags.NonPublic);
-            FieldInfo stuffField = typeof(ScenPart_StartingThing_Defined).GetField("stuff", BindingFlags.Instance | BindingFlags.NonPublic);
-            FieldInfo countField = typeof(ScenPart_StartingThing_Defined).GetField("count", BindingFlags.Instance | BindingFlags.NonPublic);
 
             // Go through all of the equipment that's meant to spawn as a starting thing.  We'll try to add
             // a starting thing scenario part for each, but we're keeping track of the overall density of
@@ -402,26 +366,21 @@ namespace EdB.PrepareCarefully {
                         // cause null pointer exceptions when trying to sort the scenario parts when creating the
                         // description to display in the "Scenario Summary."
                         part.def = ScenPartDefOf.StartingThing_Defined;
-                        thingDefField.SetValue(part, e.ThingDef);
-                        stuffField.SetValue(part, e.StuffDef);
-                        countField.SetValue(part, nearCount);
-                        actualScenarioParts.Add(part);
-                        vanillaFriendlyScenarioParts.Add(part);
+                        part.SetPrivateField("thingDef", e.ThingDef);
+                        part.SetPrivateField("stuff", e.StuffDef);
+                        part.SetPrivateField("count", nearCount);
+                        actualParts.Add(part);
+                        vanillaFriendlyParts.Add(part);
                     }
                     if (scatterCount > 0) {
                         scatterCount += Mathf.CeilToInt((float)scatterCount / (float)e.ThingDef.stackLimit);
-                        ScenPart_CustomScatterThingsNearPlayerStart part = new ScenPart_CustomScatterThingsNearPlayerStart();
-                        part.ThingDef = e.ThingDef;
-                        part.StuffDef = e.StuffDef;
-                        part.Count = scatterCount;
-                        scatterParts.Add(part);
-
-                        ScenPart_ScatterThingsNearPlayerStart vanillaPart = new ScenPart_ScatterThingsNearPlayerStart();
-                        vanillaPart.def = ScenPartDefOf.ScatterThingsNearPlayerStart;
-                        vanillaPart.SetPrivateField("thingDef", e.ThingDef);
-                        vanillaPart.SetPrivateField("stuff", e.StuffDef);
-                        vanillaPart.SetPrivateField("count", scatterCount);
-                        vanillaFriendlyScenarioParts.Add(vanillaPart);
+                        ScenPart_ScatterThingsNearPlayerStart part = new ScenPart_ScatterThingsNearPlayerStart();
+                        part.def = ScenPartDefOf.ScatterThingsNearPlayerStart;
+                        part.SetPrivateField("thingDef", e.ThingDef);
+                        part.SetPrivateField("stuff", e.StuffDef);
+                        part.SetPrivateField("count", scatterCount);
+                        actualParts.Add(part);
+                        vanillaFriendlyParts.Add(part);
                     }
                 }
             }
@@ -432,11 +391,12 @@ namespace EdB.PrepareCarefully {
             foreach (var e in PrepareCarefully.Instance.Equipment) {
                 if (e.record.animal) {
                     PawnKindDef animalKindDef = (from td in DefDatabase<PawnKindDef>.AllDefs where td.race == e.ThingDef select td).FirstOrDefault();
-                    ScenPart_CustomAnimal part = new ScenPart_CustomAnimal();
-                    part.Count = e.count;
-                    part.Gender = e.Gender;
-                    part.KindDef = animalKindDef;
-                    actualScenarioParts.Add(part);
+                    ScenPart_CustomAnimal part = new ScenPart_CustomAnimal() {
+                        Count = e.count,
+                        Gender = e.Gender,
+                        KindDef = animalKindDef
+                    };
+                    actualParts.Add(part);
 
                     if (animalKindCounts.ContainsKey(animalKindDef)) {
                         int count = animalKindCounts[animalKindDef];
@@ -447,44 +407,19 @@ namespace EdB.PrepareCarefully {
                     }
                 }
             }
-            
+
             // The vanilla starting animal part does not distinguish between genders, so we combine
             // the custom parts into a single vanilla part for each animal kind.
             foreach (var animalKindDef in animalKindCounts.Keys) {
-                ScenPart_StartingAnimal vanillaPart = new ScenPart_StartingAnimal();
-                vanillaPart.def = ScenPartDefOf.StartingAnimal;
+                ScenPart_StartingAnimal vanillaPart = new ScenPart_StartingAnimal() {
+                    def = ScenPartDefOf.StartingAnimal
+                };
                 vanillaPart.SetPrivateField("animalKind", animalKindDef);
                 vanillaPart.SetPrivateField("count", animalKindCounts[animalKindDef]);
-                vanillaFriendlyScenarioParts.Add(vanillaPart);
-            }
-            
-            // We figure out how dense the spawn area will be after spawning all of the scattered things.
-            // We'll target a maximum density and increase the spawn radius if we're over that density.
-            stackCount += scatterStackCount;
-            float originalRadius = 12f;
-            radius = originalRadius;
-            maxDensity = 0.35f;
-            bool evaluate = true;
-            while (evaluate) {
-                float density = GetSpawnAreaDensity(radius, stackCount);
-                if (density > maxDensity) {
-                    radius += 1f;
-                }
-                else {
-                    evaluate = false;
-                }
-            }
-            int addedRadius = (int)(radius - originalRadius);
-
-            // For each scatter part, we set our custom radius before adding the part to the scenario.
-            foreach (var part in scatterParts) {
-                part.Radius = addedRadius;
-                actualScenarioParts.Add(part);
+                vanillaFriendlyParts.Add(vanillaPart);
             }
 
-            // Set the new part lists on the two scenarios.
-            actualScenario.SetPrivateField("parts", actualScenarioParts);
-            vanillaFriendlyScenario.SetPrivateField("parts", vanillaFriendlyScenarioParts);
+            return Tuple.Create(actualParts, vanillaFriendlyParts);
         }
 
         protected float GetSpawnAreaDensity(float radius, float stackCount) {

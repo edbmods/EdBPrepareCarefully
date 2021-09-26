@@ -78,6 +78,7 @@
     <Compile Include="Source\DialogTitles.cs" />
     <Compile Include="Source\ExtensionsBackstory.cs" />
     <Compile Include="Source\ExtensionsDictionary.cs" />
+    <Compile Include="Source\ExtensionsEnumerable.cs" />
     <Compile Include="Source\FilterBackstoryMatchesFaction.cs" />
     <Compile Include="Source\PanelModule.cs" />
     <Compile Include="Source\PanelAbilities.cs" />

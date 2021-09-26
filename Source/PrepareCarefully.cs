@@ -67,12 +67,12 @@ namespace EdB.PrepareCarefully {
             }
         }
 
-        public static Scenario OriginalScenario {
+        public static List<ScenPart> OriginalScenarioParts {
             get; set;
         }
 
         public static void ClearOriginalScenario() {
-            OriginalScenario = null;
+            OriginalScenarioParts = null;
         }
 
         public Providers Providers {
@@ -123,7 +123,7 @@ namespace EdB.PrepareCarefully {
         }
 
         public void Clear() {
-            OriginalScenario = null;
+            ClearOriginalScenario();
             this.Active = false;
             this.Providers = new Providers();
             this.equipmentDatabase = new EquipmentDatabase();
@@ -208,8 +208,11 @@ namespace EdB.PrepareCarefully {
             foreach (ScenPart part in Verse.Find.Scenario.AllParts) {
                 index++;
 
-                ScenPart_ScatterThingsNearPlayerStart nearPlayerStart = part as ScenPart_ScatterThingsNearPlayerStart;
-                if (nearPlayerStart != null) {
+                if (part is ScenPart_ConfigPage_ConfigureStartingPawns) {
+                    ReplacedScenarioParts.Add(part);
+                }
+
+                if (part is ScenPart_ScatterThingsNearPlayerStart nearPlayerStart) {
                     FieldInfo thingDefField = typeof(ScenPart_ScatterThingsNearPlayerStart).GetField("thingDef", BindingFlags.Instance | BindingFlags.NonPublic);
                     FieldInfo stuffDefField = typeof(ScenPart_ScatterThingsNearPlayerStart).GetField("stuff", BindingFlags.Instance | BindingFlags.NonPublic);
                     FieldInfo countField = typeof(ScenPart_ScatterThingsNearPlayerStart).GetField("count", BindingFlags.Instance | BindingFlags.NonPublic);
@@ -232,8 +235,7 @@ namespace EdB.PrepareCarefully {
 
                 // Go through all of the scenario steps that place starting equipment with the colonists and
                 // add them to the resource/equipment list.
-                ScenPart_StartingThing_Defined startingThing = part as ScenPart_StartingThing_Defined;
-                if (startingThing != null) {
+                if (part is ScenPart_StartingThing_Defined startingThing) {
                     FieldInfo thingDefField = typeof(ScenPart_StartingThing_Defined).GetField("thingDef", BindingFlags.Instance | BindingFlags.NonPublic);
                     FieldInfo stuffDefField = typeof(ScenPart_StartingThing_Defined).GetField("stuff", BindingFlags.Instance | BindingFlags.NonPublic);
                     FieldInfo countField = typeof(ScenPart_StartingThing_Defined).GetField("count", BindingFlags.Instance | BindingFlags.NonPublic);
@@ -259,8 +261,7 @@ namespace EdB.PrepareCarefully {
 
                 // Go through all of the scenario steps that spawn a pet and add the pet to the equipment/resource
                 // list.
-                ScenPart_StartingAnimal animal = part as ScenPart_StartingAnimal;
-                if (animal != null) {
+                if (part is ScenPart_StartingAnimal animal) {
                     FieldInfo animalCountField = typeof(ScenPart_StartingAnimal).GetField("count", BindingFlags.Instance | BindingFlags.NonPublic);
                     int count = (int)animalCountField.GetValue(animal);
                     for (int i = 0; i < count; i++) {

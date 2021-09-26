@@ -5,6 +5,8 @@
 
  - Pawn generation changes to avoid apparel generation issues and to work
    around problems in other mods when generating a pawn with no faction.
+ - Reworked how scenario parts are applied when starting a new game to work
+   around issues with definitions that are removed by other mods.
 
  _____________________________________________________________________________
  

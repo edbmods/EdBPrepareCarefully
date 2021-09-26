@@ -50,8 +50,8 @@ namespace EdB.PrepareCarefully {
         class ReplaceScenarioPatch {
             [HarmonyPostfix]
             static void Postfix() {
-                if (PrepareCarefully.OriginalScenario != null) {
-                    Current.Game.Scenario = PrepareCarefully.OriginalScenario;
+                if (PrepareCarefully.OriginalScenarioParts != null) {
+                    Current.Game.Scenario.SetPrivateField("parts", PrepareCarefully.OriginalScenarioParts);
                     PrepareCarefully.ClearOriginalScenario();
                 }
             }
