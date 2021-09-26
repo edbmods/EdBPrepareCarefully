@@ -67,12 +67,12 @@ namespace EdB.PrepareCarefully {
             }
         }
 
-        public static List<ScenPart> OriginalScenarioParts {
+        public static Scenario VanillaFriendlyScenario {
             get; set;
         }
 
-        public static void ClearOriginalScenario() {
-            OriginalScenarioParts = null;
+        public static void ClearVanillaFriendlyScenario() {
+            VanillaFriendlyScenario = null;
         }
 
         public Providers Providers {
@@ -123,7 +123,7 @@ namespace EdB.PrepareCarefully {
         }
 
         public void Clear() {
-            ClearOriginalScenario();
+            ClearVanillaFriendlyScenario();
             this.Active = false;
             this.Providers = new Providers();
             this.equipmentDatabase = new EquipmentDatabase();

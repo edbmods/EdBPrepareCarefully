@@ -107,16 +107,36 @@ namespace EdB.PrepareCarefully {
             PrepareRelatedPawns();
             PrepareColonists();
             PrepareWorldPawns();
+            PrepareScenario();
+        }
 
-            // When replacing the scenario parts, we'll get a list of parts that will be added to the scenario to spawn the new game.
-            // We also get back a set of vanilla-friendly parts that match the actual parts used.  Once we've finishing spawning the
-            // scenario parts into the map, we'll replace the actual parts with the vanilla-friendly ones instead.  We do this because
-            // the actual parts may have Prepare Carefully-specific scene parts.  We want to make sure that the scenario that's saved with
-            // the game does not have anything specific to Prepare Carefully so that saves are not dependent on the mod.
+        // Replace the originally selected scenario with one that reflects the equipment and pawns chosen in Prepare Carefully.
+        protected void PrepareScenario() {
+            // We're going to create two copies of the original scenario.  The first one is the one that we'll actually use to spawn the new game.
+            // This one is potentially going to include custom scenario parts that are specific to Prepare Carefully.  Once we've spawned the game,
+            // we don't want to leave that scenario associated with the save, because we don't want the save to be dependent on Prepare Carefully.
+            // So we have a second copy of the scenario.  This one uses vanilla-friendly alternatives to the Prepare Carefully-specific scenario parts.
+            // After we spawn the game, we'll swap in this vanilla-friendly version of the scenario.
+            var actualScenario = CopyScenarioWithoutParts(Find.Scenario);
+            var vanillaFriendlyScenario = CopyScenarioWithoutParts(Find.Scenario);
             (var actualParts, var vanillaFriendlyParts) = ReplaceScenarioParts(Find.Scenario);
-            Scenario scenario = Current.Game.Scenario;
-            scenario.SetPrivateField("parts", actualParts);
-            PrepareCarefully.OriginalScenarioParts = vanillaFriendlyParts;
+
+            actualScenario.SetPrivateField("parts", actualParts);
+            Current.Game.Scenario = actualScenario;
+
+            vanillaFriendlyScenario.SetPrivateField("parts", vanillaFriendlyParts);
+            PrepareCarefully.VanillaFriendlyScenario = vanillaFriendlyScenario;
+        }
+
+        protected Scenario CopyScenarioWithoutParts(Scenario source) {
+            Scenario result = new Scenario() {
+                name = source.name,
+                summary = source.summary,
+                description = source.description,
+            };
+            ScenPart_PlayerFaction faction = source.GetPrivateField<ScenPart_PlayerFaction>("playerFaction");
+            result.SetPrivateField("playerFaction", faction);
+            return result;
         }
 
         protected void PrepareColonists() {

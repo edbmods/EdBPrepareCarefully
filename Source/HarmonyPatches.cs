@@ -40,7 +40,7 @@ namespace EdB.PrepareCarefully {
         class ClearOriginalScenarioPatch {
             [HarmonyPostfix]
             static void Postfix() {
-                PrepareCarefully.ClearOriginalScenario();
+                PrepareCarefully.ClearVanillaFriendlyScenario();
             }
         }
 
@@ -50,9 +50,11 @@ namespace EdB.PrepareCarefully {
         class ReplaceScenarioPatch {
             [HarmonyPostfix]
             static void Postfix() {
-                if (PrepareCarefully.OriginalScenarioParts != null) {
-                    Current.Game.Scenario.SetPrivateField("parts", PrepareCarefully.OriginalScenarioParts);
-                    PrepareCarefully.ClearOriginalScenario();
+                // After we've initialized the new game, swap in the vanilla-friendly version of the scenario so that the game save
+                // doesn't include any Prepare Carefully-specific scene parts.
+                if (PrepareCarefully.VanillaFriendlyScenario != null) {
+                    Current.Game.Scenario = PrepareCarefully.VanillaFriendlyScenario;
+                    PrepareCarefully.ClearVanillaFriendlyScenario();
                 }
             }
         }
