@@ -136,7 +136,6 @@ namespace EdB.PrepareCarefully {
             InstrumentPanels();
         }
 
-
         public override void DoWindowContents(Rect inRect) {
             pawnListActionThisFrame = false;
             base.DrawPageTitle(inRect);
@@ -169,6 +168,7 @@ namespace EdB.PrepareCarefully {
             // Draw other controls.
             DrawPresetButtons(inRect);
             DrawPoints(mainRect);
+            DrawTeamSkills(mainRect);
             DoNextBackButtons(inRect, "Start".Translate(),
                 delegate {
                     if (controller.CanDoNext()) {
@@ -314,6 +314,83 @@ namespace EdB.PrepareCarefully {
                 Text.Font = GameFont.Small;
             }
         }
+
+        protected void DrawTeamSkills(Rect parentRect) {
+            Text.Anchor = TextAnchor.UpperRight;
+            GUI.color = Color.white;
+            Text.Font = GameFont.Small;
+            try {
+                if (costLabelWidth == null) {
+                    string max = Int32.MaxValue.ToString();
+                    string translated1 = "EdB.PC.Page.Points.Spent".Translate(max);
+                    string translated2 = "EdB.PC.Page.Points.Remaining".Translate(max);
+                    costLabelWidth = Mathf.Max(Text.CalcSize(translated1).x, Text.CalcSize(translated2).x);
+                }
+                SkillDetails skill = PrepareCarefully.Instance.Skill;
+                string label;
+
+                //label = "";
+                int i = 0;
+                float linespace = 26;
+                foreach (var skillname in skill.maximumSkillLevels.Keys) {
+                    //label = skillname + " = " + skill.maximumSkillLevels[skillname] + "\n";
+                    label = skill.maximumSkillLevels[skillname] + "\n";
+                    Rect rect = new Rect(parentRect.width - costLabelWidth.Value - 4, 206 + (i++ * linespace), costLabelWidth.Value, 256);
+                    Widgets.Label(rect, label);
+                }
+
+                //GUI.color = Style.ColorText;
+
+                
+
+                GUI.color = Style.ColorText;
+                Text.Anchor = TextAnchor.UpperLeft;
+                Text.Font = GameFont.Small;
+
+            }
+            finally {
+                Text.Anchor = TextAnchor.UpperLeft;
+                GUI.color = Color.white;
+                Text.Font = GameFont.Small;
+            }
+        }
+
+        /*protected void DrawTeamSkills(Rect parentRect) {
+            Text.Anchor = TextAnchor.UpperRight;
+            GUI.color = Color.white;
+            Text.Font = GameFont.Tiny;
+            try {
+                if (costLabelWidth == null) {
+                    string max = Int32.MaxValue.ToString();
+                    string translated1 = "EdB.PC.Page.Points.Spent".Translate(max);
+                    string translated2 = "EdB.PC.Page.Points.Remaining".Translate(max);
+                    costLabelWidth = Mathf.Max(Text.CalcSize(translated1).x, Text.CalcSize(translated2).x);
+                }
+                SkillDetails skill = PrepareCarefully.Instance.Skill;
+                string label;
+
+                label = "";
+
+                foreach (var skillname in skill.maximumSkillLevels.Keys) {
+                    label += skillname + " = " + skill.maximumSkillLevels[skillname] + "\n";
+                }
+
+                GUI.color = Style.ColorText;
+
+                Rect rect = new Rect(parentRect.width - costLabelWidth.Value * 2, 2, costLabelWidth.Value, 32);
+                Widgets.Label(rect, label);
+
+                GUI.color = Style.ColorText;
+                Text.Anchor = TextAnchor.UpperLeft;
+                Text.Font = GameFont.Tiny;
+
+            }
+            finally {
+                Text.Anchor = TextAnchor.UpperLeft;
+                GUI.color = Color.white;
+                Text.Font = GameFont.Tiny;
+            }
+        }*/
 
         protected void SelectPawn(CustomPawn pawn) {
             if (!pawnListActionThisFrame) {
