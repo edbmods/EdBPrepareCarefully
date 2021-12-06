@@ -19,7 +19,7 @@ namespace EdB.PrepareCarefully {
         protected Dictionary<SkillDef, int> originalSkillLevels = new Dictionary<SkillDef, int>();
 
         // The pawn's current skill levels, without modifiers for backstories and traits.
-        protected Dictionary<SkillDef, int> currentSkillLevels = new Dictionary<SkillDef, int>();
+        public Dictionary<SkillDef, int> currentSkillLevels = new Dictionary<SkillDef, int>();
 
         // The pawn's skill value modifiers from selected backstories and traits.
         protected Dictionary<SkillDef, int> skillLevelModifiers = new Dictionary<SkillDef, int>();

@@ -36,6 +36,7 @@ namespace EdB.PrepareCarefully {
         protected EquipmentDatabase equipmentDatabase = null;
         protected AnimalDatabase animalDatabase = null;
         protected CostCalculator costCalculator = null;
+        protected SkillCalculator skillCalculator = null;
 
         protected List<CustomPawn> pawns = new List<CustomPawn>();
 
@@ -562,6 +563,17 @@ namespace EdB.PrepareCarefully {
                     pets.Remove(p);
                 }
                 petsToRemove.Clear();
+            }
+        }
+
+        SkillDetails skill = new SkillDetails();
+        public SkillDetails Skill {
+            get {
+                if (skillCalculator == null) {
+                    skillCalculator = new SkillCalculator();
+                }
+                skillCalculator.Calculate(skill, this.pawns);
+                return skill;
             }
         }
 
