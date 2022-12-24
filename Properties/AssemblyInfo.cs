@@ -6,7 +6,7 @@ using System.Runtime.CompilerServices;
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("")]
 [assembly: AssemblyProduct("EdB Prepare Carefully Mod")]
-[assembly: AssemblyCopyright("Copyright © 2014-2021")]
+[assembly: AssemblyCopyright("Copyright © 2014-2023")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 
@@ -14,4 +14,4 @@ using System.Runtime.CompilerServices;
 [assembly: AssemblyVersion("1.1.1")]
 
 // Increment for each new release
-[assembly: AssemblyFileVersion("1.3.12")]
+[assembly: AssemblyFileVersion("1.4.1")]
