@@ -555,7 +555,7 @@ namespace EdB.PrepareCarefully {
 
             OptionsHealth healthOptions = PrepareCarefully.Instance.Providers.Health.GetOptions(pawn);
             for (int i = 0; i < record.implants.Count; i++) {
-                SaveRecordImplantV3 implantRecord = record.implants[i];
+                SaveRecordImplantV5 implantRecord = record.implants[i];
                 UniqueBodyPart uniqueBodyPart = healthOptions.FindBodyPartByName(implantRecord.bodyPart, implantRecord.bodyPartIndex != null ? implantRecord.bodyPartIndex.Value : 0);
                 if (uniqueBodyPart == null) {
                     uniqueBodyPart = FindReplacementBodyPart(healthOptions, implantRecord.bodyPart);
@@ -590,7 +590,20 @@ namespace EdB.PrepareCarefully {
                     implant.BodyPartRecord = bodyPart;
                     implant.recipe = recipeDef;
                     implant.label = implant.Label;
-                    pawn.AddImplant(implant);
+                    pawn.AddImplantDirect(implant);
+                }
+                else if (implantRecord.hediffDef != null) {
+                    HediffDef hediffDef = DefDatabase<HediffDef>.GetNamedSilentFail(implantRecord.hediffDef);
+                    if (hediffDef != null) {
+                        Implant implant = new Implant();
+                        implant.BodyPartRecord = bodyPart;
+                        implant.label = implant.Label;
+                        implant.HediffDef = hediffDef;
+                        pawn.AddImplantDirect(implant);
+                    }
+                    else {
+                        Logger.Warning("Could not add implant to pawn because the specified HediffDef {" + implantRecord.hediffDef + "} for the implant was not found");
+                    }
                 }
             }
 
@@ -640,12 +653,14 @@ namespace EdB.PrepareCarefully {
                     }
                 }
                 if (isValid) {
-                    pawn.AddInjury(injury);
+                    pawn.AddInjuryDirect(injury);
                 }
                 else {
                     Logger.Debug("Did not add invalid injury");
                 }
             }
+            pawn.ApplyInjuriesAndImplantsToPawn();
+            pawn.InitializeInjuriesAndImplantsFromPawn(pawn.Pawn);
 
             // Ideoligion Certainty
             try {

@@ -361,8 +361,16 @@ namespace EdB.PrepareCarefully {
                         implant.recipe = implantRecipe;
                         implant.BodyPartRecord = hediff.Part;
                         implant.Hediff = hediff;
+                        implant.HediffDef = hediff?.def;
                         implants.Add(implant);
                         //Logger.Debug("Found implant recipes for {" + hediff.def.defName + "} for part {" + hediff.Part?.LabelCap + "}");
+                    }
+                    else if (hediff.def.defName == "MechlinkImplant") {
+                        Implant implant = new Implant();
+                        implant.BodyPartRecord = hediff.Part;
+                        implant.Hediff = hediff;
+                        implant.HediffDef = hediff?.def;
+                        implants.Add(implant);
                     }
                     else if (hediff.def.defName != "MissingBodyPart") {
                         Logger.Warning("Could not add hediff {" + hediff.def.defName + "} to the pawn because no recipe adds it to the body part {" + (hediff.Part?.def?.defName ?? "WholeBody") + "}");
@@ -1551,10 +1559,14 @@ namespace EdB.PrepareCarefully {
         }
 
         public void AddInjury(Injury injury) {
-            injuries.Add(injury);
-            bodyParts.Add(injury);
+            AddInjuryDirect(injury);
             ApplyInjuriesAndImplantsToPawn();
             InitializeInjuriesAndImplantsFromPawn(this.pawn);
+        }
+
+        public void AddInjuryDirect(Injury injury) {
+            injuries.Add(injury);
+            bodyParts.Add(injury);
         }
 
         public void UpdateImplants(List<Implant> implants) {
@@ -1575,7 +1587,7 @@ namespace EdB.PrepareCarefully {
             InitializeInjuriesAndImplantsFromPawn(this.pawn);
         }
 
-        protected void ApplyInjuriesAndImplantsToPawn() {
+        public void ApplyInjuriesAndImplantsToPawn() {
             this.pawn.health.Reset();
             List<Injury> injuriesToRemove = new List<Injury>();
             foreach (var injury in injuries) {
@@ -1631,14 +1643,20 @@ namespace EdB.PrepareCarefully {
         }
 
         public void AddImplant(Implant implant) {
-            if (implant != null && implant.BodyPartRecord != null) {
-                implants.Add(implant);
-                bodyParts.Add(implant);
+            if (AddImplantDirect(implant)) {
                 ApplyInjuriesAndImplantsToPawn();
                 InitializeInjuriesAndImplantsFromPawn(this.pawn);
             }
+        }
+        public bool AddImplantDirect(Implant implant) {
+            if (implant != null && implant.BodyPartRecord != null) {
+                implants.Add(implant);
+                bodyParts.Add(implant);
+                return true;
+            }
             else {
                 Logger.Warning("Discarding implant because of missing body part: " + implant.BodyPartRecord.def.defName);
+                return false;
             }
         }
 

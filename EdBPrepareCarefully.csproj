@@ -224,6 +224,7 @@
     <Compile Include="Source\Version5\SaveRecordGenesV5.cs" />
     <Compile Include="Source\Version5\SaveRecordHediffV5.cs" />
     <Compile Include="Source\Version5\SaveRecordIdeoV5.cs" />
+    <Compile Include="Source\Version5\SaveRecordImplantV5.cs" />
     <Compile Include="Source\Version5\SaveRecordInjuryV5.cs" />
     <Compile Include="Source\Version5\SaveRecordPawnV5.cs" />
     <Compile Include="Source\Version5\SaveRecordPresetV5.cs" />

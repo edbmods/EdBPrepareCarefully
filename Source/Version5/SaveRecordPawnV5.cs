@@ -45,7 +45,7 @@ namespace EdB.PrepareCarefully {
         public List<Color> apparelColors = new List<Color>();
         public bool randomInjuries = true;
         public bool randomRelations = false;
-        public List<SaveRecordImplantV3> implants = new List<SaveRecordImplantV3>();
+        public List<SaveRecordImplantV5> implants = new List<SaveRecordImplantV5>();
         public List<SaveRecordInjuryV5> injuries = new List<SaveRecordInjuryV5>();
         public SaveRecordIdeoV5 ideo;
         public List<string> abilities = new List<string>();
@@ -132,7 +132,7 @@ namespace EdB.PrepareCarefully {
             }
             OptionsHealth healthOptions = PrepareCarefully.Instance.Providers.Health.GetOptions(pawn);
             foreach (Implant implant in pawn.Implants) {
-                var saveRecord = new SaveRecordImplantV3(implant);
+                var saveRecord = new SaveRecordImplantV5(implant);
                 if (implant.BodyPartRecord != null) {
                     UniqueBodyPart part = healthOptions.FindBodyPartsForRecord(implant.BodyPartRecord);
                     if (part != null && part.Index > 0) {
@@ -228,11 +228,11 @@ namespace EdB.PrepareCarefully {
             Scribe_Collections.Look<string>(ref this.abilities, "abilities", LookMode.Value, null);
 
             if (Scribe.mode == LoadSaveMode.Saving) {
-                Scribe_Collections.Look<SaveRecordImplantV3>(ref this.implants, "implants", LookMode.Deep, null);
+                Scribe_Collections.Look<SaveRecordImplantV5>(ref this.implants, "implants", LookMode.Deep, null);
             }
             else {
                 if (Scribe.loader.curXmlParent["implants"] != null) {
-                    Scribe_Collections.Look<SaveRecordImplantV3>(ref this.implants, "implants", LookMode.Deep, null);
+                    Scribe_Collections.Look<SaveRecordImplantV5>(ref this.implants, "implants", LookMode.Deep, null);
                 }
             }
 
