@@ -10,38 +10,38 @@ using Verse.Sound;
 
 namespace EdB.PrepareCarefully {
     public class ProviderApparel {
-        protected Dictionary<ThingDef, OptionsApparel> apparelLookup = new Dictionary<ThingDef, OptionsApparel>();
+        protected Dictionary<ValueTuple<ThingDef, DevelopmentalStage>, OptionsApparel> apparelLookup = new Dictionary<ValueTuple<ThingDef, DevelopmentalStage>, OptionsApparel>();
         protected OptionsApparel humanlikeApparel;
         protected OptionsApparel noApparel = new OptionsApparel();
         public ProviderAlienRaces AlienRaceProvider {
             get; set;
         }
         public List<ThingDef> GetApparel(CustomPawn pawn, PawnLayer layer) {
-            return GetApparel(pawn.Pawn.def, layer);
+            return GetApparel(pawn.Pawn.def, pawn.Pawn.DevelopmentalStage, layer);
         }
-        public List<ThingDef> GetApparel(ThingDef raceDef, PawnLayer layer) {
-            OptionsApparel apparel = GetApparelForRace(raceDef);
+        public List<ThingDef> GetApparel(ThingDef raceDef, DevelopmentalStage stage, PawnLayer layer) {
+            OptionsApparel apparel = GetApparelForRaceAndDevelopmentalStage(raceDef, stage);
             return apparel.GetApparel(layer);
         }
         public OptionsApparel GetApparelForRace(CustomPawn pawn) {
-            return GetApparelForRace(pawn.Pawn.def);
+            return GetApparelForRaceAndDevelopmentalStage(pawn.Pawn.def, pawn.Pawn.DevelopmentalStage);
         }
-        public OptionsApparel GetApparelForRace(ThingDef raceDef) {
+        public OptionsApparel GetApparelForRaceAndDevelopmentalStage(ThingDef raceDef, DevelopmentalStage stage) {
             OptionsApparel apparel;
-            if (apparelLookup.TryGetValue(raceDef, out apparel)) {
+            if (apparelLookup.TryGetValue(ValueTuple.Create(raceDef, stage), out apparel)) {
                 return apparel;
             }
-            apparel = InitializeApparel(raceDef);
+            apparel = InitializeApparel(raceDef, stage);
             if (apparel == null) {
                 if (raceDef != ThingDefOf.Human) {
-                    return GetApparelForRace(ThingDefOf.Human);
+                    return GetApparelForRaceAndDevelopmentalStage(ThingDefOf.Human, stage);
                 }
                 else {
                     return null;
                 }
             }
             else {
-                apparelLookup.Add(raceDef, apparel);
+                apparelLookup.Add(ValueTuple.Create(raceDef, stage), apparel);
                 return apparel;
             }
         }
@@ -65,10 +65,10 @@ namespace EdB.PrepareCarefully {
                 options.Add(layer, def);
             }
         }
-        protected OptionsApparel InitializeApparel(ThingDef raceDef) {
+        protected OptionsApparel InitializeApparel(ThingDef raceDef, DevelopmentalStage stage) {
             AlienRace alienRace = AlienRaceProvider.GetAlienRace(raceDef);
             if (alienRace == null) {
-                return HumanlikeApparel;
+                return HumanlikeApparelForDevelopmentStage(stage);
             }
             OptionsApparel result = new OptionsApparel();
             HashSet<string> addedAlready = new HashSet<string>();
@@ -82,7 +82,7 @@ namespace EdB.PrepareCarefully {
             // Even if we're only allowed to use race-specific apparel, we're also allowed to use anything in the allowed list.
             if (alienRace.RaceSpecificApparelOnly) {
                 HashSet<string> allowed = alienRace.AllowedApparel ?? new HashSet<string>();
-                foreach (var def in HumanlikeApparel.AllApparel ?? Enumerable.Empty<ThingDef>()) {
+                foreach (var def in HumanlikeApparelForDevelopmentStage(stage).AllApparel ?? Enumerable.Empty<ThingDef>()) {
                     if (allowed.Contains(def.defName) && !addedAlready.Contains(def.defName)) {
                         AddApparelToOptions(result, def);
                         addedAlready.Add(def.defName);
@@ -92,7 +92,7 @@ namespace EdB.PrepareCarefully {
             // Even if we're allowed to use more than just race-specific apparel, we can't use anything in the disallowed list.
             else {
                 HashSet<string> disallowed = alienRace.DisallowedApparel ?? new HashSet<string>();
-                foreach (var def in HumanlikeApparel.AllApparel ?? Enumerable.Empty<ThingDef>()) {
+                foreach (var def in HumanlikeApparelForDevelopmentStage(stage).AllApparel ?? Enumerable.Empty<ThingDef>()) {
                     if (!addedAlready.Contains(def.defName) && !disallowed.Contains(def.defName)) {
                         AddApparelToOptions(result, def);
                         addedAlready.Add(def.defName);
@@ -102,15 +102,15 @@ namespace EdB.PrepareCarefully {
             result.Sort();
             return result;
         }
-        protected OptionsApparel HumanlikeApparel {
-            get {
-                if (humanlikeApparel == null) {
-                    humanlikeApparel = InitializeHumanlikeApparel();
-                }
-                return humanlikeApparel;
+
+        protected OptionsApparel HumanlikeApparelForDevelopmentStage(DevelopmentalStage stage) {
+            if (apparelLookup.TryGetValue(ValueTuple.Create(ThingDefOf.Human, stage), out var options)) {
+                return options;
             }
+            return InitializeHumanlikeApparel(stage);
         }
-        protected OptionsApparel InitializeHumanlikeApparel() {
+
+        protected OptionsApparel InitializeHumanlikeApparel(DevelopmentalStage stage) {
             HashSet<string> nonHumanApparel = new HashSet<string>();
             IEnumerable<ThingDef> alienRaces = DefDatabase<ThingDef>.AllDefs.Where((ThingDef def) => {
                 return def.race != null && ProviderAlienRaces.IsAlienRace(def);
@@ -132,6 +132,9 @@ namespace EdB.PrepareCarefully {
             OptionsApparel result = new OptionsApparel();
             foreach (ThingDef apparelDef in DefDatabase<ThingDef>.AllDefs) {
                 if (apparelDef.apparel == null) {
+                    continue;
+                }
+                if (!apparelDef.apparel.developmentalStageFilter.Has(stage)) {
                     continue;
                 }
                 if (!nonHumanApparel.Contains(apparelDef.defName)) {

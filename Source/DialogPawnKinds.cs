@@ -5,7 +5,39 @@ using UnityEngine;
 using Verse;
 using Verse.Sound;
 namespace EdB.PrepareCarefully {
+    public class PawnKindOption {
+        public PawnKindOption() {
+            this.FactionDef = null;
+            this.KindDef = null;
+        }
+        public PawnKindOption(FactionDef factionDef, PawnKindDef kindDef) {
+            this.FactionDef = factionDef;
+            this.KindDef = kindDef;
+        }
+
+        public FactionDef FactionDef { get; set; }
+        public PawnKindDef KindDef { get; set; }
+
+        public override bool Equals(object obj) {
+            return obj is PawnKindOption option &&
+                   EqualityComparer<FactionDef>.Default.Equals(FactionDef, option.FactionDef) &&
+                   EqualityComparer<PawnKindDef>.Default.Equals(KindDef, option.KindDef);
+        }
+
+        public override int GetHashCode() {
+            var hashCode = 101273788;
+            hashCode = hashCode * -1521134295 + EqualityComparer<FactionDef>.Default.GetHashCode(FactionDef);
+            hashCode = hashCode * -1521134295 + EqualityComparer<PawnKindDef>.Default.GetHashCode(KindDef);
+            return hashCode;
+        }
+
+        public override string ToString() {
+            return "{ FactionDef = " + FactionDef?.defName + ", KindDef = " + KindDef?.defName + "}";
+        }
+    }
+
     public class DialogPawnKinds : Window {
+
         public Vector2 ContentMargin { get; protected set; }
         public Vector2 WindowSize { get; protected set; }
         public Vector2 ButtonSize { get; protected set; }
@@ -25,7 +57,7 @@ namespace EdB.PrepareCarefully {
         protected string headerLabel;
         protected bool resizeDirtyFlag = true;
         protected bool confirmed = false;
-        protected PawnKindDef scrollTo = null;
+        protected PawnKindOption scrollToWhenFirstOpened = null;
         protected LabelTrimmer labelTrimmer = new LabelTrimmer();
         public DialogPawnKinds() {
             this.closeOnCancel = true;
@@ -35,7 +67,7 @@ namespace EdB.PrepareCarefully {
             Resize();
         }
 
-        public PawnKindDef Selected {
+        public PawnKindOption Selected {
             get;
             set;
         }
@@ -56,22 +88,22 @@ namespace EdB.PrepareCarefully {
             get;
             set;
         }
-        public Action<PawnKindDef> SelectAction {
+        public Action<PawnKindOption> SelectAction {
             get;
             set;
         }
-        public HashSet<PawnKindDef> DisabledOptions {
+        public HashSet<PawnKindOption> DisabledOptions {
             get;
             set;
         }
 
-        protected WidgetTable<PawnKindDef> table = new WidgetTable<PawnKindDef>();
+        protected WidgetTable<PawnKindOption> table = new WidgetTable<PawnKindOption>();
 
         public string ConfirmButtonLabel = "EdB.PC.Common.Select";
         public string CancelButtonLabel = "EdB.PC.Common.Cancel";
 
-        public void ScrollTo(PawnKindDef kindDef) {
-            this.scrollTo = kindDef;
+        public void ScrollToWhenOpened(PawnKindOption kindDef) {
+            this.scrollToWhenFirstOpened = kindDef;
         }
         protected void MarkResizeFlagDirty() {
             resizeDirtyFlag = true;
@@ -123,7 +155,7 @@ namespace EdB.PrepareCarefully {
 
             labelTrimmer.Rect = new Rect(0, 0, nameSize.x, nameSize.y);
 
-            table = new WidgetTable<PawnKindDef>();
+            table = new WidgetTable<PawnKindOption>();
             table.Rect = new Rect(Vector2.zero, ContentRect.size);
             table.RowHeight = 42;
             table.RowGroupHeaderHeight = RowGroupHeaderHeight;
@@ -131,48 +163,48 @@ namespace EdB.PrepareCarefully {
             table.AlternateRowColor = new Color(0, 0, 0, 0);
             table.SelectedRowColor = new Color(0, 0, 0, 0);
             table.SupportSelection = true;
-            table.SelectedAction = (PawnKindDef pawnKind) => {
-                if (!DisabledOptions.Contains(pawnKind)) {
+            table.SelectedAction = (PawnKindOption kind) => {
+                if (!DisabledOptions.Contains(kind)) {
                     SoundDefOf.Tick_Tiny.PlayOneShotOnCamera();
-                    Select(pawnKind);
+                    Select(kind);
                 }
             };
-            table.AddColumn(new WidgetTable<PawnKindDef>.Column() {
+            table.AddColumn(new WidgetTable<PawnKindOption>.Column() {
                 Name = "Name",
                 Width = nameSize.x,
                 AdjustForScrollbars = true,
-                DrawAction = (PawnKindDef pawnKind, Rect rect, WidgetTable<PawnKindDef>.Metadata metadata) => {
+                DrawAction = (PawnKindOption kind, Rect rect, WidgetTable<PawnKindOption>.Metadata metadata) => {
                     Text.Anchor = TextAnchor.MiddleLeft;
                     Text.Font = GameFont.Small;
-                    if (this.ShowRace && pawnKind.race != null) {
+                    if (this.ShowRace && kind.KindDef.race != null) {
                         Rect nameRect = new Rect(rect.x + nameOffset, rect.y + 5, rect.width, 22);
-                        Widgets.Label(nameRect, labelTrimmer.TrimLabelIfNeeded(pawnKind.LabelCap));
+                        Widgets.Label(nameRect, labelTrimmer.TrimLabelIfNeeded(kind.KindDef.LabelCap));
                         Rect raceRect = new Rect(rect.x + nameOffset, nameRect.yMax - 5, rect.width, nameSize.y - 25);
                         Text.Font = GameFont.Tiny;
                         GUI.color = Style.ColorTextSecondary;
-                        Widgets.Label(raceRect, labelTrimmer.TrimLabelIfNeeded(pawnKind.race.LabelCap));
+                        Widgets.Label(raceRect, labelTrimmer.TrimLabelIfNeeded(kind.KindDef.race.LabelCap));
                         GUI.color = Color.white;
                         Text.Font = GameFont.Small;
                     }
                     else {
-                        Widgets.Label(new Rect(rect.x + nameOffset, rect.y + 1, rect.width, nameSize.y), pawnKind.LabelCap);
+                        Widgets.Label(new Rect(rect.x + nameOffset, rect.y + 1, rect.width, nameSize.y), kind.KindDef.LabelCap);
                     }
                     Text.Anchor = TextAnchor.UpperLeft;
                 }
             });
-            table.AddColumn(new WidgetTable<PawnKindDef>.Column() {
+            table.AddColumn(new WidgetTable<PawnKindOption>.Column() {
                 Name = "RadioButton",
                 Width = radioWidth,
-                DrawAction = (PawnKindDef pawnKind, Rect rect, WidgetTable<PawnKindDef>.Metadata metadata) => {
-                    if (DisabledOptions != null && DisabledOptions.Contains(pawnKind)) {
+                DrawAction = (PawnKindOption kind, Rect rect, WidgetTable<PawnKindOption>.Metadata metadata) => {
+                    if (DisabledOptions != null && DisabledOptions.Contains(kind)) {
                         GUI.color = Style.ColorControlDisabled;
                         GUI.color = new Color(1, 1, 1, 0.28f);
                         GUI.DrawTexture(new Rect(rect.x, rect.MiddleY() - 12, 24, 24), Textures.TextureRadioButtonOff);
                         GUI.color = Color.white;
                     }
                     else {
-                        if (Widgets.RadioButton(new Vector2(rect.x, rect.MiddleY() - 12), this.Selected == pawnKind)) {
-                            Select(pawnKind);
+                        if (Widgets.RadioButton(new Vector2(rect.x, rect.MiddleY() - 12), EqualityComparer<PawnKindOption>.Default.Equals(this.Selected, kind))) {
+                            Select(kind);
                         }
                     }
                 }
@@ -180,18 +212,18 @@ namespace EdB.PrepareCarefully {
             resizeDirtyFlag = false;
         }
 
-        protected void Select(PawnKindDef pawnKind) {
-            this.Selected = pawnKind;
+        protected void Select(PawnKindOption kind) {
+            this.Selected = kind;
             if (SelectAction != null) {
-                SelectAction(pawnKind);
+                SelectAction(kind);
             }
         }
 
-        public IEnumerable<PawnKindDef> PawnKinds {
+        public IEnumerable<PawnKindOption> FactionPawnKinds {
             get; set;
         }
 
-        public IEnumerable<WidgetTable<PawnKindDef>.RowGroup> RowGroups {
+        public IEnumerable<WidgetTable<PawnKindOption>.RowGroup> RowGroups {
             get; set;
         }
 
@@ -207,9 +239,9 @@ namespace EdB.PrepareCarefully {
             if (resizeDirtyFlag) {
                 Resize();
             }
-            if (scrollTo != null) {
-                table.ScrollTo(scrollTo);
-                scrollTo = null;
+            if (scrollToWhenFirstOpened != null) {
+                table.ScrollTo(scrollToWhenFirstOpened);
+                scrollToWhenFirstOpened = null;
             }
             GUI.color = Color.white;
             Text.Font = GameFont.Medium;
@@ -225,7 +257,7 @@ namespace EdB.PrepareCarefully {
                     table.Draw(RowGroups);
                 }
                 else {
-                    table.Draw(PawnKinds);
+                    table.Draw(FactionPawnKinds);
                 }
             }
             finally {

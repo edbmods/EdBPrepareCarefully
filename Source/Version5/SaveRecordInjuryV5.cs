@@ -6,24 +6,28 @@ using UnityEngine;
 using Verse;
 
 namespace EdB.PrepareCarefully {
-    public class SaveRecordInjuryV3 : IExposable {
+    public class SaveRecordInjuryV5 : IExposable {
         public string bodyPart = null;
         public int? bodyPartIndex = null;
         public string hediffDef = null;
         public string severity = null;
         public string painFactor = null;
+        public string chemical = null;
 
-        public SaveRecordInjuryV3() {
+        public SaveRecordInjuryV5() {
         }
 
-        public SaveRecordInjuryV3(Injury injury) {
-            this.bodyPart = injury.BodyPartRecord != null ? injury.BodyPartRecord.def.defName : null;
-            this.hediffDef = injury.Option.HediffDef != null ? injury.Option.HediffDef.defName : null;
+        public SaveRecordInjuryV5(Injury injury) {
+            this.bodyPart = injury?.BodyPartRecord?.def?.defName;
+            this.hediffDef = injury?.Option?.HediffDef?.defName;
             if (injury.Severity != 0) {
                 this.severity = injury.Severity.ToString();
             }
             if (injury.PainFactor != null) {
                 this.painFactor = injury.PainFactor.Value.ToString();
+            }
+            if (injury.Chemical != null) {
+                this.chemical = injury.Chemical.defName;
             }
         }
 
@@ -33,6 +37,7 @@ namespace EdB.PrepareCarefully {
             Scribe_Values.Look<int?>(ref this.bodyPartIndex, "bodyPartIndex", null, false);
             Scribe_Values.Look<string>(ref this.severity, "severity", null, false);
             Scribe_Values.Look<string>(ref this.painFactor, "painFactor", null, false);
+            Scribe_Values.Look<string>(ref this.chemical, "chemical", null, false);
         }
 
         public float Severity {

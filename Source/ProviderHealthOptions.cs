@@ -11,11 +11,22 @@ using Verse.Sound;
 namespace EdB.PrepareCarefully {
     public class ProviderHealthOptions {
         protected Dictionary<ThingDef, OptionsHealth> optionsLookup = new Dictionary<ThingDef, OptionsHealth>();
+        protected HashSet<string> excludedOptions = new HashSet<string>() {
+            "VatLearning", "VatGrowing", "Pregnant", "PsychicBond", "PsychicBondTorn", "ResearchCommand", "Animal_Flu", "Stillborn"
+        };
+
         public OptionsHealth GetOptions(CustomPawn pawn) {
-            OptionsHealth result = null;
-            if (!optionsLookup.TryGetValue(pawn.Pawn.def, out result)) {
+            if (!optionsLookup.TryGetValue(pawn.Pawn.def, out var result)) {
                 result = InitializeHealthOptions(pawn.Pawn.def);
                 optionsLookup.Add(pawn.Pawn.def, result);
+            }
+            return result;
+        }
+
+        public OptionsHealth GetOptions(Pawn pawn) {
+            if (!optionsLookup.TryGetValue(pawn.def, out var result)) {
+                result = InitializeHealthOptions(pawn.def);
+                optionsLookup.Add(pawn.def, result);
             }
             return result;
         }
@@ -317,6 +328,11 @@ namespace EdB.PrepareCarefully {
                     continue;
                 }
             }
+
+            // Mark whether or not the injury can be added to a pawn in the health panel
+            foreach (var o in options.InjuryOptions) {
+                o.Selectable = IsInjuryOptionSelectable(o.HediffDef.defName);
+            }
             
             // Disambiguate duplicate injury labels.
             HashSet<string> labels = new HashSet<string>();
@@ -352,6 +368,22 @@ namespace EdB.PrepareCarefully {
                 }
                 option.UniqueParts = uniqueParts;
             }
+        }
+
+        public bool IsInjuryOptionSelectable(string defName) {
+            if (excludedOptions.Contains(defName)) {
+                return false;
+            }
+            if (defName.EndsWith("InEyes")) {
+                return false;
+            }
+            if (defName.EndsWith("Command")) {
+                return false;
+            }
+            if (defName.EndsWith("CommandBuff")) {
+                return false;
+            }
+            return true;
         }
     }
 }

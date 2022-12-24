@@ -19,6 +19,7 @@ namespace EdB.PrepareCarefully {
         private State state;
         private Randomizer randomizer = new Randomizer();
         private ProviderAgeLimits ProviderAgeLimits = PrepareCarefully.Instance.Providers.AgeLimits;
+        private AgeModifier ageModifier = new AgeModifier();
         public ControllerPawns(State state) {
             this.state = state;
         }
@@ -49,13 +50,75 @@ namespace EdB.PrepareCarefully {
 
         public void RandomizeAll() {
             // Create the pawn.
-            Pawn pawn = randomizer.GenerateKindOfPawn(state.CurrentPawn.Pawn.kindDef);
+            Pawn pawn = ModsConfig.BiotechActive ? CreateRandomizedPawnForBiotech() : randomizer.GenerateKindOfPawn(state.CurrentPawn.Pawn.kindDef);
             if (pawn.Faction != Faction.OfPlayer) {
                 pawn.SetFactionDirect(Faction.OfPlayer);
             }
+            bool randomizeAny = state.CurrentPawn.RandomizeAnyNonArchite;
             state.CurrentPawn.InitializeWithPawn(pawn);
             state.CurrentPawn.GenerateId();
             PawnReplaced(state.CurrentPawn);
+            if (randomizeAny) {
+                state.CurrentPawn.RandomizeAnyNonArchite = true;
+                state.CurrentPawn.RandomizeCustomXenotype = null;
+                state.CurrentPawn.RandomizeXenotype = null;
+            }
+        }
+
+        public Pawn CreateRandomizedPawnForBiotech() {
+            var wrapper = new PawnGenerationRequestWrapper() {
+                Faction = Find.FactionManager.OfPlayer,
+                KindDef = state.CurrentPawn.Pawn.kindDef
+            };
+            Ideo ideo = Find.FactionManager.OfPlayer.ideos.GetRandomIdeoForNewPawn();
+            if (ideo != null) {
+                wrapper.FixedIdeology = ideo;
+            }
+            if (state.CurrentPawn.RandomizeDevelopmentalStage != DevelopmentalStage.Adult) {
+                wrapper.DevelopmentalStage = state.CurrentPawn.RandomizeDevelopmentalStage;
+            }
+            if (state.CurrentPawn.RandomizeXenotype != null) {
+                wrapper.ForcedXenotype = state.CurrentPawn.RandomizeXenotype;
+            }
+            else if (state.CurrentPawn.RandomizeCustomXenotype != null) {
+                wrapper.ForcedCustomXenotype = state.CurrentPawn.RandomizeCustomXenotype;
+            }
+            else {
+                wrapper.AllowedXenotypes = DefDatabase<XenotypeDef>.AllDefs.Where((XenotypeDef x) => !x.Archite && x != XenotypeDefOf.Baseliner).ToList();
+                wrapper.ForceBaselinerChance = 0.5f;
+            }
+            Pawn pawn = randomizer.AttemptToGeneratePawn(wrapper.Request);
+            
+            // Fix bad head type for Alien races
+            if (pawn.def.defName != "Human") {
+                var provider = PrepareCarefully.Instance.Providers.HeadTypes;
+                var headTypes = provider.GetHeadTypes(pawn);
+                if (headTypes.FirstOrDefault() != null && !headTypes.Contains(pawn.story.headType)) {
+                    var replacement = provider.GetHeadTypes(pawn).First();
+                    Logger.Warning("Swapped out missing head type (" + pawn.story.headType?.defName + ") with first valid head type (" + replacement?.defName + ") for alien race (" + pawn.def.defName + ")");
+                    pawn.story.headType = replacement;
+                }
+            }
+
+            // Fix bad body type for Alien races
+            if (pawn.def.defName != "Human") {
+                var provider = PrepareCarefully.Instance.Providers.BodyTypes;
+                var bodyTypes = provider.GetBodyTypesForPawn(pawn);
+                if (!bodyTypes.Contains(pawn.story.bodyType)) {
+                    Logger.Warning("Alien race (" + pawn.def.defName + ") does not include the generated body type (" + pawn.story.bodyType?.defName + ")");
+                    if (bodyTypes.FirstOrDefault() != null) {
+                        var replacement = provider.GetBodyTypesForPawn(pawn).First();
+                        Logger.Warning("Swapped out missing body type (" + pawn.story.bodyType?.defName + ") with first valid body type (" + replacement?.defName + ") for alien race (" + pawn.def.defName + ")");
+                        pawn.story.bodyType = replacement;
+                    }
+                    else {
+                        Logger.Warning("No body types available in the alien race (" + pawn.def.defName + ") definition");
+                    }
+                }
+
+            }
+
+            return pawn;
         }
 
         // Name-related actions.
@@ -82,7 +145,7 @@ namespace EdB.PrepareCarefully {
         }
 
         // Backstory-related actions.
-        public void UpdateBackstory(BackstorySlot slot, Backstory backstory) {
+        public void UpdateBackstory(BackstorySlot slot, BackstoryDef backstory) {
             if (slot == BackstorySlot.Childhood) {
                 state.CurrentPawn.Childhood = backstory;
             }
@@ -141,7 +204,7 @@ namespace EdB.PrepareCarefully {
         }
 
         public void RandomizeTraits() {
-            Pawn pawn = randomizer.GenerateSameKindOfPawn(state.CurrentPawn);
+            Pawn pawn = randomizer.GeneratePawnAsCloseToAsPossible(state.CurrentPawn.Pawn);
             List<Trait> traits = pawn.story.traits.allTraits;
             state.CurrentPawn.ClearTraits();
             foreach (var trait in traits) {
@@ -166,31 +229,41 @@ namespace EdB.PrepareCarefully {
         }
 
         // Age-related actions.
-        public void UpdateBiologicalAge(int age) {
+        public void UpdateBiologicalAge(int? ageYears, int? ageDays) {
+            int years = ageYears ?? state.CurrentPawn.BiologicalAgeInYears;
+            int days = ageDays ?? (int)(state.CurrentPawn.BiologicalAgeInDays % AgeModifier.DaysPerYear);
             int min = ProviderAgeLimits.MinAgeForPawn(state.CurrentPawn.Pawn);
             int max = ProviderAgeLimits.MaxAgeForPawn(state.CurrentPawn.Pawn);
-            if (age < min) {
-                age = min;
+            if (years < min) {
+                years = min;
+                days = 0;
             }
-            else if (age > max || age > state.CurrentPawn.ChronologicalAge) {
-                if (age > max) {
-                    age = max;
-                }
-                else {
-                    age = state.CurrentPawn.ChronologicalAge;
-                }
+            else if (years > max) {
+                years = max;
+                days = 59;
             }
-            state.CurrentPawn.BiologicalAge = age;
+            long ticks = AgeModifier.TicksFromYearsAndDays(years, days);
+            ticks += state.CurrentPawn.BiologicalAgeInTicks % AgeModifier.TicksPerDay;
+            ageModifier.ModifyBiologicalAge(state.CurrentPawn, ticks);
+            if (ticks > state.CurrentPawn.ChronologicalAgeInTicks) {
+                ageModifier.ModifyChronologicalAge(state.CurrentPawn, ticks);
+            }
         }
 
-        public void UpdateChronologicalAge(int age) {
-            if (age < state.CurrentPawn.BiologicalAge) {
-                age = state.CurrentPawn.BiologicalAge;
+        public void UpdateChronologicalAge(int? ageYears, int? ageDays) {
+            int years = ageYears ?? state.CurrentPawn.ChronologicalAgeInYears;
+            int days = ageDays ?? (int)(state.CurrentPawn.ChronologicalAgeInDays % AgeModifier.DaysPerYear);
+            int min = ProviderAgeLimits.MinAgeForPawn(state.CurrentPawn.Pawn);
+            if (years < min) {
+                years = min;
+                days = 0;
             }
-            if (age > Constraints.AgeChronologicalMax) {
-                age = Constraints.AgeChronologicalMax;
+            long ticks = AgeModifier.TicksFromYearsAndDays(years, days);
+            ticks += state.CurrentPawn.ChronologicalAgeInTicks % AgeModifier.TicksPerDay;
+            ageModifier.ModifyChronologicalAge(state.CurrentPawn, ticks);
+            if (ticks < state.CurrentPawn.BiologicalAgeInTicks) {
+                ageModifier.ModifyBiologicalAge(state.CurrentPawn, ticks);
             }
-            state.CurrentPawn.ChronologicalAge = age;
         }
 
         // Appearance-related actions.
@@ -312,25 +385,33 @@ namespace EdB.PrepareCarefully {
             ColonistSaver.SaveToFile(pawn, filename);
             state.AddMessage("SavedAs".Translate(filename));
         }
-        public void AddFactionPawn(PawnKindDef kindDef, bool startingPawn) {
+        public void AddFactionPawn(PawnKindOption option, bool startingPawn) {
             Pawn pawn = null;
             try {
-                //Logger.Debug("Adding new pawn with kindDef = " + kindDef.defName);
+                //Logger.Debug("Adding new pawn " + option);
                 var wrapper = new PawnGenerationRequestWrapper() {
                     Faction = Find.World.factionManager.OfPlayer,
-                    KindDef = kindDef,
+                    KindDef = option.KindDef,
                     Context = PawnGenerationContext.NonPlayer,
-                    WorldPawnFactionDoesntMatter = true
+                    WorldPawnFactionDoesntMatter = true,
                 };
                 Ideo ideo = Find.FactionManager.OfPlayer?.ideos?.GetRandomIdeoForNewPawn();
-
+                //Logger.Debug("Pawn kind xenotype set: " + option?.KindDef?.xenotypeSet?.ToStringSafe());
+                //Logger.Debug("Faction xenotype set: " + option?.FactionDef?.xenotypeSet?.ToStringSafe());
+                XenotypeSet setToGenerateWith = option?.FactionDef?.xenotypeSet;
+                if (setToGenerateWith == null) {
+                    setToGenerateWith = option?.KindDef?.xenotypeSet;
+                }
+                if (setToGenerateWith != null) {
+                    wrapper.ForcedXenotype = this.randomizer.RandomXenotypeFromSet(setToGenerateWith);
+                }
                 if (ideo != null) {
                     wrapper.FixedIdeology = ideo;
                 }
                 pawn = randomizer.GeneratePawn(wrapper.Request);
             }
             catch (Exception e) {
-                Logger.Warning("Failed to create faction pawn of kind " + kindDef.defName, e);
+                Logger.Warning("Failed to create faction pawn: " + option, e);
                 if (pawn != null) {
                     pawn.Destroy();
                 }
@@ -351,8 +432,11 @@ namespace EdB.PrepareCarefully {
             //}
 
             CustomPawn customPawn = new CustomPawn(pawn);
-            customPawn.OriginalKindDef = kindDef;
-            FactionDef factionDef = kindDef.defaultFactionType;
+            customPawn.OriginalKindDef = option.KindDef;
+            FactionDef factionDef = option.FactionDef;
+            if (factionDef == null) {
+                factionDef = option?.KindDef?.defaultFactionType;
+            }
             customPawn.OriginalFactionDef = factionDef;
             if (pawn.Faction != Faction.OfPlayer) {
                 pawn.SetFaction(Faction.OfPlayer);

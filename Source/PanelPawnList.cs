@@ -14,7 +14,7 @@ namespace EdB.PrepareCarefully {
         public delegate void MinimizeHandler();
         public delegate void AddPawnHandler(bool startingPawn);
         public delegate void AddFactionPawnHandler(FactionDef def, bool startingPawn);
-        public delegate void AddPawnWithPawnKindHandler(PawnKindDef def, bool startingPawn);
+        public delegate void AddPawnWithPawnKindHandler(PawnKindOption def, bool startingPawn);
         public delegate void LoadCharacterHandler(string name);
 
         public event SelectPawnHandler PawnSelected;
@@ -242,11 +242,15 @@ namespace EdB.PrepareCarefully {
                     
                     Rect pawnRect = RectPortrait.OffsetBy(rect.position);
                     GUI.color = Color.white;
-                    RenderTexture pawnTexture = pawn.GetPortrait(pawnRect.size);
+
                     Rect clipRect = RectEntry.OffsetBy(rect.position);
+                    RenderTexture pawnTexture = pawn.GetPortrait(pawnRect.size);
                     try {
                         GUI.BeginClip(clipRect);
                         GUI.DrawTexture(RectPortrait, (Texture)pawnTexture);
+                    }
+                    catch (Exception e) {
+                        Logger.Error("Failed to draw pawn", e);
                     }
                     finally {
                         GUI.EndClip();
@@ -268,11 +272,11 @@ namespace EdB.PrepareCarefully {
                     string description = null;
                     if (pawn.IsAdult) {
                         if (pawn.Adulthood != null) {
-                            description = pawn.Adulthood.TitleShortCapFor(pawn.Gender);
+                            description = pawn.Adulthood.TitleShortFor(pawn.Gender).CapitalizeFirst();
                         }
                     }
                     else {
-                        description = pawn.Childhood.TitleShortCapFor(pawn.Gender);
+                        description = pawn.Childhood.TitleShortFor(pawn.Gender).CapitalizeFirst();
                     }
                     if (!description.NullOrEmpty()) {
                         Widgets.Label(professionRect, descriptionTrimmer.TrimLabelIfNeeded(description));
@@ -383,12 +387,12 @@ namespace EdB.PrepareCarefully {
             }
         }
 
-        protected List<WidgetTable<PawnKindDef>.RowGroup> rowGroups = new List<WidgetTable<PawnKindDef>.RowGroup>();
+        protected List<WidgetTable<PawnKindOption>.RowGroup> rowGroups = new List<WidgetTable<PawnKindOption>.RowGroup>();
         protected void ShowPawnKindDialog() {
-            HashSet<PawnKindDef> disabled = new HashSet<PawnKindDef>();
+            var disabled = new HashSet<PawnKindOption>();
             rowGroups.Clear();
 
-            PawnKindDef selected = PrepareCarefully.Instance.State.LastSelectedPawnKindDef;
+            PawnKindOption selected = PrepareCarefully.Instance.State.LastSelectedPawnKindDef;
 
             List<ProviderPawnKinds.FactionPawnKinds> factionPawnKindsList = new List<ProviderPawnKinds.FactionPawnKinds>(PrepareCarefully.Instance.Providers.PawnKinds.PawnKindsByFaction);
             // Sort the pawn kinds to put the colony faction at the top.
@@ -407,21 +411,26 @@ namespace EdB.PrepareCarefully {
 
             // If no pawn kind has been selected, select the colony's basic pawn kind by default.
             if (selected == null) {
-                selected = factionPawnKindsList?.FirstOrDefault(f => f != null)?.PawnKinds?.FirstOrDefault(k => k != null);
+                var faction = factionPawnKindsList?.FirstOrDefault(f => f != null)?.Faction;
+                var kind = factionPawnKindsList?.FirstOrDefault(f => f != null)?.PawnKinds?.FirstOrDefault(k => k != null);
+                if (faction != null && kind != null) {
+                    selected = new PawnKindOption(faction, kind);
+                }
             }
 
             foreach (var factionPawnKinds in factionPawnKindsList) {
                 if (factionPawnKinds.PawnKinds.Count > 0) {
-                    rowGroups.Add(new WidgetTable<PawnKindDef>.RowGroup("<b>" + factionPawnKinds.Faction.LabelCap.ToString() + "</b>", factionPawnKinds.PawnKinds));
+                    rowGroups.Add(new WidgetTable<PawnKindOption>.RowGroup("<b>" + factionPawnKinds.Faction.LabelCap.ToString() + "</b>",
+                        factionPawnKinds.PawnKinds.ConvertAll(f => new PawnKindOption(factionPawnKinds.Faction, f))));
                 }
             }
             if (!PrepareCarefully.Instance.Providers.PawnKinds.PawnKindsWithNoFaction.EnumerableNullOrEmpty()) {
-                rowGroups.Add(new WidgetTable<PawnKindDef>.RowGroup("<b>Other</b>", PrepareCarefully.Instance.Providers.PawnKinds.PawnKindsWithNoFaction));
+                rowGroups.Add(new WidgetTable<PawnKindOption>.RowGroup("<b>Other</b>", PrepareCarefully.Instance.Providers.PawnKinds.PawnKindsWithNoFaction.Select(k => new PawnKindOption(null, k))));
             }
 
             DialogPawnKinds dialog = new DialogPawnKinds() {
                 HeaderLabel = "EdB.PC.Panel.PawnList.SelectFaction".Translate(),
-                SelectAction = (PawnKindDef pawnKind) => { selected = pawnKind; },
+                SelectAction = (PawnKindOption option) => { selected = option; },
                 RowGroups = rowGroups,
                 DisabledOptions = disabled,
                 CloseAction = () => {
@@ -434,7 +443,8 @@ namespace EdB.PrepareCarefully {
                 Selected = selected,
                 ShowRace = PrepareCarefully.Instance.Providers.PawnKinds.AnyNonHumanPawnKinds && !PawnKindRaceDiversificationEnabled
             };
-            dialog.ScrollTo(PrepareCarefully.Instance.State.LastSelectedPawnKindDef);
+            dialog.ScrollToWhenOpened(PrepareCarefully.Instance.State.LastSelectedPawnKindDef);
+            //Logger.Debug("ScrollToWhenOpened = " + PrepareCarefully.Instance.State.LastSelectedPawnKindDef);
             Find.WindowStack.Add(dialog);
         }
 

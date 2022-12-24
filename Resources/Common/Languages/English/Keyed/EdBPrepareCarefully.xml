@@ -1,5 +1,15 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
 <!-- CHANGE NOTES -->
+
+<!-- v1.4.1 -->
+<!-- ADDED: EdB.PC.Page.Points.DisablePoints -->
+<!-- ADDED: EdB.PC.Panel.Randomize.Tip.DevelopmentalStage -->
+<!-- ADDED: EdB.PC.Panel.Randomize.Tip.Xenotype -->
+<!-- ADDED: EdB.PC.Panel.Age.Label.BiologicalAge -->
+<!-- ADDED: EdB.PC.Panel.Age.Label.ChronologicalAge -->
+<!-- ADDED: EdB.PC.Panel.Age.Label.Years -->
+<!-- ADDED: EdB.PC.Panel.Age.Label.Days -->
+
 <!-- v1.3.9 -->
 <!-- ADDED: EdB.PC.Dialog.Abilities.Header -->
 <!-- ADDED: EdB.PC.Dialog.Titles.Header -->
@@ -281,6 +291,7 @@ Before reporting an error, please try to figure out which mod may be causing the
   <EdB.PC.Page.Points.CostSummary.Apparel>Apparel: {0}</EdB.PC.Page.Points.CostSummary.Apparel>
   <EdB.PC.Page.Points.CostSummary.Colonist>{0}: {1}</EdB.PC.Page.Points.CostSummary.Colonist>
   <EdB.PC.Page.Points.CostSummary.Implants>Implants: {0}</EdB.PC.Page.Points.CostSummary.Implants>
+  <EdB.PC.Page.Points.DisablePoints>Disable Point Limits</EdB.PC.Page.Points.DisablePoints>
   <EdB.PC.Page.Points.NotEnoughPoints>You've spent too many points.</EdB.PC.Page.Points.NotEnoughPoints>
   <EdB.PC.Page.Points.Remaining>Points Remaining: {0}</EdB.PC.Page.Points.Remaining>
   <EdB.PC.Page.Points.ScenarioPoints>The starting colonists and resources that were randomly generated for this scenario were worth {0} points.</EdB.PC.Page.Points.ScenarioPoints>
@@ -294,7 +305,12 @@ Disable point limits to prepare your starting colonists with no limitations.
   <EdB.PC.Page.Title>Prepare Carefully</EdB.PC.Page.Title>
 
   <EdB.PC.Panel.Abilities.None>No abilities</EdB.PC.Panel.Abilities.None>
-  
+
+  <EdB.PC.Panel.Age.Header>Age</EdB.PC.Panel.Age.Header>
+  <EdB.PC.Panel.Age.Label.BiologicalAge>Biological</EdB.PC.Panel.Age.Label.BiologicalAge>
+  <EdB.PC.Panel.Age.Label.ChronologicalAge>Chronological</EdB.PC.Panel.Age.Label.ChronologicalAge>
+  <EdB.PC.Panel.Age.Label.Years>Years</EdB.PC.Panel.Age.Label.Years>
+  <EdB.PC.Panel.Age.Label.Days>Days</EdB.PC.Panel.Age.Label.Days>
   <EdB.PC.Panel.Age.Biological>Biological Age</EdB.PC.Panel.Age.Biological>
   <EdB.PC.Panel.Age.Chronological>Chronological Age</EdB.PC.Panel.Age.Chronological>
 
@@ -342,6 +358,11 @@ You can play the game with your colonists as they are, but you will be asked to 
   <EdB.PC.Panel.PawnList.PawnCount>({0})</EdB.PC.Panel.PawnList.PawnCount>
   <EdB.PC.Panel.PawnList.SelectFaction>Select From a Faction Template</EdB.PC.Panel.PawnList.SelectFaction>
 
+  <EdB.PC.Panel.Randomize.Tip.DevelopmentalStage>{0}
+Click the randomize button to generate a colonist within this developmental stage's age range</EdB.PC.Panel.Randomize.Tip.DevelopmentalStage>
+  <EdB.PC.Panel.Randomize.Tip.Xenotype>{0}
+Click the randomize button to generate a colonist with this xenotype</EdB.PC.Panel.Randomize.Tip.Xenotype>
+  
   <EdB.PC.Panel.RelationshipsOther.Title>Other Relationships</EdB.PC.Panel.RelationshipsOther.Title>
 
   <EdB.PC.Panel.RelationshipsParentChild.Title>Parent, Child and Sibling Relationships</EdB.PC.Panel.RelationshipsParentChild.Title>

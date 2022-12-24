@@ -1,5 +1,16 @@
  _____________________________________________________________________________
  
+   Version 1.4.1
+ _____________________________________________________________________________
+
+ - Compatibility for 1.4 and Biotech 
+   - Added Xenotype panel
+   - Added "Days" field to age panel
+   - Added dropdown options to the randomize panel
+   - Added starting pawn possessions to the equipment list
+
+ _____________________________________________________________________________
+ 
    Version 1.3.12
  _____________________________________________________________________________
 
@@ -14,7 +25,7 @@
  _____________________________________________________________________________
 
  - Fixed issue with missing relationships when loading presets.
- - Fixed apparel for alien race mods where the alien race uses restricted
+ - Fixed apparel for alien race mods where the alien race uses restricted   
    apparel.
  
  _____________________________________________________________________________

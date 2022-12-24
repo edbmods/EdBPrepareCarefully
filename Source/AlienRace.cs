@@ -37,10 +37,7 @@ namespace EdB.PrepareCarefully {
         public List<BodyTypeDef> BodyTypes {
             get; set;
         }
-        public List<string> CrownTypes {
-            get; set;
-        }
-        public bool GenderSpecificHeads {
+        public List<HeadTypeDef> HeadTypes {
             get; set;
         }
         public string GraphicsPathForHeads {

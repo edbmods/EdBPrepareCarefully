@@ -1,6 +1,8 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 2012
+# Visual Studio Version 17
+VisualStudioVersion = 17.4.33103.184
+MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EdBPrepareCarefully", "EdBPrepareCarefully.csproj", "{86C9833E-894B-4633-ACFA-EFE4157BBBE6}"
 EndProject
 Global
@@ -14,12 +16,18 @@ Global
 		{86C9833E-894B-4633-ACFA-EFE4157BBBE6}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{86C9833E-894B-4633-ACFA-EFE4157BBBE6}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {18BEA049-3BB9-4853-9F6A-E122019E4EB3}
+	EndGlobalSection
 	GlobalSection(MonoDevelopProperties) = preSolution
 		Policies = $0
 		$0.DotNetNamingPolicy = $1
 		$1.DirectoryNamespaceAssociation = None
 		$1.ResourceNamePolicy = FileFormatDefault
-		$0.TextStylePolicy = $2
+		$0.TextStylePolicy = $5
 		$2.FileWidth = 120
 		$2.inheritsSet = VisualStudio
 		$2.inheritsScope = text/plain
@@ -51,13 +59,11 @@ Global
 		$3.NewLinesForBracesInTypes = False
 		$3.NewLinesForBracesInMethods = False
 		$3.SpaceAfterCast = True
-		$0.TextStylePolicy = $4
 		$4.FileWidth = 120
 		$4.TabsToSpaces = False
 		$4.inheritsSet = null
 		$4.inheritsScope = text/plain
 		$4.scope = application/xml
-		$0.TextStylePolicy = $5
 		$5.inheritsSet = null
 		$5.scope = text/x-csharp
 		$0.XmlFormattingPolicy = $6
@@ -69,7 +75,7 @@ Global
 		$7.IncludeInNewFiles = True
 		$0.NameConventionPolicy = $8
 		$8.Rules = $9
-		$9.NamingRule = $10
+		$9.NamingRule = $29
 		$10.Name = Type Parameters
 		$10.AffectedEntity = TypeParameter
 		$10.VisibilityMask = VisibilityMask
@@ -80,14 +86,12 @@ Global
 		$32.String = T
 		$10.RequiredSuffixes = $33
 		$33.String = Exception
-		$9.NamingRule = $11
 		$11.Name = Types
 		$11.AffectedEntity = Class, Struct, Enum, Delegate
 		$11.VisibilityMask = Public
 		$11.NamingStyle = PascalCase
 		$11.IncludeInstanceMembers = True
 		$11.IncludeStaticEntities = True
-		$9.NamingRule = $12
 		$12.Name = Interfaces
 		$12.RequiredPrefixes = $13
 		$13.String = I
@@ -96,7 +100,6 @@ Global
 		$12.NamingStyle = PascalCase
 		$12.IncludeInstanceMembers = True
 		$12.IncludeStaticEntities = True
-		$9.NamingRule = $14
 		$14.Name = Attributes
 		$14.RequiredSuffixes = $15
 		$15.String = Attribute
@@ -105,7 +108,6 @@ Global
 		$14.NamingStyle = PascalCase
 		$14.IncludeInstanceMembers = True
 		$14.IncludeStaticEntities = True
-		$9.NamingRule = $16
 		$16.Name = Event Arguments
 		$16.RequiredSuffixes = $17
 		$17.String = EventArgs
@@ -114,7 +116,6 @@ Global
 		$16.NamingStyle = PascalCase
 		$16.IncludeInstanceMembers = True
 		$16.IncludeStaticEntities = True
-		$9.NamingRule = $18
 		$18.Name = Exceptions
 		$18.RequiredSuffixes = $19
 		$19.String = Exception
@@ -123,70 +124,60 @@ Global
 		$18.NamingStyle = PascalCase
 		$18.IncludeInstanceMembers = True
 		$18.IncludeStaticEntities = True
-		$9.NamingRule = $20
 		$20.Name = Methods
 		$20.AffectedEntity = Methods
 		$20.VisibilityMask = Protected, Public
 		$20.NamingStyle = PascalCase
 		$20.IncludeInstanceMembers = True
 		$20.IncludeStaticEntities = True
-		$9.NamingRule = $21
 		$21.Name = Static Readonly Fields
 		$21.AffectedEntity = ReadonlyField
 		$21.VisibilityMask = Protected, Public
 		$21.NamingStyle = PascalCase
 		$21.IncludeInstanceMembers = False
 		$21.IncludeStaticEntities = True
-		$9.NamingRule = $22
 		$22.Name = Fields
 		$22.AffectedEntity = Field
 		$22.VisibilityMask = Protected, Public
 		$22.NamingStyle = PascalCase
 		$22.IncludeInstanceMembers = True
 		$22.IncludeStaticEntities = True
-		$9.NamingRule = $23
 		$23.Name = ReadOnly Fields
 		$23.AffectedEntity = ReadonlyField
 		$23.VisibilityMask = Protected, Public
 		$23.NamingStyle = PascalCase
 		$23.IncludeInstanceMembers = True
 		$23.IncludeStaticEntities = False
-		$9.NamingRule = $24
 		$24.Name = Constant Fields
 		$24.AffectedEntity = ConstantField
 		$24.VisibilityMask = Protected, Public
 		$24.NamingStyle = PascalCase
 		$24.IncludeInstanceMembers = True
 		$24.IncludeStaticEntities = True
-		$9.NamingRule = $25
 		$25.Name = Properties
 		$25.AffectedEntity = Property
 		$25.VisibilityMask = Protected, Public
 		$25.NamingStyle = PascalCase
 		$25.IncludeInstanceMembers = True
 		$25.IncludeStaticEntities = True
-		$9.NamingRule = $26
 		$26.Name = Events
 		$26.AffectedEntity = Event
 		$26.VisibilityMask = Protected, Public
 		$26.NamingStyle = PascalCase
 		$26.IncludeInstanceMembers = True
 		$26.IncludeStaticEntities = True
-		$9.NamingRule = $27
 		$27.Name = Enum Members
 		$27.AffectedEntity = EnumMember
 		$27.VisibilityMask = VisibilityMask
 		$27.NamingStyle = PascalCase
 		$27.IncludeInstanceMembers = True
 		$27.IncludeStaticEntities = True
-		$9.NamingRule = $28
 		$28.Name = Parameters
 		$28.AffectedEntity = Parameter
 		$28.VisibilityMask = VisibilityMask
 		$28.NamingStyle = CamelCase
 		$28.IncludeInstanceMembers = True
 		$28.IncludeStaticEntities = True
-		$9.NamingRule = $29
 		$29.Name = Type Parameters
 		$29.RequiredPrefixes = $30
 		$30.String = T

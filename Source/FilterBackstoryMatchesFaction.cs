@@ -6,10 +6,10 @@ using System.Text;
 using Verse;
 
 namespace EdB.PrepareCarefully {
-    class FilterBackstoryMatchesFaction : Filter<Backstory> {
+    class FilterBackstoryMatchesFaction : Filter<BackstoryDef> {
         public FilterBackstoryMatchesFaction() {
             this.LabelShort = this.LabelFull = "EdB.PC.Dialog.Backstory.Filter.MatchesFaction".Translate();
-            this.FilterFunction = (Backstory backstory) => {
+            this.FilterFunction = (BackstoryDef backstory) => {
                 CustomPawn pawn = PrepareCarefully.Instance.State.CurrentPawn;
                 PawnKindDef kindDef = pawn.OriginalKindDef;
                 if (kindDef == null) {

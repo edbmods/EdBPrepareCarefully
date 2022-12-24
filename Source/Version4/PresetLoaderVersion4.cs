@@ -425,17 +425,12 @@ namespace EdB.PrepareCarefully {
                 Failed = true;
             }
             
-            pawn.HeadGraphicPath = record.headGraphicPath;
             if (pawn.Pawn.story != null) {
-                pawn.Pawn.story.hairColor = record.hairColor;
+                pawn.Pawn.story.HairColor = record.hairColor;
             }
             
-            if (record.melanin >= 0.0f) {
-                pawn.MelaninLevel = record.melanin;
-            }
-            else {
-                pawn.MelaninLevel = PawnColorUtils.FindMelaninValueFromColor(record.skinColor);
-            }
+            pawn.SkinColor = record.skinColor;
+
             // Set the skin color for Alien Races and alien comp values.
             if (pawn.AlienRace != null) {
                 pawn.SkinColor = record.skinColor;
@@ -450,7 +445,7 @@ namespace EdB.PrepareCarefully {
                 }
             }
             
-            Backstory backstory = FindBackstory(record.childhood);
+            BackstoryDef backstory = FindBackstory(record.childhood);
             if (backstory != null) {
                 pawn.Childhood = backstory;
             }
@@ -715,22 +710,39 @@ namespace EdB.PrepareCarefully {
             return DefDatabase<HairDef>.GetNamedSilentFail(name);
         }
 
-        public Backstory FindBackstory(string name) {
-            Backstory matchingBackstory = BackstoryDatabase.allBackstories.Values.ToList().Find((Backstory b) => {
-                return b.identifier.Equals(name);
-            });
-            // If we couldn't find a matching backstory, look for one with the same identifier, but a different version number at the end.
-            if (matchingBackstory == null) {
-                Regex expression = new Regex("\\d+$");
-                string backstoryMinusVersioning = expression.Replace(name, "");
-                matchingBackstory = BackstoryDatabase.allBackstories.Values.ToList().Find((Backstory b) => {
-                    return b.identifier.StartsWith(backstoryMinusVersioning);
-                });
-                if (matchingBackstory != null) {
-                    Logger.Message("Found replacement backstory.  Using " + matchingBackstory.identifier + " in place of " + name);
-                }
+        public BackstoryDef FindBackstory(string name) {
+            // Assume the name is a definition name.  Look it up based on that and return it if we find it.
+            BackstoryDef matchingBackstory = DefDatabase<BackstoryDef>.GetNamedSilentFail(name);
+            if (matchingBackstory != null) {
+                return matchingBackstory;
             }
-            return matchingBackstory;
+            // If we didn't find it, the name is probably a backstory identifier.  Try to find it by matching the id.
+            matchingBackstory = DefDatabase<BackstoryDef>.AllDefs.Where((BackstoryDef b) => { return b.identifier != null && b.identifier.Equals(name); }).FirstOrDefault();
+            if (matchingBackstory != null) {
+                return matchingBackstory;
+            }
+            // If we didn't find it, the identifier probably changed.  Try to find another backstory with the same identifier prefix but with a different numeric suffix at the end
+            Regex expression = new Regex("\\d+$");
+            string backstoryMinusVersioning = expression.Replace(name, "");
+            if (backstoryMinusVersioning == name) {
+                return null;
+            }
+            matchingBackstory = DefDatabase<BackstoryDef>.AllDefs
+                .Where(b => { return b.identifier != null && b.identifier.StartsWith(backstoryMinusVersioning); })
+                .FirstOrDefault();
+            if (matchingBackstory != null) {
+                Logger.Message("Found replacement backstory.  Using " + matchingBackstory.identifier + " in place of " + name);
+                return matchingBackstory;
+            }
+            // If we still didn't find it, look for a def name that starts with the identifier but with the numeric suffix removed
+            matchingBackstory = DefDatabase<BackstoryDef>.AllDefs
+                .Where(b => b.defName.StartsWith(backstoryMinusVersioning))
+                .FirstOrDefault();
+            if (matchingBackstory != null) {
+                Logger.Message("Found replacement backstory.  Using " + matchingBackstory.defName + " in place of " + name);
+                return matchingBackstory;
+            }
+            return null;
         }
 
         public Trait FindTrait(string name, int degree) {

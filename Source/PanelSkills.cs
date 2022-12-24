@@ -122,7 +122,7 @@ namespace EdB.PrepareCarefully {
                 Text.Font = GameFont.Small;
                 foreach (var skill in customPawn.Pawn.skills.skills) {
                     SkillDef def = skill.def;
-                    bool disabled = skill.TotallyDisabled;
+                    bool disabled = IsSkillDisabled(customPawn, skill);
 
                     // Draw the label.
                     GUI.color = Style.ColorText;
@@ -222,9 +222,20 @@ namespace EdB.PrepareCarefully {
             GUI.DrawTexture(rect, fillTex);
         }
 
+        public static bool IsSkillDisabled(CustomPawn customPawn, SkillRecord skill) {
+            if (skill.TotallyDisabled) {
+                return true;
+            }
+            // TODO: Do we need to look at life stages to figure this out?
+            if (customPawn.Pawn.DevelopmentalStage == DevelopmentalStage.Newborn || customPawn.Pawn.DevelopmentalStage == DevelopmentalStage.Baby) {
+                return true;
+            }
+            return false;
+        }
+
         private void DrawSkill(CustomPawn customPawn, SkillRecord skill, Rect rect) {
             int level = skill.Level;
-            bool disabled = skill.TotallyDisabled;
+            bool disabled = IsSkillDisabled(customPawn, skill);
             if (!disabled) {
                 float barSize = (level > 0 ? (float)level : 0) / 20f;
                 FillableBar(rect, barSize, Textures.TextureSkillBarFill);

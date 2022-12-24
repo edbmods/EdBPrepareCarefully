@@ -1,4 +1,4 @@
-﻿using RimWorld;
+using RimWorld;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -68,7 +68,7 @@ namespace EdB.PrepareCarefully {
             set;
         }
 
-        public PawnKindDef LastSelectedPawnKindDef {
+        public PawnKindOption LastSelectedPawnKindDef {
             get;
             set;
         }

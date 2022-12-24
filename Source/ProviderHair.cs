@@ -109,22 +109,6 @@ namespace EdB.PrepareCarefully {
             // all hair def (both alien and non-alien) in the list of available hairs for non-aliens.
             // TODO: Implement filtering in the hair selection to make it easier to find appropriate hairs when there
             // are a lot of mods that add hairs.
-            /*
-            IEnumerable<ThingDef> alienRaces = DefDatabase<ThingDef>.AllDefs.Where((ThingDef def) => {
-                return def.race != null && ProviderAlienRaces.IsAlienRace(def);
-            });
-            foreach (var alienRaceDef in alienRaces) {
-                AlienRace alienRace = AlienRaceProvider.GetAlienRace(alienRaceDef);
-                if (alienRace == null) {
-                    continue;
-                }
-                if (alienRace.HairTags != null) {
-                    foreach (var tag in alienRace.HairTags) {
-                        nonHumanHairTags.Add(tag);
-                    }
-                }
-            }
-            */
             OptionsHair result = new OptionsHair();
             foreach (HairDef hairDef in DefDatabase<HairDef>.AllDefs.Where((HairDef def) => {
                 foreach (var tag in def.styleTags) {

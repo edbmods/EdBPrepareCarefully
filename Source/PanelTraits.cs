@@ -67,10 +67,18 @@ namespace EdB.PrepareCarefully {
                 if (trait != null) {
                     field.Label = trait.LabelCap;
                     field.Tip = GetTraitTip(trait, currentPawn);
+                    field.Color = Style.ColorText;
+                    if (trait.Suppressed) {
+                        field.Color = ColoredText.SubtleGrayColor;
+                    }
+                    else if (trait.sourceGene != null) {
+                        field.Color = ColoredText.GeneColor;
+                    }
                 }
                 else {
                     field.Label = null;
                     field.Tip = null;
+                    field.Color = Style.ColorText;
                 }
                 Trait localTrait = trait;
                 int localIndex = index;
@@ -147,7 +155,11 @@ namespace EdB.PrepareCarefully {
             // If the index is still zero, then the pawn has no traits.  Draw the "none" label.
             if (index == 0) {
                 GUI.color = Style.ColorText;
-                Widgets.Label(FieldRect.InsetBy(6, 0).OffsetBy(0, y - 4), "EdB.PC.Panel.Traits.None".Translate());
+                string message = "EdB.PC.Panel.Traits.None".Translate();
+                if (state.CurrentPawn.Pawn.DevelopmentalStage.Baby()) {
+                    message = "TraitsDevelopLaterBaby".Translate();
+                }
+                Widgets.Label(FieldRect.InsetBy(6, 0).OffsetBy(0, y - 4), message);
                 y += FieldRect.height - 4;
             }
 
@@ -159,59 +171,62 @@ namespace EdB.PrepareCarefully {
                 clickAction = null;
             }
 
-            // Randomize traits button.
-            Rect randomizeRect = new Rect(Width - 32, top + 9, 22, 22);
-            if (randomizeRect.Contains(Event.current.mousePosition)) {
-                GUI.color = Style.ColorButtonHighlight;
-            }
-            else {
-                GUI.color = Style.ColorButton;
-            }
-            GUI.DrawTexture(randomizeRect, Textures.TextureButtonRandom);
-            if (Widgets.ButtonInvisible(randomizeRect, false)) {
-                SoundDefOf.Tick_Low.PlayOneShotOnCamera();
-                tipCache.Invalidate();
-                TraitsRandomized();
-            }
+            // Don't show add or randomize buttons if the pawn is a baby
+            if (!state.CurrentPawn.Pawn.DevelopmentalStage.Baby()) {
+                // Randomize traits button.
+                Rect randomizeRect = new Rect(Width - 32, top + 9, 22, 22);
+                if (randomizeRect.Contains(Event.current.mousePosition)) {
+                    GUI.color = Style.ColorButtonHighlight;
+                }
+                else {
+                    GUI.color = Style.ColorButton;
+                }
+                GUI.DrawTexture(randomizeRect, Textures.TextureButtonRandom);
+                if (Widgets.ButtonInvisible(randomizeRect, false)) {
+                    SoundDefOf.Tick_Low.PlayOneShotOnCamera();
+                    tipCache.Invalidate();
+                    TraitsRandomized();
+                }
 
-            // Add trait button.
-            Rect addRect = new Rect(randomizeRect.x - 24, top + 12, 16, 16);
-            Style.SetGUIColorForButton(addRect);
-            int traitCount = state.CurrentPawn.Traits.Count();
-            bool addButtonEnabled = (state.CurrentPawn != null && traitCount < Constraints.MaxTraits);
-            if (!addButtonEnabled) {
-                GUI.color = Style.ColorButtonDisabled;
-            }
-            GUI.DrawTexture(addRect, Textures.TextureButtonAdd);
-            if (addButtonEnabled && Widgets.ButtonInvisible(addRect, false)) {
-                ComputeDisallowedTraits(currentPawn, null);
-                SoundDefOf.Tick_Low.PlayOneShotOnCamera();
-                Trait selectedTrait = null;
-                Dialog_Options<Trait> dialog = new Dialog_Options<Trait>(providerTraits.Traits) {
-                    ConfirmButtonLabel = "EdB.PC.Common.Add".Translate(),
-                    NameFunc = (Trait t) => {
-                        return t.LabelCap;
-                    },
-                    DescriptionFunc = (Trait t) => {
-                        return GetTraitTip(t, state.CurrentPawn);
-                    },
-                    SelectedFunc = (Trait t) => {
-                        return selectedTrait == t;
-                    },
-                    SelectAction = (Trait t) => {
-                        selectedTrait = t;
-                    },
-                    EnabledFunc = (Trait t) => {
-                        return !disallowedTraitDefs.Contains(t.def);
-                    },
-                    CloseAction = () => {
-                        if (selectedTrait != null) {
-                            TraitAdded(selectedTrait);
-                            tipCache.Invalidate();
+                // Add trait button.
+                Rect addRect = new Rect(randomizeRect.x - 24, top + 12, 16, 16);
+                Style.SetGUIColorForButton(addRect);
+                int traitCount = state.CurrentPawn.Traits.Count();
+                bool addButtonEnabled = (state.CurrentPawn != null && traitCount < Constraints.MaxTraits);
+                if (!addButtonEnabled) {
+                    GUI.color = Style.ColorButtonDisabled;
+                }
+                GUI.DrawTexture(addRect, Textures.TextureButtonAdd);
+                if (addButtonEnabled && Widgets.ButtonInvisible(addRect, false)) {
+                    ComputeDisallowedTraits(currentPawn, null);
+                    SoundDefOf.Tick_Low.PlayOneShotOnCamera();
+                    Trait selectedTrait = null;
+                    Dialog_Options<Trait> dialog = new Dialog_Options<Trait>(providerTraits.Traits) {
+                        ConfirmButtonLabel = "EdB.PC.Common.Add".Translate(),
+                        NameFunc = (Trait t) => {
+                            return t.LabelCap;
+                        },
+                        DescriptionFunc = (Trait t) => {
+                            return GetTraitTip(t, state.CurrentPawn);
+                        },
+                        SelectedFunc = (Trait t) => {
+                            return selectedTrait == t;
+                        },
+                        SelectAction = (Trait t) => {
+                            selectedTrait = t;
+                        },
+                        EnabledFunc = (Trait t) => {
+                            return !disallowedTraitDefs.Contains(t.def);
+                        },
+                        CloseAction = () => {
+                            if (selectedTrait != null) {
+                                TraitAdded(selectedTrait);
+                                tipCache.Invalidate();
+                            }
                         }
-                    }
-                };
-                Find.WindowStack.Add(dialog);
+                    };
+                    Find.WindowStack.Add(dialog);
+                }
             }
 
             // Remove any traits that were marked for deletion

@@ -30,13 +30,18 @@ namespace EdB.PrepareCarefully {
             }
             else {
                 if (IsAlienRace(def)) {
+                    //Logger.Debug(def.defName + " is an alien race");
                     result = InitializeAlienRace(def);
                     if (result != null) {
                         lookup.Add(def, result);
                     }
+                    else {
+                        Logger.Debug("Failed to initialize " + def.defName + " alien race");
+                    }
                     return result;
                 }
                 else {
+                    //Logger.Debug(def.defName + " is not an alien race");
                     return null;
                 }
             }
@@ -118,7 +123,6 @@ namespace EdB.PrepareCarefully {
         protected ColorGenerator FindColorGenerator(ThingDef raceDef, object alienPartGeneratorObject, string channelName, string generatorFieldName) {
             object colorChannelsObject = GetFieldValue(raceDef, alienPartGeneratorObject, "colorChannels", true);
             if (colorChannelsObject == null) {
-                Logger.Warning("didn't find colorChannels field");
                 return null;
             }
             System.Collections.IList colorChannelList = colorChannelsObject as System.Collections.IList;
@@ -136,25 +140,34 @@ namespace EdB.PrepareCarefully {
             if (foundGenerator == null) {
                 return null;
             }
-            return GetFieldValue(raceDef, foundGenerator, generatorFieldName, true) as ColorGenerator;
+            System.Collections.IList colorChannelGeneratorCategoryList = GetFieldValueAsCollection(raceDef, foundGenerator, "entries") as System.Collections.IList;
+            if (colorChannelGeneratorCategoryList == null || colorChannelGeneratorCategoryList.Count == 0) {
+                return null;
+            }
+            object colorChannelGeneratorCategory = colorChannelGeneratorCategoryList[0];
+            return GetFieldValue(raceDef, colorChannelGeneratorCategory, generatorFieldName, true) as ColorGenerator;
         }
 
         protected AlienRace InitializeAlienRace(ThingDef raceDef) {
             try {
-                object alienRaceObject = GetFieldValue(raceDef, raceDef, "alienRace");
-                if (alienRaceObject == null) {
+                object alienSettingsObject = GetFieldValue(raceDef, raceDef, "alienRace");
+                if (alienSettingsObject == null) {
+                    Logger.Debug("Didn't find AlienSettings object in ThingDef_AlienRace.alienRace field");
                     return null;
                 }
-                object generalSettingsObject = GetFieldValue(raceDef, alienRaceObject, "generalSettings");
+                object generalSettingsObject = GetFieldValue(raceDef, alienSettingsObject, "generalSettings");
                 if (generalSettingsObject == null) {
+                    Logger.Debug("Didn't find GeneralSettings object in ThingDef_AlienRace.AlienSettings.generalSettings field");
                     return null;
                 }
                 object alienPartGeneratorObject = GetFieldValue(raceDef, generalSettingsObject, "alienPartGenerator");
                 if (alienPartGeneratorObject == null) {
+                    Logger.Debug("Didn't find AlienPartGenerator object in GeneralSettings.alienPartGenerator field");
                     return null;
                 }
-                System.Collections.ICollection graphicPathsCollection = GetFieldValueAsCollection(raceDef, alienRaceObject, "graphicPaths");
-                if (graphicPathsCollection == null) {
+                object graphicsPathsObject = GetFieldValue(raceDef, alienSettingsObject, "graphicPaths");
+                if (graphicsPathsObject == null) {
+                    Logger.Debug("Didn't find GraphicsPaths object in ThingDef_AlienRace.graphicPaths field");
                     return null;
                 }
 
@@ -170,6 +183,7 @@ namespace EdB.PrepareCarefully {
                 }
                 */
 
+
                 // We have enough to start putting together the result object, so we instantiate it now.
                 AlienRace result = new AlienRace();
                 result.ThingDef = raceDef;
@@ -183,7 +197,7 @@ namespace EdB.PrepareCarefully {
                 result.MinAgeForAdulthood = minAgeForAdulthood;
 
                 // Get the list of body types.
-                System.Collections.ICollection alienBodyTypesCollection = GetFieldValueAsCollection(raceDef, alienPartGeneratorObject, "alienbodytypes");
+                System.Collections.ICollection alienBodyTypesCollection = GetFieldValueAsCollection(raceDef, alienPartGeneratorObject, "bodyTypes");
                 if (alienBodyTypesCollection == null) {
                     return null;
                 }
@@ -196,56 +210,25 @@ namespace EdB.PrepareCarefully {
                         }
                     }
                 }
-                else {
-                    //Logger.Debug("  none");
-                }
                 //Logger.Debug($"Body types for alien race {raceDef.defName}: {string.Join(", ", bodyTypes.Select(b => b.defName + ", " + b.LabelCap))}");
                 result.BodyTypes = bodyTypes;
 
-                // Determine if the alien races uses gender-specific heads.
-                bool? useGenderedHeads = GetFieldValueAsBool(raceDef, alienPartGeneratorObject, "useGenderedHeads");
-                if (useGenderedHeads == null) {
+                // Get the list of head types.
+                System.Collections.ICollection alienHeadTypesCollection = GetFieldValueAsCollection(raceDef, alienPartGeneratorObject, "headTypes");
+                if (alienHeadTypesCollection == null) {
+                    Logger.Debug("Didn't find List<HeadTypeDef> object in AlienPartGenerator.headTypes field");
                     return null;
                 }
-                result.GenderSpecificHeads = useGenderedHeads.Value;
-
-                // Get the list of crown types.
-                System.Collections.ICollection alienCrownTypesCollection = GetFieldValueAsCollection(raceDef, alienPartGeneratorObject, "aliencrowntypes");
-                if (alienCrownTypesCollection == null) {
-                    return null;
-                }
-                List<string> crownTypes = new List<string>();
-                //Logger.Debug("Crown Types for " + raceDef.defName + ":");
-                if (alienCrownTypesCollection.Count > 0) {
-                    foreach (object o in alienCrownTypesCollection) {
-                        string crownTypeString = o as string;
-                        if (crownTypeString != null) {
-                            crownTypes.Add(crownTypeString);
-                            //Logger.Debug("  " + crownTypeString);
+                List<HeadTypeDef> headTypes = new List<HeadTypeDef>();
+                if (alienHeadTypesCollection.Count > 0) {
+                    foreach (object o in alienHeadTypesCollection) {
+                        if (o.GetType() == typeof(HeadTypeDef)) {
+                            HeadTypeDef def = o as HeadTypeDef;
+                            headTypes.Add((HeadTypeDef)o);
                         }
                     }
                 }
-                result.CrownTypes = crownTypes;
-
-                // Go through the graphics paths and find the heads path.
-                // TODO: What is this?  
-                string graphicsPathForHeads = null;
-                string graphicsPathForBodyTypes = null;
-                foreach (var graphicsPath in graphicPathsCollection) {
-                    System.Collections.ICollection lifeStageCollection = GetFieldValueAsCollection(raceDef, graphicsPath, "lifeStageDefs");
-                    if (lifeStageCollection == null || lifeStageCollection.Count == 0) {
-                        string headsPath = GetFieldValueAsString(raceDef, graphicsPath, "head");
-                        string bodyTypesPath = GetFieldValueAsString(raceDef, graphicsPath, "body");
-                        if (headsPath != null) {
-                            graphicsPathForHeads = headsPath;
-                        }
-                        if (bodyTypesPath != null) {
-                            graphicsPathForBodyTypes = bodyTypesPath;
-                        }
-                    }
-                }
-                result.GraphicsPathForHeads = graphicsPathForHeads;
-                result.GraphicsPathForBodyTypes = graphicsPathForBodyTypes;
+                result.HeadTypes = headTypes;
 
                 // Figure out colors.
                 ColorGenerator primaryGenerator = FindPrimarySkinColorGenerator(raceDef, alienPartGeneratorObject);
@@ -275,7 +258,7 @@ namespace EdB.PrepareCarefully {
                 }
 
                 // Style settings
-                object styleSettingsValue = GetFieldValue(raceDef, alienRaceObject, "styleSettings", true);
+                object styleSettingsValue = GetFieldValue(raceDef, alienSettingsObject, "styleSettings", true);
 
                 result.HasHair = true;
                 result.HasBeards = true;
@@ -333,7 +316,7 @@ namespace EdB.PrepareCarefully {
                 }
 
                 // Apparel properties.
-                object restrictionSettingsValue = GetFieldValue(raceDef, alienRaceObject, "raceRestriction", true);
+                object restrictionSettingsValue = GetFieldValue(raceDef, alienSettingsObject, "raceRestriction", true);
                 result.RaceSpecificApparelOnly = false;
                 result.RaceSpecificApparel = new HashSet<string>();
                 result.AllowedApparel = new HashSet<string>();
@@ -406,7 +389,7 @@ namespace EdB.PrepareCarefully {
                 return result;
             }
             catch (Exception e) {
-                throw new InitializationException("Failed to initialize an alien race: " + raceDef.defName, e);
+                throw new InitializationException("Exception when trying to initialize an alien race: " + raceDef.defName, e);
             }
         }
         protected string ParseAddonName(string path) {
