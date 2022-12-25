@@ -297,8 +297,8 @@ namespace EdB.PrepareCarefully {
                     CancelButtonLabel = "EdB.PC.Common.Cancel".Translate(),
                     HeaderLabel = "EdB.PC.Dialog.Injury.Header".Translate(),
                     NameFunc = (InjuryOption option) => {
-                        return option.HediffDef.defName;
-                        //return option.Label;
+                        //return option.HediffDef.defName;
+                        return option.Label;
                     },
                     DescriptionFunc = (InjuryOption option) => {
                         return option.HediffDef?.description;

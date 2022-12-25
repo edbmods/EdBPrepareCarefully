@@ -12,7 +12,7 @@ namespace EdB.PrepareCarefully {
     public class ProviderHealthOptions {
         protected Dictionary<ThingDef, OptionsHealth> optionsLookup = new Dictionary<ThingDef, OptionsHealth>();
         protected HashSet<string> excludedOptions = new HashSet<string>() {
-            "VatLearning", "VatGrowing", "Pregnant", "PsychicBond", "PsychicBondTorn", "ResearchCommand", "Animal_Flu", "Stillborn"
+            "VatLearning", "VatGrowing", "Pregnant", "PsychicBond", "PsychicBondTorn", "ResearchCommand", "Animal_Flu", "Stillborn", "Animal_Plague"
         };
 
         public OptionsHealth GetOptions(CustomPawn pawn) {

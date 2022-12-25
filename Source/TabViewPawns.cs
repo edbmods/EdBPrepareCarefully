@@ -25,7 +25,6 @@ namespace EdB.PrepareCarefully {
         public PanelAbilities PanelAbilities { get; set; }
         public PanelScrollingContent PanelColumn1 { get; set; }
         public PanelScrollingContent PanelColumn2 { get; set; }
-        //public PanelModuleAge PanelAge { get; set; }
         public PanelTitles PanelTitles { get; set; }
 
         public TabViewPawns(bool largeUI) {
@@ -57,7 +56,6 @@ namespace EdB.PrepareCarefully {
             PanelAbilities = new PanelAbilities();
             PanelAge = new PanelAge();
             PanelXenotype = new PanelXenotype();
-            //PanelAge = new PanelModuleAge();
             PanelTitles = new PanelTitles();
             if (largeUI) {
                 TwoColumnLayout();
@@ -185,10 +183,9 @@ namespace EdB.PrepareCarefully {
             float x = PanelColonyPawns.PanelRect.xMax + panelMargin.x;
             float top = PanelRandomize.PanelRect.yMax + panelMargin.y;
 
-            // Age and Appearance
+            // Appearance
             float columnSize1 = 226;
-            PanelAppearance.Resize(new Rect(PanelColonyPawns.PanelRect.xMax + panelMargin.x, PanelRandomize.PanelRect.yMax + panelMargin.y, columnSize1, 414));
-            //PanelAppearance.Resize(new Rect(x, top, columnSize1, 490));
+            PanelAppearance.Resize(new Rect(PanelColonyPawns.PanelRect.xMax + panelMargin.x, PanelRandomize.PanelRect.yMax + panelMargin.y, columnSize1, 526));
             x += columnSize1 + panelMargin.x;
 
             float columnSize2 = 304;
@@ -204,7 +201,7 @@ namespace EdB.PrepareCarefully {
             float columnSize3 = 218;
             PanelSkills.Resize(new Rect(x, top, columnSize3, 362));
             PanelIncapable.Resize(new Rect(PanelSkills.PanelRect.xMin, PanelSkills.PanelRect.yMax + panelMargin.y,
-                columnSize3, 116));
+                columnSize3, 152));
         }
 
         public void ResizeTabView() {

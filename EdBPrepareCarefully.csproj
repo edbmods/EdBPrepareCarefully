@@ -89,7 +89,6 @@
     <Compile Include="Source\PanelFaction.cs" />
     <Compile Include="Source\PanelHealth.cs" />
     <Compile Include="Source\PanelIdeo.cs" />
-    <Compile Include="Source\PanelModuleAge.cs" />
     <Compile Include="Source\PanelTitles.cs" />
     <Compile Include="Source\PanelTraits.cs" />
     <Compile Include="Source\InitializationException.cs" />
