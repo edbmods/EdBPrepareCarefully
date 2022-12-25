@@ -35,7 +35,12 @@ namespace EdB.PrepareCarefully {
         }
 
         public virtual float DrawHeader(float y, float width, string text) {
-            Rect headerLabelRect = new Rect(Margin.x, y, width - (Margin.x * 2), HeaderHeight);
+            DrawHeaderWithOffset(0, y, width, text);
+            return HeaderHeight;
+        }
+
+        public virtual float DrawHeaderWithOffset(float offset, float y, float width, string text) {
+            Rect headerLabelRect = new Rect(Margin.x + offset, y, width - (Margin.x * 2) - offset, HeaderHeight);
             var fontValue = Text.Font;
             var anchorValue = Text.Anchor;
             var colorValue = GUI.color;

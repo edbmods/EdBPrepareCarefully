@@ -149,6 +149,7 @@ namespace EdB.PrepareCarefully {
                     }
                     customPawn.Pawn.workSettings.EnableAndInitialize();
                     colonists.Add(customPawn.Pawn);
+                    Find.GameInitData.startingPossessions[customPawn.Pawn] = new List<ThingDefCount>();
                 }
             }
             Find.GameInitData.startingPawnCount = colonists.Count;
@@ -158,6 +159,7 @@ namespace EdB.PrepareCarefully {
         protected void PrepareWorldPawns() {
             foreach (var customPawn in state.Pawns) {
                 if (customPawn.Type == CustomPawnType.World) {
+                    Find.GameInitData.startingPossessions[customPawn.Pawn] = new List<ThingDefCount>();
                     AddPawnToWorld(customPawn);
                 }
             }
@@ -183,6 +185,7 @@ namespace EdB.PrepareCarefully {
         }
 
         protected void AddPawnToWorld(CustomPawn pawn) {
+
             // Don't add colonists to the world
             if (pawn.Type == CustomPawnType.Colonist) {
                 return;
@@ -254,6 +257,7 @@ namespace EdB.PrepareCarefully {
             else {
                 Find.GameInitData.startingAndOptionalPawns.Add(pawn.Pawn);
             }
+
         }
 
         protected void MakePawnIntoFactionLeader(CustomPawn pawn) {

@@ -12,6 +12,7 @@ namespace EdB.PrepareCarefully {
         protected bool removesPart = false;
         protected bool wholeBody = false;
         protected string label = "?";
+        public bool Selectable { get; set; } = true;
 
         public bool UsesSeverityPercentile {
             get {

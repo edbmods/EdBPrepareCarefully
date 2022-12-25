@@ -1,6 +1,7 @@
 using RimWorld;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using Verse;
 namespace EdB.PrepareCarefully {
     public class ProviderPawnLayers {
@@ -13,34 +14,35 @@ namespace EdB.PrepareCarefully {
         private PawnLayer hatLayer = new PawnLayer() { Name = "Hat", Apparel = true, ApparelLayer = ApparelLayerDefOf.Overhead, Label = ("EdB.PC.Pawn.PawnLayer.Hat").Translate() };
         private PawnLayer accessoryLayer = new PawnLayer() { Name = "Accessory", Apparel = true, ApparelLayer = ApparelLayerDefOf.Belt, Label = ("EdB.PC.Pawn.PawnLayer.Accessory").Translate() };
         private PawnLayer eyeCoveringLayer = new PawnLayer() { Name = "EyeCovering", Apparel = true, ApparelLayer = ApparelLayerDefOf.EyeCover, Label = ("EdB.PC.Pawn.PawnLayer.EyeCovering").Translate() };
-        private Dictionary<Pair<ThingDef, Gender>, List<PawnLayer>> pawnLayerCache = new Dictionary<Pair<ThingDef, Gender>, List<PawnLayer>>();
+        private Dictionary<ValueTuple<ThingDef, Gender, DevelopmentalStage>, List<PawnLayer>> pawnLayerCache = new Dictionary<ValueTuple<ThingDef, Gender, DevelopmentalStage>, List<PawnLayer>>();
         public ProviderPawnLayers() {
 
         }
         public List<PawnLayer> GetLayersForPawn(CustomPawn pawn) {
-            List<PawnLayer> result = null;
-            if (!pawnLayerCache.TryGetValue(new Pair<ThingDef, Gender>(pawn.Pawn.def, pawn.Gender), out result)) {
-                result = InitializePawnLayers(pawn.Pawn.def, pawn.Gender);
-                pawnLayerCache.Add(new Pair<ThingDef, Gender>(pawn.Pawn.def, pawn.Gender), result);
+            if (!pawnLayerCache.TryGetValue(ValueTuple.Create(pawn.Pawn.def, pawn.Gender, pawn.Pawn.DevelopmentalStage), out var result)) {
+                result = InitializePawnLayers(pawn.Pawn.def, pawn.Gender, pawn.Pawn.DevelopmentalStage);
+                pawnLayerCache.Add(ValueTuple.Create(pawn.Pawn.def, pawn.Gender, pawn.Pawn.DevelopmentalStage), result);
             }
             return result;
         }
-        public List<PawnLayer> InitializePawnLayers(ThingDef pawnDef, Gender gender) {
+        public List<PawnLayer> InitializePawnLayers(ThingDef pawnDef, Gender gender, DevelopmentalStage stage) {
             AlienRace race = PrepareCarefully.Instance.Providers.AlienRaces.GetAlienRace(pawnDef);
             if (race == null) {
-                return InitializeDefaultPawnLayers(pawnDef, gender);
+                return InitializeDefaultPawnLayers(pawnDef, gender, stage);
             }
             else {
                 return InitializeAlienPawnLayers(pawnDef, gender, race);
             }
         }
-        private List<PawnLayer> InitializeDefaultPawnLayers(ThingDef pawnDef, Gender gender) {
+        private List<PawnLayer> InitializeDefaultPawnLayers(ThingDef pawnDef, Gender gender, DevelopmentalStage stage) {
             List<PawnLayer> defaultLayers = new List<PawnLayer>() {
                 InitializeHairLayer(pawnDef, gender),
                 InitializeBeardLayer(pawnDef, gender),
-                InitializeHeadLayer(pawnDef, gender),
-                InitializeBodyLayer(pawnDef, gender)
+                InitializeHeadLayer(pawnDef, gender)
             };
+            if (stage != DevelopmentalStage.Baby && stage != DevelopmentalStage.Child && stage != DevelopmentalStage.Newborn) {
+                defaultLayers.Add(InitializeBodyLayer(pawnDef, gender));
+            }
 
             if (ModLister.IdeologyInstalled) {
                 defaultLayers.Add(InitializeFaceTattooLayer(pawnDef, gender));
@@ -194,9 +196,10 @@ namespace EdB.PrepareCarefully {
         }
         private List<PawnLayerOption> InitializeBodyOptions(ThingDef pawnDef, Gender gender) {
             List<PawnLayerOption> options = new List<PawnLayerOption>();
-            foreach (var bodyType in PrepareCarefully.Instance.Providers.BodyTypes.GetBodyTypesForPawn(pawnDef, gender)) {
+            foreach (var bodyType in PrepareCarefully.Instance.Providers.BodyTypes.GetBodyTypesForPawn(pawnDef, gender).Where(b => b != BodyTypeDefOf.Baby && b != BodyTypeDefOf.Child).ToList()) {
                 PawnLayerOptionBody option = new PawnLayerOptionBody();
                 option.BodyTypeDef = bodyType;
+                option.Selectable = bodyType != BodyTypeDefOf.Baby && bodyType != BodyTypeDefOf.Child;
                 options.Add(option);
             }
             return options;

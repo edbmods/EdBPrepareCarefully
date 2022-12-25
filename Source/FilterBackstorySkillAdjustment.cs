@@ -1,4 +1,4 @@
-﻿using RimWorld;
+using RimWorld;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -6,7 +6,7 @@ using System.Text;
 using Verse;
 
 namespace EdB.PrepareCarefully {
-    class FilterBackstorySkillAdjustment : Filter<Backstory> {
+    class FilterBackstorySkillAdjustment : Filter<BackstoryDef> {
         private int BonusOrPenalty {
             get;
             set;
@@ -26,9 +26,9 @@ namespace EdB.PrepareCarefully {
                 this.LabelShort = "EdB.PC.Dialog.Backstory.Filter.SkillBonus".Translate(this.SkillDef.LabelCap, bonusOrPenalty);
                 this.LabelFull = "EdB.PC.Dialog.Backstory.Filter.SkillBonusFull".Translate(this.SkillDef.LabelCap, bonusOrPenalty);
             }
-            this.FilterFunction = (Backstory backstory) => {
-                if (this.SkillDef != null && backstory.skillGainsResolved.ContainsKey(this.SkillDef)) {
-                    int value = backstory.skillGainsResolved[skillDef];
+            this.FilterFunction = (BackstoryDef backstory) => {
+                if (this.SkillDef != null && backstory.skillGains.ContainsKey(this.SkillDef)) {
+                    int value = backstory.skillGains[skillDef];
                     if (bonusOrPenalty > 0) {
                         return value >= bonusOrPenalty;
                     }
@@ -39,7 +39,7 @@ namespace EdB.PrepareCarefully {
                 return false;
             };
         }
-        public override bool ConflictsWith(Filter<Backstory> filter) {
+        public override bool ConflictsWith(Filter<BackstoryDef> filter) {
             if (filter as FilterBackstorySkillAdjustment == null) {
                 return false;
             }

@@ -38,6 +38,8 @@ namespace EdB.PrepareCarefully {
 
         protected float? painFactor = null;
 
+        public ChemicalDef Chemical { get; set; }
+
         public float Severity {
             get {
                 return severity;
@@ -111,7 +113,6 @@ namespace EdB.PrepareCarefully {
                 if (getsPermanent != null) {
                     getsPermanent.IsPermanent = true;
                     Reflection.HediffComp_GetsPermanent.SetPainCategory(getsPermanent, PainCategoryForFloat(painFactor == null ? 0 : painFactor.Value));
-                    //ReflectionUtil.SetNonPublicField(getsPermanent, "painFactor", painFactor == null ? 0 : painFactor.Value);
                 }
 
                 pawn.health.AddHediff(hediff, BodyPartRecord);
@@ -138,6 +139,9 @@ namespace EdB.PrepareCarefully {
                         hediffLevel.SetLevelTo((int)Severity);
                     }
                 }
+                if (hediff is Hediff_ChemicalDependency chemicalDependency) {
+                    chemicalDependency.chemical = Chemical;
+                }
                 pawn.health.AddHediff(hediff);
                 this.hediff = hediff;
             }
@@ -147,6 +151,7 @@ namespace EdB.PrepareCarefully {
         // Check the PainCategory enum to verify that we still only have 4 values and that their int values match the logic here.
         // This method converts a float value into a PainCategory.  It's here because we don't quite remember where that float
         // value comes from and if it contain a value that won't map to one of the PainCategory enum values.
+        // Unchanged for 1.14
         protected PainCategory PainCategoryForFloat(float value) {
             int intValue = Mathf.FloorToInt(value);
             if (intValue == 2) {

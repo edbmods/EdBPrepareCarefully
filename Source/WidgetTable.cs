@@ -1,4 +1,4 @@
-﻿using RimWorld;
+using RimWorld;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -250,11 +250,12 @@ namespace EdB.PrepareCarefully {
                     }
 
                     foreach (T row in group.Rows) {
-                        if (scrollTo != null && row == scrollTo) {
+                        bool setScrollToCursors = (scrollTo != null && EqualityComparer<T>.Default.Equals(row, scrollTo));
+                        if (setScrollToCursors) {
                             scrollToCursorTop = cursor;
                         }
                         cursor = DrawRow(cursor, row, index);
-                        if (scrollTo != null && row == scrollTo) {
+                        if (setScrollToCursors) {
                             scrollToCursorBottom = cursor;
                         }
                         index++;
@@ -268,9 +269,13 @@ namespace EdB.PrepareCarefully {
 
             // Scroll to the specific row, if any.  Need to do this after all of the rows have been drawn.
             if (scrollTo != null) {
-                ScrollTo(scrollToCursorTop.Value, scrollToCursorBottom.Value);
+                if (scrollToCursorBottom.HasValue && scrollToCursorTop.HasValue) {
+                    ScrollTo(scrollToCursorTop.Value, scrollToCursorBottom.Value);
+                }
                 scrollTo = null;
             }
+
+            scrollTo = null;
         }
         protected void ScrollTo(float top, float bottom) {
             float contentHeight = bottom - top;
@@ -312,7 +317,7 @@ namespace EdB.PrepareCarefully {
             if (cursor + rowRect.height >= scrollView.Position.y
                     && cursor <= scrollView.Position.y + scrollView.ViewHeight) {
                 GUI.color = (index % 2 == 0) ? RowColor : AlternateRowColor;
-                if (row == Selected && SelectedRowColor.a != 0) {
+                if (EqualityComparer<T>.Default.Equals(row, Selected) && SelectedRowColor.a != 0) {
                     GUI.color = SelectedRowColor;
                 }
                 if (GUI.color.a != 0) {

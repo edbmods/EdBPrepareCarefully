@@ -1,4 +1,4 @@
-﻿using RimWorld;
+using RimWorld;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -162,7 +162,7 @@ namespace EdB.PrepareCarefully {
             }
 
             // Draw the decrement button.
-            Rect buttonRect = new Rect(rect.x - 17, rect.y + 6, 16, 16);
+            Rect buttonRect = new Rect(rect.x - 17, rect.MiddleY() - 8, 16, 16);
             if (value == minValue) {
                 GUI.color = Style.ColorButtonDisabled;
             }
@@ -185,7 +185,7 @@ namespace EdB.PrepareCarefully {
             }
 
             // Draw the increment button.
-            buttonRect = new Rect(rect.x + rect.width + 1, rect.y + 6, 16, 16);
+            buttonRect = new Rect(rect.x + rect.width + 1, rect.MiddleY() - 8, 16, 16);
             if (value == maxValue) {
                 GUI.color = Style.ColorButtonDisabled;
             }
@@ -197,8 +197,8 @@ namespace EdB.PrepareCarefully {
                     GUI.color = Style.ColorButton;
                 }
             }
+            GUI.DrawTexture(buttonRect, Textures.TextureButtonNext);
             if (value != maxValue) {
-                GUI.DrawTexture(buttonRect, Textures.TextureButtonNext);
                 if (Widgets.ButtonInvisible(buttonRect, false)) {
                     SoundDefOf.Tick_Tiny.PlayOneShotOnCamera();
                     int amount = Event.current.shift ? 10 : 1;

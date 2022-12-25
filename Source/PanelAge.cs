@@ -1,131 +1,201 @@
-﻿using RimWorld;
+using EdB.PrepareCarefully.HarmonyPatches;
+using RimWorld;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using UnityEngine;
 using Verse;
 using Verse.Sound;
 namespace EdB.PrepareCarefully {
-    public class PanelAge : PanelBase {
-        public delegate void UpdateAgeHandler(int age);
+    public class PanelAge : PanelModule {
+        public static readonly int DaysPerYear = 60;
+
+        public delegate void UpdateAgeHandler(int? ageYears, int? ageDays);
 
         public event UpdateAgeHandler BiologicalAgeUpdated;
         public event UpdateAgeHandler ChronologicalAgeUpdated;
 
         private ProviderAgeLimits providerAgeLimits = PrepareCarefully.Instance.Providers.AgeLimits;
 
-        protected static Rect RectBiologicalAgeLabel;
-        protected static Rect RectBiologicalAgeField;
-        protected static Rect RectChronologicalAgeLabel;
-        protected static Rect RectChronologicalAgeField;
-        
-        private WidgetNumberField biologicalField;
-        private WidgetNumberField chronologicalField;
+        protected Rect RectDevelopmentStageButton;
+        protected Rect RectBiologicalAgeLabel;
+        protected Rect RectBiologicalAgeFieldYears;
+        protected Rect RectBiologicalAgeFieldDays;
+        protected Rect RectChronologicalAgeLabel;
+        protected Rect RectChronologicalAgeFieldYears;
+        protected Rect RectChronologicalAgeFieldDays;
+        protected Rect RectYearsLabel;
+        protected Rect RectDaysLabel;
+        protected Rect RectDevelopmentalStageDropdown;
+        protected Rect RectHeader;
+
+        private WidgetNumberField biologicalFieldYears;
+        private WidgetNumberField biologicalFieldDays;
+        private WidgetNumberField chronologicalFieldYears;
+        private WidgetNumberField chronologicalFieldDays;
+        private AgeModifier ageModifier = new AgeModifier();
 
         public PanelAge() {
-            biologicalField = new WidgetNumberField() {
+            biologicalFieldYears = new WidgetNumberField() {
                 DragSlider = new DragSlider(0.4f, 20, 100),
-                MinValue = 14,
+                MinValue = 0,
                 MaxValue = 99,
                 UpdateAction = (int value) => {
-                    UpdateBiologicalAge(value);
+                    UpdateBiologicalAgeYears(value);
                 }
             };
-            chronologicalField = new WidgetNumberField() {
+            biologicalFieldDays = new WidgetNumberField() {
                 DragSlider = new DragSlider(0.4f, 15, 100),
-                MinValue = 14,
+                MinValue = 0,
+                MaxValue = 59,
+                UpdateAction = (int value) => {
+                    UpdateBiologicalAgeDays(value);
+                }
+            };
+            chronologicalFieldYears = new WidgetNumberField() {
+                DragSlider = new DragSlider(0.4f, 15, 100),
+                MinValue = 0,
                 MaxValue = Constraints.AgeChronologicalMax,
                 UpdateAction = (int value) => {
-                    UpdateChronologicalAge(value);
+                    UpdateChronologicalAgeYears(value);
+                }
+            };
+            chronologicalFieldDays = new WidgetNumberField() {
+                DragSlider = new DragSlider(0.4f, 15, 100),
+                MinValue = 0,
+                MaxValue = 59,
+                UpdateAction = (int value) => {
+                    UpdateChronologicalAgeDays(value);
                 }
             };
         }
 
-        protected void UpdateBiologicalAge(int value) {
-            BiologicalAgeUpdated(value);
+        protected void UpdateBiologicalAgeYears(int? value) {
+            BiologicalAgeUpdated(value, null);
+        }
+        protected void UpdateBiologicalAgeDays(int? value) {
+            BiologicalAgeUpdated(null, value);
         }
 
-        protected void UpdateChronologicalAge(int value) {
-            ChronologicalAgeUpdated(value);
+        protected void UpdateChronologicalAgeYears(int? value) {
+            ChronologicalAgeUpdated(value, null);
+        }
+        protected void UpdateChronologicalAgeDays(int? value) {
+            ChronologicalAgeUpdated(null, value);
         }
 
-        public override void Resize(Rect rect) {
-            base.Resize(rect);
+        public override void Resize(float width) {
+            base.Resize(width);
 
-            Vector2 available = PanelRect.size - Style.SizePanelPadding;
+            float panelPadding = Style.SizePanelPadding.x;
+            float availableSize = width - panelPadding * 2;
+
+            GameFont saveFont = Text.Font;
+            Text.Font = GameFont.Small;
+            Vector2 bioLabelSize = Text.CalcSize("EdB.PC.Panel.Age.Label.BiologicalAge".Translate());
+            Vector2 chronoLabelSize = Text.CalcSize("EdB.PC.Panel.Age.Label.ChronologicalAge".Translate());
+            Text.Font = saveFont;
+            float minimumLabelWidth = Mathf.Max(bioLabelSize.x, chronoLabelSize.x);
 
             float arrowPadding = 1;
             float arrowWidth = Textures.TextureButtonNext.width;
-            float bioWidth = 32;
-            float chronoWidth = 48;
+            float widthNeededForArrowButtons = 4 * (arrowWidth + arrowPadding);
 
-            float extendedArrowSize = arrowPadding + arrowWidth;
-            float extendedFieldSize = extendedArrowSize * 2;
+            float paddingBetweenLabelAndField = 8;
+            float paddingBetweenFields = 8;
+            float fieldHeight = 24;
 
-            float usedSpace = (extendedFieldSize * 2) + bioWidth + chronoWidth;
+            float widthNeededForFixedElements = minimumLabelWidth + paddingBetweenFields + paddingBetweenLabelAndField + widthNeededForArrowButtons;
+            float availableWidthForFields = availableSize - widthNeededForFixedElements;
 
-            float availableSpace = PanelRect.width - usedSpace;
-            float spacing = availableSpace / 3;
+            float yearFieldWidth = Mathf.Ceil(availableWidthForFields * 0.6f);
+            float dayFieldWidth = availableWidthForFields - yearFieldWidth;
 
-            float idealSpace = 15;
-            float extraFieldWidth = 0;
-            if (spacing > idealSpace) {
-                float extra = (spacing - idealSpace) * 3;
-                extraFieldWidth += Mathf.Floor(extra / 2);
-                spacing = idealSpace;
-            }
-            else {
-                spacing = Mathf.Floor(spacing);
-            }
-            float fieldHeight = 28;
+            float yearFieldOffset = panelPadding + minimumLabelWidth + paddingBetweenLabelAndField + arrowPadding + arrowWidth;
+            float dayFieldOffset = yearFieldOffset + yearFieldWidth + paddingBetweenFields + arrowPadding * 2 + arrowWidth * 2;
 
-            GameFont saveFont = Text.Font;
-            Text.Font = GameFont.Tiny;
-            Vector2 bioLabelSize = Text.CalcSize("EdB.PC.Panel.Age.Biological".Translate());
-            Vector2 chronoLabelSize = Text.CalcSize("EdB.PC.Panel.Age.Chronological".Translate());
+            float developmentStageDropdownWidth = 30;
+            RectDevelopmentalStageDropdown = new Rect(width - developmentStageDropdownWidth - panelPadding, 0, developmentStageDropdownWidth, 30);
+
+            RectBiologicalAgeLabel = new Rect(panelPadding, 0, bioLabelSize.x, fieldHeight);
+            RectBiologicalAgeFieldYears = new Rect(yearFieldOffset, RectBiologicalAgeLabel.yMin, yearFieldWidth, fieldHeight);
+            RectBiologicalAgeFieldDays = new Rect(dayFieldOffset, RectBiologicalAgeLabel.yMin, dayFieldWidth, fieldHeight);
+
+            RectChronologicalAgeLabel = new Rect(panelPadding, 0, chronoLabelSize.x, fieldHeight);
+            RectChronologicalAgeFieldYears = new Rect(yearFieldOffset, RectChronologicalAgeLabel.yMin, yearFieldWidth, fieldHeight);
+            RectChronologicalAgeFieldDays = new Rect(dayFieldOffset, RectBiologicalAgeLabel.yMin, dayFieldWidth, fieldHeight);
+
+            saveFont = Text.Font;
+            Text.Font = GameFont.Small;
+            Vector2 yearsLabelSize = Text.CalcSize("EdB.PC.Panel.Age.Label.Years".Translate());
+            Vector2 daysLabelSize = Text.CalcSize("EdB.PC.Panel.Age.Label.Days".Translate());
             Text.Font = saveFont;
 
-            float labelHeight = Mathf.Max(bioLabelSize.y, chronoLabelSize.y);
-            float contentHeight = labelHeight + fieldHeight;
-            float top = PanelRect.HalfHeight() - (contentHeight * 0.5f);
-            float fieldTop = top + labelHeight;
-
-            RectBiologicalAgeField = new Rect(spacing + extendedArrowSize, fieldTop, bioWidth + extraFieldWidth, fieldHeight);
-            RectChronologicalAgeField = new Rect(RectBiologicalAgeField.xMax + extendedArrowSize +
-                spacing + extendedArrowSize, fieldTop, chronoWidth + extraFieldWidth, fieldHeight);
-            
-            RectBiologicalAgeLabel = new Rect(RectBiologicalAgeField.MiddleX() - bioLabelSize.x / 2,
-                RectBiologicalAgeField.y - bioLabelSize.y, bioLabelSize.x, bioLabelSize.y);
-            RectChronologicalAgeLabel = new Rect(RectChronologicalAgeField.MiddleX() - chronoLabelSize.x / 2,
-                RectChronologicalAgeField.y - chronoLabelSize.y, chronoLabelSize.x, chronoLabelSize.y);
+            RectYearsLabel = new Rect(yearFieldOffset + yearFieldWidth * 0.5f - yearsLabelSize.x * 0.5f, 0, yearsLabelSize.x, yearsLabelSize.y);
+            RectDaysLabel = new Rect(dayFieldOffset + dayFieldWidth * 0.5f - daysLabelSize.x * 0.5f, 0, daysLabelSize.x, daysLabelSize.y);
         }
 
-        protected override void DrawPanelContent(State state) {
-            base.DrawPanelContent(state);
+        public override float Draw(State state, float y) {
 
             // Update field values.
-            CustomPawn customPawn = state.CurrentPawn;
-            int maxAge = providerAgeLimits.MaxAgeForPawn(customPawn.Pawn);
-            int minAge = providerAgeLimits.MinAgeForPawn(customPawn.Pawn);
-            chronologicalField.MinValue = customPawn.BiologicalAge;
-            biologicalField.MinValue = minAge;
-            biologicalField.MaxValue = customPawn.ChronologicalAge < maxAge ? customPawn.ChronologicalAge : maxAge;
+            CustomPawn pawn = state.CurrentPawn;
+            int maxAge = providerAgeLimits.MaxAgeForPawn(pawn.Pawn);
+            int minAge = providerAgeLimits.MinAgeForPawn(pawn.Pawn);
+            chronologicalFieldYears.MinValue = minAge;
+            biologicalFieldYears.MinValue = minAge;
+            biologicalFieldYears.MaxValue = maxAge;
 
-            // Age labels.
+            float top = y;
+            y += Margin.y;
+
+            y += DrawHeader(y, Width, "EdB.PC.Panel.Age.Header".Translate().Resolve());
+            Rect rect;
+
             Text.Font = GameFont.Tiny;
             GUI.color = Style.ColorText;
-            Widgets.Label(RectBiologicalAgeLabel, "EdB.PC.Panel.Age.Biological".Translate());
-            Widgets.Label(RectChronologicalAgeLabel, "EdB.PC.Panel.Age.Chronological".Translate());
+            Text.Anchor = TextAnchor.MiddleCenter;
+            rect = RectYearsLabel.OffsetBy(0, y - RectYearsLabel.height);
+            Widgets.Label(rect, "EdB.PC.Panel.Age.Label.Years".Translate());
+            rect = RectDaysLabel.OffsetBy(0, y - RectDaysLabel.height);
+            Widgets.Label(rect, "EdB.PC.Panel.Age.Label.Days".Translate());
+
+            Text.Font = GameFont.Small;
+            GUI.color = Style.ColorText;
+            Text.Anchor = TextAnchor.MiddleLeft;
+            rect = RectBiologicalAgeLabel.OffsetBy(0, y);
+            Widgets.Label(rect, "EdB.PC.Panel.Age.Label.BiologicalAge".Translate());
+            // Biological age years field.
+            rect = RectBiologicalAgeFieldYears.OffsetBy(0, y);
+            biologicalFieldYears.Draw(rect, state.CurrentPawn.BiologicalAgeInYears);
+            // Biological age days field.
+            rect = RectBiologicalAgeFieldDays.OffsetBy(0, y);
+            biologicalFieldDays.Draw(rect, state.CurrentPawn.BiologicalAgeInDays % DaysPerYear);
+
+            y += RectBiologicalAgeLabel.height;
+
+            // Vertical padding between the two age field pairs
+            y += 6;
+
+            Text.Font = GameFont.Small;
+            GUI.color = Style.ColorText;
+            Text.Anchor = TextAnchor.MiddleLeft;
+            rect = RectChronologicalAgeLabel.OffsetBy(0, y);
+            Widgets.Label(rect, "EdB.PC.Panel.Age.Label.ChronologicalAge".Translate());
+            // Chronological age years field.
+            rect = RectChronologicalAgeFieldYears.OffsetBy(0, y);
+            chronologicalFieldYears.Draw(rect, state.CurrentPawn.ChronologicalAgeInYears);
+            // Chronological age days field.
+            rect = RectChronologicalAgeFieldDays.OffsetBy(0, y);
+            chronologicalFieldDays.Draw(rect, state.CurrentPawn.ChronologicalAgeInDays % DaysPerYear);
+
+            y += RectChronologicalAgeLabel.height;
+
             Text.Font = GameFont.Small;
             GUI.color = Color.white;
+            Text.Anchor = TextAnchor.UpperLeft;
 
-            // Biological age field.
-            Rect fieldRect = RectBiologicalAgeField;
-            biologicalField.Draw(fieldRect, customPawn.BiologicalAge);
-
-            // Chronological age field.
-            fieldRect = RectChronologicalAgeField;
-            chronologicalField.Draw(fieldRect, customPawn.ChronologicalAge);
+            return y - top;
         }
     }
 }

@@ -57,6 +57,9 @@ namespace EdB.PrepareCarefully {
         public static Texture2D TextureFilterAtlas1;
         public static Texture2D TextureFilterAtlas2;
         public static Texture2D TextureButtonCloseSmall;
+        public static Texture2D TextureBaby;
+        public static Texture2D TextureChild;
+        public static Texture2D TextureAdult;
 
         public static Texture2D TextureWhite {
             get {
@@ -139,8 +142,12 @@ namespace EdB.PrepareCarefully {
 
             TextureAlternateRow = SolidColorMaterials.NewSolidColorTexture(new Color(1, 1, 1, 0.05f));
             TextureSkillBarFill = SolidColorMaterials.NewSolidColorTexture(new Color(1f, 1f, 1f, 0.1f));
-            
-            loaded = true;
+
+            TextureBaby = ContentFinder<Texture2D>.Get("UI/Icons/DevelopmentalStages/Baby", false);
+            TextureChild = ContentFinder<Texture2D>.Get("UI/Icons/DevelopmentalStages/Child", false);
+            TextureAdult = ContentFinder<Texture2D>.Get("UI/Icons/DevelopmentalStages/Adult", false);
+
+        loaded = true;
         }
     }
 }

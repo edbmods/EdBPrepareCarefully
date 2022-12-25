@@ -292,11 +292,12 @@ namespace EdB.PrepareCarefully {
                     }
                 };
 
-                injuryOptionDialog = new Dialog_Options<InjuryOption>(healthOptions.InjuryOptions) {
+                injuryOptionDialog = new Dialog_Options<InjuryOption>(healthOptions.SelectableInjuryOptions) {
                     ConfirmButtonLabel = "EdB.PC.Common.Next".Translate(),
                     CancelButtonLabel = "EdB.PC.Common.Cancel".Translate(),
                     HeaderLabel = "EdB.PC.Dialog.Injury.Header".Translate(),
                     NameFunc = (InjuryOption option) => {
+                        //return option.HediffDef.defName;
                         return option.Label;
                     },
                     DescriptionFunc = (InjuryOption option) => {

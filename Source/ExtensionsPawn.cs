@@ -123,6 +123,7 @@ namespace EdB.PrepareCarefully {
             pawn.ClearCachedHealth();
             pawn.ClearCachedLifeStage();
             pawn.ClearCachedDisabledSkillRecords();
+            pawn.ClearCachedPortraits();
         }
 
         public static void ClearCachedDisabledSkillRecords(this Pawn pawn) {

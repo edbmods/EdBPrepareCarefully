@@ -16,7 +16,7 @@ namespace EdB.PrepareCarefully {
             }
         }
 
-        protected Pawn AttemptToGeneratePawn(PawnGenerationRequest request) {
+        public Pawn AttemptToGeneratePawn(PawnGenerationRequest request) {
             Exception lastException = null;
             Faction savedRequestFaction = request.Faction;
             for (int i = 0; i < MaxAttempts; i++) {
@@ -63,14 +63,17 @@ namespace EdB.PrepareCarefully {
             return result;
         }
 
-        public Pawn GenerateColonistAsCloseToAsPossible(Pawn pawn) {
+        public Pawn GeneratePawnAsCloseToAsPossible(Pawn pawn) {
             var request = new PawnGenerationRequestWrapper() {
                 KindDef = pawn.kindDef,
                 Faction = pawn.Faction,
                 FixedBiologicalAge = pawn.ageTracker.AgeBiologicalYears,
                 FixedChronologicalAge = pawn.ageTracker.AgeChronologicalYears,
                 FixedGender = pawn.gender,
-                FixedIdeology = pawn.Ideo
+                FixedIdeology = pawn.Ideo,
+                DevelopmentalStage = pawn.DevelopmentalStage,
+                ForcedXenotype = pawn.genes?.Xenotype,
+                ForcedCustomXenotype = pawn.genes?.CustomXenotype
             };
             Pawn result = AttemptToGeneratePawn(request.Request);
             return result;
@@ -78,7 +81,35 @@ namespace EdB.PrepareCarefully {
 
         public Pawn GeneratePawn(PawnGenerationRequest request) {
             Pawn result = AttemptToGeneratePawn(request);
+
+            RemoveUnexpectedEndogenesFromPawn(result, request.ForcedEndogenes);
+
             return result;
+        }
+
+        public static void RemoveUnexpectedEndogenesFromPawn(Pawn pawn, List<GeneDef> expectedEndogenes) {
+            //Logger.Debug("RemoveUnexpectedEndogenesFromPawn()");
+            if (expectedEndogenes == null || expectedEndogenes.Count == 0 || pawn == null) {
+                return;
+            }
+            List<Gene> pawnEndogenes = pawn?.genes?.Endogenes;
+            if (pawnEndogenes == null || pawnEndogenes.Count == 0) {
+                return;
+            }
+            HashSet<GeneDef> expectedDefs = new HashSet<GeneDef>(expectedEndogenes);
+            List<Gene> genesToRemove = new List<Gene>();
+            foreach (var g in pawnEndogenes) {
+                if (!expectedDefs.Contains(g.def)) {
+                    //Logger.Debug("Gene " + g.def.defName + " is not expected");
+                    genesToRemove.Add(g);
+                }
+                else {
+                    //Logger.Debug("Gene " + g.def.defName + " is expected");
+                }
+            }
+            foreach (var g in genesToRemove) {
+                pawn.genes.RemoveGene(g);
+            }
         }
 
         public Pawn GenerateKindOfColonist(PawnKindDef kindDef) {
@@ -128,7 +159,7 @@ namespace EdB.PrepareCarefully {
             return GenerateKindOfPawn(pawn.kindDef);
         }
 
-        public static Backstory RandomAdulthood(CustomPawn customPawn) {
+        public static BackstoryDef RandomAdulthood(CustomPawn customPawn) {
             return PrepareCarefully.Instance.Providers.Backstories.GetAdulthoodBackstoriesForPawn(customPawn).RandomElement();
         }
 
@@ -173,6 +204,19 @@ namespace EdB.PrepareCarefully {
             }
             PawnComponentsUtility.CreateInitialComponents(result);
             return result;
+        }
+
+        public XenotypeDef RandomXenotypeFromSet(XenotypeSet set) {
+            double value = 0f;
+            double r = this.Random.NextDouble();
+            for (int i= set.Count - 1; i>=0; i--) {
+                var chance = set[i].chance;
+                value += chance;
+                if (r < value) {
+                    return set[i].xenotype;
+                }
+            }
+            return XenotypeDefOf.Baseliner;
         }
     }
 }

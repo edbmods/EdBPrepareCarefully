@@ -5,6 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using System.Xml.Linq;
 using UnityEngine;
 using Verse;
 
@@ -159,21 +160,61 @@ namespace EdB.PrepareCarefully {
                 FixedChronologicalAge = record.chronologicalAge,
                 FixedGender = record.gender,
                 Context = PawnGenerationContext.NonPlayer,
-                WorldPawnFactionDoesntMatter = true
+                WorldPawnFactionDoesntMatter = true,
+                AllowDowned = true
             };
             Faction playerFaction = Find.FactionManager.OfPlayer;
             Ideo ideology = playerFaction?.ideos?.PrimaryIdeo;
 
             if (record.ideo != null) {
                 if (!record.ideo.sameAsColony && IdeoMap != null) {
-                    if (IdeoMap.TryGetValue(record.ideo.name, out Ideo ideo)) {
-                        ideology = ideo;
+                    if (!record.ideo.name.NullOrEmpty()) {
+                        if (IdeoMap.TryGetValue(record.ideo.name, out Ideo ideo)) {
+                            ideology = ideo;
+                        }
+                    }
+                    else {
+                        ideology = null;
                     }
                 }
             }
-
             if (ideology != null) {
                 generationRequest.FixedIdeology = ideology;
+            }
+
+            if (record.genes != null) {
+                if (!record.genes.xenotypeDef.NullOrEmpty()) {
+                    XenotypeDef xenotypeDef = DefDatabase<XenotypeDef>.GetNamedSilentFail(record.genes.xenotypeDef);
+                    if (xenotypeDef != null) {
+                        generationRequest.ForcedXenotype = xenotypeDef;
+                    }
+                }
+                else if (!record.genes.customXenotypeName.NullOrEmpty()) {
+                    var customXenotypes = ReflectionUtil.GetStaticPropertyValue<List<CustomXenotype>>(typeof(CharacterCardUtility), "CustomXenotypes");
+                    CustomXenotype xenotype = customXenotypes?.Where(x => { return x.name == record.genes.customXenotypeName; }).FirstOrDefault();
+                    if (xenotype != null) {
+                        generationRequest.ForcedCustomXenotype = xenotype;
+                    }
+                }
+
+                if (record.genes?.endogenes != null && record.genes?.endogenes.Count > 0) {
+                    List<GeneDef> genes = record.genes.endogenes.Select(g => {
+                        GeneDef def = DefDatabase<GeneDef>.GetNamedSilentFail(g);
+                        return def;
+                    }).Where(g => g != null).ToList();
+                    if (genes.Count > 0) {
+                        generationRequest.ForcedEndogenes = genes;
+                    }
+                }
+                if (record.genes?.xenogenes != null && record.genes?.xenogenes.Count > 0) {
+                    List<GeneDef> genes = record.genes.xenogenes.Select(g => {
+                        GeneDef def = DefDatabase<GeneDef>.GetNamedSilentFail(g);
+                        return def;
+                    }).Where(g => g != null).ToList();
+                    if (genes.Count > 0) {
+                        generationRequest.ForcedXenogenes = genes;
+                    }
+                }
             }
 
             // Add a pawn kind definition to the generation request, if possible.
@@ -185,13 +226,15 @@ namespace EdB.PrepareCarefully {
             Pawn source = null;
             try {
                 source = PawnGenerator.GeneratePawn(generationRequest.Request);
+                Randomizer.RemoveUnexpectedEndogenesFromPawn(source, generationRequest.Request.ForcedEndogenes);
             }
             catch (Exception e) {
                 Logger.Warning("Failed to generate a pawn from preset for pawn {" + (record.nickName) + "}. Will try to create it using fallback settings", e);
                 generationRequest = new PawnGenerationRequestWrapper() {
                     FixedBiologicalAge = record.biologicalAge,
                     FixedChronologicalAge = record.chronologicalAge,
-                    FixedGender = record.gender
+                    FixedGender = record.gender,
+                    AllowDowned = true
                 };
                 try {
                     source = PawnGenerator.GeneratePawn(generationRequest.Request);
@@ -200,6 +243,14 @@ namespace EdB.PrepareCarefully {
                     Logger.Warning("Failed to generate a pawn using fallback settings from preset for pawn {" + (record.nickName) + "}", e);
                     return null;
                 }
+            }
+
+            // Adjust the age using the tick value
+            if (record.biologicalAgeInTicks != null) {
+                source.ageTracker.AgeBiologicalTicks = record.biologicalAgeInTicks.Value;
+            }
+            if (record.chronologicalAgeInTicks != null) {
+                source.ageTracker.AgeChronologicalTicks = record.chronologicalAgeInTicks.Value;
             }
 
             if (source.health != null) {
@@ -258,40 +309,38 @@ namespace EdB.PrepareCarefully {
                 }
             }
             else if (pawn.Type == CustomPawnType.World) {
-                if (record.faction != null) {
-                    if (record.faction.def != null) {
-                        FactionDef factionDef = DefDatabase<FactionDef>.GetNamedSilentFail(record.faction.def);
-                        if (factionDef != null) {
-                            bool randomFaction = false;
-                            if (record.faction.index != null) {
-                                CustomFaction customFaction = null;
-                                if (!record.faction.leader) {
-                                    customFaction = PrepareCarefully.Instance.Providers.Factions.FindCustomFactionByIndex(factionDef, record.faction.index.Value);
-                                }
-                                else {
-                                    customFaction = PrepareCarefully.Instance.Providers.Factions.FindCustomFactionWithLeaderOptionByIndex(factionDef, record.faction.index.Value);
-                                }
-                                if (customFaction != null) {
-                                    pawn.Faction = customFaction;
-                                }
-                                else {
-                                    Logger.Warning("Could not place at least one preset character into a saved faction because there were not enough available factions of that type in the world");
-                                    randomFaction = true;
-                                }
+                if (record?.faction?.def != null) {
+                    FactionDef factionDef = DefDatabase<FactionDef>.GetNamedSilentFail(record.faction.def);
+                    if (factionDef != null) {
+                        bool randomFaction = false;
+                        if (record.faction.index != null) {
+                            CustomFaction customFaction = null;
+                            if (!record.faction.leader) {
+                                customFaction = PrepareCarefully.Instance.Providers.Factions.FindCustomFactionByIndex(factionDef, record.faction.index.Value);
                             }
                             else {
-                                randomFaction = true;
+                                customFaction = PrepareCarefully.Instance.Providers.Factions.FindCustomFactionWithLeaderOptionByIndex(factionDef, record.faction.index.Value);
                             }
-                            if (randomFaction) {
-                                CustomFaction customFaction = PrepareCarefully.Instance.Providers.Factions.FindRandomCustomFactionByDef(factionDef);
-                                if (customFaction != null) {
-                                    pawn.Faction = customFaction;
-                                }
+                            if (customFaction != null) {
+                                pawn.Faction = customFaction;
+                            }
+                            else {
+                                Logger.Warning("Could not place at least one preset character into a saved faction because there were not enough available factions of that type in the world");
+                                randomFaction = true;
                             }
                         }
                         else {
-                            Logger.Warning("Could not place at least one preset character into a saved faction because that faction is not available in the world");
+                            randomFaction = true;
                         }
+                        if (randomFaction) {
+                            CustomFaction customFaction = PrepareCarefully.Instance.Providers.Factions.FindRandomCustomFactionByDef(factionDef);
+                            if (customFaction != null) {
+                                pawn.Faction = customFaction;
+                            }
+                        }
+                    }
+                    else {
+                        Logger.Warning("Could not place at least one preset character into a saved faction because that faction is not available in the world");
                     }
                 }
             }
@@ -305,29 +354,48 @@ namespace EdB.PrepareCarefully {
                 partialFailure = true;
             }
 
-            if (!String.IsNullOrWhiteSpace(record.headGraphicPath)) {
-                pawn.HeadGraphicPath = record.headGraphicPath;
+            if (!String.IsNullOrWhiteSpace(record.headType)) {
+                var headType = DefDatabase<HeadTypeDef>.GetNamedSilentFail(record.headType);
+                if (headType != null) {
+                    pawn.HeadType = headType;
+                }
+                else {
+                    Logger.Warning("Could not load head type definition \"" + record.headType + "\"");
+                }
+            }
+            else if (!String.IsNullOrEmpty(record.headGraphicPath)) {
+                string[] pathParts = record.headGraphicPath.Split(new char[] { '/' }, 20);
+                string lastPath = pathParts[pathParts.Length - 1];
+                string[] parts = lastPath.Split('_');
+                string headTypeDefName = parts[0] + "_";
+                for (int i=1; i<parts.Count(); i++) {
+                    headTypeDefName += parts[i];
+                }
+                var headType = DefDatabase<HeadTypeDef>.GetNamedSilentFail(headTypeDefName);
+                if (headType != null) {
+                    pawn.HeadType = headType;
+                    Logger.Warning("Successfully converted headGraphicPath {" + record.headGraphicPath + "} to head type definition {" + headType.defName + "}");
+                }
+                else {
+                    Logger.Warning("Couldn't find head type {" + headTypeDefName + "} converted from headGraphicPath {" + record.headGraphicPath + "}");
+                }
             }
 
             pawn.HairColor = record.hairColor;
+            pawn.SkinColor = record.skinColor;
 
-            if (record.melanin >= 0.0f) {
-                pawn.MelaninLevel = record.melanin;
+            if (!record.childhood.NullOrEmpty()) {
+                BackstoryDef backstory = record.childhood != null ? FindBackstory(record.childhood) : null;
+                if (backstory != null) {
+                    pawn.Childhood = backstory;
+                }
+                else {
+                    Logger.Warning("Could not load childhood backstory definition \"" + record.childhood + "\"");
+                    partialFailure = true;
+                }
             }
-            else {
-                pawn.MelaninLevel = PawnColorUtils.FindMelaninValueFromColor(record.skinColor);
-            }
-
-            Backstory backstory = FindBackstory(record.childhood);
-            if (backstory != null) {
-                pawn.Childhood = backstory;
-            }
-            else {
-                Logger.Warning("Could not load childhood backstory definition \"" + record.childhood + "\"");
-                partialFailure = true;
-            }
-            if (record.adulthood != null) {
-                backstory = FindBackstory(record.adulthood);
+            if (!record.adulthood.NullOrEmpty()) {
+                BackstoryDef backstory = FindBackstory(record.adulthood);
                 if (backstory != null) {
                     pawn.Adulthood = backstory;
                 }
@@ -337,12 +405,7 @@ namespace EdB.PrepareCarefully {
                 }
             }
 
-            BodyTypeDef bodyType = null;
-            try {
-                bodyType = DefDatabase<BodyTypeDef>.GetNamedSilentFail(record.bodyType);
-            }
-            catch (Exception) {
-            }
+            BodyTypeDef bodyType = DefDatabase<BodyTypeDef>.GetNamedSilentFail(record.bodyType);
             if (bodyType == null) {
                 if (pawn.Adulthood != null) {
                     bodyType = pawn.Adulthood.BodyTypeFor(pawn.Gender);
@@ -426,17 +489,22 @@ namespace EdB.PrepareCarefully {
                 }
             }
 
-            foreach (var skill in record.skills) {
-                SkillDef def = FindSkillDef(pawn.Pawn, skill.name);
-                if (def == null) {
-                    Logger.Warning("Could not load skill definition \"" + skill.name + "\" from saved preset");
-                    partialFailure = true;
-                    continue;
+            if (record.skills != null) {
+                foreach (var skill in record.skills) {
+                    SkillDef def = FindSkillDef(pawn.Pawn, skill.name);
+                    if (def == null) {
+                        Logger.Warning("Could not load skill definition \"" + skill.name + "\" from saved preset");
+                        partialFailure = true;
+                        continue;
+                    }
+                    pawn.currentPassions[def] = skill.passion;
+                    pawn.originalPassions[def] = skill.passion;
+                    pawn.SetOriginalSkillLevel(def, skill.value);
+                    pawn.SetUnmodifiedSkillLevel(def, skill.value);
                 }
-                pawn.currentPassions[def] = skill.passion;
-                pawn.originalPassions[def] = skill.passion;
-                pawn.SetOriginalSkillLevel(def, skill.value);
-                pawn.SetUnmodifiedSkillLevel(def, skill.value);
+            }
+            else {
+                Logger.Warning("Could not load skills definitions for the saved preset. No valid skill definitions found");
             }
 
             pawn.ClearApparel();
@@ -487,7 +555,7 @@ namespace EdB.PrepareCarefully {
 
             OptionsHealth healthOptions = PrepareCarefully.Instance.Providers.Health.GetOptions(pawn);
             for (int i = 0; i < record.implants.Count; i++) {
-                SaveRecordImplantV3 implantRecord = record.implants[i];
+                SaveRecordImplantV5 implantRecord = record.implants[i];
                 UniqueBodyPart uniqueBodyPart = healthOptions.FindBodyPartByName(implantRecord.bodyPart, implantRecord.bodyPartIndex != null ? implantRecord.bodyPartIndex.Value : 0);
                 if (uniqueBodyPart == null) {
                     uniqueBodyPart = FindReplacementBodyPart(healthOptions, implantRecord.bodyPart);
@@ -522,7 +590,20 @@ namespace EdB.PrepareCarefully {
                     implant.BodyPartRecord = bodyPart;
                     implant.recipe = recipeDef;
                     implant.label = implant.Label;
-                    pawn.AddImplant(implant);
+                    pawn.AddImplantDirect(implant);
+                }
+                else if (implantRecord.hediffDef != null) {
+                    HediffDef hediffDef = DefDatabase<HediffDef>.GetNamedSilentFail(implantRecord.hediffDef);
+                    if (hediffDef != null) {
+                        Implant implant = new Implant();
+                        implant.BodyPartRecord = bodyPart;
+                        implant.label = implant.Label;
+                        implant.HediffDef = hediffDef;
+                        pawn.AddImplantDirect(implant);
+                    }
+                    else {
+                        Logger.Warning("Could not add implant to pawn because the specified HediffDef {" + implantRecord.hediffDef + "} for the implant was not found");
+                    }
                 }
             }
 
@@ -554,6 +635,7 @@ namespace EdB.PrepareCarefully {
                     }
                     bodyPart = uniquePart.Record;
                 }
+                bool isValid = true;
                 Injury injury = new Injury();
                 injury.Option = option;
                 injury.BodyPartRecord = bodyPart;
@@ -563,13 +645,32 @@ namespace EdB.PrepareCarefully {
                 if (injuryRecord.painFactor != null) {
                     injury.PainFactor = injuryRecord.PainFactor;
                 }
-                pawn.AddInjury(injury);
+                if (injuryRecord.chemical != null) {
+                    injury.Chemical = DefDatabase<ChemicalDef>.GetNamedSilentFail(injuryRecord.chemical);
+                    if (injury.Chemical == null) {
+                        Logger.Debug("Could not load injury from saved pawn.  Chemical definition (" + injuryRecord.chemical + ") was not found");
+                        isValid = false;
+                    }
+                }
+                if (isValid) {
+                    pawn.AddInjuryDirect(injury);
+                }
+                else {
+                    Logger.Debug("Did not add invalid injury");
+                }
             }
+            pawn.ApplyInjuriesAndImplantsToPawn();
+            pawn.InitializeInjuriesAndImplantsFromPawn(pawn.Pawn);
 
             // Ideoligion Certainty
             try {
-                if (record.ideo != null && ModsConfig.IdeologyActive && pawn.Pawn?.ideo != null) {
-                    pawn.Certainty = record.ideo.certainty;
+                if (ideology != null) {
+                    if (record.ideo != null && ModsConfig.IdeologyActive && pawn.Pawn?.ideo != null) {
+                        pawn.Certainty = record.ideo.certainty;
+                    }
+                }
+                else {
+                    pawn.Certainty = 0.0f;
                 }
             }
             catch (Exception e) {
@@ -623,22 +724,39 @@ namespace EdB.PrepareCarefully {
             return null;
         }
 
-        private Backstory FindBackstory(string name) {
-            Backstory matchingBackstory = BackstoryDatabase.allBackstories.Values.ToList().Find((Backstory b) => {
-                return b.identifier.Equals(name);
-            });
-            // If we couldn't find a matching backstory, look for one with the same identifier, but a different version number at the end.
-            if (matchingBackstory == null) {
-                Regex expression = new Regex("\\d+$");
-                string backstoryMinusVersioning = expression.Replace(name, "");
-                matchingBackstory = BackstoryDatabase.allBackstories.Values.ToList().Find((Backstory b) => {
-                    return b.identifier.StartsWith(backstoryMinusVersioning);
-                });
-                if (matchingBackstory != null) {
-                    Logger.Message("Found replacement backstory.  Using " + matchingBackstory.identifier + " in place of " + name);
-                }
+        public BackstoryDef FindBackstory(string name) {
+            // Assume the name is a definition name.  Look it up based on that and return it if we find it.
+            BackstoryDef matchingBackstory = DefDatabase<BackstoryDef>.GetNamedSilentFail(name);
+            if (matchingBackstory != null) {
+                return matchingBackstory;
             }
-            return matchingBackstory;
+            // If we didn't find it, the name is probably a backstory identifier.  Try to find it by matching the id.
+            matchingBackstory = DefDatabase<BackstoryDef>.AllDefs.Where((BackstoryDef b) => { return b.identifier != null && b.identifier.Equals(name); }).FirstOrDefault();
+            if (matchingBackstory != null) {
+                return matchingBackstory;
+            }
+            // If we didn't find it, the identifier probably changed.  Try to find another backstory with the same identifier prefix but with a different numeric suffix at the end
+            Regex expression = new Regex("\\d+$");
+            string backstoryMinusVersioning = expression.Replace(name, "");
+            if (backstoryMinusVersioning == name) {
+                return null;
+            }
+            matchingBackstory = DefDatabase<BackstoryDef>.AllDefs
+                .Where(b => { return b.identifier != null && b.identifier.StartsWith(backstoryMinusVersioning); })
+                .FirstOrDefault();
+            if (matchingBackstory != null) {
+                Logger.Message("Found replacement backstory.  Using " + matchingBackstory.identifier + " in place of " + name);
+                return matchingBackstory;
+            }
+            // If we still didn't find it, look for a def name that starts with the identifier but with the numeric suffix removed
+            matchingBackstory = DefDatabase<BackstoryDef>.AllDefs
+                .Where(b => b.defName.StartsWith(backstoryMinusVersioning))
+                .FirstOrDefault();
+            if (matchingBackstory != null) {
+                Logger.Message("Found replacement backstory.  Using " + matchingBackstory.defName + " in place of " + name);
+                return matchingBackstory;
+            }
+            return null;
         }
 
         protected Trait FindTrait(string name, int degree) {

@@ -232,6 +232,11 @@ namespace EdB.PrepareCarefully {
                 return injuryOptions;
             }
         }
+        public IEnumerable<InjuryOption> SelectableInjuryOptions {
+            get {
+                return injuryOptions.Where(o => o.Selectable);
+            }
+        }
         public IEnumerable<BodyPartRecord> BodyPartsForInjury(InjuryOption option) {
             if (option.ValidParts == null || option.ValidParts.Count == 0) {
                 return SkinCoveredBodyParts.Select((UniqueBodyPart p) => { return p.Record; });

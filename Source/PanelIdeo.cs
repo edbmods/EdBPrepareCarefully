@@ -45,7 +45,7 @@ namespace EdB.PrepareCarefully {
         }
 
         public override bool IsVisible(State state) {
-            return ModsConfig.IdeologyActive;
+            return ModsConfig.IdeologyActive && !state.CurrentPawn.Pawn.DevelopmentalStage.Baby();
         }
 
         public override float Draw(State state, float y) {
@@ -73,7 +73,9 @@ namespace EdB.PrepareCarefully {
                 Find.WindowStack.Add(dialog);
             };
             FieldIdeo.DrawIconFunc = (Rect rect) => {
-                ideo.DrawIcon(rect);
+                if (ideo != null) {
+                    ideo.DrawIcon(rect);
+                }
             };
             FieldIdeo.IconSizeFunc = () => new Vector2(32, 32);
 

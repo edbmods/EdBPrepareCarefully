@@ -16,6 +16,7 @@ namespace EdB.PrepareCarefully {
         private Action<Rect> tipAction;
         private Color color = Style.ColorText;
         private bool enabled = true;
+        private bool nextPreviousButtonsHidden = false;
         public Field() {
         }
         public Rect Rect {
@@ -90,6 +91,14 @@ namespace EdB.PrepareCarefully {
                 enabled = value;
             }
         }
+        public bool NextPreviousButtonsHidden {
+            get {
+                return nextPreviousButtonsHidden;
+            }
+            set {
+                nextPreviousButtonsHidden = value;
+            }
+        }
         public Action<Rect> DrawIconFunc = null;
         public Func<Vector2> IconSizeFunc = null;
 
@@ -100,11 +109,11 @@ namespace EdB.PrepareCarefully {
             try {
                 // Adjust the width of the rectangle if the field has next and previous buttons.
                 Rect fieldRect = rect;
-                if (previousAction != null) {
+                if (previousAction != null || nextPreviousButtonsHidden) {
                     fieldRect.x += 12;
                     fieldRect.width -= 12;
                 }
-                if (nextAction != null) {
+                if (nextAction != null || nextPreviousButtonsHidden) {
                     fieldRect.width -= 12;
                 }
                 

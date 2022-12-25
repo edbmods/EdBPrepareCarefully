@@ -7,6 +7,7 @@ using Verse;
 
 namespace EdB.PrepareCarefully {
     public class SaveRecordPawnV5 : IExposable {
+        private Pawn pawn = null;
         public string id;
         public string type;
         public SaveRecordFactionV4 faction;
@@ -23,6 +24,7 @@ namespace EdB.PrepareCarefully {
         public Color hairColor;
         public string headGraphicPath;
         public string bodyType;
+        public string headType;
         public string beard;
         public string faceTattoo;
         public string bodyTattoo;
@@ -33,6 +35,9 @@ namespace EdB.PrepareCarefully {
         public int age;
         public int biologicalAge;
         public int chronologicalAge;
+        public long? biologicalAgeInTicks;
+        public long? chronologicalAgeInTicks;
+        public string developmentalStage;
         public List<SaveRecordSkillV4> skills = new List<SaveRecordSkillV4>();
         public List<SaveRecordApparelV4> apparel = new List<SaveRecordApparelV4>();
         public List<int> apparelLayers = new List<int>();
@@ -40,12 +45,15 @@ namespace EdB.PrepareCarefully {
         public List<Color> apparelColors = new List<Color>();
         public bool randomInjuries = true;
         public bool randomRelations = false;
-        public List<SaveRecordImplantV3> implants = new List<SaveRecordImplantV3>();
-        public List<SaveRecordInjuryV3> injuries = new List<SaveRecordInjuryV3>();
+        public List<SaveRecordImplantV5> implants = new List<SaveRecordImplantV5>();
+        public List<SaveRecordInjuryV5> injuries = new List<SaveRecordInjuryV5>();
         public SaveRecordIdeoV5 ideo;
         public List<string> abilities = new List<string>();
         public string compsXml = null;
         public List<string> savedComps = new List<string>();
+        public List<string> hediffXmls = null;
+        public SaveRecordGenesV5 genes;
+        public List<SaveRecordHediffV5> hediffs = null;
 
         // Deprecated.  Here for backwards compatibility with V4
         public List<string> traitNames = new List<string>();
@@ -57,6 +65,7 @@ namespace EdB.PrepareCarefully {
         }
 
         public SaveRecordPawnV5(CustomPawn pawn) {
+            this.pawn = pawn.Pawn;
             this.id = pawn.Id;
             this.thingDef = pawn.Pawn.def.defName;
             this.type = pawn.Type.ToString();
@@ -70,14 +79,14 @@ namespace EdB.PrepareCarefully {
             this.pawnKindDef = pawn.OriginalKindDef?.defName ?? pawn.Pawn.kindDef.defName;
             this.originalFactionDef = pawn.OriginalFactionDef?.defName;
             this.gender = pawn.Gender;
-            this.adulthood = pawn.Adulthood?.identifier ?? pawn.LastSelectedAdulthoodBackstory?.identifier;
-            this.childhood = pawn.Childhood?.identifier;
+            this.adulthood = pawn.Adulthood?.defName ?? pawn.LastSelectedAdulthoodBackstory?.defName;
+            this.childhood = pawn.Childhood?.defName;
             this.skinColor = pawn.Pawn.story.SkinColor;
-            this.melanin = pawn.Pawn.story.melanin;
+            this.melanin = pawn.MelaninLevel;
             this.hairDef = pawn.HairDef.defName;
-            this.hairColor = pawn.Pawn.story.hairColor;
-            this.headGraphicPath = pawn.HeadGraphicPath;
+            this.hairColor = pawn.Pawn.story.HairColor;
             this.bodyType = pawn.BodyType.defName;
+            this.headType = pawn.HeadType.defName;
             this.beard = pawn.Beard?.defName;
             this.faceTattoo = pawn.FaceTattoo?.defName;
             this.bodyTattoo = pawn.BodyTattoo?.defName;
@@ -88,6 +97,9 @@ namespace EdB.PrepareCarefully {
             this.age = 0;
             this.biologicalAge = pawn.BiologicalAge;
             this.chronologicalAge = pawn.ChronologicalAge;
+            this.biologicalAgeInTicks = pawn.BiologicalAgeInTicks;
+            this.chronologicalAgeInTicks = pawn.ChronologicalAgeInTicks;
+            
             foreach (var trait in pawn.Traits) {
                 if (trait != null) {
                     this.traits.Add(new SaveRecordTraitV5() {
@@ -120,7 +132,7 @@ namespace EdB.PrepareCarefully {
             }
             OptionsHealth healthOptions = PrepareCarefully.Instance.Providers.Health.GetOptions(pawn);
             foreach (Implant implant in pawn.Implants) {
-                var saveRecord = new SaveRecordImplantV3(implant);
+                var saveRecord = new SaveRecordImplantV5(implant);
                 if (implant.BodyPartRecord != null) {
                     UniqueBodyPart part = healthOptions.FindBodyPartsForRecord(implant.BodyPartRecord);
                     if (part != null && part.Index > 0) {
@@ -130,7 +142,7 @@ namespace EdB.PrepareCarefully {
                 this.implants.Add(saveRecord);
             }
             foreach (Injury injury in pawn.Injuries) {
-                var saveRecord = new SaveRecordInjuryV3(injury);
+                var saveRecord = new SaveRecordInjuryV5(injury);
                 if (injury.BodyPartRecord != null) {
                     UniqueBodyPart part = healthOptions.FindBodyPartsForRecord(injury.BodyPartRecord);
                     if (part != null && part.Index > 0) {
@@ -155,6 +167,24 @@ namespace EdB.PrepareCarefully {
                 }
                 //Logger.Debug(string.Join(", ", pawn.Pawn.ideo.Ideo?.memes.Select(m => m.defName)));
             }
+            if (ModsConfig.BiotechActive) {
+                this.genes = new SaveRecordGenesV5() {
+                    xenotypeDef = pawn.Pawn.genes?.Xenotype?.defName,
+                    customXenotypeName = pawn.Pawn.genes?.CustomXenotype?.name,
+                    endogenes = pawn.Pawn.genes?.Endogenes.ConvertAll(g => g.def.defName),
+                    xenogenes = pawn.Pawn.genes?.Xenogenes.ConvertAll(g => g.def.defName)
+                };
+            }
+
+            if (pawn.Pawn?.health?.hediffSet?.hediffs != null) {
+                hediffs = new List<SaveRecordHediffV5>();
+                foreach (var hediff in pawn.Pawn.health.hediffSet.hediffs) {
+                    hediffs.Add(new SaveRecordHediffV5() {
+                        Pawn = pawn.Pawn,
+                        Hediff = hediff
+                    });
+                }
+            }
 
             pawnCompsSaver = new PawnCompsSaver(pawn.Pawn, DefaultPawnCompRules.RulesForSaving);
         }
@@ -175,6 +205,7 @@ namespace EdB.PrepareCarefully {
             Scribe_Values.Look<Color>(ref this.skinColor, "skinColor", Color.white, false);
             Scribe_Values.Look<float>(ref this.melanin, "melanin", -1.0f, false);
             Scribe_Values.Look<string>(ref this.bodyType, "bodyType", null, false);
+            Scribe_Values.Look<string>(ref this.headType, "headType", null, false);
             Scribe_Values.Look<string>(ref this.headGraphicPath, "headGraphicPath", null, false);
             Scribe_Values.Look<string>(ref this.hairDef, "hairDef", null, false);
             Scribe_Values.Look<Color>(ref this.hairColor, "hairColor", Color.white, false);
@@ -188,26 +219,29 @@ namespace EdB.PrepareCarefully {
             Scribe_Values.Look<Color?>(ref this.favoriteColor, "favoriteColor", null, false);
             Scribe_Values.Look<int>(ref this.biologicalAge, "biologicalAge", 0, false);
             Scribe_Values.Look<int>(ref this.chronologicalAge, "chronologicalAge", 0, false);
+            Scribe_Values.Look<long?>(ref this.biologicalAgeInTicks, "biologicalAgeInTicks", null, false);
+            Scribe_Values.Look<long?>(ref this.chronologicalAgeInTicks, "chronologicalAgeInTicks", null, false);
             Scribe_Collections.Look<SaveRecordSkillV4>(ref this.skills, "skills", LookMode.Deep, null);
             Scribe_Collections.Look<SaveRecordApparelV4>(ref this.apparel, "apparel", LookMode.Deep, null);
             Scribe_Deep.Look<SaveRecordIdeoV5>(ref this.ideo, "ideo");
+            Scribe_Deep.Look<SaveRecordGenesV5>(ref this.genes, "genes");
             Scribe_Collections.Look<string>(ref this.abilities, "abilities", LookMode.Value, null);
 
             if (Scribe.mode == LoadSaveMode.Saving) {
-                Scribe_Collections.Look<SaveRecordImplantV3>(ref this.implants, "implants", LookMode.Deep, null);
+                Scribe_Collections.Look<SaveRecordImplantV5>(ref this.implants, "implants", LookMode.Deep, null);
             }
             else {
                 if (Scribe.loader.curXmlParent["implants"] != null) {
-                    Scribe_Collections.Look<SaveRecordImplantV3>(ref this.implants, "implants", LookMode.Deep, null);
+                    Scribe_Collections.Look<SaveRecordImplantV5>(ref this.implants, "implants", LookMode.Deep, null);
                 }
             }
 
             if (Scribe.mode == LoadSaveMode.Saving) {
-                Scribe_Collections.Look<SaveRecordInjuryV3>(ref this.injuries, "injuries", LookMode.Deep, null);
+                Scribe_Collections.Look<SaveRecordInjuryV5>(ref this.injuries, "injuries", LookMode.Deep, null);
             }
             else {
                 if (Scribe.loader.curXmlParent["injuries"] != null) {
-                    Scribe_Collections.Look<SaveRecordInjuryV3>(ref this.injuries, "injuries", LookMode.Deep, null);
+                    Scribe_Collections.Look<SaveRecordInjuryV5>(ref this.injuries, "injuries", LookMode.Deep, null);
                 }
             }
 
@@ -225,6 +259,10 @@ namespace EdB.PrepareCarefully {
                     }
                 }
                 Scribe_Collections.Look<string>(ref this.savedComps, "savedComps");
+            }
+
+            if (Scribe.mode == LoadSaveMode.Saving) {
+                Scribe_Collections.Look<SaveRecordHediffV5>(ref this.hediffs, "hediffs", LookMode.Deep, null);
             }
 
         }

@@ -34,7 +34,8 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="0Harmony">
-      <HintPath>Libraries\Harmony\2.0\0Harmony.dll</HintPath>
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>Libraries\Harmony\2.2.2\0Harmony.dll</HintPath>
     </Reference>
     <Reference Include="Assembly-CSharp, Version=1.3.7907.24831, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
@@ -58,6 +59,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Source\AgeModifier.cs" />
     <Compile Include="Source\AlienRace.cs" />
     <Compile Include="Source\AlienRaceBodyAddon.cs" />
     <Compile Include="Source\AnimalDatabase.cs" />
@@ -80,13 +82,13 @@
     <Compile Include="Source\ExtensionsDictionary.cs" />
     <Compile Include="Source\ExtensionsEnumerable.cs" />
     <Compile Include="Source\FilterBackstoryMatchesFaction.cs" />
+    <Compile Include="Source\PanelXenotype.cs" />
     <Compile Include="Source\PanelModule.cs" />
     <Compile Include="Source\PanelAbilities.cs" />
     <Compile Include="Source\PanelBackstory.cs" />
     <Compile Include="Source\PanelFaction.cs" />
     <Compile Include="Source\PanelHealth.cs" />
     <Compile Include="Source\PanelIdeo.cs" />
-    <Compile Include="Source\PanelModuleAge.cs" />
     <Compile Include="Source\PanelTitles.cs" />
     <Compile Include="Source\PanelTraits.cs" />
     <Compile Include="Source\InitializationException.cs" />
@@ -119,7 +121,6 @@
     <Compile Include="Source\FilterBackstoryNoPenalties.cs" />
     <Compile Include="Source\FilterBackstorySkillAdjustment.cs" />
     <Compile Include="Source\GenStep_CustomScatterThings.cs" />
-    <Compile Include="Source\CustomHeadType.cs" />
     <Compile Include="Source\IRelationshipWorker.cs" />
     <Compile Include="Source\LabelTrimmer.cs" />
     <Compile Include="Source\OptionsApparel.cs" />
@@ -219,7 +220,11 @@
     <Compile Include="Source\PawnCompsSaver.cs" />
     <Compile Include="Source\Version5\PawnLoaderV5.cs" />
     <Compile Include="Source\Version5\PresetLoaderV5.cs" />
+    <Compile Include="Source\Version5\SaveRecordGenesV5.cs" />
+    <Compile Include="Source\Version5\SaveRecordHediffV5.cs" />
     <Compile Include="Source\Version5\SaveRecordIdeoV5.cs" />
+    <Compile Include="Source\Version5\SaveRecordImplantV5.cs" />
+    <Compile Include="Source\Version5\SaveRecordInjuryV5.cs" />
     <Compile Include="Source\Version5\SaveRecordPawnV5.cs" />
     <Compile Include="Source\Version5\SaveRecordPresetV5.cs" />
     <Compile Include="Source\Version5\SaveRecordTraitV5.cs" />
@@ -227,7 +232,6 @@
     <Compile Include="Source\Injury.cs" />
     <Compile Include="Source\InjuryOption.cs" />
     <Compile Include="Source\CustomPawn.cs" />
-    <Compile Include="Source\PawnColorUtils.cs" />
     <Compile Include="Source\Dialog_Confirm.cs" />
     <Compile Include="Source\ThingCache.cs" />
     <Compile Include="Source\Page_PrepareCarefully.cs" />
@@ -283,4 +287,8 @@
     <None Include="Libraries\README.md" />
   </ItemGroup>
   <ItemGroup />
+  <PropertyGroup>
+    <PostBuildEvent>cd $(SolutionDir)
+deploy.bat</PostBuildEvent>
+  </PropertyGroup>
 </Project>

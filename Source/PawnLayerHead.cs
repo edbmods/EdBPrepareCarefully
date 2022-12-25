@@ -23,7 +23,7 @@ namespace EdB.PrepareCarefully {
 
         public override ColorSelectorType ColorSelectorType {
             get {
-                return ColorSelectorType.RGB;
+                return ColorSelectorType.Skin;
             }
         }
 

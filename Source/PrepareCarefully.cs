@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using Verse;
+using static RimWorld.ColonistBar;
 
 namespace EdB.PrepareCarefully {
 
@@ -141,7 +142,6 @@ namespace EdB.PrepareCarefully {
             Textures.Reset();
             Clear();
             InitializeProviders();
-            PawnColorUtils.InitializeColors();
             InitializePawns();
             InitializeRelationshipManager(this.pawns);
             InitializeDefaultEquipment();
@@ -186,8 +186,6 @@ namespace EdB.PrepareCarefully {
             Providers.Titles = new ProviderTitles();
         }
 
-        // TODO:
-        // Think about whether or not this is the best approach.  Might need to do a bug report for the vanilla game?
         // The tribal scenario adds a weapon with an invalid thing/stuff combination (jade knife).  The 
         // knife ThingDef should allow the jade material, but it does not.  We need this workaround to
         // add the normally disallowed equipment to our equipment database.
@@ -290,6 +288,28 @@ namespace EdB.PrepareCarefully {
                 }
             }
 
+            // Go through starting possessions
+            foreach (var pair in Verse.Find.GameInitData.startingPossessions) {
+                foreach (var e in pair.Value) {
+                    int count = e.Count;
+                    ThingDef thingDef = e.ThingDef;
+                    ThingDef stuffDef = null;
+                    EquipmentKey key = new EquipmentKey(thingDef);
+                    EquipmentRecord entry = equipmentDatabase.LookupEquipmentRecord(key);
+                    if (entry == null) {
+                        entry = AddNonStandardScenarioEquipmentEntry(key);
+                    }
+                    if (entry != null) {
+                        AddEquipment(entry, count);
+                    }
+                    else {
+                        Logger.Warning(String.Format("Couldn't initialize all scenario equipment.  Didn't find an equipment entry for {0} ({1})",
+                            thingDef, stuffDef != null ? stuffDef.defName : "no material"));
+                    }
+                }
+
+            }
+
             //index = 0;
             //foreach (ScenPart part in Verse.Find.Scenario.AllParts) {
             //    Logger.Debug(String.Format("[{0}] Replaced? {1}: {2} {3}", index, ReplacedScenarioParts.Contains(part), part.Label, String.Join(", ", part.GetSummaryListEntries("PlayerStartsWith"))));
@@ -349,16 +369,38 @@ namespace EdB.PrepareCarefully {
             pawns.Clear();
         }
         public void AddPawn(CustomPawn customPawn) {
-            PreloadPawnEquipment(customPawn.Pawn);
+            PreloadPawnEquipment(customPawn);
             pawns.Add(customPawn);
         }
-        protected void PreloadPawnEquipment(Pawn pawn) {
+        protected void PreloadPawnEquipment(CustomPawn customPawn) {
+            Pawn pawn = customPawn.Pawn;
             if (pawn.equipment != null) {
                 foreach (var e in pawn.equipment.AllEquipmentListForReading) {
                     if (e.Stuff != null) {
                         equipmentDatabase.PreloadDefinition(e.Stuff);
                     }
                     equipmentDatabase.PreloadDefinition(e.def);
+                }
+            }
+            if (pawn.inventory != null) {
+                foreach (var e in pawn.inventory.GetDirectlyHeldThings()) {
+                    if (e.Stuff != null) {
+                        equipmentDatabase.PreloadDefinition(e.Stuff);
+                    }
+                    equipmentDatabase.PreloadDefinition(e.def);
+
+                    // If the pawn is a colonist, add their inventory to the colony equipment
+                    if (customPawn.Type == CustomPawnType.Colonist) {
+                        EquipmentRecord entry = equipmentDatabase.LookupEquipmentRecord(new EquipmentKey(e.def, e.Stuff));
+                        if (entry != null) {
+                            if (e.stackCount > 1) {
+                                AddEquipment(entry, e.stackCount);
+                            }
+                            else {
+                                AddEquipment(entry);
+                            }
+                        }
+                    }
                 }
             }
             if (pawn.apparel != null) {

@@ -9,113 +9,36 @@ using System.Text;
 using UnityEngine;
 using Verse;
 using Verse.Sound;
+using System.Runtime.Remoting.Messaging;
 
 namespace EdB.PrepareCarefully {
     public class OptionsHeadType {
-        protected List<Graphic> heads = new List<Graphic>();
-        protected List<string> headPaths = new List<string>();
-        protected List<CustomHeadType> maleHeadTypes = new List<CustomHeadType>();
-        protected List<CustomHeadType> femaleHeadTypes = new List<CustomHeadType>();
-        protected List<CustomHeadType> noGenderHeaderTypes = new List<CustomHeadType>();
-        public Dictionary<string, CustomHeadType> pathDictionary = new Dictionary<string, CustomHeadType>();
-        public List<CustomHeadType> headTypes = new List<CustomHeadType>();
+        protected List<HeadTypeDef> maleHeadTypes = new List<HeadTypeDef>();
+        protected List<HeadTypeDef> femaleHeadTypes = new List<HeadTypeDef>();
+        protected List<HeadTypeDef> noGenderHeaderTypes = new List<HeadTypeDef>();
+        public List<HeadTypeDef> headTypes = new List<HeadTypeDef>();
         protected int count = 0;
         public OptionsHeadType() {
         }
-        public void AddHeadType(CustomHeadType headType) {
+        public void AddHeadType(HeadTypeDef headType) {
             headTypes.Add(headType);
-            //Logger.Debug(headType.ToString());
-            if (!headType.GraphicPath.NullOrEmpty() && !pathDictionary.ContainsKey(headType.GraphicPath)) {
-                pathDictionary.Add(headType.GraphicPath, headType);
+            if (headType.gender == Gender.Male) {
+                maleHeadTypes.Add(headType);
             }
-            if (!headType.AlternateGraphicPath.NullOrEmpty() && !pathDictionary.ContainsKey(headType.AlternateGraphicPath)) {
-                pathDictionary.Add(headType.AlternateGraphicPath, headType);
+            else if (headType.gender == Gender.Female) {
+                femaleHeadTypes.Add(headType);
+            }
+            else {
+                noGenderHeaderTypes.Add(headType);
             }
         }
-        public IEnumerable<CustomHeadType> GetHeadTypesForGender(Gender gender) {
-            return headTypes.Where((CustomHeadType headType) => {
-                return (headType.Gender == gender || headType.Gender == null);
+        public IEnumerable<HeadTypeDef> GetHeadTypesForGender(Gender gender) {
+            return headTypes.Where((HeadTypeDef headType) => {
+                return (headType.gender == gender || headType.gender == Gender.None);
             });
         }
-        public CustomHeadType FindHeadTypeForPawn(Pawn pawn) {
-            var alienComp = ProviderAlienRaces.FindAlienCompForPawn(pawn);
-            if (alienComp == null) {
-                var result = FindHeadTypeByGraphicsPath(pawn.story.HeadGraphicPath);
-                if (result == null) {
-                    Logger.Warning("Did not find head type for path: " + pawn.story.HeadGraphicPath);
-                }
-                return result;
-            }
-            else {
-                string crownType = ProviderAlienRaces.GetCrownTypeFromComp(alienComp);
-                var result = FindHeadTypeByCrownTypeAndGender(crownType, pawn.gender);
-                if (result == null) {
-                    Logger.Warning("Did not find head type for alien crown type: " + crownType);
-                }
-                return result;
-            }
-        }
-        public CustomHeadType FindHeadTypeByGraphicsPath(string graphicsPath) {
-            if (pathDictionary.TryGetValue(graphicsPath, out CustomHeadType result)) {
-                return result;
-            }
-            else {
-                return null;
-            }
-        }
-        public CustomHeadType FindHeadTypeByCrownType(string crownType) {
-            return headTypes.Where(t => {
-                return t.AlienCrownType == crownType;
-            }).FirstOrDefault();
-        }
-        public CustomHeadType FindHeadTypeByCrownTypeAndGender(string crownType, Gender gender) {
-            return headTypes.Where(t => {
-                return t.AlienCrownType == crownType && (t.Gender == null || t.Gender == gender);
-            }).FirstOrDefault();
-        }
-        public CustomHeadType FindHeadTypeForGender(CustomHeadType headType, Gender gender) {
-            if (headType.Gender == null || headType.Gender == gender) {
-                return headType;
-            }
-
-            if (headType.AlienCrownType.NullOrEmpty()) {
-                string graphicsPath = headType.GraphicPath;
-                string prefixReplacementString = "/" + gender.ToString() + "_";
-                string directoryReplacementString = "/" + gender.ToString() + "/";
-                if (headType.Gender == Gender.Male) {
-                    graphicsPath = graphicsPath.Replace("/Male/", directoryReplacementString);
-                    graphicsPath = graphicsPath.Replace("/Male_", prefixReplacementString);
-                }
-                if (headType.Gender == Gender.Female) {
-                    graphicsPath = graphicsPath.Replace("/Female/", directoryReplacementString);
-                    graphicsPath = graphicsPath.Replace("/Female_", prefixReplacementString);
-                }
-                else {
-                    graphicsPath = graphicsPath.Replace("/None/", directoryReplacementString);
-                    graphicsPath = graphicsPath.Replace("/None_", prefixReplacementString);
-                }
-                CustomHeadType result = FindHeadTypeByGraphicsPath(graphicsPath);
-                if (result == null) {
-                    Logger.Warning("Could not find head type for gender: " + graphicsPath);
-                }
-                return result != null ? result : headType;
-            }
-            else {
-                Gender targetGender = gender;
-                if (headType.Gender == Gender.Male) {
-                    targetGender = Gender.Female;
-                }
-                if (headType.Gender == Gender.Female) {
-                    targetGender = Gender.Male;
-                }
-                else {
-                    return headType;
-                }
-                var result = headTypes.Where(h => {
-                    return h.AlienCrownType == headType.AlienCrownType && h.Gender == targetGender;
-                }).FirstOrDefault();
-                return result != null ? result : headType;
-            }
+        public HeadTypeDef FindHeadTypeForPawn(Pawn pawn) {
+            return pawn.story.headType;
         }
     }
 }

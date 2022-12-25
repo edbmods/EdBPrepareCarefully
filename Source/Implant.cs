@@ -12,6 +12,7 @@ namespace EdB.PrepareCarefully {
         public string label = "";
         public RecipeDef recipe = null;
         protected Hediff hediff = null;
+        protected HediffDef hediffDef = null;
 
         protected string tooltip;
 
@@ -32,6 +33,12 @@ namespace EdB.PrepareCarefully {
             get => hediff;
             set => hediff = value;
         }
+
+        public HediffDef HediffDef {
+            get => hediffDef;
+            set => hediffDef = value;
+        }
+
 
         override public string ChangeName {
             get {
@@ -84,7 +91,7 @@ namespace EdB.PrepareCarefully {
                 return false;
             }
 
-            return (BodyPartRecord == option.BodyPartRecord) && (recipe == option.recipe);
+            return (BodyPartRecord == option.BodyPartRecord) && (recipe == option.recipe) && (hediffDef == option.hediffDef);
         }
 
         public bool Equals(Implant option) {
@@ -92,21 +99,24 @@ namespace EdB.PrepareCarefully {
                 return false;
             }
 
-            return (BodyPartRecord == option.BodyPartRecord) && (recipe == option.recipe);
-        }
-
-        public override int GetHashCode() {
-            unchecked {
-                int a = BodyPartRecord != null ? BodyPartRecord.GetHashCode() : 0;
-                int b = recipe != null ? recipe.GetHashCode() : 0;
-                return 31 * a + b;
-            }
+            return (BodyPartRecord == option.BodyPartRecord) && (recipe == option.recipe) && (hediffDef == option.hediffDef);
         }
 
         public override void AddToPawn(CustomPawn customPawn, Pawn pawn) {
-            if (recipe != null && BodyPartRecord != null) {
+            Logger.Debug("Adding implant to pawn, recipe = " + this.recipe?.defName + ", hediff = " + this.hediffDef ?.defName);
+            if (BodyPartRecord == null) {
+                Logger.Warning("Could not add implant to pawn because no BodyPartRecord is defined");
+            }
+            if (recipe != null) {
                 this.hediff = HediffMaker.MakeHediff(recipe.addsHediff, pawn, BodyPartRecord);
                 pawn.health.AddHediff(hediff, BodyPartRecord, new DamageInfo?());
+            }
+            else if (hediffDef != null) {
+                this.hediff = HediffMaker.MakeHediff(hediffDef, pawn, BodyPartRecord);
+                pawn.health.AddHediff(hediff, BodyPartRecord, new DamageInfo?());
+            }
+            else {
+                Logger.Warning("Could not add implant to pawn because no RecipeDef or HediffDef is defined");
             }
         }
 
@@ -152,6 +162,14 @@ namespace EdB.PrepareCarefully {
                 }
             }
             tooltip = stringBuilder.ToString();
+        }
+
+        public override int GetHashCode() {
+            var hashCode = -775691452;
+            hashCode = hashCode * -1521134295 + EqualityComparer<BodyPartRecord>.Default.GetHashCode(BodyPartRecord);
+            hashCode = hashCode * -1521134295 + EqualityComparer<RecipeDef>.Default.GetHashCode(recipe);
+            hashCode = hashCode * -1521134295 + EqualityComparer<HediffDef>.Default.GetHashCode(hediffDef);
+            return hashCode;
         }
     }
 }

@@ -1,10 +1,11 @@
-﻿using RimWorld;
+using RimWorld;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using Verse;
 namespace EdB.PrepareCarefully {
     public class ProviderEquipmentTypes {
+
         protected List<EquipmentType> types = new List<EquipmentType>();
         protected Dictionary<EquipmentType, List<EquipmentRecord>> equipmentDictionary =
                 new Dictionary<EquipmentType, List<EquipmentRecord>>();
@@ -54,5 +55,6 @@ namespace EdB.PrepareCarefully {
                 return null;
             }
         }
+
     }
 }

@@ -35,13 +35,13 @@ namespace EdB.PrepareCarefully {
                 //Logger.Debug("Screen safe area: " + Screen.safeArea);
                 //Logger.Debug("UI scale: " + Prefs.UIScale);
 
-                //Vector2 maxSize = new Vector2(Screen.safeArea.width / Prefs.UIScale, Screen.safeArea.height / Prefs.UIScale);
-                //Vector2 minSize = Page.StandardSize / Prefs.UIScale;
+                Vector2 maxSize = new Vector2(Screen.safeArea.width / Prefs.UIScale, Screen.safeArea.height / Prefs.UIScale);
+                Vector2 minSize = Page.StandardSize / Prefs.UIScale;
 
-                //Vector2 padding = new Vector2(64, 64) / Prefs.UIScale;
-                //maxSize -= padding;
+                Vector2 padding = new Vector2(64, 64) / Prefs.UIScale;
+                maxSize -= padding;
 
-                //Vector2 largeSize = new Vector2(1350, Page.StandardSize.y);
+                Vector2 largeSize = new Vector2(1350, Page.StandardSize.y);
 
                 //if (maxSize.x >= largeSize.x && maxSize.y >= largeSize.y) {
                 //    LargeUI = true;
@@ -94,7 +94,8 @@ namespace EdB.PrepareCarefully {
                 currentTab.TabRecord = tabRecord;
                 tabRecords.Add(tabRecord);
             }
-
+            State.CurrentTab = tabViewPawns;
+            tabViewPawns.TabRecord.selected = true;
         }
 
         override public void OnAcceptKeyPressed() {
@@ -140,9 +141,12 @@ namespace EdB.PrepareCarefully {
         public override void DoWindowContents(Rect inRect) {
             pawnListActionThisFrame = false;
             base.DrawPageTitle(inRect);
-            Rect mainRect = base.GetMainRect(inRect, 30f, false);
+            Rect mainRect = base.GetMainRect(inRect, 0, false).InsetBy(0, -6, 0, 0);
             Widgets.DrawMenuSection(mainRect);
-            TabDrawer.DrawTabs(mainRect, tabRecords);
+            float tabWidth = 180.0f;
+            float tabGroupWidth = tabRecords.Count * tabWidth;
+            float tabRectX = (mainRect.width * 0.5f) - (tabGroupWidth * 0.5f);
+            TabDrawer.DrawTabs(new Rect(tabRectX, mainRect.y, tabGroupWidth, mainRect.height), tabRecords, 180.0f);
 
             // Determine the size of the tab view and draw the current tab.
             Vector2 SizePageMargins = new Vector2(16, 16);
@@ -278,7 +282,7 @@ namespace EdB.PrepareCarefully {
                     GUI.color = Style.ColorText;
                     label = "EdB.PC.Page.Points.Spent".Translate(points);
                 }
-                Rect rect = new Rect(parentRect.width - costLabelWidth.Value, 2, costLabelWidth.Value, 32);
+                Rect rect = new Rect(parentRect.width - costLabelWidth.Value - 40, 4, costLabelWidth.Value, 32);
                 Widgets.Label(rect, label);
 
                 string tooltipText = "";
@@ -298,15 +302,20 @@ namespace EdB.PrepareCarefully {
                 Text.Anchor = TextAnchor.UpperLeft;
                 Text.Font = GameFont.Small;
 
-                string optionLabel;
-                float optionTop = rect.y;
-                optionLabel = "EdB.PC.Page.Points.UsePoints".Translate();
-                Vector2 size = Text.CalcSize(optionLabel);
-                Rect optionRect = new Rect(parentRect.width - costLabelWidth.Value - size.x - 100, optionTop, size.x + 10, 32);
-                Widgets.Label(optionRect, optionLabel);
-                GUI.color = Color.white;
-                TooltipHandler.TipRegion(optionRect, "EdB.PC.Page.Points.UsePoints.Tip".Translate());
-                Widgets.Checkbox(new Vector2(optionRect.x + optionRect.width, optionRect.y - 3), ref Config.pointsEnabled, 24, false);
+                if (WidgetDropdown.Button(new Rect(rect.xMax + 8, rect.yMin - 4, 31, 31), "", true, false, true)) {
+                    List<FloatMenuOption> list = new List<FloatMenuOption>();
+                    if (Config.pointsEnabled) {
+                        list.Add(new FloatMenuOption("EdB.PC.Page.Points.DisablePoints".Translate(), () => {
+                            Config.pointsEnabled = false;
+                        }));
+                    }
+                    else {
+                        list.Add(new FloatMenuOption("EdB.PC.Page.Points.UsePoints".Translate(), () => {
+                            Config.pointsEnabled = true;
+                        }));
+                    }
+                    Find.WindowStack.Add(new FloatMenu(list, null, false));
+                }
             }
             finally {
                 Text.Anchor = TextAnchor.UpperLeft;
@@ -365,7 +374,7 @@ namespace EdB.PrepareCarefully {
             };
 
             tabViewPawns.PanelBackstory.BackstoryUpdated += pawnController.UpdateBackstory;
-            tabViewPawns.PanelBackstory.BackstoryUpdated += (BackstorySlot slot, Backstory backstory) => { pawnController.CheckPawnCapabilities(); };
+            tabViewPawns.PanelBackstory.BackstoryUpdated += (BackstorySlot slot, BackstoryDef backstory) => { pawnController.CheckPawnCapabilities(); };
             tabViewPawns.PanelBackstory.BackstoriesRandomized += pawnController.RandomizeBackstories;
             tabViewPawns.PanelBackstory.BackstoriesRandomized += () => { pawnController.CheckPawnCapabilities(); };
 
@@ -409,6 +418,7 @@ namespace EdB.PrepareCarefully {
             };
             pawnController.PawnAdded += (CustomPawn pawn) => { pawnController.CheckPawnCapabilities(); };
             pawnController.PawnReplaced += (CustomPawn pawn) => { pawnController.CheckPawnCapabilities(); };
+            pawnController.PawnReplaced += (CustomPawn pawn) => { tabViewPawns.PanelAppearance.UpdatePawnLayers(); };
 
             tabViewPawns.PanelHealth.InjuryAdded += pawnController.AddInjury;
             tabViewPawns.PanelHealth.ImplantAdded += pawnController.AddImplant;
