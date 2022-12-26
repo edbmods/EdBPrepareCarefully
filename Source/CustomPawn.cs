@@ -302,8 +302,24 @@ namespace EdB.PrepareCarefully {
             InitializeInjuriesAndImplantsFromPawn(pawn);
 
             if (ModsConfig.BiotechActive) {
-                RandomizeXenotype = pawn.genes.Xenotype;
-                RandomizeCustomXenotype = pawn.genes.CustomXenotype;
+                var customXenotypes = ReflectionUtil.GetStaticPropertyValue<List<CustomXenotype>>(typeof(CharacterCardUtility), "CustomXenotypes");
+                foreach (CustomXenotype c in customXenotypes) {
+                    if (GeneUtility.PawnIsCustomXenotype(pawn, c)) {
+                        customXenotype = c;
+                        break;
+                    }
+                }
+                XenotypeDef xenotypeDef = ReflectionUtil.GetFieldValue<XenotypeDef>(pawn.genes, "xenotype");
+                if (customXenotype != null) {
+                    RandomizeCustomXenotype = customXenotype;
+                    RandomizeXenotype = null;
+                    xenotype = null;
+                }
+                else {
+                    RandomizeCustomXenotype = null;
+                    xenotype = pawn.genes.Xenotype;
+                    RandomizeXenotype = xenotype;
+                }
                 RandomizeDevelopmentalStage = pawn.DevelopmentalStage;
             }
 
@@ -662,6 +678,20 @@ namespace EdB.PrepareCarefully {
 
         public void SetOriginalSkillLevel(SkillDef def, int value) {
             originalSkillLevels[def] = value;
+        }
+
+        private CustomXenotype customXenotype = null;
+        private XenotypeDef xenotype = null;
+
+        public CustomXenotype CustomXenotype {
+            get {
+                return customXenotype;
+            }
+        }
+        public XenotypeDef Xenotype {
+            get {
+                return xenotype;
+            }
         }
 
         public NameTriple Name {
