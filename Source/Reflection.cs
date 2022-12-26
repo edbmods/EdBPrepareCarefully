@@ -13,7 +13,13 @@ namespace EdB.PrepareCarefully {
             public static IEnumerable<WorkTags> WorkTagsFrom(WorkTags workTags) {
                 return (IEnumerable<WorkTags>)ReflectionCache.Instance.CharacterCardUtility_WorkTagsFrom.Invoke(null, new object[] { workTags });
             }
+            public static List<CustomXenotype> CustomXenotypes {
+                get {
+                    return ReflectionUtil.GetStaticPropertyValue<List<CustomXenotype>>(typeof(RimWorld.CharacterCardUtility), "CustomXenotypes");
+                }
+            }
         }
+
         public static class ScenPart_StartingAnimal {
             public static IEnumerable<PawnKindDef> RandomPets(RimWorld.ScenPart_StartingAnimal scenPart) {
                 return (IEnumerable<PawnKindDef>)ReflectionCache.Instance.ScenPart_StartingAnimal_RandomPets.Invoke(scenPart, null);

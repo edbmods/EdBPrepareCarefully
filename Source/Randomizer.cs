@@ -71,10 +71,15 @@ namespace EdB.PrepareCarefully {
                 FixedChronologicalAge = pawn.ageTracker.AgeChronologicalYears,
                 FixedGender = pawn.gender,
                 FixedIdeology = pawn.Ideo,
-                DevelopmentalStage = pawn.DevelopmentalStage,
-                ForcedXenotype = pawn.genes?.Xenotype,
-                ForcedCustomXenotype = pawn.genes?.CustomXenotype
+                DevelopmentalStage = pawn.DevelopmentalStage
             };
+            CustomXenotype customXenotype = pawn.MatchGenesToCustomXenotype();
+            if (customXenotype != null) {
+                request.ForcedCustomXenotype = customXenotype;
+            }
+            else {
+                request.ForcedXenotype = pawn.genes?.Xenotype;
+            }
             Pawn result = AttemptToGeneratePawn(request.Request);
             return result;
         }

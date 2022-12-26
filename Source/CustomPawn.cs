@@ -302,14 +302,7 @@ namespace EdB.PrepareCarefully {
             InitializeInjuriesAndImplantsFromPawn(pawn);
 
             if (ModsConfig.BiotechActive) {
-                var customXenotypes = ReflectionUtil.GetStaticPropertyValue<List<CustomXenotype>>(typeof(CharacterCardUtility), "CustomXenotypes");
-                foreach (CustomXenotype c in customXenotypes) {
-                    if (GeneUtility.PawnIsCustomXenotype(pawn, c)) {
-                        customXenotype = c;
-                        break;
-                    }
-                }
-                XenotypeDef xenotypeDef = ReflectionUtil.GetFieldValue<XenotypeDef>(pawn.genes, "xenotype");
+                customXenotype = pawn.MatchGenesToCustomXenotype();
                 if (customXenotype != null) {
                     RandomizeCustomXenotype = customXenotype;
                     RandomizeXenotype = null;

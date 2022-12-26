@@ -163,5 +163,20 @@ namespace EdB.PrepareCarefully {
             field.SetValue(pawn, faction);
         }
 
+        public static CustomXenotype MatchGenesToCustomXenotype(this Pawn pawn) {
+            if (!ModsConfig.BiotechActive) {
+                return null;
+            }
+            var customXenotypes = Reflection.CharacterCardUtility.CustomXenotypes;
+            if (customXenotypes == null) {
+                return null;
+            }
+            foreach (CustomXenotype c in customXenotypes) {
+                if (GeneUtility.PawnIsCustomXenotype(pawn, c)) {
+                    return c;
+                }
+            }
+            return null;
+        }
     }
 }
