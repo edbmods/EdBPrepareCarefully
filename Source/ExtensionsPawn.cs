@@ -130,8 +130,8 @@ namespace EdB.PrepareCarefully {
             if (pawn.skills != null && pawn.skills.skills != null) {
                 pawn.skills.Notify_SkillDisablesChanged();
             }
-            Reflection.Pawn.ClearCachedDisabledWorkTypes(pawn);
-            Reflection.Pawn.ClearCachedDisabledWorkTypesPermanent(pawn);
+            Reflection.ReflectorPawn.ClearCachedDisabledWorkTypes(pawn);
+            Reflection.ReflectorPawn.ClearCachedDisabledWorkTypesPermanent(pawn);
         }
 
         public static void ClearCachedHealth(this Pawn pawn) {
@@ -167,7 +167,7 @@ namespace EdB.PrepareCarefully {
             if (!ModsConfig.BiotechActive) {
                 return null;
             }
-            var customXenotypes = Reflection.CharacterCardUtility.CustomXenotypes;
+            var customXenotypes = Reflection.ReflectorCharacterCardUtility.CustomXenotypes;
             if (customXenotypes == null) {
                 return null;
             }

@@ -247,7 +247,7 @@ namespace EdB.PrepareCarefully {
             // Get all of the hediffs that can be added via the "forced hediff" scenario part and
             // add them to a hash set so that we can quickly look them up.
             ScenPart_ForcedHediff scenPart = new ScenPart_ForcedHediff();
-            IEnumerable<HediffDef> scenPartDefs = Reflection.ScenPart_ForcedHediff.PossibleHediffs(scenPart);
+            IEnumerable<HediffDef> scenPartDefs = Reflection.ReflectorScenPart_ForcedHediff.PossibleHediffs(scenPart);
             HashSet<HediffDef> scenPartDefSet = new HashSet<HediffDef>(scenPartDefs);
             
             // Add injury options.

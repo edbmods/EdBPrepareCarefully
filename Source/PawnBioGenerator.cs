@@ -17,12 +17,12 @@ namespace EdB.PrepareCarefully {
             });
             // Settle for a default category filter if none was chosen.
             if (categoryFilter == null) {
-                categoryFilter = Reflection.PawnBioAndNameGenerator.GetFallbackCategoryGroup();
+                categoryFilter = Reflection.ReflectorPawnBioAndNameGenerator.GetFallbackCategoryGroup();
             }
             // Choose a weighted bio.
             return (from bio in SolidBioDatabase.allBios.TakeRandom(20)
-                    where Reflection.PawnBioAndNameGenerator.IsBioUseable(bio, categoryFilter, kind, gender, requiredLastName)
-                    select bio).TryRandomElementByWeight(new Func<PawnBio, float>(Reflection.PawnBioAndNameGenerator.BioSelectionWeight), out result);
+                    where Reflection.ReflectorPawnBioAndNameGenerator.IsBioUseable(bio, categoryFilter, kind, gender, requiredLastName)
+                    select bio).TryRandomElementByWeight(new Func<PawnBio, float>(Reflection.ReflectorPawnBioAndNameGenerator.BioSelectionWeight), out result);
         }
     }
 }

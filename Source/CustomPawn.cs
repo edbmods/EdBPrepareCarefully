@@ -1501,7 +1501,7 @@ namespace EdB.PrepareCarefully {
             List<string> incapableList = new List<string>();
             WorkTags combinedDisabledWorkTags = pawn.story.DisabledWorkTagsBackstoryAndTraits;
             if (combinedDisabledWorkTags != WorkTags.None) {
-                IEnumerable<WorkTags> list = Reflection.CharacterCardUtility.WorkTagsFrom(combinedDisabledWorkTags);
+                IEnumerable<WorkTags> list = Reflection.ReflectorCharacterCardUtility.WorkTagsFrom(combinedDisabledWorkTags);
                 foreach (var tag in list) {
                     incapableList.Add(WorkTypeDefsUtility.LabelTranslated(tag).CapitalizeFirst());
                 }
