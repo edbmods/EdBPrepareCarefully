@@ -392,7 +392,7 @@ namespace EdB.PrepareCarefully {
                         return result;
                     }
                 }
-                return x.Label.CompareTo(y.Label);
+                return string.Compare(x.Label, y.Label);
             });
         }
     }

@@ -17,7 +17,7 @@ namespace EdB.PrepareCarefully {
             foreach (var type in types) {
                 List<EquipmentRecord> list = PrepareCarefully.Instance.EquipmentDatabase.AllEquipmentOfType(type).ToList();
                 list.Sort((EquipmentRecord a, EquipmentRecord b) => {
-                    return a.Label.CompareTo(b.Label);
+                    return string.Compare(a.Label, b.Label);
                 });
                 equipmentDictionary.Add(type, list);
             }
