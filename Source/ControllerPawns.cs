@@ -167,9 +167,9 @@ namespace EdB.PrepareCarefully {
             float adultStoryAge = alienRace == null ? providerAlienRaces.DefaultMinAgeForAdulthood : alienRace.MinAgeForAdulthood;
             //Logger.Debug(String.Format("Adulthood age for {0} is {1}", state.CurrentPawn.Pawn.def.defName, adultStoryAge));
 
-            List<BackstoryCategoryFilter> backstoryCategoryFiltersFor = Reflection.PawnBioAndNameGenerator.GetBackstoryCategoryFiltersFor(currentPawn.Pawn, factionDef);
+            List<BackstoryCategoryFilter> backstoryCategoryFiltersFor = Reflection.ReflectorPawnBioAndNameGenerator.GetBackstoryCategoryFiltersFor(currentPawn.Pawn, factionDef);
             // Generate a bio from which to get the backstories
-            if (!Reflection.PawnBioAndNameGenerator.TryGetRandomUnusedSolidBioFor(backstoryCategoryFiltersFor, kindDef, currentPawn.Gender, null, out PawnBio pawnBio)) {
+            if (!Reflection.ReflectorPawnBioAndNameGenerator.TryGetRandomUnusedSolidBioFor(backstoryCategoryFiltersFor, kindDef, currentPawn.Gender, null, out PawnBio pawnBio)) {
                 // Other mods are patching the vanilla method in ways that cause it to return false.  If that happens,
                 // we use our duplicate implementation instead.
                 var providerBackstories = PrepareCarefully.Instance.Providers.Backstories;

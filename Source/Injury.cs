@@ -112,7 +112,7 @@ namespace EdB.PrepareCarefully {
                 HediffComp_GetsPermanent getsPermanent = hediff.TryGetComp<HediffComp_GetsPermanent>();
                 if (getsPermanent != null) {
                     getsPermanent.IsPermanent = true;
-                    Reflection.HediffComp_GetsPermanent.SetPainCategory(getsPermanent, PainCategoryForFloat(painFactor == null ? 0 : painFactor.Value));
+                    Reflection.ReflectorHediffComp_GetsPermanent.SetPainCategory(getsPermanent, PainCategoryForFloat(painFactor == null ? 0 : painFactor.Value));
                 }
 
                 pawn.health.AddHediff(hediff, BodyPartRecord);

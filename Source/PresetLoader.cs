@@ -45,7 +45,7 @@ namespace EdB.PrepareCarefully {
         public static void ClearSaveablesAndCrossRefs() {
             // I don't fully understand how these cross-references and saveables are resolved, but
             // if we don't clear them out, we get null pointer exceptions.
-            Reflection.PostLoadIniter.ClearSaveablesToPostLoad(Scribe.loader.initer);
+            Reflection.ReflectorPostLoadIniter.ClearSaveablesToPostLoad(Scribe.loader.initer);
             if (Scribe.loader.crossRefs.crossReferencingExposables != null) {
                 Scribe.loader.crossRefs.crossReferencingExposables.Clear();
             }

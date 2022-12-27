@@ -323,7 +323,7 @@ namespace EdB.PrepareCarefully {
                 return animalKindDef;
             }
             if (animalKindDef == null) {
-                IEnumerable<PawnKindDef> animalKindDefs = Reflection.ScenPart_StartingAnimal.RandomPets(startingAnimal);
+                IEnumerable<PawnKindDef> animalKindDefs = Reflection.ReflectorScenPart_StartingAnimal.RandomPets(startingAnimal);
                 if (animalKindDefs != null) {
                     var enumerator = animalKindDefs.GetEnumerator();
                     if (enumerator != null) {

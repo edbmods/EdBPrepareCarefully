@@ -9,32 +9,33 @@ using Verse;
 
 namespace EdB.PrepareCarefully {
     namespace Reflection {
-        public static class CharacterCardUtility {
+        public static class ReflectorCharacterCardUtility {
             public static IEnumerable<WorkTags> WorkTagsFrom(WorkTags workTags) {
                 return (IEnumerable<WorkTags>)ReflectionCache.Instance.CharacterCardUtility_WorkTagsFrom.Invoke(null, new object[] { workTags });
             }
+            public static List<CustomXenotype> CustomXenotypes {
+                get {
+                    return ReflectionUtil.GetStaticPropertyValue<List<CustomXenotype>>(typeof(CharacterCardUtility), "CustomXenotypes");
+                }
+            }
         }
-        public static class ScenPart_StartingAnimal {
+
+        public static class ReflectorScenPart_StartingAnimal {
             public static IEnumerable<PawnKindDef> RandomPets(RimWorld.ScenPart_StartingAnimal scenPart) {
                 return (IEnumerable<PawnKindDef>)ReflectionCache.Instance.ScenPart_StartingAnimal_RandomPets.Invoke(scenPart, null);
             }
         }
-        public static class GenFilePaths {
+        public static class ReflectorGenFilePaths {
             public static string FolderUnderSaveData(string name) {
                 return (string)ReflectionCache.Instance.GenFilePaths_FolderUnderSaveData.Invoke(null, new object[] { name });
             }
         }
-        public static class ScenPart_ForcedHediff {
-            public static IEnumerable<HediffDef> PossibleHediffs(RimWorld.ScenPart_ForcedHediff scenPart) {
+        public static class ReflectorScenPart_ForcedHediff {
+            public static IEnumerable<HediffDef> PossibleHediffs(ScenPart_ForcedHediff scenPart) {
                 return (IEnumerable<HediffDef>)ReflectionCache.Instance.ScenPart_ForcedHediff_PossibleHediffs.Invoke(scenPart, null);
             }
         }
-        //public static class GraphicDatabaseHeadRecords {
-        //    public static void BuildDatabaseIfNecessary() {
-        //        ReflectionCache.Instance.GraphicDatabaseHeadRecords_BuildDatabaseIfNecessary.Invoke(null, null);
-        //    }
-        //}
-        public static class Pawn {
+        public static class ReflectorPawn {
             public static void ClearCachedDisabledWorkTypes(Verse.Pawn pawn) {
                 ReflectionCache.Instance.Pawn_CachedDisabledWorkTypes.SetValue(pawn, null);
             }
@@ -42,7 +43,7 @@ namespace EdB.PrepareCarefully {
                 ReflectionCache.Instance.Pawn_CachedDisabledWorkTypesPermanent.SetValue(pawn, null);
             }
         }
-        public static class PawnBioAndNameGenerator {
+        public static class ReflectorPawnBioAndNameGenerator {
             public static float BioSelectionWeight(PawnBio b) {
                 return (float)ReflectionCache.Instance.PawnBioAndNameGenerator_BioSelectionWeight.Invoke(null,
                     new object[] { b }
@@ -71,7 +72,7 @@ namespace EdB.PrepareCarefully {
                 return (List<string>)ReflectionCache.Instance.PawnBioAndNameGenerator_tmpNames.GetValue(null);
             }
         }
-        public static class PostLoadIniter {
+        public static class ReflectorPostLoadIniter {
             public static void ClearSaveablesToPostLoad(Verse.PostLoadIniter initer) {
                 HashSet<IExposable> saveables = (HashSet<IExposable>)ReflectionCache.Instance.PostLoadIniter_SaveablesToPostLoad.GetValue(Scribe.loader.initer);
                 if (saveables != null) {
@@ -79,8 +80,7 @@ namespace EdB.PrepareCarefully {
                 }
             }
         }
-
-        public static class HediffComp_GetsPermanent {
+        public static class ReflectorHediffComp_GetsPermanent {
             public static void SetPainCategory(Verse.HediffComp_GetsPermanent comp, PainCategory painCategory) {
                 ReflectionCache.Instance.HediffComp_GetsPermanent_PainCategory.SetValue(comp, painCategory);
             }

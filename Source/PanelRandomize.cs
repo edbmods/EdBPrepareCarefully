@@ -86,7 +86,7 @@ namespace EdB.PrepareCarefully {
                 texture = state.CurrentPawn.RandomizeXenotype.Icon;
             }
             else if (state.CurrentPawn.RandomizeCustomXenotype != null) {
-                texture = state.CurrentPawn.RandomizeCustomXenotype.IconDef.Icon;
+                texture = state.CurrentPawn.RandomizeCustomXenotype.IconDef?.Icon;
             }
             else if (state.CurrentPawn.RandomizeAnyNonArchite) {
                 texture = Textures.TextureButtonRandom;
@@ -112,6 +112,7 @@ namespace EdB.PrepareCarefully {
                         }));
                     })
                 };
+
                 foreach (XenotypeDef item in DefDatabase<XenotypeDef>.AllDefs.OrderBy((XenotypeDef x) => 0f - x.displayPriority)) {
                     XenotypeDef xenotype = item;
                     list.Add(new FloatMenuOption(xenotype.LabelCap, delegate
@@ -126,14 +127,13 @@ namespace EdB.PrepareCarefully {
                     },
                     null, 24f, (Rect r) => Widgets.InfoCardButton(r.x, r.y + 3f, xenotype) ? true : false, null, playSelectionSound: true, 0, HorizontalJustification.Left, extraPartRightJustified: true));
                 }
+
                 var customXenotypes = ReflectionUtil.GetStaticPropertyValue<List<CustomXenotype>>(typeof(CharacterCardUtility), "CustomXenotypes");
                 if (customXenotypes != null) {
                     foreach (CustomXenotype customXenotype in customXenotypes) {
                         CustomXenotype customInner = customXenotype;
                         list.Add(new FloatMenuOption(customInner.name.CapitalizeFirst() + " (" + "Custom".Translate() + ")", delegate
                         {
-                            Logger.Debug("Customized Xenotype, XenotypeDef: " + state.CurrentPawn.Pawn.genes.Xenotype?.defName);
-                            Logger.Debug("Customized Xenotype: " + state.CurrentPawn.Pawn.genes.CustomXenotype?.name);
                             state.CurrentPawn.RandomizeCustomXenotype = customInner;
                             state.CurrentPawn.RandomizeXenotype = null;
                             state.CurrentPawn.RandomizeAnyNonArchite = false;

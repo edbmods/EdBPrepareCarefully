@@ -302,8 +302,17 @@ namespace EdB.PrepareCarefully {
             InitializeInjuriesAndImplantsFromPawn(pawn);
 
             if (ModsConfig.BiotechActive) {
-                RandomizeXenotype = pawn.genes.Xenotype;
-                RandomizeCustomXenotype = pawn.genes.CustomXenotype;
+                customXenotype = pawn.MatchGenesToCustomXenotype();
+                if (customXenotype != null) {
+                    RandomizeCustomXenotype = customXenotype;
+                    RandomizeXenotype = null;
+                    xenotype = null;
+                }
+                else {
+                    RandomizeCustomXenotype = null;
+                    xenotype = pawn.genes.Xenotype;
+                    RandomizeXenotype = xenotype;
+                }
                 RandomizeDevelopmentalStage = pawn.DevelopmentalStage;
             }
 
@@ -662,6 +671,20 @@ namespace EdB.PrepareCarefully {
 
         public void SetOriginalSkillLevel(SkillDef def, int value) {
             originalSkillLevels[def] = value;
+        }
+
+        private CustomXenotype customXenotype = null;
+        private XenotypeDef xenotype = null;
+
+        public CustomXenotype CustomXenotype {
+            get {
+                return customXenotype;
+            }
+        }
+        public XenotypeDef Xenotype {
+            get {
+                return xenotype;
+            }
         }
 
         public NameTriple Name {
@@ -1478,7 +1501,7 @@ namespace EdB.PrepareCarefully {
             List<string> incapableList = new List<string>();
             WorkTags combinedDisabledWorkTags = pawn.story.DisabledWorkTagsBackstoryAndTraits;
             if (combinedDisabledWorkTags != WorkTags.None) {
-                IEnumerable<WorkTags> list = Reflection.CharacterCardUtility.WorkTagsFrom(combinedDisabledWorkTags);
+                IEnumerable<WorkTags> list = Reflection.ReflectorCharacterCardUtility.WorkTagsFrom(combinedDisabledWorkTags);
                 foreach (var tag in list) {
                     incapableList.Add(WorkTypeDefsUtility.LabelTranslated(tag).CapitalizeFirst());
                 }
