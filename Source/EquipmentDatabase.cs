@@ -436,7 +436,7 @@ namespace EdB.PrepareCarefully {
                     return e.type == TypeResources;
                 });
                 result.Sort((EquipmentRecord a, EquipmentRecord b) => {
-                    return a.Label.CompareTo(b.Label);
+                    return string.Compare(a.Label, b.Label);
                 });
                 return result;
             }
@@ -448,7 +448,7 @@ namespace EdB.PrepareCarefully {
                     return e.type == TypeFood;
                 });
                 result.Sort((EquipmentRecord a, EquipmentRecord b) => {
-                    return a.Label.CompareTo(b.Label);
+                    return string.Compare(a.Label, b.Label);
                 });
                 return result;
             }
@@ -460,7 +460,7 @@ namespace EdB.PrepareCarefully {
                     return e.type == TypeWeapons;
                 });
                 result.Sort((EquipmentRecord a, EquipmentRecord b) => {
-                    return a.Label.CompareTo(b.Label);
+                    return string.Compare(a.Label, b.Label);
                 });
                 return result;
             }
@@ -472,7 +472,7 @@ namespace EdB.PrepareCarefully {
                     return e.type == TypeApparel;
                 });
                 result.Sort((EquipmentRecord a, EquipmentRecord b) => {
-                    return a.Label.CompareTo(b.Label);
+                    return string.Compare(a.Label, b.Label);
                 });
                 return result;
             }
@@ -484,7 +484,7 @@ namespace EdB.PrepareCarefully {
                     return e.type == TypeAnimals;
                 });
                 result.Sort((EquipmentRecord a, EquipmentRecord b) => {
-                    return a.Label.CompareTo(b.Label);
+                    return string.Compare(a.Label, b.Label);
                 });
                 return result;
             }
@@ -496,7 +496,7 @@ namespace EdB.PrepareCarefully {
                     return e.type == TypeMedical;
                 });
                 result.Sort((EquipmentRecord a, EquipmentRecord b) => {
-                    return a.Label.CompareTo(b.Label);
+                    return string.Compare(a.Label, b.Label);
                 });
                 return result;
             }
@@ -508,7 +508,7 @@ namespace EdB.PrepareCarefully {
                     return e.type == TypeBuildings;
                 });
                 result.Sort((EquipmentRecord a, EquipmentRecord b) => {
-                    return a.Label.CompareTo(b.Label);
+                    return string.Compare(a.Label, b.Label);
                 });
                 return result;
             }
@@ -520,7 +520,7 @@ namespace EdB.PrepareCarefully {
                     return e.type == TypeUncategorized;
                 });
                 result.Sort((EquipmentRecord a, EquipmentRecord b) => {
-                    return a.Label.CompareTo(b.Label);
+                    return string.Compare(a.Label, b.Label);
                 });
                 return result;
             }

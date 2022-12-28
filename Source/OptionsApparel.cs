@@ -1,4 +1,4 @@
-﻿using RimWorld;
+using RimWorld;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -40,7 +40,7 @@ namespace EdB.PrepareCarefully {
                             return 1;
                         }
                         else {
-                            return x.label.CompareTo(y.label);
+                            return string.Compare(x.label, y.label);
                         }
                     });
                 }

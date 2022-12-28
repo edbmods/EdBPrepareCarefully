@@ -64,7 +64,7 @@ namespace EdB.PrepareCarefully {
                     //Logger.Debug("Excluding pawnKindDef because it's non-human {0}, {1}", kindDef.defName, kindDef.LabelCap);
                     continue;
                 }
-                if (kindDef.LabelCap.NullOrEmpty()) {
+                if (kindDef.LabelCap.ToString().NullOrEmpty()) {
                     continue;
                 }
                 if (kindDef.defaultFactionType != null) {
@@ -85,20 +85,23 @@ namespace EdB.PrepareCarefully {
             foreach (var pair in uniquePawnKindsByFaction) {
                 var faction = pair.Key;
                 var pawnKinds = new List<PawnKindDef>(pair.Value);
+                //Logger.Debug("Sorting unique pawns kinds by faction: " + faction?.defName);
                 pawnKinds.Sort((a, b) => {
-                    return a.LabelCap.ToString().CompareTo(b.LabelCap.ToString());
+                    return string.Compare(a.LabelCap.ToString(), b.LabelCap.ToString());
                 });
-                pawnKindsByFaction.Add(new FactionPawnKinds() {
-                    Faction = faction,
-                    PawnKinds = pawnKinds
-                });
+                if (!faction.LabelCap.ToString().NullOrEmpty()) {
+                    pawnKindsByFaction.Add(new FactionPawnKinds() {
+                        Faction = faction,
+                        PawnKinds = pawnKinds
+                    });
+                }
             }
 
             pawnKindsByFaction.Sort((a, b) => {
-                return a.Faction.LabelCap.ToString().CompareTo(b.Faction.LabelCap.ToString());
+                return string.Compare(a.Faction?.LabelCap.ToString(), b.Faction?.LabelCap.ToString());
             });
             otherPawnKinds.Sort((a, b) => {
-                return a.LabelCap.ToString().CompareTo(b.LabelCap.ToString());
+                return string.Compare(a.LabelCap.ToString(), b.LabelCap.ToString());
             });
 
         }

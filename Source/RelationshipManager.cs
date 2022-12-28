@@ -204,7 +204,7 @@ namespace EdB.PrepareCarefully {
                             return (a == null) ? -1 : 1;
                         }
                     }
-                    return a.Id.CompareTo(b.Id);
+                    return string.Compare(a.Id, b.Id);
                 });
             }
 

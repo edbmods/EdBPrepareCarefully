@@ -64,9 +64,9 @@ namespace EdB.PrepareCarefully {
 
             // Create sorted versions of the backstory lists
             sortedChildhoodBackstories = new List<BackstoryDef>(childhoodBackstories);
-            sortedChildhoodBackstories.Sort((b1, b2) => b1.TitleCapFor(Gender.Male).CompareTo(b2.TitleCapFor(Gender.Male)));
+            sortedChildhoodBackstories.Sort((b1, b2) => string.Compare(b1.TitleCapFor(Gender.Male), b2.TitleCapFor(Gender.Male)));
             sortedAdulthoodBackstories = new List<BackstoryDef>(adulthoodBackstories);
-            sortedAdulthoodBackstories.Sort((b1, b2) => b1.TitleCapFor(Gender.Male).CompareTo(b2.TitleCapFor(Gender.Male)));
+            sortedAdulthoodBackstories.Sort((b1, b2) => string.Compare(b1.TitleCapFor(Gender.Male), b2.TitleCapFor(Gender.Male)));
         }
 
         private void InitializeBackstoriesForPawnKind(PawnKindDef def) {

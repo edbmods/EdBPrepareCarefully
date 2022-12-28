@@ -1,4 +1,4 @@
-﻿using RimWorld;
+using RimWorld;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -31,7 +31,7 @@ namespace EdB.PrepareCarefully {
 
             // Create a sorted version of the trait list.
             sortedTraits = new List<Trait>(traits);
-            sortedTraits.Sort((t1, t2) => t1.LabelCap.CompareTo(t2.LabelCap));
+            sortedTraits.Sort((t1, t2) => string.Compare(t1.LabelCap, t2.LabelCap));
         }
     }
 }

@@ -94,7 +94,7 @@ namespace EdB.PrepareCarefully {
                                     return 1;
                                 }
                                 else {
-                                    return a.LabelCap.Resolve().CompareTo(b.LabelCap.Resolve());
+                                    return string.Compare(a.LabelCap.Resolve(), b.LabelCap.Resolve());
                                 }
                             }
                             else {
