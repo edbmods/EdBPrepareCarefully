@@ -85,7 +85,7 @@ namespace EdB.PrepareCarefully {
             foreach (var pair in uniquePawnKindsByFaction) {
                 var faction = pair.Key;
                 var pawnKinds = new List<PawnKindDef>(pair.Value);
-                Logger.Debug("Sorting unique pawns kinds by faction: " + faction?.defName);
+                //Logger.Debug("Sorting unique pawns kinds by faction: " + faction?.defName);
                 pawnKinds.Sort((a, b) => {
                     return string.Compare(a.LabelCap.ToString(), b.LabelCap.ToString());
                 });
@@ -98,7 +98,7 @@ namespace EdB.PrepareCarefully {
             }
 
             pawnKindsByFaction.Sort((a, b) => {
-                return string.Compare(a.Faction.LabelCap.ToString(), b.Faction.LabelCap.ToString());
+                return string.Compare(a.Faction?.LabelCap.ToString(), b.Faction?.LabelCap.ToString());
             });
             otherPawnKinds.Sort((a, b) => {
                 return string.Compare(a.LabelCap.ToString(), b.LabelCap.ToString());
