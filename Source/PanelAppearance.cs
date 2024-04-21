@@ -1,4 +1,3 @@
-using EdB.PrepareCarefully.Reflection;
 using RimWorld;
 using System;
 using System.Collections.Generic;
@@ -8,173 +7,85 @@ using UnityEngine;
 using Verse;
 using Verse.Sound;
 namespace EdB.PrepareCarefully {
-    public class PanelAppearance : PanelBase {
+    public class PanelAppearance : PanelModule {
         public delegate void RandomizeAppearanceHandler();
         public delegate void UpdateGenderHandler(Gender gender);
+        public delegate void UpdateSkinColorHandler(Color color);
 
         public event RandomizeAppearanceHandler RandomizeAppearance;
         public event UpdateGenderHandler GenderUpdated;
+        public event UpdateSkinColorHandler SkinColorUpdated;
 
         public static Color ColorPortraitBorder = new Color(0.3843f, 0.3843f, 0.3843f);
 
         public Rect RectGenderFemale;
         public Rect RectGenderMale;
 
+        protected CustomizedPawn currentPawn = null;
+        protected List<PawnLayer> currentPawnLayers = null;
         protected PawnLayer selectedPawnLayer = null;
-        protected List<int> pawnLayers;
         protected List<Action> pawnLayerActions = new List<Action>();
-        protected PawnLayer pawnLayerLabelLayer = null;
-        protected CustomPawn pawnLayerLabelModel = null;
         protected string pawnLayerLabel = null;
-        
+        protected PawnLayer pawnLayerLabelLayer = null;
+        protected CustomizedPawn pawnLayerLabelModel = null;
         protected List<Color> skinColors = new List<Color>();
-        protected Dictionary<ThingDef, List<ThingDef>> apparelStuffLookup = new Dictionary<ThingDef, List<ThingDef>>();
-        protected int selectedStuff = 0;
-        protected CustomPawn currentPawn = null;
-        
+        public ModState State { get; set; }
+        public ViewState ViewState { get; set; }
+        public ControllerTabViewPawns PawnController { get; set; }
+
         public PanelAppearance() {
 
-            // Organize stuff by its category
-            Dictionary<StuffCategoryDef, HashSet<ThingDef>> stuffByCategory = new Dictionary<StuffCategoryDef, HashSet<ThingDef>>();
-            foreach (ThingDef thingDef in DefDatabase<ThingDef>.AllDefs) {
-                if (thingDef.IsStuff && thingDef.stuffProps != null) {
-                    foreach (StuffCategoryDef cat in thingDef.stuffProps.categories) {
-                        HashSet<ThingDef> thingDefs = null;
-                        if (!stuffByCategory.TryGetValue(cat, out thingDefs)) {
-                            thingDefs = new HashSet<ThingDef>();
-                            stuffByCategory.Add(cat, thingDefs);
-                        }
-                        thingDefs.Add(thingDef);
-                    }
-                }
-            }
-
-            // Get material definitions so that we can use them for sorting later.
-            ThingDef synthreadDef = DefDatabase<ThingDef>.GetNamedSilentFail("Synthread");
-            ThingDef devilstrandDef = DefDatabase<ThingDef>.GetNamedSilentFail("DevilstrandCloth");
-            ThingDef hyperweaveDef = DefDatabase<ThingDef>.GetNamedSilentFail("Hyperweave");
-
-            // For each apparel def, get the list of all materials that can be used to make it.
-            foreach (ThingDef thingDef in DefDatabase<ThingDef>.AllDefs) {
-                if (thingDef.apparel != null && thingDef.MadeFromStuff) {
-                    if (thingDef.stuffCategories != null) {
-                        List<ThingDef> stuffList = new List<ThingDef>();
-                        foreach (var cat in thingDef.stuffCategories) {
-                            HashSet<ThingDef> thingDefs;
-                            if (stuffByCategory.TryGetValue(cat, out thingDefs)) {
-                                foreach (ThingDef stuffDef in thingDefs) {
-                                    stuffList.Add(stuffDef);
-                                }
-                            }
-                        }
-                        stuffList.Sort((ThingDef a, ThingDef b) => {
-                            if (a != b) {
-                                if (a == synthreadDef) {
-                                    return -1;
-                                }
-                                else if (b == synthreadDef) {
-                                    return 1;
-                                }
-                                else if (a == ThingDefOf.Cloth) {
-                                    return -1;
-                                }
-                                else if (b == ThingDefOf.Cloth) {
-                                    return 1;
-                                }
-                                else if (a == devilstrandDef) {
-                                    return -1;
-                                }
-                                else if (b == devilstrandDef) {
-                                    return 1;
-                                }
-                                else if (a == hyperweaveDef) {
-                                    return -1;
-                                }
-                                else if (b == hyperweaveDef) {
-                                    return 1;
-                                }
-                                else {
-                                    return string.Compare(a.LabelCap.Resolve(), b.LabelCap.Resolve());
-                                }
-                            }
-                            else {
-                                return 0;
-                            }
-                        });
-                        apparelStuffLookup[thingDef] = stuffList;
-                    }
-                }
-            }
-
-            // Set up default skin colors
-            skinColors = SkinColorsForPawn(null);
-
-            this.ChangePawnLayer(null);
         }
 
         private Rect RectLayerSelector;
         private Rect RectPortrait;
         private Rect RectButtonRandomize;
+        private Rect RectButtonRotateView;
+        private Rect RectPawn;
 
-        public List<Color> SkinColorsForPawn(Verse.Pawn pawn) {
-            List<Color> result = new List<Color>();
-            result.AddRange(RimWorld.PawnSkinColors.SkinColorGenesInOrder.ConvertAll(gene => RimWorld.PawnSkinColors.GetSkinColor(gene.minMelanin)));
-            if (pawn == null) {
-                return result;
-            }
-            result.AddRange(pawn.genes.GenesListForReading.Where(g => g.def.skinColorOverride.HasValue).Select(g => g.def.skinColorOverride.Value));
-            return result;
-        }
+        protected static float SwatchLimit = 210;
+        protected static Vector2 SwatchSize = new Vector2(15, 15);
+        protected static Vector2 SwatchPosition = new Vector2(18, 320);
+        protected static Vector2 SwatchSpacing = new Vector2(21, 21);
+        protected static Color ColorSwatchBorder = new Color(0.77255f, 0.77255f, 0.77255f);
+        protected static Color ColorSwatchSelection = new Color(0.9098f, 0.9098f, 0.9098f);
 
-        public override void Resize(Rect rect) {
-            base.Resize(rect);
+        public ProviderPawnLayers ProviderPawnLayers { get; set; }
+
+        public override void Resize(float width) {
 
             Vector2 panelPadding = new Vector2(16, 12);
-            Vector2 panelContentSize = PanelRect.size - panelPadding - panelPadding;
+            float panelContentWidth = width - panelPadding.x - panelPadding.x;
             Vector2 randomizeButtonSize = new Vector2(22, 22);
             float buttonHeight = 28;
 
-            RectLayerSelector = new Rect(panelPadding.x, panelPadding.y, panelContentSize.x, buttonHeight);
-            RectPortrait = new Rect(panelPadding.x, RectLayerSelector.yMax + 8, panelContentSize.x, panelContentSize.x);
+            Vector2 portraitSize = new Vector2(panelContentWidth, 164);
+            RectPortrait = new Rect(panelPadding.x, panelPadding.y, portraitSize.x, portraitSize.y);
+            RectPawn = RectPortrait.OutsetBy(0, 12).OffsetBy(0, 8);
+            RectLayerSelector = new Rect(panelPadding.x, RectPortrait.yMax + 8, panelContentWidth, buttonHeight);
             RectButtonRandomize = new Rect(RectPortrait.xMax - randomizeButtonSize.x - 12, RectPortrait.y + 12,
                 randomizeButtonSize.x, randomizeButtonSize.y);
             RectGenderFemale = new Rect(RectPortrait.x + 8, RectPortrait.y + 6, 18, 24);
             RectGenderMale = new Rect(RectGenderFemale.xMax + 2, RectPortrait.y + 6, 20, 24);
+
+            Vector2 rotateViewButtonSize = new Vector2(24, 12);
+            RectButtonRotateView = new Rect(RectPortrait.x + 10, RectPortrait.yMax - rotateViewButtonSize.y - 10, rotateViewButtonSize.x, rotateViewButtonSize.y);
         }
 
-        protected List<PawnLayer> currentPawnLayers = null;
-        public void UpdatePawnLayers() {
-            var pawn = PrepareCarefully.Instance.State.CurrentPawn;
-            currentPawnLayers = PrepareCarefully.Instance.Providers.PawnLayers.GetLayersForPawn(pawn);
+        public override float Draw(float y) {
+            float top = y;
 
-            // Make sure the selected layer is still valid for the new pawn.
-            List<PawnLayer> layers = PrepareCarefully.Instance.Providers.PawnLayers.GetLayersForPawn(pawn);
-            if (selectedPawnLayer != null) {
-                selectedPawnLayer = layers.FirstOrDefault((layer) => { return layer.Name == selectedPawnLayer.Name; });
-            }
-            if (selectedPawnLayer == null) {
-                selectedPawnLayer = layers.FirstOrDefault();
-                selectedPawnLayer = layers.FirstOrDefault();
-            }
-
-            pawnLayerActions.Clear();
-            foreach (var layer in currentPawnLayers) {
-                pawnLayerActions.Add(delegate { this.ChangePawnLayer(layer); });
-            }
-            skinColors = SkinColorsForPawn(PrepareCarefully.Instance.State.CurrentPawn.Pawn);
-        }
-
-        protected override void DrawPanelContent(State state) {
-            base.DrawPanelContent(state);
-            CustomPawn customPawn = state.CurrentPawn;
-            if (currentPawn != state.CurrentPawn) {
+            CustomizedPawn customizedPawn = ViewState.CurrentPawn;
+            Pawn pawn = customizedPawn.Pawn;
+            if (currentPawn != customizedPawn) {
+                currentPawn = customizedPawn;
                 UpdatePawnLayers();
-                currentPawn = state.CurrentPawn;
             }
             if (currentPawnLayers == null) {
                 UpdatePawnLayers();
             }
-            string label = this.selectedPawnLayer.Label;
+
+            string label = this.selectedPawnLayer?.Label;
             if (WidgetDropdown.Button(RectLayerSelector, label, true, false, true)) {
                 List<FloatMenuOption> list = new List<FloatMenuOption>();
                 int i = 0;
@@ -185,154 +96,79 @@ namespace EdB.PrepareCarefully {
                 }
                 Find.WindowStack.Add(new FloatMenu(list, null, false));
             }
-            GUI.DrawTexture(RectPortrait, Textures.TexturePortraitBackground);
 
-            customPawn.UpdatePortrait();
-            DrawPawn(customPawn, RectPortrait);
-
+            Rect rectPortrait = RectPortrait.OffsetBy(0, y);
+            Rect rectGenderFemale = RectGenderFemale.OffsetBy(0, y);
+            Rect rectGenderMale = RectGenderMale.OffsetBy(0, y);
+            GUI.DrawTexture(rectPortrait, Textures.TexturePortraitBackground);
+            DrawPawn(customizedPawn, RectPawn.OffsetBy(0, y));
             GUI.color = ColorPortraitBorder;
-            Widgets.DrawBox(RectPortrait, 1);
+            Widgets.DrawBox(rectPortrait, 1);
             GUI.color = Color.white;
-            
-            // Draw world pawn alert
-            if (state.CurrentPawn.Type == CustomPawnType.World && this.selectedPawnLayer.Apparel) {
-                CustomFaction faction = state.CurrentPawn.Faction;
-                if (faction == null || !faction.Leader) {
-                    Rect alertRect = new Rect(RectPortrait.x + 77, RectPortrait.y + 150, 36, 32);
-                    GUI.DrawTexture(alertRect, Textures.TextureAlert);
-                    TooltipHandler.TipRegion(alertRect, "EdB.PC.Panel.Appearance.WorldPawnAlert".Translate());
+            // Gender buttons.
+            if (pawn.RaceProps != null && pawn.RaceProps.hasGenders) {
+                bool genderFemaleSelected = pawn.gender == Gender.Female;
+                Style.SetGUIColorForButton(rectGenderFemale, genderFemaleSelected);
+                GUI.DrawTexture(rectGenderFemale, Textures.TextureButtonGenderFemale);
+                if (!genderFemaleSelected && Widgets.ButtonInvisible(rectGenderFemale, false)) {
+                    SoundDefOf.Tick_Tiny.PlayOneShotOnCamera();
+                    GenderUpdated?.Invoke(Gender.Female);
+                    UpdatePawnLayers();
+                }
+                bool genderMaleSelected = pawn.gender == Gender.Male;
+                Style.SetGUIColorForButton(rectGenderMale, genderMaleSelected);
+                GUI.DrawTexture(rectGenderMale, Textures.TextureButtonGenderMale);
+                if (!genderMaleSelected && Widgets.ButtonInvisible(rectGenderMale, false)) {
+                    SoundDefOf.Tick_Tiny.PlayOneShotOnCamera();
+                    GenderUpdated?.Invoke(Gender.Male);
+                    UpdatePawnLayers();
                 }
             }
-            // Apparel conflict alert
-            else if (customPawn.ApparelConflict != null) {
-                GUI.color = Color.white;
-                Rect alertRect = new Rect(RectPortrait.x + 77, RectPortrait.y + 150, 36, 32);
-                GUI.DrawTexture(alertRect, Textures.TextureAlert);
-                TooltipHandler.TipRegion(alertRect, customPawn.ApparelConflict);
-            }
-            
+
+
             // Draw selector field.
-            Rect fieldRect = new Rect(RectPortrait.x, RectPortrait.y + RectPortrait.height + 5, RectPortrait.width, 40);
+            Rect rectLayerSelector = RectLayerSelector.OffsetBy(0, y);
+            Rect fieldRect = new Rect(rectPortrait.x, rectLayerSelector.yMax + 5, rectPortrait.width, 40);
             Action previousSelectionAction = null;
             Action nextSelectionAction = null;
             Action clickAction = null;
-
-            OptionsApparel apparelOptions = null;
-            List<ThingDef> apparelList = null;
-            if (this.selectedPawnLayer.Apparel) {
-                apparelOptions = PrepareCarefully.Instance.Providers.Apparel.GetApparelForRace(customPawn);
-                apparelList = apparelOptions.GetApparel(this.selectedPawnLayer);
-            }
 
             if (this.selectedPawnLayer.Options != null) {
                 if (this.selectedPawnLayer.Options.Count > 1) {
                     previousSelectionAction = () => {
                         SoundDefOf.Tick_Tiny.PlayOneShotOnCamera();
-                        SelectNextPawnLayerOption(customPawn, -1);
+                        SelectNextPawnLayerOption(customizedPawn, -1);
                     };
                     nextSelectionAction = () => {
                         SoundDefOf.Tick_Tiny.PlayOneShotOnCamera();
-                        SelectNextPawnLayerOption(customPawn, 1);
+                        SelectNextPawnLayerOption(customizedPawn, 1);
                     };
                 }
                 if (this.selectedPawnLayer.Options.Count > 0) {
                     clickAction = () => {
-                        ShowPawnLayerOptionsDialog(customPawn);
+                        ShowPawnLayerOptionsDialog(customizedPawn);
                     };
                 }
             }
-            else {
-                if (apparelList.Count > 1) {
-                    previousSelectionAction = () => {
-                        SoundDefOf.Tick_Tiny.PlayOneShotOnCamera();
-                        SelectNextApparel(customPawn, -1);
-                    };
-                    nextSelectionAction = () => {
-                        SelectNextApparel(customPawn, 1);
-                        SoundDefOf.Tick_Tiny.PlayOneShotOnCamera();
-                    };
-                }
-                if (apparelList.Count > 0) {
-                    clickAction = () => {
-                        ShowApparelDialog(customPawn, this.selectedPawnLayer);
-                    };
-                }
-            }
-            
+
             string selectorLabel = PawnLayerLabel.CapitalizeFirst();
-            //if (hairList != null && hairList.Count == 0) {
-            //    selectorLabel = "EdB.PC.Common.NoOptionAvailable".Translate();
-            //}
-            if (apparelList != null && apparelList.Count == 0) {
-                selectorLabel = "EdB.PC.Common.NoOptionAvailable".Translate();
-            }
             DrawFieldSelector(fieldRect, selectorLabel, previousSelectionAction, nextSelectionAction, clickAction);
 
-            float cursorY = fieldRect.yMax + 6;
-            
-            // Draw stuff selector for apparel
-            if (this.selectedPawnLayer.Apparel) {
-                ThingDef apparelDef = customPawn.GetSelectedApparel(selectedPawnLayer);
-                if (apparelDef != null && apparelDef.MadeFromStuff) {
-                    if (customPawn.GetSelectedStuff(selectedPawnLayer) == null) {
-                        Logger.Error("Selected stuff for " + selectedPawnLayer.ApparelLayer + " is null");
-                    }
-                    Rect stuffFieldRect = new Rect(RectPortrait.x, cursorY, RectPortrait.width, 28);
-                    DrawFieldSelector(stuffFieldRect, customPawn.GetSelectedStuff(selectedPawnLayer).LabelCap,
-                        () => {
-                            ThingDef selected = customPawn.GetSelectedStuff(selectedPawnLayer);
-                            int index = this.apparelStuffLookup[apparelDef].FindIndex((ThingDef d) => { return selected == d; });
-                            index--;
-                            if (index < 0) {
-                                index = this.apparelStuffLookup[apparelDef].Count - 1;
-                            }
-                            customPawn.SetSelectedStuff(selectedPawnLayer, apparelStuffLookup[apparelDef][index]);
-                        },
-                        () => {
-                            ThingDef selected = customPawn.GetSelectedStuff(selectedPawnLayer);
-                            int index = this.apparelStuffLookup[apparelDef].FindIndex((ThingDef d) => { return selected == d; });
-                            index++;
-                            if (index >= this.apparelStuffLookup[apparelDef].Count) {
-                                index = 0;
-                            }
-                            customPawn.SetSelectedStuff(selectedPawnLayer, this.apparelStuffLookup[apparelDef][index]);
-                        },
-                        () => {
-                            ShowApparelStuffDialog(customPawn, this.selectedPawnLayer);
-                        }
-                    );
+            y = fieldRect.yMax + 6;
 
-                    cursorY += stuffFieldRect.height;
-                }
-            }
-            cursorY += 8;
-            
+
             // Draw Color Selector
-            if (selectedPawnLayer.Apparel) {
-                if (apparelList != null && apparelList.Count > 0) {
-                    ThingDef def = customPawn.GetSelectedApparel(selectedPawnLayer);
-                    if (def != null && def.HasComp(typeof(CompColorable))) {
-                        if (def.MadeFromStuff) {
-                            ThingDef stuffDef = customPawn.GetSelectedStuff(selectedPawnLayer);
-                            DrawColorSelectorForApparelStuff(customPawn, cursorY, stuffDef);
-                        }
-                        else {
-                            DrawColorSelectorForApparel(customPawn, cursorY, def.colorGenerator);
-                        }
-                    }
-                }
-            }
-            else if (selectedPawnLayer.ColorSelectorType == ColorSelectorType.RGB) {
-                DrawColorSelectorForPawnLayer(customPawn, cursorY, selectedPawnLayer.ColorSwatches, true);
+            if (selectedPawnLayer.ColorSelectorType == ColorSelectorType.RGB) {
+                y += DrawColorSelectorForPawnLayer(customizedPawn, y, selectedPawnLayer.ColorSwatches, true);
             }
             else if (selectedPawnLayer.ColorSelectorType == ColorSelectorType.Skin) {
-                AlienRace alienRace = customPawn.AlienRace;
-                if (alienRace == null || alienRace.UseMelaninLevels || alienRace.ThingDef?.defName == "Human") {
-                    DrawSkinColorSelector(customPawn, cursorY, skinColors, true);
-                }
-                else if (alienRace.ChangeableColor) {
-                    DrawSkinColorSelector(customPawn, cursorY, alienRace.PrimaryColors, true);
-                }
+                //AlienRace alienRace = customPawn.AlienRace;
+                //if (alienRace == null || alienRace.UseMelaninLevels || alienRace.ThingDef?.defName == "Human") {
+                    y += DrawSkinColorSelector(customizedPawn, y, skinColors, true);
+                //}
+                //else if (alienRace.ChangeableColor) {
+                //    DrawSkinColorSelector(customPawn, cursorY, alienRace.PrimaryColors, true);
+                //}
             }
 
             // Random button
@@ -345,320 +181,142 @@ namespace EdB.PrepareCarefully {
             GUI.DrawTexture(RectButtonRandomize, Textures.TextureButtonRandom);
             if (Widgets.ButtonInvisible(RectButtonRandomize, false)) {
                 SoundDefOf.Tick_Low.PlayOneShotOnCamera();
-                RandomizeAppearance();
+                RandomizeAppearance?.Invoke();
             }
-            
-            // Gender buttons.
-            if (state.CurrentPawn.Pawn.RaceProps != null && state.CurrentPawn.Pawn.RaceProps.hasGenders) {
-                bool genderFemaleSelected = state.CurrentPawn.Gender == Gender.Female;
-                Style.SetGUIColorForButton(RectGenderFemale, genderFemaleSelected);
-                GUI.DrawTexture(RectGenderFemale, Textures.TextureButtonGenderFemale);
-                if (!genderFemaleSelected && Widgets.ButtonInvisible(RectGenderFemale, false)) {
-                    SoundDefOf.Tick_Tiny.PlayOneShotOnCamera();
-                    GenderUpdated(Gender.Female);
+
+            // Rotate view button
+            if (RectButtonRotateView.Contains(Event.current.mousePosition)) {
+                GUI.color = Style.ColorButtonHighlight;
+            }
+            else {
+                GUI.color = Style.ColorButton;
+            }
+            GUI.DrawTexture(RectButtonRotateView, Textures.TextureButtonRotateView);
+            if (Widgets.ButtonInvisible(RectButtonRotateView, false)) {
+                SoundDefOf.Tick_Low.PlayOneShotOnCamera();
+                if (ViewState.PawnViewRotation == Rot4.South) {
+                    ViewState.PawnViewRotation = Rot4.East;
                 }
-                bool genderMaleSelected = state.CurrentPawn.Gender == Gender.Male;
-                Style.SetGUIColorForButton(RectGenderMale, genderMaleSelected);
-                GUI.DrawTexture(RectGenderMale, Textures.TextureButtonGenderMale);
-                if (!genderMaleSelected && Widgets.ButtonInvisible(RectGenderMale, false)) {
-                    SoundDefOf.Tick_Tiny.PlayOneShotOnCamera();
-                    GenderUpdated(Gender.Male);
+                else if (ViewState.PawnViewRotation == Rot4.East) {
+                    ViewState.PawnViewRotation = Rot4.North;
+                }
+                else if (ViewState.PawnViewRotation == Rot4.North) {
+                    ViewState.PawnViewRotation = Rot4.West;
+                }
+                else if (ViewState.PawnViewRotation == Rot4.West) {
+                    ViewState.PawnViewRotation = Rot4.South;
                 }
             }
-            
+
+            y += 8;
             GUI.color = Color.white;
+            return y - top;
         }
 
-        protected void ChangePawnLayer(PawnLayer layer) {
-            this.selectedPawnLayer = layer;
-        }
-
-        protected void DrawPawn(CustomPawn customPawn, Rect rect) {
-            GUI.BeginGroup(rect);
+        protected void DrawPawn(CustomizedPawn customizedPawn, Rect rect) {
+            Rect pawnRect = rect.OffsetBy(-rect.x, -rect.y);
+            RenderTexture pawnTexture = PortraitsCache.Get(customizedPawn.Pawn, rect.size, ViewState.PawnViewRotation);
             try {
-                Vector2 pawnSize = new Vector2(128f, 180f);
-                Rect pawnRect = new Rect(rect.width * 0.5f - pawnSize.x * 0.5f, 10 + rect.height * 0.5f - pawnSize.y * 0.5f, pawnSize.x, pawnSize.y);
-
-                RenderTexture texture = customPawn.GetPortrait(pawnSize);
-                if (texture != null) {
-                    GUI.DrawTexture(pawnRect, (Texture)texture);
-                }
+                GUI.BeginClip(rect);
+                GUI.DrawTexture(pawnRect, (Texture)pawnTexture);
             }
             catch (Exception e) {
                 Logger.Error("Failed to draw pawn", e);
             }
             finally {
-                GUI.EndGroup();
+                GUI.EndClip();
                 GUI.color = Color.white;
             }
         }
 
-        // When drawing the color selector for apparel made from stuff, we display a color swatch for the material's default color.
-        // If we don't do this, it's difficult to get back to the default color when we change it.
-        protected void DrawColorSelectorForApparelStuff(CustomPawn customPawn, float cursorY, ThingDef stuffDef) {
-            DrawColorSelector(customPawn, cursorY, PrependFavoriteAndIdeologyColors(stuffDef?.stuffProps?.color), true);
+        public void UpdatePawnLayers() {
+            CustomizedPawn pawn = ViewState?.CurrentPawn;
+            currentPawnLayers = ProviderPawnLayers.GetLayersForPawn(pawn);
+
+            // Make sure the selected layer is still valid for the new pawn.
+            List<PawnLayer> layers = ProviderPawnLayers.GetLayersForPawn(pawn);
+            if (selectedPawnLayer != null) {
+                selectedPawnLayer = layers.FirstOrDefault((layer) => { return layer.Name == selectedPawnLayer.Name; });
+            }
+            if (selectedPawnLayer == null) {
+                selectedPawnLayer = layers.FirstOrDefault();
+                selectedPawnLayer = layers.FirstOrDefault();
+            }
+
+            pawnLayerActions.Clear();
+            foreach (var layer in currentPawnLayers) {
+                pawnLayerActions.Add(delegate { this.ChangePawnLayer(layer); });
+            }
+            skinColors = SkinColorsForPawn(pawn?.Pawn);
+        }
+        protected void ChangePawnLayer(PawnLayer layer) {
+            this.selectedPawnLayer = layer;
+        }
+        public List<Color> SkinColorsForPawn(Verse.Pawn pawn) {
+            List<Color> result = new List<Color>();
+            result.AddRange(RimWorld.PawnSkinColors.SkinColorGenesInOrder.ConvertAll(gene => RimWorld.PawnSkinColors.GetSkinColor(gene.minMelanin)));
+            if (pawn == null) {
+                return result;
+            }
+            result.AddRange(pawn.genes.GenesListForReading.Where(g => g.def.skinColorOverride.HasValue).Select(g => g.def.skinColorOverride.Value));
+            return result;
         }
 
-        public IEnumerable<Color> PrependFavoriteAndIdeologyColors(Color? color) {
-            if (currentPawn.FavoriteColor.HasValue) {
-                yield return currentPawn.FavoriteColor.Value;
-            }
-            if (ModsConfig.IdeologyActive) {
-                Color? ideoColor = currentPawn.Pawn?.ideo?.Ideo.ApparelColor;
-                if (ideoColor.HasValue) {
-                    yield return ideoColor.Value;
-                }
-            }
-            if (color.HasValue) {
-                yield return color.Value;
-            }
-        }
-
-        public IEnumerable<Color> PrependFavoriteAndIdeologyColors(IEnumerable<Color> colors) {
-            if (currentPawn.FavoriteColor.HasValue) {
-                yield return currentPawn.FavoriteColor.Value;
-            }
-            if (ModsConfig.IdeologyActive) {
-                Color? ideoColor = currentPawn.Pawn?.ideo?.Ideo.ApparelColor;
-                if (ideoColor.HasValue) {
-                    yield return ideoColor.Value;
-                }
-            }
-            if (colors != null) {
-                foreach (var color in colors) {
-                    yield return color;
-                }
-            }
-        }
-
-        protected void DrawColorSelectorForApparel(CustomPawn customPawn, float cursorY, ColorGenerator generator) {
-            DrawColorSelector(customPawn, cursorY, PrependFavoriteAndIdeologyColors(generator != null ? generator.GetColorList() : null), true);
-        }
-
-        protected static float SwatchLimit = 210;
-        protected static Vector2 SwatchSize = new Vector2(15, 15);
-        protected static Vector2 SwatchPosition = new Vector2(18, 320);
-        protected static Vector2 SwatchSpacing = new Vector2(21, 21);
-        protected static Color ColorSwatchBorder = new Color(0.77255f, 0.77255f, 0.77255f);
-        protected static Color ColorSwatchSelection = new Color(0.9098f, 0.9098f, 0.9098f);
-        protected void DrawColorSelector(CustomPawn customPawn, float cursorY, IEnumerable<Color> colors, bool allowAnyColor) {
-            Color currentColor = customPawn.GetColor(selectedPawnLayer);
-            Rect rect = new Rect(SwatchPosition.x, cursorY, SwatchSize.x, SwatchSize.y);
-            if (colors != null) {
-                foreach (Color color in colors) {
-                    bool selected = (color == currentColor);
-                    if (selected) {
-                        Rect selectionRect = new Rect(rect.x - 2, rect.y - 2, SwatchSize.x + 4, SwatchSize.y + 4);
-                        GUI.color = ColorSwatchSelection;
-                        GUI.DrawTexture(selectionRect, BaseContent.WhiteTex);
-                    }
-
-                    Rect borderRect = new Rect(rect.x - 1, rect.y - 1, SwatchSize.x + 2, SwatchSize.y + 2);
-                    GUI.color = ColorSwatchBorder;
-                    GUI.DrawTexture(borderRect, BaseContent.WhiteTex);
-
-                    GUI.color = color;
-                    GUI.DrawTexture(rect, BaseContent.WhiteTex);
-
-                    if (!selected) {
-                        if (Widgets.ButtonInvisible(rect, false)) {
-                            SetColor(customPawn, color);
-                            currentColor = color;
-                        }
-                    }
-
-                    rect.x += SwatchSpacing.x;
-                    if (rect.x >= SwatchLimit - SwatchSize.x) {
-                        rect.y += SwatchSpacing.y;
-                        rect.x = SwatchPosition.x;
-                    }
-                }
-            }
-
-            GUI.color = Color.white;
-            if (!allowAnyColor) {
+        protected void SelectNextPawnLayerOption(CustomizedPawn customizedPawn, int direction) {
+            int optionCount = selectedPawnLayer.Options.Count;
+            int? optionalIndex = selectedPawnLayer.GetSelectedIndex(customizedPawn);
+            if (optionalIndex == null) {
                 return;
             }
-
-            if (rect.x != SwatchPosition.x) {
-                rect.x = SwatchPosition.x;
-                rect.y += SwatchSpacing.y;
+            int index = optionalIndex.Value;
+            index += direction;
+            if (index < 0) {
+                index = optionCount - 1;
             }
-            rect.y += 4;
-            rect.width = 49;
-            rect.height = 49;
-            GUI.color = ColorSwatchBorder;
-            GUI.DrawTexture(rect, BaseContent.WhiteTex);
-            GUI.color = currentColor;
-            GUI.DrawTexture(rect.ContractedBy(1), BaseContent.WhiteTex);
-
-            GUI.color = Color.red;
-            float originalR = currentColor.r;
-            float originalG = currentColor.g;
-            float originalB = currentColor.b;
-            float r = GUI.HorizontalSlider(new Rect(rect.x + 56, rect.y - 1, 136, 16), currentColor.r, 0, 1);
-            GUI.color = Color.green;
-            float g = GUI.HorizontalSlider(new Rect(rect.x + 56, rect.y + 19, 136, 16), currentColor.g, 0, 1);
-            GUI.color = Color.blue;
-            float b = GUI.HorizontalSlider(new Rect(rect.x + 56, rect.y + 39, 136, 16), currentColor.b, 0, 1);
-            if (!CloseEnough(r, originalR) || !CloseEnough(g, originalG) || !CloseEnough(b, originalB)) {
-                SetColor(customPawn, new Color(r, g, b));
+            else if (index >= optionCount) {
+                index = 0;
             }
-
-            GUI.color = Color.white;
+            PawnLayerOption option = selectedPawnLayer.Options[index];
+            PawnController?.UpdatePawnLayerOption(selectedPawnLayer, option);
+            this.pawnLayerLabel = option.Label;
         }
 
-        protected void DrawColorSelectorForPawnLayer(CustomPawn customPawn, float cursorY, List<Color> swatches, bool allowAnyColor) {
-            Color currentColor = selectedPawnLayer.GetSelectedColor(customPawn);
-            Rect rect = new Rect(SwatchPosition.x, cursorY, SwatchSize.x, SwatchSize.y);
-            if (swatches != null) {
-                foreach (Color color in swatches) {
-                    bool selected = (color == currentColor);
-                    if (selected) {
-                        Rect selectionRect = new Rect(rect.x - 2, rect.y - 2, SwatchSize.x + 4, SwatchSize.y + 4);
-                        GUI.color = ColorSwatchSelection;
-                        GUI.DrawTexture(selectionRect, BaseContent.WhiteTex);
-                    }
-
-                    Rect borderRect = new Rect(rect.x - 1, rect.y - 1, SwatchSize.x + 2, SwatchSize.y + 2);
-                    GUI.color = ColorSwatchBorder;
-                    GUI.DrawTexture(borderRect, BaseContent.WhiteTex);
-
-                    GUI.color = color;
-                    GUI.DrawTexture(rect, BaseContent.WhiteTex);
-
-                    if (!selected) {
-                        if (Widgets.ButtonInvisible(rect, false)) {
-                            selectedPawnLayer.SelectColor(customPawn, color);
-                            currentColor = color;
-                        }
-                    }
-
-                    rect.x += SwatchSpacing.x;
-                    if (rect.x >= SwatchLimit - SwatchSize.x) {
-                        rect.y += SwatchSpacing.y;
-                        rect.x = SwatchPosition.x;
-                    }
+        protected void ShowPawnLayerOptionsDialog(CustomizedPawn customizedPawn) {
+            List<PawnLayerOption> options = selectedPawnLayer.Options;
+            DialogOptions<PawnLayerOption> dialog = new DialogOptions<PawnLayerOption>(options) {
+                NameFunc = (PawnLayerOption option) => {
+                    return option.Label;
+                },
+                SelectedFunc = (PawnLayerOption option) => {
+                    return selectedPawnLayer.IsOptionSelected(customizedPawn, option);
+                },
+                SelectAction = (PawnLayerOption option) => {
+                    Logger.Debug("selected pawn layer option");
+                    PawnController?.UpdatePawnLayerOption(selectedPawnLayer, option);
+                    this.pawnLayerLabel = option.Label;
+                },
+                CloseAction = () => { },
+                InitialPositionX = CalculateDialogPositionX()
+            };
+            Find.WindowStack.Add(dialog);
+        }
+        protected float CalculateDialogPositionX() {
+            return Find.WindowStack.currentlyDrawnWindow.windowRect.x + Width + 24f;
+        }
+        protected string PawnLayerLabel {
+            get {
+                CustomizedPawn customizedPawn = ViewState.CurrentPawn;
+                string label = "EdB.PC.Panel.Appearance.NoneSelected".Translate();
+                PawnLayerOption option = selectedPawnLayer.GetSelectedOption(customizedPawn);
+                if (option != null) {
+                    label = option.Label;
                 }
-            }
-
-            GUI.color = Color.white;
-            if (!allowAnyColor) {
-                return;
-            }
-
-            if (rect.x != SwatchPosition.x) {
-                rect.x = SwatchPosition.x;
-                rect.y += SwatchSpacing.y;
-            }
-            rect.y += 4;
-            rect.width = 49;
-            rect.height = 49;
-            GUI.color = ColorSwatchBorder;
-            GUI.DrawTexture(rect, BaseContent.WhiteTex);
-            GUI.color = currentColor;
-            GUI.DrawTexture(rect.ContractedBy(1), BaseContent.WhiteTex);
-
-            GUI.color = Color.red;
-            float originalR = currentColor.r;
-            float originalG = currentColor.g;
-            float originalB = currentColor.b;
-            float r = GUI.HorizontalSlider(new Rect(rect.x + 56, rect.y - 1, 136, 16), currentColor.r, 0, 1);
-            GUI.color = Color.green;
-            float g = GUI.HorizontalSlider(new Rect(rect.x + 56, rect.y + 19, 136, 16), currentColor.g, 0, 1);
-            GUI.color = Color.blue;
-            float b = GUI.HorizontalSlider(new Rect(rect.x + 56, rect.y + 39, 136, 16), currentColor.b, 0, 1);
-            if (!CloseEnough(r, originalR) || !CloseEnough(g, originalG) || !CloseEnough(b, originalB)) {
-                selectedPawnLayer.SelectColor(customPawn, new Color(r, g, b));
-            }
-
-            GUI.color = Color.white;
-        }
-
-        protected void DrawSkinColorSelector(CustomPawn customPawn, float cursorY, List<Color> colors, bool allowAnyColor) {
-            Color currentColor = customPawn.Pawn.story.SkinColor;
-            Color clickedColor = currentColor;
-            Rect rect = new Rect(SwatchPosition.x, cursorY, SwatchSize.x, SwatchSize.y);
-            if (colors != null) {
-                foreach (Color color in colors) {
-                    bool selected = (color == currentColor);
-                    if (selected) {
-                        Rect selectionRect = new Rect(rect.x - 2, rect.y - 2, SwatchSize.x + 4, SwatchSize.y + 4);
-                        GUI.color = ColorSwatchSelection;
-                        GUI.DrawTexture(selectionRect, BaseContent.WhiteTex);
-                    }
-
-                    Rect borderRect = new Rect(rect.x - 1, rect.y - 1, SwatchSize.x + 2, SwatchSize.y + 2);
-                    GUI.color = ColorSwatchBorder;
-                    GUI.DrawTexture(borderRect, BaseContent.WhiteTex);
-
-                    GUI.color = color;
-                    GUI.DrawTexture(rect, BaseContent.WhiteTex);
-
-                    if (!selected) {
-                        if (Widgets.ButtonInvisible(rect, false)) {
-                            clickedColor = color;
-                        }
-                    }
-
-                    rect.x += SwatchSpacing.x;
-                    if (rect.x >= SwatchLimit - SwatchSize.x) {
-                        rect.y += SwatchSpacing.y;
-                        rect.x = SwatchPosition.x;
-                    }
-                }
-            }
-
-            GUI.color = Color.white;
-            if (!allowAnyColor) {
-                return;
-            }
-
-            if (rect.x != SwatchPosition.x) {
-                rect.x = SwatchPosition.x;
-                rect.y += SwatchSpacing.y;
-            }
-            rect.y += 4;
-            rect.width = 49;
-            rect.height = 49;
-            GUI.color = ColorSwatchBorder;
-            GUI.DrawTexture(rect, BaseContent.WhiteTex);
-            GUI.color = currentColor;
-            GUI.DrawTexture(rect.ContractedBy(1), BaseContent.WhiteTex);
-
-            float originalR = currentColor.r;
-            float originalG = currentColor.g;
-            float originalB = currentColor.b;
-            GUI.color = Color.red;
-            float r = GUI.HorizontalSlider(new Rect(rect.x + 56, rect.y - 1, 136, 16), currentColor.r, 0, 1);
-            GUI.color = Color.green;
-            float g = GUI.HorizontalSlider(new Rect(rect.x + 56, rect.y + 19, 136, 16), currentColor.g, 0, 1);
-            GUI.color = Color.blue;
-            float b = GUI.HorizontalSlider(new Rect(rect.x + 56, rect.y + 39, 136, 16), currentColor.b, 0, 1);
-            if (!CloseEnough(r, originalR) || !CloseEnough(g, originalG) || !CloseEnough(b, originalB)) {
-                clickedColor = new Color(r, g, b);
-            }
-
-            GUI.color = Color.white;
-
-            if (clickedColor != currentColor) {
-                customPawn.SkinColor = clickedColor;
+                pawnLayerLabelLayer = selectedPawnLayer;
+                pawnLayerLabelModel = customizedPawn;
+                pawnLayerLabel = label;
+                return label;
             }
         }
-
-        protected bool CloseEnough(float a, float b) {
-            if (a > b - 0.0001f && a < b + 0.0001f) {
-                return true;
-            }
-            else {
-                return false;
-            }
-        }
-
-        protected void SetColor(CustomPawn customPawn, Color color) {
-            customPawn.SetColor(selectedPawnLayer, color);
-        }
-
         protected void DrawFieldSelector(Rect fieldRect, string label, Action previousAction, Action nextAction, Action clickAction) {
             DrawFieldSelector(fieldRect, label, previousAction, nextAction, clickAction, Style.ColorText);
         }
@@ -711,212 +369,159 @@ namespace EdB.PrepareCarefully {
 
             Text.Anchor = TextAnchor.UpperLeft;
         }
-
-        protected string PawnLayerLabel {
-            get {
-                CustomPawn customPawn = PrepareCarefully.Instance.State.CurrentPawn;
-                string label = "EdB.PC.Panel.Appearance.NoneSelected".Translate();
-                if (selectedPawnLayer.Options != null) {
-                    PawnLayerOption option = selectedPawnLayer.GetSelectedOption(customPawn);
-                    if (option != null) {
-                        label = option.Label;
+        protected float DrawColorSelectorForPawnLayer(CustomizedPawn customizedPawn, float cursorY, List<Color> swatches, bool allowAnyColor) {
+            float top = cursorY;
+            Color currentColor = selectedPawnLayer.GetSelectedColor(customizedPawn);
+            Rect rect = new Rect(SwatchPosition.x, cursorY, SwatchSize.x, SwatchSize.y);
+            if (swatches != null) {
+                foreach (Color color in swatches) {
+                    bool selected = (color == currentColor);
+                    if (selected) {
+                        Rect selectionRect = new Rect(rect.x - 2, rect.y - 2, SwatchSize.x + 4, SwatchSize.y + 4);
+                        GUI.color = ColorSwatchSelection;
+                        GUI.DrawTexture(selectionRect, BaseContent.WhiteTex);
                     }
-                }
-                else {
-                    label = null;
-                    ThingDef def = customPawn.GetSelectedApparel(selectedPawnLayer);
-                    if (def != null) {
-                        label = def.LabelCap;
-                    }
-                    else {
-                        label = "EdB.PC.Panel.Appearance.NoneSelected".Translate();
-                    }
-                }
-                pawnLayerLabelLayer = selectedPawnLayer;
-                pawnLayerLabelModel = customPawn;
-                pawnLayerLabel = label;
-                return label;
-            }
-        }
 
-        protected void SelectNextHead(CustomPawn customPawn, int direction) {
-            List<HeadTypeDef> heads = PrepareCarefully.Instance.Providers.HeadTypes.GetHeadTypes(customPawn.Pawn.def, customPawn.Gender).ToList();
-            int index = heads.IndexOf(customPawn.HeadType);
-            if (index == -1) {
-                return;
-            }
-            index += direction;
-            if (index < 0) {
-                index = heads.Count - 1;
-            }
-            else if (index >= heads.Count) {
-                index = 0;
-            }
-            customPawn.HeadType = heads[index];
-            this.pawnLayerLabel = GetHeadLabel(customPawn);
-        }
+                    Rect borderRect = new Rect(rect.x - 1, rect.y - 1, SwatchSize.x + 2, SwatchSize.y + 2);
+                    GUI.color = ColorSwatchBorder;
+                    GUI.DrawTexture(borderRect, BaseContent.WhiteTex);
 
-        protected List<BodyTypeDef> BodyTypesForPawn(CustomPawn pawn) {
-            ProviderBodyTypes provider = PrepareCarefully.Instance.Providers.BodyTypes;
-            return provider.GetBodyTypesForPawn(pawn).Where(b => b != BodyTypeDefOf.Baby && b != BodyTypeDefOf.Child).ToList();
-        }
+                    GUI.color = color;
+                    GUI.DrawTexture(rect, BaseContent.WhiteTex);
 
-        protected void SelectNextBodyType(CustomPawn customPawn, int direction) {
-            List<BodyTypeDef> bodyTypes = BodyTypesForPawn(customPawn);
-            int index = bodyTypes.IndexOf(customPawn.BodyType);
-            if (index == -1) {
-                Logger.Warning("Could not find the current pawn's body type in list of available options: " + customPawn.BodyType);
-                return;
-            }
-            index += direction;
-            if (index < 0) {
-                index = bodyTypes.Count - 1;
-            }
-            else if (index >= bodyTypes.Count) {
-                index = 0;
-            }
-            customPawn.BodyType = bodyTypes[index];
-            ProviderBodyTypes provider = PrepareCarefully.Instance.Providers.BodyTypes;
-            this.pawnLayerLabel = provider.GetBodyTypeLabel(customPawn.BodyType);
-        }
-
-        protected void SelectNextApparel(CustomPawn customPawn, int direction) {
-            PawnLayer layer = this.selectedPawnLayer;
-            List<ThingDef> apparelList = PrepareCarefully.Instance.Providers.Apparel.GetApparel(customPawn, layer);
-            int index = apparelList.IndexOf(customPawn.GetSelectedApparel(layer));
-            index += direction;
-            if (index < -1) {
-                index = apparelList.Count - 1;
-            }
-            else if (index >= apparelList.Count) {
-                index = -1;
-            }
-            if (index > -1) {
-                this.pawnLayerLabel = apparelList[index].label;
-                if (apparelList[index].MadeFromStuff) {
-                    if (customPawn.GetSelectedStuff(layer) == null) {
-                        customPawn.SetSelectedStuff(layer, apparelStuffLookup[apparelList[index]][0]);
-                    }
-                }
-                else {
-                    customPawn.SetSelectedStuff(layer, null);
-                }
-                customPawn.SetSelectedApparel(layer, apparelList[index]);
-            }
-            else {
-                customPawn.SetSelectedApparel(layer, null);
-                customPawn.SetSelectedStuff(layer, null);
-                this.pawnLayerLabel = "EdB.PC.Common.None".Translate();
-            }
-        }
-        
-        protected void SelectNextPawnLayerOption(CustomPawn customPawn, int direction) {
-            int optionCount = selectedPawnLayer.Options.Count;
-            int? optionalIndex = selectedPawnLayer.GetSelectedIndex(customPawn);
-            if (optionalIndex == null) {
-                return;
-            }
-            int index = optionalIndex.Value;
-            index += direction;
-            if (index < 0) {
-                index = optionCount - 1;
-            }
-            else if (index >= optionCount) {
-                index = 0;
-            }
-            PawnLayerOption option = selectedPawnLayer.Options[index];
-            selectedPawnLayer.SelectOption(customPawn, option);
-            this.pawnLayerLabel = option.Label;
-        }
-
-        protected string GetHeadLabel(CustomPawn pawn) {
-            if (pawn.HeadType != null) {
-                return pawn.HeadType.LabelCap;
-            }
-            else {
-                return "EdB.PC.Common.Default".Translate();
-            }
-        }
-
-        protected float CalculateDialogPositionX() {
-            return Find.WindowStack.currentlyDrawnWindow.windowRect.x + PanelRect.xMax + 24f;
-        }
-
-
-        protected void ShowPawnLayerOptionsDialog(CustomPawn customPawn) {
-            List<PawnLayerOption> options = selectedPawnLayer.Options;
-            Dialog_Options<PawnLayerOption> dialog = new Dialog_Options<PawnLayerOption>(options) {
-                NameFunc = (PawnLayerOption option) => {
-                    return option.Label;
-                },
-                SelectedFunc = (PawnLayerOption option) => {
-                    return selectedPawnLayer.IsOptionSelected(customPawn, option);
-                },
-                SelectAction = (PawnLayerOption option) => {
-                    selectedPawnLayer.SelectOption(customPawn, option);
-                    this.pawnLayerLabel = option.Label;
-                },
-                CloseAction = () => { },
-                InitialPositionX = CalculateDialogPositionX()
-            };
-            Find.WindowStack.Add(dialog);
-        }
-
-        protected void ShowApparelDialog(CustomPawn customPawn, PawnLayer layer) {
-            List<ThingDef> apparelList = PrepareCarefully.Instance.Providers.Apparel.GetApparel(customPawn, layer);
-            Dialog_Options<ThingDef> dialog = new Dialog_Options<ThingDef>(apparelList) {
-                IncludeNone = true,
-                NameFunc = (ThingDef apparel) => {
-                    return apparel.LabelCap;
-                },
-                SelectedFunc = (ThingDef apparel) => {
-                    return customPawn.GetSelectedApparel(layer) == apparel;
-                },
-                SelectAction = (ThingDef apparel) => {
-                    this.pawnLayerLabel = apparel.LabelCap;
-                    if (apparel.MadeFromStuff) {
-                        if (customPawn.GetSelectedStuff(layer) == null) {
-                            customPawn.SetSelectedStuff(layer, apparelStuffLookup[apparel][0]);
+                    if (!selected) {
+                        if (Widgets.ButtonInvisible(rect, false)) {
+                            PawnController?.UpdatePawnLayerColor(selectedPawnLayer, color);
+                            // TODO
+                            //selectedPawnLayer.SelectColor(customizedPawn, color);
+                            currentColor = color;
                         }
                     }
-                    else {
-                        customPawn.SetSelectedStuff(layer, null);
+
+                    rect.x += SwatchSpacing.x;
+                    if (rect.x >= SwatchLimit - SwatchSize.x) {
+                        rect.y += SwatchSpacing.y;
+                        rect.x = SwatchPosition.x;
                     }
-                    customPawn.SetSelectedApparel(layer, apparel);
-                },
-                NoneSelectedFunc = () => {
-                    return customPawn.GetSelectedApparel(layer) == null;
-                },
-                SelectNoneAction = () => {
-                    customPawn.SetSelectedApparel(layer, null);
-                    customPawn.SetSelectedStuff(layer, null);
-                    this.pawnLayerLabel = "EdB.PC.Panel.Appearance.NoneSelected".Translate();
-                },
-                InitialPositionX = CalculateDialogPositionX()
-            };
-            Find.WindowStack.Add(dialog);
-        }
-
-        protected void ShowApparelStuffDialog(CustomPawn customPawn, PawnLayer layer) {
-            ThingDef apparel = customPawn.GetSelectedApparel(layer);
-            if (apparel == null) {
-                return;
+                }
             }
-            List<ThingDef> stuffList = this.apparelStuffLookup[apparel];
-            Dialog_Options<ThingDef> dialog = new Dialog_Options<ThingDef>(stuffList) {
-                NameFunc = (ThingDef stuff) => {
-                    return stuff.LabelCap;
-                },
-                SelectedFunc = (ThingDef stuff) => {
-                    return customPawn.GetSelectedStuff(layer) == stuff;
-                },
-                SelectAction = (ThingDef stuff) => {
-                    customPawn.SetSelectedStuff(layer, stuff);
-                },
-                InitialPositionX = CalculateDialogPositionX()
-            };
-            Find.WindowStack.Add(dialog);
+
+            GUI.color = Color.white;
+            if (!allowAnyColor) {
+                return rect.y - top;
+            }
+
+            if (rect.x != SwatchPosition.x) {
+                rect.x = SwatchPosition.x;
+                rect.y += SwatchSpacing.y;
+            }
+            rect.y += 4;
+            rect.width = 49;
+            rect.height = 49;
+            GUI.color = ColorSwatchBorder;
+            GUI.DrawTexture(rect, BaseContent.WhiteTex);
+            GUI.color = currentColor;
+            GUI.DrawTexture(rect.ContractedBy(1), BaseContent.WhiteTex);
+
+            GUI.color = Color.red;
+            float originalR = currentColor.r;
+            float originalG = currentColor.g;
+            float originalB = currentColor.b;
+            float r = GUI.HorizontalSlider(new Rect(rect.x + 56, rect.y - 1, 136, 16), currentColor.r, 0, 1);
+            GUI.color = Color.green;
+            float g = GUI.HorizontalSlider(new Rect(rect.x + 56, rect.y + 19, 136, 16), currentColor.g, 0, 1);
+            GUI.color = Color.blue;
+            float b = GUI.HorizontalSlider(new Rect(rect.x + 56, rect.y + 39, 136, 16), currentColor.b, 0, 1);
+            if (!CloseEnough(r, originalR) || !CloseEnough(g, originalG) || !CloseEnough(b, originalB)) {
+                PawnController?.UpdatePawnLayerColor(selectedPawnLayer, new Color(r, g, b));
+                // TODO
+                //selectedPawnLayer.SelectColor(customizedPawn, new Color(r, g, b));
+            }
+
+            GUI.color = Color.white;
+            return rect.yMax - top;
         }
 
+        protected float DrawSkinColorSelector(CustomizedPawn customizedPawn, float cursorY, List<Color> colors, bool allowAnyColor) {
+            float top = cursorY;
+            Color currentColor = customizedPawn.Pawn.story.SkinColor;
+            Color clickedColor = currentColor;
+            Rect rect = new Rect(SwatchPosition.x, cursorY, SwatchSize.x, SwatchSize.y);
+            if (colors != null) {
+                foreach (Color color in colors) {
+                    bool selected = (color == currentColor);
+                    if (selected) {
+                        Rect selectionRect = new Rect(rect.x - 2, rect.y - 2, SwatchSize.x + 4, SwatchSize.y + 4);
+                        GUI.color = ColorSwatchSelection;
+                        GUI.DrawTexture(selectionRect, BaseContent.WhiteTex);
+                    }
+
+                    Rect borderRect = new Rect(rect.x - 1, rect.y - 1, SwatchSize.x + 2, SwatchSize.y + 2);
+                    GUI.color = ColorSwatchBorder;
+                    GUI.DrawTexture(borderRect, BaseContent.WhiteTex);
+
+                    GUI.color = color;
+                    GUI.DrawTexture(rect, BaseContent.WhiteTex);
+
+                    if (!selected) {
+                        if (Widgets.ButtonInvisible(rect, false)) {
+                            clickedColor = color;
+                        }
+                    }
+
+                    rect.x += SwatchSpacing.x;
+                    if (rect.x >= SwatchLimit - SwatchSize.x) {
+                        rect.y += SwatchSpacing.y;
+                        rect.x = SwatchPosition.x;
+                    }
+                }
+            }
+
+            GUI.color = Color.white;
+            if (!allowAnyColor) {
+                return rect.y - top;
+            }
+
+            if (rect.x != SwatchPosition.x) {
+                rect.x = SwatchPosition.x;
+                rect.y += SwatchSpacing.y;
+            }
+            rect.y += 4;
+            rect.width = 49;
+            rect.height = 49;
+            GUI.color = ColorSwatchBorder;
+            GUI.DrawTexture(rect, BaseContent.WhiteTex);
+            GUI.color = currentColor;
+            GUI.DrawTexture(rect.ContractedBy(1), BaseContent.WhiteTex);
+
+            float originalR = currentColor.r;
+            float originalG = currentColor.g;
+            float originalB = currentColor.b;
+            GUI.color = Color.red;
+            float r = GUI.HorizontalSlider(new Rect(rect.x + 56, rect.y - 1, 136, 16), currentColor.r, 0, 1);
+            GUI.color = Color.green;
+            float g = GUI.HorizontalSlider(new Rect(rect.x + 56, rect.y + 19, 136, 16), currentColor.g, 0, 1);
+            GUI.color = Color.blue;
+            float b = GUI.HorizontalSlider(new Rect(rect.x + 56, rect.y + 39, 136, 16), currentColor.b, 0, 1);
+            if (!CloseEnough(r, originalR) || !CloseEnough(g, originalG) || !CloseEnough(b, originalB)) {
+                clickedColor = new Color(r, g, b);
+            }
+
+            GUI.color = Color.white;
+
+            if (clickedColor != currentColor) {
+                SkinColorUpdated?.Invoke(clickedColor);
+            }
+            return rect.yMax - top;
+        }
+
+        protected bool CloseEnough(float a, float b) {
+            if (a > b - 0.0001f && a < b + 0.0001f) {
+                return true;
+            }
+            else {
+                return false;
+            }
+        }
     }
 }

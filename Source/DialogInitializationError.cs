@@ -28,8 +28,8 @@ namespace EdB.PrepareCarefully {
 
         public override void DoWindowContents(Rect inRect) {
             Text.Font = GameFont.Small;
-            if (VersionControl.CurrentVersion < PrepareCarefully.MinimumGameVersion) {
-                Widgets.Label(inRect, "EdB.PC.Error.GameVersion".Translate(VersionControl.CurrentVersionString, PrepareCarefully.MinimumGameVersion.ToString()));
+            if (VersionControl.CurrentVersion < Mod.MinimumGameVersion) {
+                Widgets.Label(inRect, "EdB.PC.Error.GameVersion".Translate(VersionControl.CurrentVersionString, Mod.MinimumGameVersion.ToString()));
             }
             else {
                 Widgets.Label(inRect, "EdB.PC.Error.Initialization".Translate());

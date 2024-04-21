@@ -104,7 +104,7 @@ namespace EdB.PrepareCarefully {
             if (def != null) {
                 return FindBodyPart(def, index);
             }
-            Logger.Warning("Did not find body part: " + name);/*
+            /*
             List<UniqueBodyPart> result;
             if (bodyPartDefLookup.TryGetValue(def, out result)) {
                 if (index < result.Count) {

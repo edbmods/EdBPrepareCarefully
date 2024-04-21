@@ -26,21 +26,21 @@ namespace EdB.PrepareCarefully {
             }
         }
 
-        public override bool IsOptionSelected(CustomPawn pawn, PawnLayerOption option) {
+        public override bool IsOptionSelected(CustomizedPawn pawn, PawnLayerOption option) {
             var aOption = option as PawnLayerOptionTattoo;
             if (aOption == null) {
                 return false;
             }
-            return pawn.BodyTattoo == aOption.TattooDef;
+            return pawn.Pawn.style.BodyTattoo == aOption.TattooDef;
         }
 
-        public override int? GetSelectedIndex(CustomPawn pawn) {
+        public override int? GetSelectedIndex(CustomizedPawn pawn) {
             int selectedIndex = options.FirstIndexOf((option) => {
                 if (!(option is PawnLayerOptionTattoo layerOption)) {
                     return false;
                 }
                 else {
-                    return layerOption.TattooDef == pawn.BodyTattoo;
+                    return layerOption.TattooDef == pawn.Pawn.style.BodyTattoo;
                 }
             });
             if (selectedIndex > -1) {
@@ -51,7 +51,7 @@ namespace EdB.PrepareCarefully {
             }
         }
 
-        public override PawnLayerOption GetSelectedOption(CustomPawn pawn) {
+        public override PawnLayerOption GetSelectedOption(CustomizedPawn pawn) {
             int? selectedIndex = GetSelectedIndex(pawn);
             if (selectedIndex == null) {
                 return null;
@@ -64,9 +64,10 @@ namespace EdB.PrepareCarefully {
             }
         }
 
-        public override void SelectOption(CustomPawn pawn, PawnLayerOption option) {
+        public override void SelectOption(CustomizedPawn pawn, PawnLayerOption option) {
             if (option is PawnLayerOptionTattoo layerOption) {
-                pawn.BodyTattoo = layerOption.TattooDef;
+                pawn.Pawn.style.BodyTattoo = layerOption.TattooDef;
+                pawn.Pawn.Drawer?.renderer?.SetAllGraphicsDirty();
             }
         }
 

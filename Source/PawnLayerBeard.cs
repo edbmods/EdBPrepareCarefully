@@ -36,21 +36,22 @@ namespace EdB.PrepareCarefully {
             }
         }
 
-        public override bool IsOptionSelected(CustomPawn pawn, PawnLayerOption option) {
+
+        public override bool IsOptionSelected(CustomizedPawn pawn, PawnLayerOption option) {
             var aOption = option as PawnLayerOptionBeard;
             if (aOption == null) {
                 return false;
             }
-            return pawn.Beard == aOption.BeardDef;
+            return pawn.Pawn.style.beardDef == aOption.BeardDef;
         }
 
-        public override int? GetSelectedIndex(CustomPawn pawn) {
+        public override int? GetSelectedIndex(CustomizedPawn pawn) {
             int selectedIndex = options.FirstIndexOf((option) => {
                 if (!(option is PawnLayerOptionBeard beardOption)) {
                     return false;
                 }
                 else {
-                    return beardOption.BeardDef == pawn.Beard;
+                    return beardOption.BeardDef == pawn.Pawn.style.beardDef;
                 }
             });
             if (selectedIndex > -1) {
@@ -61,7 +62,7 @@ namespace EdB.PrepareCarefully {
             }
         }
 
-        public override PawnLayerOption GetSelectedOption(CustomPawn pawn) {
+        public override PawnLayerOption GetSelectedOption(CustomizedPawn pawn) {
             int? selectedIndex = GetSelectedIndex(pawn);
             if (selectedIndex == null) {
                 return null;
@@ -74,18 +75,20 @@ namespace EdB.PrepareCarefully {
             }
         }
 
-        public override void SelectOption(CustomPawn pawn, PawnLayerOption option) {
+        public override void SelectOption(CustomizedPawn pawn, PawnLayerOption option) {
             if (option is PawnLayerOptionBeard beardOption) {
-                pawn.Beard = beardOption.BeardDef;
+                pawn.Pawn.style.beardDef = beardOption.BeardDef;
+                pawn.Pawn.Drawer?.renderer?.SetAllGraphicsDirty();
             }
         }
 
-        public override Color GetSelectedColor(CustomPawn pawn) {
-            return pawn.HairColor;
+        public override Color GetSelectedColor(CustomizedPawn pawn) {
+            return pawn.Pawn.story.HairColor;
         }
 
-        public override void SelectColor(CustomPawn pawn, Color color) {
-            pawn.HairColor = color;
+        public override void SelectColor(CustomizedPawn pawn, Color color) {
+            pawn.Pawn.story.HairColor = color;
+            pawn.Pawn.Drawer?.renderer?.SetAllGraphicsDirty();
         }
     }
 }

@@ -15,7 +15,7 @@ namespace EdB.PrepareCarefully {
         protected Rect BodyRect;
         protected Rect CancelButtonRect;
         protected Rect ConfirmButtonRect;
-        protected ScrollViewVertical ScrollView = new ScrollViewVertical();
+        protected WidgetScrollViewVertical ScrollView = new WidgetScrollViewVertical();
         protected OptionRenderer<O> renderer = new OptionRenderer<O>();
 
         public Func<IEnumerable<G>> Groups { get; set; }

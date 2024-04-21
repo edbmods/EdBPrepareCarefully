@@ -1,10 +1,11 @@
-﻿using RimWorld;
+using RimWorld;
 using System;
 using System.Collections.Generic;
 using UnityEngine;
 using Verse;
 using Verse.Sound;
 namespace EdB.PrepareCarefully {
+    // TODO: Revisit
     public class DialogFactions : Window {
         public Vector2 ContentMargin { get; protected set; }
         public Vector2 WindowSize { get; protected set; }
@@ -117,7 +118,7 @@ namespace EdB.PrepareCarefully {
             ConfirmButtonRect = new Rect(ContentSize.x - ButtonSize.x,
                 (FooterHeight / 2) - (ButtonSize.y / 2),
                 ButtonSize.x, ButtonSize.y);
-            
+
             float nameOffset = 16;
             float radioWidth = 36;
             Vector2 nameSize = new Vector2(ContentRect.width - radioWidth, 42);

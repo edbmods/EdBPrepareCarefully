@@ -6,27 +6,30 @@ using System.Reflection;
 using Verse;
 
 namespace EdB.PrepareCarefully {
-    public static class PresetSaver {
-        //
-        // Static Methods
-        //
-        public static void SaveToFile(PrepareCarefully data, string presetName) {
+    public class PresetSaver {
+        public PawnSaver PawnSaver { get; set; }
+
+        private string GenerateId() {
+            return Guid.NewGuid().ToString();
+        }
+
+        public void SaveToFile(ModState state, string presetName) {
             bool problem = false;
             try {
                 // Verify that all pawns have non-null identifiers.
-                foreach (CustomPawn customPawn in data.Pawns) {
-                    if (customPawn.Id == null) {
-                        customPawn.GenerateId();
+                foreach (CustomizedPawn customizedPawn in state.Customizations.AllPawns) {
+                    if (customizedPawn.Id == null) {
+                        customizedPawn.Id = GenerateId();
                     }
                 }
-                foreach (var g in data.RelationshipManager.ParentChildGroups) {
+                foreach (var g in state.Customizations.ParentChildGroups) {
                     foreach (var parent in g.Parents) {
                         if (parent != null && parent.Id == null) {
-                            parent.GenerateId();
+                            parent.Id = GenerateId();
                         }
                         foreach (var child in g.Children) {
                             if (child != null && child.Id == null) {
-                                child.GenerateId();
+                                child.Id = GenerateId();
                             }
                         }
                     }
@@ -34,53 +37,60 @@ namespace EdB.PrepareCarefully {
 
                 SaveRecordPresetV5 preset = new SaveRecordPresetV5();
                 preset.mods = GenText.ToCommaList(Enumerable.Select<ModContentPack, string>(LoadedModManager.RunningMods, (Func<ModContentPack, string>)(mod => mod.Name)), true);
-                foreach (CustomPawn customPawn in data.Pawns) {
-                    if (customPawn.Type != CustomPawnType.Hidden) {
-                        SaveRecordPawnV5 pawn = new SaveRecordPawnV5(customPawn);
+                foreach (var pawn in state.Customizations.TemporaryPawns) {
+                    preset.temporaryPawns.Add(new SaveRecordTemporaryPawnV5() {
+                        id = pawn.Id,
+                        gender = pawn.Pawn?.gender.ToString()
+                    });
+                }
+                foreach (CustomizedPawn customizedPawn in state.Customizations.AllPawns) {
+                    if (customizedPawn.Type != CustomizedPawnType.Hidden) {
+                        SaveRecordPawnV5 pawn = PawnSaver.ConvertCustomizedPawnToSaveRecord(customizedPawn);
                         preset.pawns.Add(pawn);
                     }
                 }
-                foreach (var g in data.RelationshipManager.ParentChildGroups) {
+                foreach (var g in state.Customizations.ParentChildGroups) {
+                    HashSet<string> idSet = new HashSet<string>(preset.temporaryPawns.Select(p => p.id));
                     foreach (var parent in g.Parents) {
-                        if (parent.Hidden) {
-                            if (parent.Pawn != null) {
-                                SaveRecordPawnV5 pawn = new SaveRecordPawnV5(parent);
-                                preset.pawns.Add(pawn);
-                            }
-                            else {
-                                Logger.Warning("Found an empty pawn in a parent child relationship while saving the preset.  Skipping that pawn.");
+                        if (parent.Type == CustomizedPawnType.Hidden || parent.Type == CustomizedPawnType.Temporary) {
+                            if (!idSet.Contains(parent.Id)) {
+                                preset.temporaryPawns.Add(new SaveRecordTemporaryPawnV5() {
+                                    id = parent.Id,
+                                    gender = parent.Pawn?.gender.ToString()
+                                });
+                                idSet.Add(parent.Id);
                             }
                         }
-                        foreach (var child in g.Children) {
-                            if (child.Hidden) {
-                                if (child.Pawn != null) {
-                                    SaveRecordPawnV5 pawn = new SaveRecordPawnV5(child);
-                                    preset.pawns.Add(pawn);
-                                }
-                                else {
-                                    Logger.Warning("Found an empty pawn in a parent child relationship while saving the preset.  Skipping that pawn.");
-                                }
+                    }
+                    foreach (var child in g.Children) {
+                        if (child.Type == CustomizedPawnType.Hidden || child.Type == CustomizedPawnType.Temporary) {
+                            if (!idSet.Contains(child.Id)) {
+                                preset.temporaryPawns.Add(new SaveRecordTemporaryPawnV5() {
+                                    id = child.Id,
+                                    gender = child.Pawn?.gender.ToString()
+                                });
+                                idSet.Add(child.Id);
                             }
                         }
                     }
                 }
-                foreach (var r in data.RelationshipManager.Relationships) {
-                    if (r.source != null && r.target != null && r.def != null && r.source.Id != null && r.target.Id != null) {
+                foreach (var r in state.Customizations.Relationships) {
+                    if (r.Source != null && r.Target != null && r.Def != null && r.Source.Id != null && r.Target.Id != null) {
                         SaveRecordRelationshipV3 s = new SaveRecordRelationshipV3(r);
                         preset.relationships.Add(s);
                     }
                     else {
                         problem = true;
                         Logger.Warning("Found an invalid custom relationship when saving a preset: " + presetName);
-                        if (r.target != null && r.source != null) {
-                            Logger.Warning("  Relationship = { source = " + r.source.Id + ", target = " + r.target.Id + ", relationship = " + r.def + "}");
+                        if (r.Target != null && r.Source != null) {
+                            Logger.Warning("  Relationship = { source = " + r.Source.Id + ", target = " + r.Target.Id + ", relationship = " + r.Def + "}");
                         }
                         else {
-                            Logger.Warning("  Relationship = { source = " + r.source + ", target = " + r.target + ", relationship = " + r.def + "}");
+                            Logger.Warning("  Relationship = { source = " + r.Source + ", target = " + r.Target + ", relationship = " + r.Def + "}");
                         }
                     }
                 }
-                foreach (var g in data.RelationshipManager.ParentChildGroups) {
+                foreach (var g in state.Customizations.ParentChildGroups) {
                     if (g.Children.Count == 0 || (g.Parents.Count == 0 && g.Children.Count == 1)) {
                         continue;
                     }
@@ -109,7 +119,7 @@ namespace EdB.PrepareCarefully {
                     }
                     preset.parentChildGroups.Add(group);
                 }
-                foreach (var e in data.Equipment) {
+                foreach (var e in state.Customizations.Equipment) {
                     SaveRecordEquipmentV3 record = new SaveRecordEquipmentV3(e);
                     preset.equipment.Add(record);
                 }
@@ -119,7 +129,8 @@ namespace EdB.PrepareCarefully {
                 preset.ExposeData();
             }
             catch (Exception e) {
-                PrepareCarefully.Instance.State.AddError("EdB.PC.Dialog.Preset.Error.SaveFailed".Translate());
+                // TODO
+                //PrepareCarefully.Instance.State.AddError("EdB.PC.Dialog.Preset.Error.SaveFailed".Translate());
                 Logger.Error("Failed to save preset file");
                 throw e;
             }
@@ -127,7 +138,8 @@ namespace EdB.PrepareCarefully {
                 Scribe.saver.FinalizeSaving();
                 Scribe.mode = LoadSaveMode.Inactive;
                 if (problem) {
-                    PrepareCarefully.Instance.State.AddError("EdB.PC.Dialog.Preset.Error.PartialSaveFailure".Translate());
+                    // TODO
+                    //PrepareCarefully.Instance.State.AddError("EdB.PC.Dialog.Preset.Error.PartialSaveFailure".Translate());
                 }
             }
         }

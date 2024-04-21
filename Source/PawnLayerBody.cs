@@ -36,22 +36,24 @@ namespace EdB.PrepareCarefully {
             }
         }
 
-        public override bool IsOptionSelected(CustomPawn pawn, PawnLayerOption option) {
+
+
+
+        public override bool IsOptionSelected(CustomizedPawn pawn, PawnLayerOption option) {
             PawnLayerOptionBody bodyOption = option as PawnLayerOptionBody;
             if (bodyOption == null) {
                 return false;
             }
-            return pawn.BodyType == bodyOption.BodyTypeDef;
+            return pawn.Pawn.story.bodyType == bodyOption.BodyTypeDef;
         }
-
-        public override int? GetSelectedIndex(CustomPawn pawn) {
+        public override int? GetSelectedIndex(CustomizedPawn pawn) {
             int selectedIndex = options.FirstIndexOf((option) => {
                 PawnLayerOptionBody bodyOption = option as PawnLayerOptionBody;
                 if (bodyOption == null) {
                     return false;
                 }
                 else {
-                    return bodyOption.BodyTypeDef == pawn.BodyType;
+                    return bodyOption.BodyTypeDef == pawn.Pawn.story.bodyType;
                 }
             });
             if (selectedIndex > -1) {
@@ -61,8 +63,7 @@ namespace EdB.PrepareCarefully {
                 return null;
             }
         }
-
-        public override PawnLayerOption GetSelectedOption(CustomPawn pawn) {
+        public override PawnLayerOption GetSelectedOption(CustomizedPawn pawn) {
             int? selectedIndex = GetSelectedIndex(pawn);
             if (selectedIndex == null) {
                 return null;
@@ -74,20 +75,37 @@ namespace EdB.PrepareCarefully {
                 return null;
             }
         }
-
-        public override void SelectOption(CustomPawn pawn, PawnLayerOption option) {
+        public override void SelectOption(CustomizedPawn pawn, PawnLayerOption option) {
             PawnLayerOptionBody bodyOption = option as PawnLayerOptionBody;
             if (bodyOption != null) {
-                pawn.BodyType = bodyOption.BodyTypeDef;
+                pawn.Pawn.story.bodyType = bodyOption.BodyTypeDef;
+                pawn.Pawn.Drawer?.renderer?.SetAllGraphicsDirty();
             }
         }
-
-        public override Color GetSelectedColor(CustomPawn pawn) {
-            return pawn.SkinColor;
+        public override Color GetSelectedColor(CustomizedPawn pawn) {
+            return pawn.Pawn.story.SkinColor;
         }
 
-        public override void SelectColor(CustomPawn pawn, Color color) {
-            pawn.SkinColor = color;
+        public override void SelectColor(CustomizedPawn pawn, Color color) {
+            if (color == pawn.Pawn.story.SkinColor) {
+                return;
+            }
+            bool removeOverride = false;
+            var melaninGeneDef = pawn.Pawn.genes.GetMelaninGene();
+            Gene activeSkinColorGene = null;
+            if (pawn.Pawn?.genes?.GenesListForReading != null) {
+                activeSkinColorGene = pawn.Pawn.genes.GenesListForReading.Where(g => g.Active && g.def.skinColorOverride.HasValue && g.overriddenByGene == null).FirstOrDefault();
+            }
+            if (activeSkinColorGene == null && melaninGeneDef?.skinColorBase != null && melaninGeneDef.skinColorBase == color) {
+                removeOverride = true;
+            }
+            if (removeOverride) {
+                pawn.Pawn.story.skinColorOverride = null;
+            }
+            else {
+                pawn.Pawn.story.skinColorOverride = color;
+            }
+            pawn.Pawn.Drawer?.renderer?.SetAllGraphicsDirty();
         }
     }
 }

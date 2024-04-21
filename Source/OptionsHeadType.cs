@@ -2,14 +2,11 @@ using RimWorld;
 using System;
 using System.Collections.Generic;
 using System.Collections;
-using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Text;
 using UnityEngine;
 using Verse;
-using Verse.Sound;
-using System.Runtime.Remoting.Messaging;
 
 namespace EdB.PrepareCarefully {
     public class OptionsHeadType {

@@ -5,65 +5,71 @@ using System.Text;
 using System.Threading.Tasks;
 using RimWorld;
 using Verse;
-using Verse.AI;
 
 namespace EdB.PrepareCarefully {
     public class AgeModifier {
         public static long TicksPerYear = 3600000L;
         public static long TicksPerDay = 60000L;
         public static long DaysPerYear = 60L;
+        private BackstoryDef newbornBackstory;
+        private BackstoryDef childBackstory;
+
         public static long TicksFromYearsAndDays(int years, int days) {
             return ((long)years * TicksPerYear) + ((long)days * TicksPerDay);
         }
+        public static int TicksToDays(long ticks) {
+            return (int)(ticks / TicksPerDay);
+        }
+        public static int TicksToDayOfYear(long ticks) {
+            return TicksToDays(ticks) % (int)AgeModifier.DaysPerYear;
+        }
+        public static int TicksOfDay(long ticks) {
+            return (int)(ticks % TicksPerDay);
+        }
 
-        BackstoryDef newbornBackstory;
-        BackstoryDef childBackstory;
-        public void ModifyBiologicalAge(CustomPawn pawn, long ticks) {
-            if (pawn == null) {
+        public void ModifyBiologicalAge(CustomizedPawn customizedPawn, long ticks) {
+            if (customizedPawn == null || customizedPawn.Pawn == null) {
                 return;
             }
 
-            int previousLifeStageIndex = pawn.Pawn.ageTracker.CurLifeStageIndex;
-            LifeStageDef previousLifeStage = pawn.Pawn.ageTracker.CurLifeStage;
-            LifeStageAge previousLifeStageAge = pawn.Pawn.ageTracker.CurLifeStageRace;
+            Pawn pawn = customizedPawn.Pawn;
 
-            bool wasNewborn = IsNewborn(pawn);
-            bool wasChild = IsChild(pawn);
+            int previousLifeStageIndex = pawn.ageTracker.CurLifeStageIndex;
+            LifeStageDef previousLifeStage = pawn.ageTracker.CurLifeStage;
+            LifeStageAge previousLifeStageAge = pawn.ageTracker.CurLifeStageRace;
+
+            bool wasNewborn = UtilityPawns.IsNewborn(pawn);
+            bool wasChild = UtilityPawns.IsChild(pawn);
             bool hadChildhoodBackstory = HasChildhoodBackstory(pawn);
             bool hadAdulthoodBackstory = HasAdulthoodBackstory(pawn);
 
-            pawn.Pawn.ageTracker.AgeBiologicalTicks = ticks;
+            pawn.ageTracker.AgeBiologicalTicks = ticks;
 
             bool hasChildhoodBackstory = HasChildhoodBackstory(pawn);
             bool hasAdulthoodBackstory = HasAdulthoodBackstory(pawn);
-            bool isNewborn = IsNewborn(pawn);
-            bool isChild = IsChild(pawn);
+            bool isNewborn = UtilityPawns.IsNewborn(pawn);
+            bool isChild = UtilityPawns.IsChild(pawn);
 
             if (hasAdulthoodBackstory && !hadAdulthoodBackstory) {
-                pawn.Pawn.story.Adulthood = pawn.LastSelectedAdulthoodBackstory;
-                pawn.ResetBackstories();
+                pawn.story.Adulthood = customizedPawn.Customizations.AdulthoodBackstory;
             }
             else if (!hasAdulthoodBackstory && hadAdulthoodBackstory) {
-                pawn.Pawn.story.Adulthood = null;
-                pawn.ResetBackstories();
+                pawn.story.Adulthood = null;
             }
 
-            if (isNewborn && pawn.Pawn.story.Childhood != NewbornBackstory) {
-                pawn.Pawn.story.Childhood = NewbornBackstory;
-                pawn.ResetBackstories();
+            if (isNewborn && pawn.story.Childhood != NewbornBackstory) {
+                pawn.story.Childhood = NewbornBackstory;
             }
-            else if (isChild && pawn.Pawn.story.Childhood != ChildBackstory) {
-                pawn.Pawn.story.Childhood = ChildBackstory;
-                pawn.ResetBackstories();
+            else if (isChild && pawn.story.Childhood != ChildBackstory) {
+                pawn.story.Childhood = ChildBackstory;
             }
 
-            pawn.Pawn.ClearCachedLifeStage();
-            pawn.Pawn.ClearCachedHealth();
-            pawn.MarkPortraitAsDirty();
+            pawn.ClearCachedLifeStage();
+            pawn.ClearCachedHealth();
 
-            int newLifeStageIndex = pawn.Pawn.ageTracker.CurLifeStageIndex;
-            LifeStageDef newLifeStage = pawn.Pawn.ageTracker.CurLifeStage;
-            LifeStageAge newLifeStageAge = pawn.Pawn.ageTracker.CurLifeStageRace;
+            int newLifeStageIndex = pawn.ageTracker.CurLifeStageIndex;
+            LifeStageDef newLifeStage = pawn.ageTracker.CurLifeStage;
+            LifeStageAge newLifeStageAge = pawn.ageTracker.CurLifeStageRace;
 
             if (newLifeStage != previousLifeStage) {
                 Logger.Debug("Pawn life stage changes from " + previousLifeStage.defName + " to " + newLifeStage.defName);
@@ -71,37 +77,19 @@ namespace EdB.PrepareCarefully {
             }
         }
 
-        public void ModifyChronologicalAge(CustomPawn pawn, long ticks) {
-            if (pawn == null) {
+        public void ModifyChronologicalAge(CustomizedPawn pawn, long ticks) {
+            if (pawn == null || pawn.Pawn == null) {
                 return;
             }
             pawn.Pawn.ageTracker.AgeChronologicalTicks = ticks;
         }
 
-        public bool IsNewborn(CustomPawn pawn) {
-            DevelopmentalStage? d = pawn.Pawn.ageTracker?.CurLifeStage?.developmentalStage;
-            var value = d.HasValue ? d.Value.Baby() : false;
-            //Logger.Debug("IsNewborn = " + value);
-            return value;
+        public bool HasChildhoodBackstory(Pawn pawn) {
+            return !UtilityPawns.IsNewborn(pawn) && !UtilityPawns.IsChild(pawn);
         }
-        public bool IsChild(CustomPawn pawn) {
-            DevelopmentalStage? d = pawn.Pawn.ageTracker?.CurLifeStage?.developmentalStage;
-            var value = d.HasValue ? d.Value.Child() : false;
-            //Logger.Debug("IsChild = " + value);
-            return value;
+        public bool HasAdulthoodBackstory(Pawn pawn) {
+            return UtilityPawns.IsAdult(pawn);
         }
-        public bool IsAdult(CustomPawn pawn) {
-            DevelopmentalStage? d = pawn.Pawn.ageTracker?.CurLifeStage?.developmentalStage;
-            return d.HasValue ? d.Value.Adult() : false;
-        }
-
-        public bool HasChildhoodBackstory(CustomPawn pawn) {
-            return !IsNewborn(pawn) && !IsChild(pawn);
-        }
-        public bool HasAdulthoodBackstory(CustomPawn pawn) {
-            return IsAdult(pawn);
-        }
-
         public BackstoryDef NewbornBackstory {
             get {
                 if (newbornBackstory== null) {

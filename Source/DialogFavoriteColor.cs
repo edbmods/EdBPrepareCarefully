@@ -1,7 +1,6 @@
 using RimWorld;
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using UnityEngine;
 using Verse;
@@ -28,6 +27,7 @@ namespace EdB.PrepareCarefully {
         public Rect GreenSliderRect { get; protected set; }
         public Rect BlueSliderRect { get; protected set; }
         protected Color currentColor;
+        protected List<Color> swatches = new List<Color>();
 
         public DialogFavoriteColor(Color startingColor) {
             this.closeOnCancel = true;
@@ -42,7 +42,7 @@ namespace EdB.PrepareCarefully {
 
         public override Vector2 InitialSize {
             get {
-                return new Vector2(400f, 280f);
+                return new Vector2(400f, 300f);
             }
         }
 
@@ -51,7 +51,7 @@ namespace EdB.PrepareCarefully {
             FooterHeight = 40f;
             WindowPadding = 18;
             ContentMargin = new Vector2(10f, 18f);
-            WindowSize = new Vector2(400f, 280f);
+            WindowSize = new Vector2(400f, 300f);
             ButtonSize = new Vector2(140f, 40f);
 
             ContentSize = new Vector2(WindowSize.x - WindowPadding * 2 - ContentMargin.x * 2,
@@ -81,28 +81,33 @@ namespace EdB.PrepareCarefully {
                 ButtonSize.x, ButtonSize.y);
         }
 
+        public override void PreOpen() {
+            base.PreOpen();
+
+            foreach (ColorDef colDef in DefDatabase<ColorDef>.AllDefs.Where((ColorDef x) => x.colorType == ColorType.Ideo || x.colorType == ColorType.Misc)) {
+                if (!swatches.Any((Color x) => x.IndistinguishableFrom(colDef.color))) {
+                    swatches.Add(colDef.color);
+                }
+            }
+            swatches.SortByColor((Color x) => x);
+        }
+
         public override void DoWindowContents(Rect inRect) {
             GUI.color = Color.white;
             Text.Font = GameFont.Medium;
-            Widgets.Label(HeaderRect, "EdB.PC.Dialog.FavoriteColor.Header".Translate());
-
-            GUI.color = Color.white;
-            GUI.DrawTexture(ColorSwatchRect, BaseContent.WhiteTex);
-            GUI.color = currentColor;
-            GUI.DrawTexture(ColorSwatchRect.ContractedBy(1), BaseContent.WhiteTex);
-
-            GUI.color = Color.red;
             float originalR = currentColor.r;
             float originalG = currentColor.g;
             float originalB = currentColor.b;
-            float r = GUI.HorizontalSlider(RedSliderRect, currentColor.r, 0, 1);
-            GUI.color = Color.green;
-            float g = GUI.HorizontalSlider(GreenSliderRect, currentColor.g, 0, 1);
-            GUI.color = Color.blue;
-            float b = GUI.HorizontalSlider(BlueSliderRect, currentColor.b, 0, 1);
-            if (!CloseEnough(r, originalR) || !CloseEnough(g, originalG) || !CloseEnough(b, originalB)) {
-                currentColor = new Color(r, g, b);
-            }
+            Widgets.Label(HeaderRect, "EdB.PC.Dialog.FavoriteColor.Header".Translate());
+
+            float topPadding = 4;
+            float swatchesTop = ContentRect.y + topPadding;
+            float y = WidgetColorSelector.DrawSwatches(ContentRect.x, swatchesTop, ContentRect.width, 20, currentColor, swatches, (Color color) => { currentColor = color; });
+            y += 12;
+            //Widgets.DrawBox(ContentRect, 1);
+            Rect selectorRect = new Rect(ContentRect.x, swatchesTop + y, ContentRect.width, ContentRect.height - topPadding - y);
+            //Widgets.DrawBox(selectorRect, 1);
+            WidgetColorSelector.DrawSelector(selectorRect, currentColor, (Color color) => { currentColor = color; });
 
             GUI.color = Color.white;
             Text.Font = GameFont.Small;

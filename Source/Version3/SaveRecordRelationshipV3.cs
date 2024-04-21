@@ -1,4 +1,4 @@
-﻿using RimWorld;
+using RimWorld;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -15,10 +15,10 @@ namespace EdB.PrepareCarefully {
 
         }
 
-        public SaveRecordRelationshipV3(CustomRelationship relationship) {
-            this.source = relationship.source.Id;
-            this.target = relationship.target.Id;
-            this.relation = relationship.def.defName;
+        public SaveRecordRelationshipV3(CustomizedRelationship relationship) {
+            this.source = relationship.Source.Id;
+            this.target = relationship.Target.Id;
+            this.relation = relationship.Def.defName;
         }
 
         public void ExposeData() {

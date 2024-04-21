@@ -90,22 +90,24 @@ namespace EdB.PrepareCarefully {
         protected List<ImplantRecipe> recipes = new List<ImplantRecipe>();
         protected List<Implant> implantList = new List<Implant>();
         protected Dictionary<BodyPartRecord, Implant> replacedParts = new Dictionary<BodyPartRecord, Implant>();
-        protected CustomPawn pawn = null;
+        protected CustomizedPawn customizedPawn = null;
         protected bool disabledOptionsDirtyFlag = false;
         protected List<Implant> validImplants = new List<Implant>();
         protected string cachedBlockedSelectionAlert = null;
+        protected ProviderHealthOptions providerHealth = null;
 
-        public DialogManageImplants(CustomPawn pawn) {
+        public DialogManageImplants(CustomizedPawn customizedPawn, ProviderHealthOptions providerHealth) {
             this.closeOnCancel = true;
             this.doCloseX = true;
             this.absorbInputAroundWindow = true;
             this.forcePause = true;
-            InitializeWithPawn(pawn);
+            this.providerHealth = providerHealth;
+            InitializeWithCustomizedPawn(customizedPawn);
             Resize();
         }
 
-        protected void InitializeWithPawn(CustomPawn pawn) {
-            this.pawn = pawn;
+        protected void InitializeWithCustomizedPawn(CustomizedPawn customizedPawn) {
+            this.customizedPawn = customizedPawn;
             InitializeImplantList();
             InitializeRecipes();
             ResetDisabledState();
@@ -114,7 +116,7 @@ namespace EdB.PrepareCarefully {
         protected void InitializeImplantList() {
             implantList.Clear();
             replacedParts.Clear();
-            foreach (var implant in pawn.Implants) {
+            foreach (var implant in customizedPawn.Customizations.Implants) {
                 implantList.Add(implant);
                 if (implant.ReplacesPart) {
                     replacedParts.Add(implant.BodyPartRecord, implant);
@@ -123,19 +125,19 @@ namespace EdB.PrepareCarefully {
         }
 
         protected void InitializeRecipes() {
-            OptionsHealth health = PrepareCarefully.Instance.Providers.Health.GetOptions(pawn);
+            OptionsHealth health = providerHealth.GetOptions(customizedPawn);
             this.recipes.Clear();
-            List<DialogManageImplants.ImplantRecipe> result = new List<DialogManageImplants.ImplantRecipe>();
+            var result = new List<ImplantRecipe>();
             foreach (var recipe in health.ImplantRecipes) {
-                DialogManageImplants.ImplantRecipe implant = new DialogManageImplants.ImplantRecipe();
+                var implant = new ImplantRecipe();
                 implant.Recipe = recipe;
-                implant.Selected = implantList.FirstOrDefault((Implant i) => { return i.recipe == recipe; }) != null;
+                implant.Selected = implantList.FirstOrDefault((Implant i) => { return i.Recipe == recipe; }) != null;
                 implant.Disabled = false;
-                implant.Parts = new List<DialogManageImplants.ImplantBodyPart>();
+                implant.Parts = new List<ImplantBodyPart>();
                 foreach (var part in health.FindBodyPartsForImplantRecipe(recipe)) {
-                    DialogManageImplants.ImplantBodyPart implantPart = new DialogManageImplants.ImplantBodyPart();
+                    var implantPart = new ImplantBodyPart();
                     implantPart.UniquePart = part;
-                    Implant foundImplant = implantList.FirstOrDefault((Implant i) => { return i.recipe == recipe && i.BodyPartRecord == part.Record; });
+                    Implant foundImplant = implantList.FirstOrDefault((Implant i) => { return i.Recipe == recipe && i.BodyPartRecord == part.Record; });
                     if (foundImplant != null) {
                         implantPart.Selected = true;
                         implantPart.Implant = foundImplant;
@@ -153,7 +155,7 @@ namespace EdB.PrepareCarefully {
         }
         
         protected void ResetDisabledState() {
-            OptionsHealth health = PrepareCarefully.Instance.Providers.Health.GetOptions(pawn);
+            OptionsHealth health = providerHealth.GetOptions(customizedPawn);
 
             // Iterate each selected implant in order to determine if it's valid--if it's not
             // trying to replace or install on top of an already-missing part.
@@ -322,7 +324,7 @@ namespace EdB.PrepareCarefully {
             }
             string listItems = "";
             foreach (var item in blockedSelections) {
-                listItems += "\n" + "EdB.PC.Dialog.Implant.Alert.Item".Translate(item.recipe.LabelCap, item.BodyPartRecord.def.label);
+                listItems += "\n" + "EdB.PC.Dialog.Implant.Alert.Item".Translate(item.Recipe.LabelCap, item.BodyPartRecord.def.label);
             }
             cachedBlockedSelectionAlert = "EdB.PC.Dialog.Implant.Alert".Translate(listItems);
         }
@@ -353,7 +355,7 @@ namespace EdB.PrepareCarefully {
             set;
         }
 
-        public Action<CustomPawn> SelectAction {
+        public Action<CustomizedPawn> SelectAction {
             get;
             set;
         }
@@ -398,7 +400,7 @@ namespace EdB.PrepareCarefully {
 
         protected void AddImplant(ImplantRecipe recipe, ImplantBodyPart part) {
             Implant implant = new Implant();
-            implant.recipe = recipe.Recipe;
+            implant.Recipe = recipe.Recipe;
             implant.BodyPartRecord = part.Part;
             implantList.Add(implant);
             part.Implant = implant;
@@ -519,7 +521,7 @@ namespace EdB.PrepareCarefully {
                             ClickRecipeAction(recipe);
                         }
                         if (recipe.BlockingImplant != null) {
-                            TooltipHandler.TipRegion(labelRect, "EdB.PC.Dialog.Implant.Conflict".Translate(recipe.BlockingImplant.recipe.LabelCap, recipe.BlockingImplant.BodyPartRecord.Label));
+                            TooltipHandler.TipRegion(labelRect, "EdB.PC.Dialog.Implant.Conflict".Translate(recipe.BlockingImplant.Recipe.LabelCap, recipe.BlockingImplant.BodyPartRecord.Label));
                         }
                     }
                     if (recipe.Selected && recipe.RequiresPartSelection) {
@@ -556,7 +558,7 @@ namespace EdB.PrepareCarefully {
                                     ClickPartAction(recipe, part);
                                 }
                                 if (part.BlockingImplant != null) {
-                                    TooltipHandler.TipRegion(labelRect, "EdB.PC.Dialog.Implant.Conflict".Translate(part.BlockingImplant.recipe.LabelCap, part.BlockingImplant.BodyPartRecord.Label));
+                                    TooltipHandler.TipRegion(labelRect, "EdB.PC.Dialog.Implant.Conflict".Translate(part.BlockingImplant.Recipe.LabelCap, part.BlockingImplant.BodyPartRecord.Label));
                                 }
                             }
                             cursor += labelRect.height;

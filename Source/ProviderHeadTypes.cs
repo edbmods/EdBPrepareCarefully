@@ -1,15 +1,9 @@
 using RimWorld;
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
-using System.Reflection;
-using System.Reflection.Emit;
-using System.Text;
-using System.Text.RegularExpressions;
 using UnityEngine;
 using Verse;
-using Verse.Sound;
 
 namespace EdB.PrepareCarefully {
     public class ProviderHeadTypes {
@@ -20,11 +14,8 @@ namespace EdB.PrepareCarefully {
         protected Dictionary<ThingDef, OptionsHeadType> headTypeLookup = new Dictionary<ThingDef, OptionsHeadType>();
         public ProviderHeadTypes() {
         }
-        public ProviderAlienRaces AlienRaceProvider {
+        public ProviderAlienRaces ProviderAlienRaces {
             get; set;
-        }
-        public IEnumerable<HeadTypeDef> GetHeadTypes(CustomPawn pawn) {
-            return GetHeadTypes(pawn.Pawn.def, pawn.Gender);
         }
         public IEnumerable<HeadTypeDef> GetHeadTypes(Pawn pawn) {
             return GetHeadTypes(pawn.def, pawn.gender);
@@ -80,7 +71,7 @@ namespace EdB.PrepareCarefully {
         protected OptionsHeadType InitializeHumanHeadTypes() {
             OptionsHeadType result = new OptionsHeadType();
             foreach (var d in DefDatabase<HeadTypeDef>.AllDefs) {
-                if (d == HeadTypeDefOf.Skull || d== HeadTypeDefOf.Stump) {
+                if (d == HeadTypeDefOf.Skull || d.defName == "Stump") {
                     continue;
                 }
                 result.AddHeadType(d);
@@ -90,7 +81,7 @@ namespace EdB.PrepareCarefully {
         protected OptionsHeadType InitializeAlienHeadTypes(ThingDef raceDef) {
             OptionsHeadType result = new OptionsHeadType();
             //Logger.Debug("InitializeAlienHeadTypes(" + raceDef.defName + ")");
-            AlienRace alienRace = AlienRaceProvider.GetAlienRace(raceDef);
+            AlienRace alienRace = ProviderAlienRaces.GetAlienRace(raceDef);
             if (alienRace == null) {
                 Logger.Warning("Could not initialize head types for alien race, " + raceDef + ", because the race's thing definition was missing");
                 return result;

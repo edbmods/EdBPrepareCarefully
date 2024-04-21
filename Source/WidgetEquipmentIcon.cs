@@ -10,9 +10,6 @@ namespace EdB.PrepareCarefully {
         public static void Draw(Rect rect, EquipmentRecord entry) {
             Draw(rect, entry.def, entry.color);
         }
-        public static void Draw(Rect rect, AnimalRecord animal) {
-            Draw(rect, animal.Thing, Color.white);
-        }
         public static void Draw(Rect rect, ThingDef thingDef, Color color) {
             rect = new Rect(rect.MiddleX() - 17, rect.MiddleY() - 17, 34, 34);
             GUI.color = color;
@@ -49,10 +46,14 @@ namespace EdB.PrepareCarefully {
             }
             else if (thing is Pawn) {
                 Pawn pawn = (Pawn)thing;
-                if (!pawn.Drawer.renderer.graphics.AllResolved) {
-                    pawn.Drawer.renderer.graphics.ResolveAllGraphics();
-                }
-                Material matSingle = pawn.Drawer.renderer.graphics.nakedGraphic.MatEast;
+                // TODO: Evaluate
+                //if (!pawn.Drawer.renderer.graphics.AllResolved) {
+                //    pawn.Drawer.renderer.graphics.ResolveAllGraphics();
+                //}
+                pawn.Drawer.renderer.EnsureGraphicsInitialized();
+                // TODO: Evaluate
+                //Material matSingle = pawn.Drawer.renderer.graphics.nakedGraphic.MatEast;
+                Material matSingle = pawn.Drawer.renderer.BodyGraphic.MatEast;
                 resolvedIcon = matSingle.mainTexture;
                 GUI.color = matSingle.color;
             }

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using UnityEngine;
 namespace EdB.PrepareCarefully {
     public interface IPanel {
@@ -6,6 +6,6 @@ namespace EdB.PrepareCarefully {
             get;
         }
         void Resize(Rect rect);
-        void Draw(State state);
+        void Draw();
     }
 }

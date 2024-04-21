@@ -20,6 +20,8 @@ namespace EdB.PrepareCarefully {
         protected Rect RectLastName;
         protected Rect RectRandomize;
         protected Rect RectInfo;
+        public ModState State { get; set; }
+        public ViewState ViewState { get; set; }
 
         public override void Resize(Rect rect) {
             base.Resize(rect);
@@ -50,40 +52,60 @@ namespace EdB.PrepareCarefully {
             // Shift the info button to the left a bit to making the spacing look better.
             RectInfo.x -= 6;
         }
-        protected override void DrawPanelContent(State state) {
-            CustomPawn customPawn = state.CurrentPawn;
+        protected override void DrawPanelContent() {
+            CustomizedPawn customizedPawn = ViewState.CurrentPawn;
+            Pawn pawn = customizedPawn?.Pawn;
+            if (customizedPawn == null) {
+                Logger.Debug("customizedPawn was null");
+                return;
+            }
+            if (pawn == null) {
+                Logger.Debug("pawn was null");
+                return;
+            }
+
             Text.Anchor = TextAnchor.UpperLeft;
             GUI.color = Color.white;
 
             Style.SetGUIColorForButton(RectInfo);
             GUI.DrawTexture(RectInfo, Textures.TextureButtonInfo);
             if (Widgets.ButtonInvisible(RectInfo)) {
-                Find.WindowStack.Add((Window)new Dialog_InfoCard(customPawn.Pawn));
+                Find.WindowStack.Add((Window)new Dialog_InfoCard(pawn));
             }
             GUI.color = Color.white;
 
-            string first = customPawn.FirstName;
-            string nick = customPawn.NickName;
-            string last = customPawn.LastName;
+            string first = "";
+            string nick = "";
+            string last = "";
+            if (pawn.Name.GetType().IsAssignableFrom(typeof(NameTriple))) {
+                var nameTriple = pawn.Name as NameTriple;
+                first = nameTriple.First;
+                nick = nameTriple.Nick;
+                last = nameTriple.Last;
+            }
+            else if (pawn.Name.GetType().IsAssignableFrom(typeof(NameSingle))) {
+                nick = (pawn.Name as NameSingle).Name;
+            }
+
             string text;
             GUI.SetNextControlName("PrepareCarefullyFirst");
             text = Widgets.TextField(RectFirstName, first);
-            if (text != first) {
-                FirstNameUpdated(text);
+            if (text != first && FirstNameUpdated != null) {
+                FirstNameUpdated?.Invoke(text);
             }
             if (nick == first || nick == last) {
                 GUI.color = new Color(1, 1, 1, 0.5f);
             }
             GUI.SetNextControlName("PrepareCarefullyNick");
             text = Widgets.TextField(RectNickName, nick);
-            if (text != nick) {
-                NickNameUpdated(text);
+            if (text != nick && NickNameUpdated != null) {
+                NickNameUpdated?.Invoke(text);
             }
             GUI.color = Color.white;
             GUI.SetNextControlName("PrepareCarefullyLast");
             text = Widgets.TextField(RectLastName, last);
-            if (text != last) {
-                LastNameUpdated(text);
+            if (text != last && LastNameUpdated != null) {
+                LastNameUpdated?.Invoke(text);
             }
             TooltipHandler.TipRegion(RectFirstName, "FirstNameDesc".Translate());
             TooltipHandler.TipRegion(RectNickName, "ShortIdentifierDesc".Translate());
@@ -95,7 +117,9 @@ namespace EdB.PrepareCarefully {
             if (Widgets.ButtonInvisible(RectRandomize, false)) {
                 SoundDefOf.Tick_Low.PlayOneShotOnCamera();
                 GUI.FocusControl(null);
-                NameRandomized();
+                if (LastNameUpdated != null) {
+                    NameRandomized?.Invoke();
+                }
             }
         }
 

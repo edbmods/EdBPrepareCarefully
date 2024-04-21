@@ -9,6 +9,8 @@ namespace EdB.PrepareCarefully {
         protected Vector2 SizeAlert = new Vector2(20, 20);
         protected List<string> cachedMissingWorkTypes = null;
         protected string missingWorkTypeString = null;
+        public ModState State { get; set; }
+        public ViewState ViewState { get; set; }
         public PanelIncapableOf() {
         }
         public override string PanelHeader {
@@ -23,36 +25,36 @@ namespace EdB.PrepareCarefully {
             float textHeight = PanelRect.height - BodyRect.y - panelPadding.y;
             RectText = new Rect(panelPadding.x, BodyRect.y, textWidth, textHeight);
         }
-        protected override void DrawPanelContent(State state) {
-            if (state.MissingWorkTypes != null) {
-                if (cachedMissingWorkTypes != state.MissingWorkTypes) {
-                    cachedMissingWorkTypes = state.MissingWorkTypes;
-                    missingWorkTypeString = "";
-                    foreach (var type in state.MissingWorkTypes) {
-                        missingWorkTypeString += "EdB.PC.Panel.Incapable.WarningItem".Translate(type ) + "\n";
-                    }
-                    missingWorkTypeString = missingWorkTypeString.TrimEndNewlines();
-                }
-                Warning = "EdB.PC.Panel.Incapable.Warning".Translate(missingWorkTypeString);
-            }
-            else {
-                Warning = null;
-            }
-
-            base.DrawPanelContent(state);
+        protected override void DrawPanelContent() {
+            base.DrawPanelContent();
 
             GUI.color = Style.ColorText;
             Text.Font = GameFont.Medium;
             Text.Anchor = TextAnchor.UpperLeft;
 
-            string incapable = state.CurrentPawn.IncapableOf;
+            // TODO: In the previous version, we cached the result of this logic in the customized pawn.  We don't
+            // want to cache it there, but evaluate if we want to cache somewhere in the ViewState
+            string incapable = null;
+            CustomizedPawn customizedPawn = ViewState.CurrentPawn;
+            Pawn pawn = customizedPawn.Pawn;
+            List<string> incapableList = new List<string>();
+            WorkTags combinedDisabledWorkTags = pawn.story.DisabledWorkTagsBackstoryAndTraits;
+            if (combinedDisabledWorkTags != WorkTags.None) {
+                IEnumerable<WorkTags> list = Reflection.ReflectorCharacterCardUtility.WorkTagsFrom(combinedDisabledWorkTags);
+                foreach (var tag in list) {
+                    incapableList.Add(WorkTypeDefsUtility.LabelTranslated(tag).CapitalizeFirst());
+                }
+                if (incapableList.Count > 0) {
+                    incapable = string.Join(", ", incapableList.ToArray());
+                }
+            }
+
             if (incapable == null) {
                 incapable = "EdB.PC.Panel.Incapable.None".Translate();
             }
             Text.WordWrap = true;
             Text.Font = GameFont.Small;
             Widgets.Label(RectText, incapable);
-
         }
     }
 }

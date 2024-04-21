@@ -9,7 +9,11 @@ using UnityEngine;
 
 namespace EdB.PrepareCarefully {
     public class DialogIdeos : Window {
-        public CustomPawn Pawn { get; set; }
+        public delegate void IdeoUpdatedHandler(Ideo ideo);
+
+        public event IdeoUpdatedHandler IdeoUpdated;
+
+        public CustomizedPawn Pawn { get; set; }
 
         private Vector2 scrollPosition_ideoList;
 
@@ -54,7 +58,7 @@ namespace EdB.PrepareCarefully {
 
         public override void PostClose() {
             base.PostClose();
-            Pawn.Pawn.ideo.SetIdeo(IdeoUIUtility.selected);
+            IdeoUpdated?.Invoke(IdeoUIUtility.selected);
         }
     }
 }

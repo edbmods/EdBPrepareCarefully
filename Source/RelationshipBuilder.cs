@@ -3,20 +3,18 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using System.Text;
 using UnityEngine;
 using Verse;
-using Verse.Sound;
 
 namespace EdB.PrepareCarefully {
     public class RelationshipBuilder {
-        private List<CustomRelationship> relationships;
+        private List<CustomizedRelationship> relationships;
         private List<ParentChildGroup> parentChildGroups;
-        FieldInfo directRelationsField;
-        FieldInfo pawnsWithField;
+        FieldInfo directRelationsField = null;
+        FieldInfo pawnsWithField = null;
         private List<int> compatibilityPool = new List<int>();
 
-        public RelationshipBuilder(List<CustomRelationship> relationships, List<ParentChildGroup> parentChildGroups) {
+        public RelationshipBuilder(List<CustomizedRelationship> relationships, List<ParentChildGroup> parentChildGroups) {
             directRelationsField = typeof(Pawn_RelationsTracker).GetField("directRelations", BindingFlags.Instance | BindingFlags.NonPublic);
             pawnsWithField = typeof(Pawn_RelationsTracker).GetField("pawnsWithDirectRelationsWithMe", BindingFlags.Instance | BindingFlags.NonPublic);
             this.relationships = relationships;
@@ -26,12 +24,12 @@ namespace EdB.PrepareCarefully {
             this.FillCompatibilityPool(compatibilityPoolSize);
         }
 
-        public List<CustomPawn> Build() {
+        public List<CustomizedPawn> Build() {
             // These include all the pawns that have relationships with them.
-            HashSet<CustomPawn> relevantPawns = new HashSet<CustomPawn>();
+            HashSet<CustomizedPawn> relevantPawns = new HashSet<CustomizedPawn>();
             foreach (var rel in relationships) {
-                relevantPawns.Add(rel.source);
-                relevantPawns.Add(rel.target);
+                relevantPawns.Add(rel.Source);
+                relevantPawns.Add(rel.Target);
             }
             foreach (var group in parentChildGroups) {
                 foreach (var parent in group.Parents) {
@@ -41,43 +39,75 @@ namespace EdB.PrepareCarefully {
                     relevantPawns.Add(child);
                 }
             }
-            
-            // Remove any existing relationships from pawns for whom we've defined custom relationships.
+            // Create a real pawn for each temporary pawn that has a relationship
             foreach (var pawn in relevantPawns) {
-                pawn.Pawn.relations.ClearAllRelations();
+                if (pawn.Pawn == null) {
+                    pawn.Pawn = PawnGenerator.GeneratePawn(new PawnGenerationRequestWrapper() {
+                        Context = PawnGenerationContext.NonPlayer,
+                        FixedGender = pawn.TemporaryPawn?.Gender,
+                    }.Request);
+                    pawn.Pawn.Kill(null, null);
+                }
             }
 
-            // Remove all relationships between world pawns and the original starting and optional pawns.  We'll be recreating
-            // those relationships between the world pawns and our custom pawns.
-            HashSet<Pawn> allWorldPawns = new HashSet<Pawn>(Find.WorldPawns.AllPawnsAliveOrDead);
-            HashSet<Pawn> startingAndOptionalPawns = new HashSet<Pawn>(Find.GameInitData.startingAndOptionalPawns);
-            List<DirectPawnRelation> toRemove = new List<DirectPawnRelation>();
-            foreach (var pawn in allWorldPawns) {
-                toRemove.Clear();
-                foreach (var rel in pawn.relations.DirectRelations) {
-                    if (startingAndOptionalPawns.Contains(rel.otherPawn)) {
-                        toRemove.Add(rel);
+            // Go through each starting pawn and evaluate that any existing relationships need to be remain.
+            // If not, remove them.
+            PawnRelationDef parentDef = PawnRelationDefOf.Parent;
+            foreach (var pawn in relevantPawns) {
+                if (pawn.Type == CustomizedPawnType.Hidden) {
+                    continue;
+                }
+                int relationCount = pawn.Pawn.relations.DirectRelations.Count;
+                if (relationCount == 0) {
+                    continue;
+                }
+                Logger.Debug("Checking existing relations for " + pawn.Pawn.LabelCap + ", " + relationCount);
+                for (int i = 0; i < relationCount; i++) {
+                    var r = pawn.Pawn.relations.DirectRelations[i];
+                    Logger.Debug(string.Format("  [{0}]: relationship {1} between {2} and {3}", i, r.def.defName, pawn.Pawn.LabelShortCap, r.otherPawn.LabelShortCap));
+                }
+                var validity = new List<bool>(Enumerable.Range(0, relationCount).Select(i => false));
+                foreach (var group in parentChildGroups) {
+                    foreach (var parent in group.Parents) {
+                        foreach (var child in group.Children) {
+                            int index = pawn.Pawn.relations.DirectRelations.FirstIndexOf(r => {
+                                return r.def == parentDef && r.otherPawn == parent.Pawn && child.Pawn == pawn.Pawn;
+                            });
+                            if (index != -1) {
+                                Logger.Debug(string.Format("  Found direct parent relation between child {0} and parent {1} at index: {2}", pawn.Pawn.LabelShortCap, parent.Pawn.LabelShortCap, index));
+                                validity[index] = true;
+                            }
+                        }
                     }
                 }
-                foreach (var rel in toRemove) {
-                    pawn.relations.RemoveDirectRelation(rel);
-                }
-            }
-            foreach (var pawn in startingAndOptionalPawns) {
-                toRemove.Clear();
-                foreach (var rel in pawn.relations.DirectRelations) {
-                    if (allWorldPawns.Contains(rel.otherPawn)) {
-                        toRemove.Add(rel);
+                foreach (var relationship in relationships) {
+                    int index = pawn.Pawn.relations.DirectRelations.FirstIndexOf(r => {
+                        return r.def == relationship.Def &&
+                           ((pawn == relationship.Target && r.otherPawn == relationship.Source.Pawn)
+                           || (pawn == relationship.Source && r.otherPawn == relationship.Target.Pawn));
+                    });
+                    if (index != -1) {
+                        Logger.Debug(string.Format("  Found direct relation {0} between pawn {1} and target {2} at index: {3}", relationship.Def.defName, pawn.Pawn.LabelShortCap, relationship.Source.Pawn.LabelShortCap, index));
+                        validity[index] = true;
                     }
                 }
-                foreach (var rel in toRemove) {
-                    pawn.relations.RemoveDirectRelation(rel);
+                Logger.Debug("  " + string.Join(", ", validity.Select(v => v ? "1" : "0")));
+                List<DirectPawnRelation> relationsToRemove = new List<DirectPawnRelation>();
+                for (int i=0; i<relationCount; i++) {
+                    if (!validity[i]) {
+                        var r = pawn.Pawn.relations.DirectRelations[i];
+                        relationsToRemove.Add(r);
+                        Logger.Debug(string.Format("  Didn't find [{0}]: relationship {1} between {2} and {3}", i, r.def.defName, pawn.Pawn.LabelShortCap, r.otherPawn.LabelShortCap));
+                    }
+                }
+                foreach (var r in relationsToRemove) {
+                    pawn.Pawn.relations.RemoveDirectRelation(r);
                 }
             }
 
             // Add direct relationships.
             foreach (var rel in relationships) {
-                AddRelationship(rel.source, rel.target, rel.def);
+                AddRelationship(rel.Source, rel.Target, rel.Def);
             }
 
             // For any parent/child group that is missing parents, create them.
@@ -85,18 +115,18 @@ namespace EdB.PrepareCarefully {
                 if (group.Children.Count > 1) {
                     // Siblings need to have 2 parents, or they will be considered half-siblings.
                     if (group.Parents.Count == 0) {
-                        CustomPawn parent1 = CreateParent(Gender.Female, group.Children);
-                        CustomPawn parent2 = CreateParent(Gender.Male, group.Children);
+                        CustomizedPawn parent1 = CreateParent(Gender.Female, group.Children);
+                        CustomizedPawn parent2 = CreateParent(Gender.Male, group.Children);
                         group.Parents.Add(parent1);
                         group.Parents.Add(parent2);
                     }
                     else if (group.Parents.Count == 1) {
-                        if (group.Parents[0].Gender == Gender.Male) {
-                            CustomPawn parent = CreateParent(Gender.Female, group.Children);
+                        if (group.Parents[0].Pawn.gender == Gender.Male) {
+                            CustomizedPawn parent = CreateParent(Gender.Female, group.Children);
                             group.Parents.Add(parent);
                         }
                         else {
-                            CustomPawn parent = CreateParent(Gender.Male, group.Children);
+                            CustomizedPawn parent = CreateParent(Gender.Male, group.Children);
                             group.Parents.Add(parent);
                         }
                     }
@@ -109,10 +139,10 @@ namespace EdB.PrepareCarefully {
                     continue;
                 }
                 float age = 0;
-                CustomPawn oldestChild = null;
+                CustomizedPawn oldestChild = null;
                 foreach (var child in group.Children) {
-                    if (child.BiologicalAge > age) {
-                        age = child.BiologicalAge;
+                    if (child.Pawn.ageTracker.AgeBiologicalYears > age) {
+                        age = child.Pawn.ageTracker.AgeBiologicalYears;
                         oldestChild = child;
                     }
                 }
@@ -120,61 +150,64 @@ namespace EdB.PrepareCarefully {
                     continue;
                 }
                 foreach (var parent in group.Parents) {
-                    if (parent.Hidden) {
+                    if (!IsPawnVisible(parent)) {
                         int validAge = GetValidParentAge(parent, oldestChild);
-                        if (validAge != parent.BiologicalAge) {
-                            int diff = parent.ChronologicalAge - parent.BiologicalAge;
-                            parent.BiologicalAge = validAge;
-                            parent.ChronologicalAge = validAge + diff;
+                        if (validAge != parent.Pawn.ageTracker.AgeBiologicalYears) {
+                            long diff = parent.Pawn.ageTracker.AgeChronologicalYears - parent.Pawn.ageTracker.AgeBiologicalYears;
+                            parent.Pawn.ageTracker.AgeBiologicalTicks = validAge * UtilityAge.TicksPerYear;
+                            parent.Pawn.ageTracker.AgeChronologicalTicks = (validAge + diff) * UtilityAge.TicksPerYear;
                         }
                     }
                 }
             }
 
             // Add parent/child relationships.
-            PawnRelationDef childDef = PawnRelationDefOf.Child;
-            PawnRelationDef parentDef = PawnRelationDefOf.Parent;
             foreach (var group in parentChildGroups) {
                 foreach (var parent in group.Parents) {
                     foreach (var child in group.Children) {
                         AddRelationship(child, parent, parentDef);
-                        //AddRelationship(parent, child, childDef);
                     }
                 }
             }
 
             // Get all of the pawns to add to the world.
-            HashSet<CustomPawn> worldPawns = new HashSet<CustomPawn>();
-            foreach (var group in parentChildGroups) {
-                foreach (var parent in group.Parents) {
-                    if (parent.Hidden) {
-                        CustomPawn newPawn = parent;
-                        if (!worldPawns.Contains(newPawn)) {
-                            worldPawns.Add(newPawn);
-                        }
-                    }
-                    foreach (var child in group.Children) {
-                        if (child.Hidden) {
-                            CustomPawn newPawn = child;
-                            if (!worldPawns.Contains(newPawn)) {
-                                worldPawns.Add(newPawn);
-                            }
-                        }
-                    }
-                }
-            }
+            // TODO: Revisit this
+            //HashSet<CustomizedPawn> worldPawns = new HashSet<CustomizedPawn>();
+            //foreach (var group in parentChildGroups) {
+            //    foreach (var parent in group.Parents) {
+            //        if (!IsPawnVisible(parent)) {
+            //            CustomizedPawn newPawn = parent;
+            //            if (!worldPawns.Contains(newPawn)) {
+            //                worldPawns.Add(newPawn);
+            //            }
+            //        }
+            //        foreach (var child in group.Children) {
+            //            if (!IsPawnVisible(child)) {
+            //                CustomizedPawn newPawn = child;
+            //                if (!worldPawns.Contains(newPawn)) {
+            //                    worldPawns.Add(newPawn);
+            //                }
+            //            }
+            //        }
+            //    }
+            //}
 
-            return worldPawns.ToList();
+            return new List<CustomizedPawn>();
         }
 
-        private int GetValidParentAge(CustomPawn parent, CustomPawn firstChild) {
-            float ageOfOldestChild = firstChild.BiologicalAge;
+        public bool IsPawnVisible(CustomizedPawn pawn) {
+            return pawn.Type != CustomizedPawnType.Hidden && pawn.Type != CustomizedPawnType.Temporary;
+        }
+
+
+        private int GetValidParentAge(CustomizedPawn parent, CustomizedPawn firstChild) {
+            float ageOfOldestChild = firstChild.Pawn.ageTracker.AgeBiologicalYears;
             float lifeExpectancy = firstChild.Pawn.def.race.lifeExpectancy;
             float minAge = lifeExpectancy * 0.1625f;
             float maxAge = lifeExpectancy * 0.625f;
             float meanAge = lifeExpectancy * 0.325f;
 
-            float ageDifference = parent.BiologicalAge - ageOfOldestChild;
+            float ageDifference = parent.Pawn.ageTracker.AgeBiologicalYears - ageOfOldestChild;
             if (ageDifference < minAge) {
                 float leftDistance = meanAge - minAge;
                 float rightDistance = maxAge - meanAge;
@@ -182,16 +215,16 @@ namespace EdB.PrepareCarefully {
                 return age;
             }
             else {
-                return parent.BiologicalAge;
+                return parent.Pawn.ageTracker.AgeBiologicalYears;
             }
         }
         
-        private CustomPawn CreateParent(Gender? gender, List<CustomPawn> children) {
+        private CustomizedPawn CreateParent(Gender? gender, List<CustomizedPawn> children) {
             int ageOfOldestChild = 0;
-            CustomPawn firstChild = null;
+            CustomizedPawn firstChild = null;
             foreach (var child in children) {
-                if (child.BiologicalAge > ageOfOldestChild) {
-                    ageOfOldestChild = child.BiologicalAge;
+                if (child.Pawn.ageTracker.AgeBiologicalYears > ageOfOldestChild) {
+                    ageOfOldestChild = child.Pawn.ageTracker.AgeBiologicalYears;
                     firstChild = child;
                 }
             }
@@ -203,119 +236,108 @@ namespace EdB.PrepareCarefully {
             float rightDistance = maxAge - meanAge;
             int age = (int)(Verse.Rand.GaussianAsymmetric(meanAge, leftDistance, rightDistance) + ageOfOldestChild);
 
-            CustomPawn parent = new CustomPawn(new Randomizer().GeneratePawn(new PawnGenerationRequestWrapper() {
-                KindDef = firstChild.Pawn.kindDef,
-                FixedBiologicalAge = age,
-                FixedGender = gender
-            }.Request));
+            CustomizedPawn parent = new CustomizedPawn() {
+                Pawn = PawnGenerator.GeneratePawn(new PawnGenerationRequestWrapper() {
+                    KindDef = firstChild.Pawn.kindDef,
+                    FixedBiologicalAge = age,
+                    FixedGender = gender
+                }.Request),
+                Type = CustomizedPawnType.Temporary
+            };
             parent.Pawn.Kill(null, null);
-            parent.Type = CustomPawnType.Temporary;
             return parent;
         }
 
-        protected Pawn FindMatchingPawn(CustomPawn pawn) {
-            // If the pawn is a world pawn, we need to create the relationships with the actual world pawn instead of the CustomPawn--which is a copy
-            // of the actual pawn
-            if (pawn.Type == CustomPawnType.Hidden) {
-                return PrepareCarefully.Instance.FindOriginalPawnFromCopy(pawn);
-            }
-            else {
-                return pawn.Pawn;
-            }
-        }
+        // TODO
+        //public static void DebugWorldPawnRelationships() {
+        //    String output = "Starting and Optional pawns:\n";
+        //    Find.GameInitData.startingAndOptionalPawns.ForEach(p => {
+        //        output += DebugOutputForPawn(p);
+        //    });
+        //    output += "World pawns:\n";
+        //    Find.WorldPawns.AllPawnsAliveOrDead.ForEach(p => {
+        //        output += DebugOutputForPawn(p);
+        //    });
+        //    output += "Customized Pawns:\n";
+        //    PrepareCarefully.Instance.Pawns.ForEach(p => {
+        //        output += DebugOutputForCustomizedPawn(p);
+        //    });
+        //    //Logger.Debug(output);
+        //}
 
-        public static void DebugWorldPawnRelationships() {
-            String output = "Starting and Optional pawns:\n";
-            Find.GameInitData.startingAndOptionalPawns.ForEach(p => {
-                output += DebugOutputForPawn(p);
-            });
-            output += "World pawns:\n";
-            Find.WorldPawns.AllPawnsAliveOrDead.ForEach(p => {
-                output += DebugOutputForPawn(p);
-            });
-            output += "Custom Pawns:\n";
-            PrepareCarefully.Instance.Pawns.ForEach(p => {
-                output += DebugOutputForCustomPawn(p);
-            });
-            //Logger.Debug(output);
-        }
+        //private static string DebugOutputForPawn(Pawn p) {
+        //    string output = "";
+        //    output += String.Format("- {0}[{1}]\n", p.LabelShort, p.GetUniqueLoadID());
+        //    if (p.relations.DirectRelations.Count > 0) {
+        //        output += "  - DirectRelations:\n";
+        //        p.relations.DirectRelations.ForEach(r => {
+        //            output += String.Format("    - {0}: {1}[{2}]\n", r.def.defName, r.otherPawn.LabelShort, r.otherPawn.GetUniqueLoadID());
+        //        });
+        //    }
+        //    if (p.relations.ChildrenCount > 0) {
+        //        output += "  - Children:\n";
+        //        foreach (var c in p.relations.Children) {
+        //            output += String.Format("    - {0}[{1}]\n", c.LabelShort, c.GetUniqueLoadID());
+        //        }
+        //    }
+        //    return output;
+        //}
 
-        private static string DebugOutputForPawn(Pawn p) {
-            string output = "";
-            output += String.Format("- {0}[{1}]\n", p.LabelShort, p.GetUniqueLoadID());
-            if (p.relations.DirectRelations.Count > 0) {
-                output += "  - DirectRelations:\n";
-                p.relations.DirectRelations.ForEach(r => {
-                    output += String.Format("    - {0}: {1}[{2}]\n", r.def.defName, r.otherPawn.LabelShort, r.otherPawn.GetUniqueLoadID());
-                });
-            }
-            if (p.relations.ChildrenCount > 0) {
-                output += "  - Children:\n";
-                foreach (var c in p.relations.Children) {
-                    output += String.Format("    - {0}[{1}]\n", c.LabelShort, c.GetUniqueLoadID());
-                }
-            }
-            return output;
-        }
+        //private static string DebugOutputForCustomizedPawn(CustomizedPawn p) {
+        //    string output = "";
+        //    output += String.Format("- [{2}] {0}[{1}]\n", p.LabelShort, p.Pawn.GetUniqueLoadID(), p.Type);
+        //    if (p.Pawn.relations.DirectRelations.Count > 0) {
+        //        output += "  - DirectRelations:\n";
+        //        p.Pawn.relations.DirectRelations.ForEach(r => {
+        //            output += String.Format("    - {0}: {1}[{2}]\n", r.def.defName, r.otherPawn.LabelShort, r.otherPawn.GetUniqueLoadID());
+        //        });
+        //    }
+        //    if (p.Pawn.relations.ChildrenCount > 0) {
+        //        output += "  - Children:\n";
+        //        foreach (var c in p.Pawn.relations.Children) {
+        //            output += String.Format("    - {0}[{1}]\n", c.LabelShort, c.GetUniqueLoadID());
+        //        }
+        //    }
+        //    return output;
+        //}
 
-        private static string DebugOutputForCustomPawn(CustomPawn p) {
-            string output = "";
-            output += String.Format("- [{2}] {0}[{1}]\n", p.LabelShort, p.Pawn.GetUniqueLoadID(), p.Type);
-            if (p.Pawn.relations.DirectRelations.Count > 0) {
-                output += "  - DirectRelations:\n";
-                p.Pawn.relations.DirectRelations.ForEach(r => {
-                    output += String.Format("    - {0}: {1}[{2}]\n", r.def.defName, r.otherPawn.LabelShort, r.otherPawn.GetUniqueLoadID());
-                });
-            }
-            if (p.Pawn.relations.ChildrenCount > 0) {
-                output += "  - Children:\n";
-                foreach (var c in p.Pawn.relations.Children) {
-                    output += String.Format("    - {0}[{1}]\n", c.LabelShort, c.GetUniqueLoadID());
-                }
-            }
-            return output;
-        }
-
-        private void AddRelationship(CustomPawn customSource, CustomPawn customTarget, PawnRelationDef def) {
-            Pawn source = FindMatchingPawn(customSource);
-            Pawn target = FindMatchingPawn(customTarget);
-            if (source == null) {
-                Logger.Warning("Could not find matching source pawn " + customSource.Pawn.LabelShort + ", " + customSource.Pawn.GetUniqueLoadID() + ", + customSource. of type " + customSource.Type + " to add relationship");
-            }
-            if (target == null) {
-                Logger.Warning("Could not find matching target pawn " + customTarget.Pawn.LabelShort + ", " + customTarget.Pawn.GetUniqueLoadID() + " of type " + customTarget.Type + " to add relationship");
-            }
+        private void AddRelationship(CustomizedPawn customSource, CustomizedPawn customTarget, PawnRelationDef def) {
+            Pawn source = customSource.Pawn;
+            Pawn target = customTarget.Pawn;
             if (source == null || target == null) {
                 return;
             }
 
             if (source.relations.DirectRelationExists(def, target)) {
+                Logger.Debug(string.Format("Skipped adding direct relation {0} between {1} and {2}. Already there", def.defName, source.LabelShortCap, target.LabelShortCap));
                 return;
             }
             source.relations.AddDirectRelation(def, target);
+            Logger.Debug(string.Format("Added direct relation {0} between {1} and {2}", def.defName, source.LabelShortCap, target.LabelShortCap));
 
             // Try to find a better pawn compatibility, if it makes sense for the relationship.
-            CarefullyPawnRelationDef pcDef = DefDatabase<CarefullyPawnRelationDef>.GetNamedSilentFail(def.defName);
-            if (pcDef != null) {
-                if (pcDef.needsCompatibility) {
-                    int originalId = target.thingIDNumber;
-                    float originalScore = source.relations.ConstantPerPawnsPairCompatibilityOffset(originalId);
-                    int bestId = originalId;
-                    float bestScore = originalScore;
-                    foreach (var id in compatibilityPool) {
-                        float score = source.relations.ConstantPerPawnsPairCompatibilityOffset(id);
-                        if (score > bestScore) {
-                            bestScore = score;
-                            bestId = id;
-                        }
-                    }
-                    if (bestId != originalId) {
-                        target.thingIDNumber = bestId;
-                        compatibilityPool.Remove(bestId);
-                        compatibilityPool.Add(originalId);
-                    }
-                }
-            }
+            //CarefullyPawnRelationDef pcDef = DefDatabase<CarefullyPawnRelationDef>.GetNamedSilentFail(def.defName);
+            //if (pcDef != null) {
+            //    if (pcDef.needsCompatibility) {
+            //        int originalId = target.thingIDNumber;
+            //        float originalScore = source.relations.ConstantPerPawnsPairCompatibilityOffset(originalId);
+            //        int bestId = originalId;
+            //        float bestScore = originalScore;
+            //        foreach (var id in compatibilityPool) {
+            //            float score = source.relations.ConstantPerPawnsPairCompatibilityOffset(id);
+            //            if (score > bestScore) {
+            //                bestScore = score;
+            //                bestId = id;
+            //            }
+            //        }
+            //        if (bestId != originalId) {
+            //            target.thingIDNumber = bestId;
+            //            compatibilityPool.Remove(bestId);
+            //            compatibilityPool.Add(originalId);
+            //            Logger.Debug(String.Format("Improved compatibility between {0} and {1} for relationship {2}", source?.LabelCap, target?.LabelCap, def?.defName));
+            //        }
+            //    }
+            //}
         }
 
         private void FillCompatibilityPool(int size) {

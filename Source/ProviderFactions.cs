@@ -221,6 +221,9 @@ namespace EdB.PrepareCarefully {
             }
         }
         public Faction GetFaction(PawnKindDef def) {
+            if (def == null) {
+                return null;
+            }
             if (def.defaultFactionType != null) {
                 return GetFaction(def.defaultFactionType);
             }

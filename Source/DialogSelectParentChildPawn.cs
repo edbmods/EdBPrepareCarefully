@@ -1,12 +1,12 @@
-﻿using RimWorld;
+using RimWorld;
 using System;
 using System.Collections.Generic;
+using System.Reflection;
 using UnityEngine;
 using Verse;
 using Verse.Sound;
+
 namespace EdB.PrepareCarefully {
-    // TODO: This is largely a copy/paste of DialogSelectPawn.  Should figure out a way to leverage the
-    // existing code in that class instead of duplicating it here.
     public class DialogSelectParentChildPawn : Window {
         public Vector2 ContentMargin { get; protected set; }
         public Vector2 WindowSize { get; protected set; }
@@ -36,7 +36,7 @@ namespace EdB.PrepareCarefully {
             Resize();
         }
 
-        public CustomPawn SelectedPawn {
+        public CustomizedPawn SelectedPawn {
             get;
             set;
         }
@@ -57,16 +57,16 @@ namespace EdB.PrepareCarefully {
             get;
             set;
         }
-        public Action<CustomPawn> SelectAction {
+        public Action<CustomizedPawn> SelectAction {
             get;
             set;
         }
-        public HashSet<CustomPawn> DisabledPawns {
+        public HashSet<CustomizedPawn> DisabledPawns {
             get;
             set;
         }
 
-        protected WidgetTable<CustomPawn> table = new WidgetTable<CustomPawn>();
+        protected WidgetTable<CustomizedPawn> table = new WidgetTable<CustomizedPawn>();
 
         public string ConfirmButtonLabel = "EdB.PC.Common.Add";
         public string CancelButtonLabel = "EdB.PC.Common.Cancel";
@@ -115,13 +115,12 @@ namespace EdB.PrepareCarefully {
                 ButtonSize.x, ButtonSize.y);
 
             Vector2 portraitSize = new Vector2(70, 70);
-            float portraitOverflow = 8;
             float nameOffset = 2;
             float descriptionOffset = -2;
             float radioWidth = 36;
             Vector2 nameSize = new Vector2(ContentRect.width - portraitSize.x - radioWidth, portraitSize.y * 0.5f);
 
-            table = new WidgetTable<CustomPawn>();
+            table = new WidgetTable<CustomizedPawn>();
             table.Rect = new Rect(Vector2.zero, ContentRect.size);
             table.RowHeight = portraitSize.y;
             table.RowGroupHeaderHeight = RowGroupHeaderHeight;
@@ -129,27 +128,26 @@ namespace EdB.PrepareCarefully {
             table.AlternateRowColor = new Color(0, 0, 0, 0);
             table.SelectedRowColor = new Color(0, 0, 0, 0);
             table.SupportSelection = true;
-            table.SelectedAction = (CustomPawn pawn) => {
+            table.SelectedAction = (CustomizedPawn pawn) => {
                 if (DisabledPawns == null || !DisabledPawns.Contains(pawn)) {
                     SoundDefOf.Tick_Tiny.PlayOneShotOnCamera();
                     Select(pawn);
                 }
             };
-            table.AddColumn(new WidgetTable<CustomPawn>.Column() {
+            table.AddColumn(new WidgetTable<CustomizedPawn>.Column() {
                 Name = "Portrait",
-                DrawAction = (CustomPawn pawn, Rect rect, WidgetTable<CustomPawn>.Metadata metadata) => {
+                DrawAction = (CustomizedPawn pawn, Rect rect, WidgetTable<CustomizedPawn>.Metadata metadata) => {
                     GUI.color = Color.white;
-                    if (!pawn.Hidden) {
-                        var texture = pawn.GetPortrait(new Vector2(portraitSize.x, portraitSize.y + portraitOverflow * 2));
-                        GUI.DrawTexture(new Rect(rect.position.x, rect.position.y - portraitOverflow, portraitSize.x, portraitSize.y + portraitOverflow * 2), texture as Texture);
+                    if (IsPawnVisible(pawn)) {
+                        WidgetPortrait.Draw(pawn?.Pawn, rect, new Rect(0, 0, portraitSize.x, portraitSize.y).OutsetBy(20, 20).OffsetBy(0, 2));
                     }
                     else {
                         GUI.color = Style.ColorButton;
                         Rect genderRect = new Rect(rect.MiddleX() - GenderSize.HalfX(), rect.MiddleY() - GenderSize.HalfY(), GenderSize.x, GenderSize.y);
-                        if (pawn.Gender == Gender.Female) {
+                        if (pawn.Pawn?.gender == Gender.Female || pawn.TemporaryPawn?.Gender == Gender.Female) {
                             GUI.DrawTexture(genderRect, Textures.TextureGenderFemaleLarge);
                         }
-                        else if (pawn.Gender == Gender.Male) {
+                        else if (pawn.Pawn?.gender == Gender.Male || pawn.TemporaryPawn?.Gender == Gender.Male) {
                             GUI.DrawTexture(genderRect, Textures.TextureGenderMaleLarge);
                         }
                         else {
@@ -160,28 +158,28 @@ namespace EdB.PrepareCarefully {
                 },
                 Width = portraitSize.x
             });
-            table.AddColumn(new WidgetTable<CustomPawn>.Column() {
+            table.AddColumn(new WidgetTable<CustomizedPawn>.Column() {
                 Name = "Description",
                 Width = nameSize.x,
                 AdjustForScrollbars = true,
-                DrawAction = (CustomPawn pawn, Rect rect, WidgetTable<CustomPawn>.Metadata metadata) => {
+                DrawAction = (CustomizedPawn pawn, Rect rect, WidgetTable<CustomizedPawn>.Metadata metadata) => {
                     Text.Anchor = TextAnchor.LowerLeft;
                     Text.Font = GameFont.Small;
-                    Widgets.Label(new Rect(rect.x, rect.y + nameOffset, rect.width, nameSize.y), pawn.FullName);
+                    Widgets.Label(new Rect(rect.x, rect.y + nameOffset, rect.width, nameSize.y), FullNameForPawn(pawn));
                     Text.Anchor = TextAnchor.UpperLeft;
                     string description;
-                    if (!pawn.Hidden) {
-                        string age = pawn.BiologicalAge != pawn.ChronologicalAge ?
-                            "EdB.PC.Pawn.AgeWithChronological".Translate(pawn.BiologicalAge, pawn.ChronologicalAge) :
-                            "EdB.PC.Pawn.AgeWithoutChronological".Translate(pawn.BiologicalAge);
-                        description = pawn.Gender != Gender.None ?
-                            "EdB.PC.Pawn.PawnDescriptionWithGender".Translate(pawn.ProfessionLabelShort, pawn.Gender.GetLabel(), age) :
-                            "EdB.PC.Pawn.PawnDescriptionNoGender".Translate(pawn.ProfessionLabelShort, age);
+                    if (IsPawnVisible(pawn)) {
+                        string age = pawn.Pawn.ageTracker.AgeBiologicalYears != pawn.Pawn.ageTracker.AgeChronologicalYears ?
+                            "EdB.PC.Pawn.AgeWithChronological".Translate(pawn.Pawn.ageTracker.AgeBiologicalYears, pawn.Pawn.ageTracker.AgeChronologicalYears) :
+                            "EdB.PC.Pawn.AgeWithoutChronological".Translate(pawn.Pawn.ageTracker.AgeBiologicalYears);
+                        description = pawn.Pawn.gender != Gender.None ?
+                            "EdB.PC.Pawn.PawnDescriptionWithGender".Translate(UtilityPawns.GetShortProfessionLabel(pawn.Pawn), pawn.Pawn.gender.GetLabel(), age) :
+                            "EdB.PC.Pawn.PawnDescriptionNoGender".Translate(UtilityPawns.GetShortProfessionLabel(pawn.Pawn), age);
                     }
                     else {
                         string profession = "EdB.PC.Pawn.HiddenPawnProfession".Translate();
-                        description = pawn.Gender != Gender.None ?
-                            "EdB.PC.Pawn.HiddenPawnDescriptionWithGender".Translate(profession, pawn.Gender.GetLabel()) :
+                        description = (pawn.TemporaryPawn?.Gender ?? Gender.None) != Gender.None ?
+                            "EdB.PC.Pawn.HiddenPawnDescriptionWithGender".Translate(profession, pawn.TemporaryPawn?.Gender.GetLabel()) :
                             "EdB.PC.Pawn.HiddenPawnDescriptionNoGender".Translate(profession);
                     }
                     Text.Font = GameFont.Tiny;
@@ -190,10 +188,10 @@ namespace EdB.PrepareCarefully {
                     Text.Anchor = TextAnchor.UpperLeft;
                 }
             });
-            table.AddColumn(new WidgetTable<CustomPawn>.Column() {
+            table.AddColumn(new WidgetTable<CustomizedPawn>.Column() {
                 Name = "RadioButton",
                 Width = radioWidth,
-                DrawAction = (CustomPawn pawn, Rect rect, WidgetTable<CustomPawn>.Metadata metadata) => {
+                DrawAction = (CustomizedPawn pawn, Rect rect, WidgetTable<CustomizedPawn>.Metadata metadata) => {
                     if (DisabledPawns != null && DisabledPawns.Contains(pawn)) {
                         GUI.color = Style.ColorControlDisabled;
                         GUI.color = new Color(1, 1, 1, 0.28f);
@@ -210,16 +208,32 @@ namespace EdB.PrepareCarefully {
             resizeDirtyFlag = false;
         }
 
-        protected void Select(CustomPawn pawn) {
+        public bool IsPawnVisible(CustomizedPawn pawn) {
+            return pawn.Type != CustomizedPawnType.Hidden && pawn.Type != CustomizedPawnType.Temporary;
+        }
+
+        public string FullNameForPawn(CustomizedPawn pawn) {
+            if (pawn.Type == CustomizedPawnType.Hidden) {
+                return "EdB.PC.Pawn.HiddenPawnNameFull".Translate(pawn.TemporaryPawn.Index);
+            }
+            else if (pawn.Type == CustomizedPawnType.Temporary) {
+                return "EdB.PC.Pawn.TemporaryPawnNameFull".Translate(pawn.TemporaryPawn.Index);
+            }
+            else {
+                return pawn.Pawn.Name.ToStringFull;
+            }
+        }
+
+        protected void Select(CustomizedPawn pawn) {
             this.SelectedPawn = pawn;
             SelectAction?.Invoke(pawn);
         }
 
-        public IEnumerable<CustomPawn> Pawns {
+        public IEnumerable<CustomizedPawn> Pawns {
             get; set;
         }
 
-        public IEnumerable<WidgetTable<CustomPawn>.RowGroup> RowGroups {
+        public IEnumerable<WidgetTable<CustomizedPawn>.RowGroup> RowGroups {
             get; set;
         }
 

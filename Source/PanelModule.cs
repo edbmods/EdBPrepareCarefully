@@ -16,7 +16,7 @@ namespace EdB.PrepareCarefully {
             protected set;
         }
 
-        public virtual bool IsVisible(State state) {
+        public virtual bool IsVisible() {
             return true;
         }
 
@@ -25,18 +25,12 @@ namespace EdB.PrepareCarefully {
             return;
         }
 
-        // Leaving here for compatibility with any patches that used the old method for drawing, but don't use it.
-        [Obsolete("DrawPanelContent is deprecated.  Patch the Draw() method instead")]
-        protected virtual void DrawPanelContent(State state) {
-        }
-
-        public virtual float Draw(State state, float y) {
+        public virtual float Draw(float y) {
             return 0;
         }
 
         public virtual float DrawHeader(float y, float width, string text) {
-            DrawHeaderWithOffset(0, y, width, text);
-            return HeaderHeight;
+            return DrawHeaderWithOffset(0, y, width, text);
         }
 
         public virtual float DrawHeaderWithOffset(float offset, float y, float width, string text) {

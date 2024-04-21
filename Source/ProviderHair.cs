@@ -15,18 +15,12 @@ namespace EdB.PrepareCarefully {
         protected OptionsHair noHair = new OptionsHair();
         public ProviderHair() {
         }
-        public ProviderAlienRaces AlienRaceProvider {
+        public ProviderAlienRaces ProviderAlienRaces {
             get; set;
-        }
-        public List<HairDef> GetHairs(CustomPawn pawn) {
-            return GetHairs(pawn.Pawn.def, pawn.Gender);
         }
         public List<HairDef> GetHairs(ThingDef raceDef, Gender gender) {
             OptionsHair hairs = GetHairsForRace(raceDef);
             return hairs.GetHairs(gender);
-        }
-        public OptionsHair GetHairsForRace(CustomPawn pawn) {
-            return GetHairsForRace(pawn.Pawn.def);
         }
         public OptionsHair GetHairsForRace(ThingDef raceDef) {
             OptionsHair hairs;
@@ -48,7 +42,7 @@ namespace EdB.PrepareCarefully {
             }
         }
         protected OptionsHair InitializeHairs(ThingDef raceDef) {
-            AlienRace alienRace = AlienRaceProvider.GetAlienRace(raceDef);
+            AlienRace alienRace = ProviderAlienRaces.GetAlienRace(raceDef);
             if (alienRace == null) {
                 return HumanlikeHairs;
             }

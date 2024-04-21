@@ -26,21 +26,21 @@ namespace EdB.PrepareCarefully {
             }
         }
 
-        public override bool IsOptionSelected(CustomPawn pawn, PawnLayerOption option) {
+        public override bool IsOptionSelected(CustomizedPawn pawn, PawnLayerOption option) {
             if (!(option is PawnLayerOptionTattoo aOption)) {
                 return false;
             }
-            return pawn.FaceTattoo == aOption.TattooDef;
+            return pawn.Pawn.style.FaceTattoo == aOption.TattooDef;
         }
 
-        public override int? GetSelectedIndex(CustomPawn pawn) {
+        public override int? GetSelectedIndex(CustomizedPawn pawn) {
             int selectedIndex = options.FirstIndexOf((option) => {
                 PawnLayerOptionTattoo layerOption = option as PawnLayerOptionTattoo;
                 if (layerOption == null) {
                     return false;
                 }
                 else {
-                    return layerOption.TattooDef == pawn.FaceTattoo;
+                    return layerOption.TattooDef == pawn.Pawn.style.FaceTattoo;
                 }
             });
             if (selectedIndex > -1) {
@@ -51,7 +51,7 @@ namespace EdB.PrepareCarefully {
             }
         }
 
-        public override PawnLayerOption GetSelectedOption(CustomPawn pawn) {
+        public override PawnLayerOption GetSelectedOption(CustomizedPawn pawn) {
             int? selectedIndex = GetSelectedIndex(pawn);
             if (selectedIndex == null) {
                 return null;
@@ -64,10 +64,13 @@ namespace EdB.PrepareCarefully {
             }
         }
 
-        public override void SelectOption(CustomPawn pawn, PawnLayerOption option) {
+        public override void SelectOption(CustomizedPawn pawn, PawnLayerOption option) {
             if (option is PawnLayerOptionTattoo layerOption) {
-                pawn.FaceTattoo = layerOption.TattooDef;
+                pawn.Pawn.style.FaceTattoo = layerOption.TattooDef;
+                pawn.Pawn.Drawer?.renderer?.SetAllGraphicsDirty();
             }
         }
+
+
     }
 }

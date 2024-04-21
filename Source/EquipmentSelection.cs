@@ -1,4 +1,4 @@
-﻿using RimWorld;
+using RimWorld;
 using System;
 using System.Collections.Generic;
 using UnityEngine;
@@ -8,6 +8,7 @@ namespace EdB.PrepareCarefully {
     public class EquipmentSelection {
         public EquipmentRecord record;
         public int count = 1;
+        public string SpawnType;
 
         public EquipmentRecord Record {
             get {

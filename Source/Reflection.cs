@@ -43,6 +43,12 @@ namespace EdB.PrepareCarefully {
                 ReflectionCache.Instance.Pawn_CachedDisabledWorkTypesPermanent.SetValue(pawn, null);
             }
         }
+        public static class ReflectorPawnGenerator {
+            public static void GenerateTraits(Pawn pawn, PawnGenerationRequest request) {
+                ReflectionCache.Instance.PawnGenerator_GenerateTraits.Invoke(null, new object[] { pawn, request });
+            }
+        }
+
         public static class ReflectorPawnBioAndNameGenerator {
             public static float BioSelectionWeight(PawnBio b) {
                 return (float)ReflectionCache.Instance.PawnBioAndNameGenerator_BioSelectionWeight.Invoke(null,

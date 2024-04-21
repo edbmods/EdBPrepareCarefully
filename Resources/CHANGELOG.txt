@@ -1,5 +1,25 @@
  _____________________________________________________________________________
  
+   Version 1.5.1
+ _____________________________________________________________________________
+
+ - Compatibility for 1.5
+ - Now requires the Harmony mod
+ - Added new larger layout
+ - Changed the user interface for editing apparel to better support how
+   apparel works in the game by adding an Apparel panel
+ - Added panels for Possession, Titles and Abilities
+ - Removed the Faction panel
+ - Moved favorite color selection out of its own panel and into the Backstory
+   panel
+ - Added new dropdown filters and a text search filter to the equipment
+   selection panel
+ - Added options for quality, hit points and spawn type to equipment selection
+   panel
+ - Reworked the way that pawns are modified and added to the world
+
+ _____________________________________________________________________________
+ 
    Version 1.4.3
  _____________________________________________________________________________
 

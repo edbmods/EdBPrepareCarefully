@@ -13,12 +13,13 @@ namespace EdB.PrepareCarefully {
         protected Dictionary<string, List<BackstoryDef>> childhoodBackstoryLookup = new Dictionary<string, List<BackstoryDef>>();
         protected Dictionary<string, List<BackstoryDef>> adulthoodBackstoryLookup = new Dictionary<string, List<BackstoryDef>>();
         protected Dictionary<string, HashSet<BackstoryDef>> backstoryHashSetLookup = new Dictionary<string, HashSet<BackstoryDef>>();
+        public ProviderFactions ProviderFactions { get; set; }
 
-        public List<BackstoryDef> GetChildhoodBackstoriesForPawn(CustomPawn pawn) {
-            return GetChildhoodBackstoriesForPawnKindDef(pawn.OriginalKindDef);
+        public List<BackstoryDef> GetChildhoodBackstoriesForPawn(Pawn pawn) {
+            return GetChildhoodBackstoriesForPawnKindDef(pawn.kindDef);
         }
-        public List<BackstoryDef> GetAdulthoodBackstoriesForPawn(CustomPawn pawn) {
-            return GetAdulthoodBackstoriesForPawnKindDef(pawn.OriginalKindDef);
+        public List<BackstoryDef> GetAdulthoodBackstoriesForPawn(Pawn pawn) {
+            return GetAdulthoodBackstoriesForPawnKindDef(pawn.kindDef);
         }
         public List<BackstoryDef> GetChildhoodBackstoriesForPawnKindDef(PawnKindDef kindDef) {
             if (!backstoryHashSetLookup.ContainsKey(kindDef.defName)) {
@@ -105,8 +106,8 @@ namespace EdB.PrepareCarefully {
         }
 
         public HashSet<string> BackstoryCategoriesForPawnKindDef(PawnKindDef kindDef) {
-            Faction faction = PrepareCarefully.Instance.Providers.Factions.GetFaction(kindDef);
-            var filters = GetBackstoryCategoryFiltersFor(kindDef, faction != null ? faction.def : null);
+            Faction faction = ProviderFactions.GetFaction(kindDef);
+            var filters = GetBackstoryCategoryFiltersFor(kindDef, faction?.def);
             return AllBackstoryCategoriesFromFilterList(filters);
         }
 

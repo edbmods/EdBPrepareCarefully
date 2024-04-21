@@ -27,16 +27,18 @@ namespace EdB.PrepareCarefully {
                 this.LabelFull = "EdB.PC.Dialog.Backstory.Filter.SkillBonusFull".Translate(this.SkillDef.LabelCap, bonusOrPenalty);
             }
             this.FilterFunction = (BackstoryDef backstory) => {
-                if (this.SkillDef != null && backstory.skillGains.ContainsKey(this.SkillDef)) {
-                    int value = backstory.skillGains[skillDef];
-                    if (bonusOrPenalty > 0) {
-                        return value >= bonusOrPenalty;
-                    }
-                    else {
-                        return value <= bonusOrPenalty;
-                    }
+                int value = backstory.skillGains.FindAll(g => {
+                    return g.skill.Equals(skillDef);
+                }).Select(g => g.amount).Sum();
+                if (value == 0) {
+                    return false;
                 }
-                return false;
+                else if (bonusOrPenalty > 0) {
+                    return value >= bonusOrPenalty;
+                }
+                else {
+                    return value <= bonusOrPenalty;
+                }
             };
         }
         public override bool ConflictsWith(Filter<BackstoryDef> filter) {

@@ -5,28 +5,25 @@ using System.Linq;
 using Verse;
 namespace EdB.PrepareCarefully {
     public class ProviderPawnLayers {
-        private Dictionary<RaceProperties, List<PawnLayer>> pawnLayerLookup = new Dictionary<RaceProperties, List<PawnLayer>>();
-        private Dictionary<AlienRace, List<PawnLayer>> alienPawnLayers = new Dictionary<AlienRace, List<PawnLayer>>();
-        private PawnLayer pantsLayer = new PawnLayer() { Name = "Pants", Apparel = true, ApparelLayer = ApparelLayerDefOf.OnSkin, Label = ("EdB.PC.Pawn.PawnLayer.Pants").Translate() };
-        private PawnLayer bottomClothingLayer = new PawnLayer() { Name = "BottomClothingLayer", Apparel = true, ApparelLayer = ApparelLayerDefOf.OnSkin, Label = ("EdB.PC.Pawn.PawnLayer.BottomClothingLayer").Translate() };
-        private PawnLayer middleClothingLayer = new PawnLayer() { Name = "MiddleClothingLayer", Apparel = true, ApparelLayer = ApparelLayerDefOf.Middle, Label = ("EdB.PC.Pawn.PawnLayer.MiddleClothingLayer").Translate() };
-        private PawnLayer topClothingLayer = new PawnLayer() { Name = "TopClothingLayer", Apparel = true, ApparelLayer = ApparelLayerDefOf.Shell, Label = ("EdB.PC.Pawn.PawnLayer.TopClothingLayer").Translate() };
-        private PawnLayer hatLayer = new PawnLayer() { Name = "Hat", Apparel = true, ApparelLayer = ApparelLayerDefOf.Overhead, Label = ("EdB.PC.Pawn.PawnLayer.Hat").Translate() };
-        private PawnLayer accessoryLayer = new PawnLayer() { Name = "Accessory", Apparel = true, ApparelLayer = ApparelLayerDefOf.Belt, Label = ("EdB.PC.Pawn.PawnLayer.Accessory").Translate() };
-        private PawnLayer eyeCoveringLayer = new PawnLayer() { Name = "EyeCovering", Apparel = true, ApparelLayer = ApparelLayerDefOf.EyeCover, Label = ("EdB.PC.Pawn.PawnLayer.EyeCovering").Translate() };
         private Dictionary<ValueTuple<ThingDef, Gender, DevelopmentalStage>, List<PawnLayer>> pawnLayerCache = new Dictionary<ValueTuple<ThingDef, Gender, DevelopmentalStage>, List<PawnLayer>>();
-        public ProviderPawnLayers() {
 
-        }
-        public List<PawnLayer> GetLayersForPawn(CustomPawn pawn) {
-            if (!pawnLayerCache.TryGetValue(ValueTuple.Create(pawn.Pawn.def, pawn.Gender, pawn.Pawn.DevelopmentalStage), out var result)) {
-                result = InitializePawnLayers(pawn.Pawn.def, pawn.Gender, pawn.Pawn.DevelopmentalStage);
-                pawnLayerCache.Add(ValueTuple.Create(pawn.Pawn.def, pawn.Gender, pawn.Pawn.DevelopmentalStage), result);
+        public ProviderHair ProviderHair { get; set; }
+        public ProviderBeards ProviderBeards { get; set; }
+        public ProviderBodyTypes ProviderBodyTypes { get; set; }
+        public ProviderHeadTypes ProviderHeadTypes { get; set; }
+        public ProviderAlienRaces ProviderAlienRaces { get; set; }
+        public ProviderFaceTattoos ProviderFaceTattoos { get; set; }
+        public ProviderBodyTattoos ProviderBodyTattoos { get; set; }
+
+        public List<PawnLayer> GetLayersForPawn(CustomizedPawn pawn) {
+            if (!pawnLayerCache.TryGetValue(ValueTuple.Create(pawn.Pawn.def, pawn.Pawn.gender, pawn.Pawn.DevelopmentalStage), out var result)) {
+                result = InitializePawnLayers(pawn.Pawn.def, pawn.Pawn.gender, pawn.Pawn.DevelopmentalStage);
+                pawnLayerCache.Add(ValueTuple.Create(pawn.Pawn.def, pawn.Pawn.gender, pawn.Pawn.DevelopmentalStage), result);
             }
             return result;
         }
         public List<PawnLayer> InitializePawnLayers(ThingDef pawnDef, Gender gender, DevelopmentalStage stage) {
-            AlienRace race = PrepareCarefully.Instance.Providers.AlienRaces.GetAlienRace(pawnDef);
+            AlienRace race = ProviderAlienRaces.GetAlienRace(pawnDef);
             if (race == null) {
                 return InitializeDefaultPawnLayers(pawnDef, gender, stage);
             }
@@ -45,19 +42,15 @@ namespace EdB.PrepareCarefully {
             }
 
             if (ModLister.IdeologyInstalled) {
-                defaultLayers.Add(InitializeFaceTattooLayer(pawnDef, gender));
-                defaultLayers.Add(InitializeBodyTattooLayer(pawnDef, gender));
+                PawnLayer faceTattooLayer = InitializeFaceTattooLayer(pawnDef, gender);
+                if (faceTattooLayer.Options.Count > 1) {
+                    defaultLayers.Add(faceTattooLayer);
+                }
+                PawnLayer bodyTattooLayer = InitializeBodyTattooLayer(pawnDef, gender);
+                if (bodyTattooLayer.Options.Count > 1) {
+                    defaultLayers.Add(bodyTattooLayer);
+                }
             }
-
-            defaultLayers.AddRange(new PawnLayer[] {
-                pantsLayer,
-                bottomClothingLayer,
-                middleClothingLayer,
-                topClothingLayer,
-                hatLayer,
-                accessoryLayer,
-                eyeCoveringLayer
-            });
 
             return defaultLayers;
         }
@@ -73,7 +66,7 @@ namespace EdB.PrepareCarefully {
             layers.Add(InitializeBodyLayer(pawnDef, gender));
 
             if (race.Addons != null) {
-                OptionsHair optionsHair = PrepareCarefully.Instance.Providers.Hair.GetHairsForRace(pawnDef);
+                OptionsHair optionsHair = ProviderHair.GetHairsForRace(pawnDef);
                 foreach (var addon in race.Addons) {
                     PawnLayerAlienAddon layer = new PawnLayerAlienAddon();
                     layer.Name = addon.Name;
@@ -101,27 +94,17 @@ namespace EdB.PrepareCarefully {
                     InitializeBodyTattooLayer(pawnDef, gender),
                 });
             }
-
-            layers.AddRange(new PawnLayer[] {
-                pantsLayer,
-                bottomClothingLayer,
-                middleClothingLayer,
-                topClothingLayer,
-                hatLayer,
-                accessoryLayer,
-                eyeCoveringLayer
-            });
             return layers;
         }
         private PawnLayer InitializeHairLayer(ThingDef pawnDef, Gender gender) {
             PawnLayer result = new PawnLayerHair() { Name = "Hair", Label = ("EdB.PC.Pawn.PawnLayer.Hair").Translate() };
             result.Options = InitializeHairOptions(pawnDef, gender);
-            result.ColorSwatches = PrepareCarefully.Instance.Providers.Hair.GetHairsForRace(pawnDef).Colors;
+            result.ColorSwatches = ProviderHair.GetHairsForRace(pawnDef).Colors;
             return result;
         }
         private List<PawnLayerOption> InitializeHairOptions(ThingDef pawnDef, Gender gender) {
             List<PawnLayerOption> options = new List<PawnLayerOption>();
-            List<HairDef> hairDefs = PrepareCarefully.Instance.Providers.Hair.GetHairs(pawnDef, gender);
+            List<HairDef> hairDefs = ProviderHair.GetHairs(pawnDef, gender);
             foreach (var def in hairDefs) {
                 PawnLayerOptionHair option = new PawnLayerOptionHair();
                 option.HairDef = def;
@@ -132,12 +115,12 @@ namespace EdB.PrepareCarefully {
         private PawnLayer InitializeBeardLayer(ThingDef pawnDef, Gender gender) {
             PawnLayer result = new PawnLayerBeard() { Name = "Beard", Label = ("EdB.PC.Pawn.PawnLayer.Beard").Translate() };
             result.Options = InitializeBeardOptions(pawnDef, gender);
-            result.ColorSwatches = PrepareCarefully.Instance.Providers.Hair.GetHairsForRace(pawnDef).Colors;
+            result.ColorSwatches = ProviderHair.GetHairsForRace(pawnDef).Colors;
             return result;
         }
         private List<PawnLayerOption> InitializeBeardOptions(ThingDef pawnDef, Gender gender) {
             List<PawnLayerOption> options = new List<PawnLayerOption>();
-            List<BeardDef> beardDefs = PrepareCarefully.Instance.Providers.Beards.GetBeards(pawnDef, gender);
+            List<BeardDef> beardDefs = ProviderBeards.GetBeards(pawnDef, gender);
             foreach (var def in beardDefs) {
                 PawnLayerOptionBeard option = new PawnLayerOptionBeard();
                 option.BeardDef = def;
@@ -145,29 +128,36 @@ namespace EdB.PrepareCarefully {
             }
             return options;
         }
-        private PawnLayer InitializeFaceTattooLayer(ThingDef pawnDef, Gender gender) {
-            PawnLayer result = new PawnLayerFaceTattoo() { Name = "FaceTattoo", Label = ("EdB.PC.Pawn.PawnLayer.FaceTattoo").Translate() };
-            result.Options = InitializeFaceTattooOptions(pawnDef, gender);
+        private PawnLayerFaceTattoo InitializeFaceTattooLayer(ThingDef pawnDef, Gender gender) {
+            var result = new PawnLayerFaceTattoo {
+                Name = "FaceTattoo",
+                Label = ("EdB.PC.Pawn.PawnLayer.FaceTattoo").Translate(),
+                Options = InitializeFaceTattooOptions(pawnDef, gender)
+            };
             return result;
         }
         private List<PawnLayerOption> InitializeFaceTattooOptions(ThingDef pawnDef, Gender gender) {
             List<PawnLayerOption> options = new List<PawnLayerOption>();
-            List<TattooDef> defs = PrepareCarefully.Instance.Providers.FaceTattoos.GetTattoos(pawnDef, gender);
+            List<TattooDef> defs = ProviderFaceTattoos.GetTattoos(pawnDef, gender);
             foreach (var def in defs) {
-                PawnLayerOptionTattoo option = new PawnLayerOptionTattoo();
-                option.TattooDef = def;
+                PawnLayerOptionTattoo option = new PawnLayerOptionTattoo {
+                    TattooDef = def
+                };
                 options.Add(option);
             }
             return options;
         }
-        private PawnLayer InitializeBodyTattooLayer(ThingDef pawnDef, Gender gender) {
-            PawnLayer result = new PawnLayerBodyTattoo() { Name = "BodyTattoo", Label = ("EdB.PC.Pawn.PawnLayer.BodyTattoo").Translate() };
-            result.Options = InitializeBodyTattooOptions(pawnDef, gender);
+        private PawnLayerBodyTattoo InitializeBodyTattooLayer(ThingDef pawnDef, Gender gender) {
+            var result = new PawnLayerBodyTattoo {
+                Name = "BodyTattoo",
+                Label = ("EdB.PC.Pawn.PawnLayer.BodyTattoo").Translate(),
+                Options = InitializeBodyTattooOptions(pawnDef, gender)
+            };
             return result;
         }
         private List<PawnLayerOption> InitializeBodyTattooOptions(ThingDef pawnDef, Gender gender) {
             List<PawnLayerOption> options = new List<PawnLayerOption>();
-            List<TattooDef> defs = PrepareCarefully.Instance.Providers.BodyTattoos.GetTattoos(pawnDef, gender);
+            List<TattooDef> defs = ProviderBodyTattoos.GetTattoos(pawnDef, gender);
             foreach (var def in defs) {
                 PawnLayerOptionTattoo option = new PawnLayerOptionTattoo();
                 option.TattooDef = def;
@@ -182,9 +172,10 @@ namespace EdB.PrepareCarefully {
         }
         private List<PawnLayerOption> InitializeHeadOptions(ThingDef pawnDef, Gender gender) {
             List<PawnLayerOption> options = new List<PawnLayerOption>();
-            foreach (var headType in PrepareCarefully.Instance.Providers.HeadTypes.GetHeadTypes(pawnDef, gender)) {
+            foreach (var headType in ProviderHeadTypes.GetHeadTypes(pawnDef, gender)) {
                 PawnLayerOptionHead option = new PawnLayerOptionHead();
                 option.HeadType = headType;
+                option.Label = ProviderHeadTypes.GetHeadTypeLabel(headType);
                 options.Add(option);
             }
             return options;
@@ -196,9 +187,10 @@ namespace EdB.PrepareCarefully {
         }
         private List<PawnLayerOption> InitializeBodyOptions(ThingDef pawnDef, Gender gender) {
             List<PawnLayerOption> options = new List<PawnLayerOption>();
-            foreach (var bodyType in PrepareCarefully.Instance.Providers.BodyTypes.GetBodyTypesForPawn(pawnDef, gender).Where(b => b != BodyTypeDefOf.Baby && b != BodyTypeDefOf.Child).ToList()) {
+            foreach (var bodyType in ProviderBodyTypes.GetBodyTypesForPawn(pawnDef, gender).Where(b => b != BodyTypeDefOf.Baby && b != BodyTypeDefOf.Child).ToList()) {
                 PawnLayerOptionBody option = new PawnLayerOptionBody();
                 option.BodyTypeDef = bodyType;
+                option.Label = ProviderBodyTypes.GetBodyTypeLabel(bodyType);
                 option.Selectable = bodyType != BodyTypeDefOf.Baby && bodyType != BodyTypeDefOf.Child;
                 options.Add(option);
             }
@@ -216,98 +208,6 @@ namespace EdB.PrepareCarefully {
                 result.Add(option);
             }
             return result;
-        }
-        public PawnLayer FindLayerForApparelLayer(ApparelLayerDef layer) {
-            if (layer == ApparelLayerDefOf.OnSkin) {
-                return bottomClothingLayer;
-            }
-            else if (layer == ApparelLayerDefOf.Middle) {
-                return middleClothingLayer;
-            }
-            else if (layer == ApparelLayerDefOf.Shell) {
-                return topClothingLayer;
-            }
-            else if (layer == ApparelLayerDefOf.Overhead) {
-                return hatLayer;
-            }
-            else if (layer == ApparelLayerDefOf.Belt) {
-                return accessoryLayer;
-            }
-            else if (layer == ApparelLayerDefOf.EyeCover) {
-                return eyeCoveringLayer;
-            }
-            else {
-                return null;
-            }
-        }
-
-        public PawnLayer FindLayerForApparel(ThingDef def) {
-            ApparelProperties apparelProperties = def.apparel;
-            if (apparelProperties == null) {
-                Logger.Warning("Trying to find an apparel layer for a non-apparel thing definition " + def.defName);
-                return null;
-            }
-            ApparelLayerDef layer = apparelProperties.LastLayer;
-            if (layer == ApparelLayerDefOf.OnSkin && apparelProperties.bodyPartGroups.Count == 1) {
-                if (apparelProperties.bodyPartGroups[0].Equals(BodyPartGroupDefOf.Legs)) {
-                    return pantsLayer;
-                }
-                else if (apparelProperties.bodyPartGroups[0].defName == "Hands") {
-                    return null;
-                }
-                else if (apparelProperties.bodyPartGroups[0].defName == "Feet") {
-                    return null;
-                }
-            }
-            if (layer == ApparelLayerDefOf.OnSkin) {
-                return bottomClothingLayer;
-            }
-            else if (layer == ApparelLayerDefOf.Middle) {
-                return middleClothingLayer;
-            }
-            else if (layer == ApparelLayerDefOf.Shell) {
-                return topClothingLayer;
-            }
-            else if (layer == ApparelLayerDefOf.Overhead) {
-                return hatLayer;
-            }
-            else if (layer == ApparelLayerDefOf.Belt) {
-                return accessoryLayer;
-            }
-            else if (layer == ApparelLayerDefOf.EyeCover) {
-                return eyeCoveringLayer;
-            }
-            else {
-                Logger.Warning(String.Format("Cannot find matching layer for apparel: {0}.  Last layer: {1}", def.defName, apparelProperties.LastLayer));
-                return null;
-            }
-        }
-        public PawnLayer FindLayerFromDeprecatedIndex(int index) {
-            switch (index) {
-                case 0:
-                    // TODO
-                    return null;
-                case 1:
-                    return bottomClothingLayer;
-                case 2:
-                    return pantsLayer;
-                case 3:
-                    return middleClothingLayer;
-                case 4:
-                    return topClothingLayer;
-                case 5:
-                    // TODO
-                    return null;
-                case 6:
-                    // TODO
-                    return null;
-                case 7:
-                    return hatLayer;
-                case 8:
-                    return accessoryLayer;
-                default:
-                    return null;
-            }
         }
     }
 }

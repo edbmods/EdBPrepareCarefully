@@ -1,22 +1,16 @@
-﻿using System;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
 using UnityEngine;
 using Verse;
+
 namespace EdB.PrepareCarefully {
     public class TabViewEquipment : TabViewBase {
-
+        public override string Name => "EdB.PC.TabView.Equipment.Title".Translate();
         public PanelEquipmentAvailable PanelAvailable { get; set; }
         public PanelEquipmentSelected PanelSelected { get; set; }
-
-        public TabViewEquipment() {
-            PanelAvailable = new PanelEquipmentAvailable();
-            PanelSelected = new PanelEquipmentSelected();
-        }
-
-        public override string Name {
-            get {
-                return "EdB.PC.TabView.Equipment.Title".Translate();
-            }
-        }
 
         protected override void Resize(Rect rect) {
             base.Resize(rect);
@@ -32,13 +26,12 @@ namespace EdB.PrepareCarefully {
                 panelWidth, availableHeight));
         }
 
-        public override void Draw(State state, Rect rect) {
-            base.Draw(state, rect);
+        public override void Draw(Rect rect) {
+            base.Draw(rect);
 
             // Draw the panels.
-            PanelAvailable.Draw(PrepareCarefully.Instance.State);
-            PanelSelected.Draw(PrepareCarefully.Instance.State);
+            PanelAvailable.Draw();
+            PanelSelected.Draw();
         }
-
     }
 }

@@ -8,7 +8,7 @@ namespace EdB.PrepareCarefully {
     public class WidgetTable<T> where T : class {
         protected static Vector2 SizeSortIndicator = new Vector2(8, 4);
         protected Rect tableRect;
-        protected ScrollViewVertical scrollView = new ScrollViewVertical();
+        protected WidgetScrollViewVertical scrollView = new WidgetScrollViewVertical();
         protected Action<T> doubleClickAction = null;
         protected Action<T> selectedAction = null;
         protected Func<T, bool> enabledFunc = (T) => { return true; };
@@ -110,7 +110,7 @@ namespace EdB.PrepareCarefully {
             get;
             set;
         }
-        public ScrollViewVertical ScrollView {
+        public WidgetScrollViewVertical ScrollView {
             get {
                 return scrollView;
             }

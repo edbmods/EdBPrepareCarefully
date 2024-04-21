@@ -8,7 +8,7 @@ using Verse;
 
 namespace EdB.PrepareCarefully {
     public class PanelScrollingContent : PanelBase {
-        protected ScrollViewVertical scrollView = new ScrollViewVertical();
+        protected WidgetScrollViewVertical scrollView = new WidgetScrollViewVertical();
 
         protected Rect RectScrollFrame;
         protected Rect RectScrollView;
@@ -46,9 +46,8 @@ namespace EdB.PrepareCarefully {
             Modules.ForEach(m => { m.Resize(ModuleWidth); });
         }
 
-        protected override void DrawPanelContent(State state) {
-            base.DrawPanelContent(state);
-            CustomPawn currentPawn = state.CurrentPawn;
+        protected override void DrawPanelContent() {
+            base.DrawPanelContent();
 
             float y = 0;
             GUI.BeginGroup(RectScrollFrame);
@@ -61,16 +60,16 @@ namespace EdB.PrepareCarefully {
                 try {
                     int visibleModules = 0;
                     foreach (var module in Modules) {
-                        if (module.IsVisible(state)) {
+                        if (module.IsVisible()) {
                             if (visibleModules > 0) {
                                 y += 6;
                                 GUI.color = Style.ColorTabViewBackground;
-                                GUI.DrawTexture(new Rect(0, y, PanelRect.width, 4), BaseContent.WhiteTex);
+                                GUI.DrawTexture(new Rect(0, y, PanelRect.width, 10), BaseContent.WhiteTex);
                                 GUI.color = Color.white;
-                                y += 2;
+                                y += 8;
                             }
                             try {
-                                y += module.Draw(state, y);
+                                y += module.Draw(y);
                                 visibleModules++;
                             }
                             catch (Exception e) {

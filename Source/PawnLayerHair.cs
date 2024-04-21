@@ -1,4 +1,4 @@
-﻿using RimWorld;
+using RimWorld;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -36,7 +36,7 @@ namespace EdB.PrepareCarefully {
             }
         }
 
-        public override bool IsOptionSelected(CustomPawn pawn, PawnLayerOption option) {
+        public override bool IsOptionSelected(CustomizedPawn pawn, PawnLayerOption option) {
             PawnLayerOptionHair hairOption = option as PawnLayerOptionHair;
             if (hairOption == null) {
                 return false;
@@ -44,7 +44,7 @@ namespace EdB.PrepareCarefully {
             return pawn.Pawn.story.hairDef == hairOption.HairDef;
         }
 
-        public override int? GetSelectedIndex(CustomPawn pawn) {
+        public override int? GetSelectedIndex(CustomizedPawn pawn) {
             int selectedIndex = options.FirstIndexOf((option) => {
                 PawnLayerOptionHair hairOption = option as PawnLayerOptionHair;
                 if (hairOption == null) {
@@ -62,33 +62,29 @@ namespace EdB.PrepareCarefully {
             }
         }
 
-        public override PawnLayerOption GetSelectedOption(CustomPawn pawn) {
+        public override PawnLayerOption GetSelectedOption(CustomizedPawn pawn) {
             int? selectedIndex = GetSelectedIndex(pawn);
             if (selectedIndex == null) {
                 return null;
             }
             else if (selectedIndex.Value >= 0 && selectedIndex.Value < options.Count) {
-                    return options[selectedIndex.Value];
+                return options[selectedIndex.Value];
             }
             else {
                 return null;
             }
         }
 
-        public override void SelectOption(CustomPawn pawn, PawnLayerOption option) {
-            PawnLayerOptionHair hairOption = option as PawnLayerOptionHair;
-            if (hairOption != null) {
-                pawn.Pawn.story.hairDef = hairOption.HairDef;
-                pawn.MarkPortraitAsDirty();
-            }
+        public override void SelectOption(CustomizedPawn pawn, PawnLayerOption option) {
+
         }
 
-        public override Color GetSelectedColor(CustomPawn pawn) {
-            return pawn.HairColor;
+        public override Color GetSelectedColor(CustomizedPawn pawn) {
+            return pawn.Pawn.story.HairColor;
         }
 
-        public override void SelectColor(CustomPawn pawn, Color color) {
-            pawn.HairColor = color;
+        public override void SelectColor(CustomizedPawn pawn, Color color) {
+
         }
     }
 }

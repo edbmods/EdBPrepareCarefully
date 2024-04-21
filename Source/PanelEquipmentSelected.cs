@@ -9,217 +9,345 @@ using Verse.Sound;
 
 namespace EdB.PrepareCarefully {
     public class PanelEquipmentSelected : PanelBase {
-        public delegate void RemoveEquipmentHandler(EquipmentSelection entry);
-        public delegate void UpdateEquipmentCountHandler(EquipmentSelection equipment, int count);
+        public delegate void RemoveEquipmentHandler(CustomizedEquipment entry);
+        public delegate void UpdateEquipmentCountHandler(CustomizedEquipment equipment, int count);
+        public delegate void RemovePossessionHandler(CustomizedPawn pawn, ThingDef thingDef);
+        public delegate void UpdatePossessionCountHandler(CustomizedPawn pawn, ThingDef thingDef, int count);
 
         public event RemoveEquipmentHandler EquipmentRemoved;
         public event UpdateEquipmentCountHandler EquipmentCountUpdated;
+        public event RemovePossessionHandler PossessionRemoved;
+        public event UpdatePossessionCountHandler PossessionCountUpdated;
 
         protected Rect RectRemoveButton;
         protected Rect RectRow;
-        protected WidgetTable<EquipmentSelection> table;
-        private DragSlider Slider = new DragSlider(0.3f, 12, 400);
-        private EquipmentRecord ScrollToEntry = null;
+        private CustomizedEquipment ScrollToEntry = null;
+        private WidgetScrollViewVertical ScrollView = new WidgetScrollViewVertical();
 
+        private CustomizedEquipment equipmentToDelete = null;
+        private ThingDef possessionToDelete = null;
+        private ThingDef possessionToUpdate = null;
+        private int possessionUpdateCount = 0;
+        private CustomizedPawn possessionPawn = null;
         private List<WidgetNumberField> numberFields = new List<WidgetNumberField>();
 
-        public PanelEquipmentSelected() {
-        }
+        public ModState State { get; set; }
+        public ViewState ViewState { get; set; }
+        public EquipmentDatabase EquipmentDatabase { get; set; }
+
+        public Rect RectList { get; set; }
 
         public override void Resize(Rect rect) {
             base.Resize(rect);
 
             Vector2 padding = new Vector2(12, 12);
 
-            Vector2 sizeInfoButton = new Vector2(24, 24);
+            //Vector2 sizeInfoButton = new Vector2(24, 24);
             Vector2 sizeButton = new Vector2(160, 34);
             RectRemoveButton = new Rect(PanelRect.HalfWidth() - sizeButton.HalfX(),
                 PanelRect.height - padding.y - sizeButton.y, sizeButton.x, sizeButton.y);
 
-            Vector2 listSize = new Vector2();
-            listSize.x = rect.width - padding.x * 2;
-            listSize.y = rect.height - padding.y * 3 - RectRemoveButton.height;
-            float listHeaderHeight = 20;
-            float listBodyHeight = listSize.y - listHeaderHeight;
-
-            Rect rectTable = new Rect(padding.x, padding.y, listSize.x, listSize.y);
-            RectRow = new Rect(0, 0, rectTable.width, 42);
-
-            Vector2 nameOffset = new Vector2(10, 0);
-            float columnWidthInfo = 36;
-            float columnWidthIcon = 42;
-            float columnWidthCount = 112;
-            float columnWidthName = RectRow.width - columnWidthInfo - columnWidthIcon - columnWidthCount;
-
-            table = new WidgetTable<EquipmentSelection>();
-            table.Rect = rectTable;
-            table.BackgroundColor = Style.ColorPanelBackgroundDeep;
-            table.RowColor = Style.ColorTableRow1;
-            table.AlternateRowColor = Style.ColorTableRow2;
-            table.SelectedRowColor = Style.ColorTableRowSelected;
-            table.SupportSelection = true;
-            table.RowHeight = 42;
-            table.SelectedAction = (EquipmentSelection entry) => {
-                SoundDefOf.Tick_Tiny.PlayOneShotOnCamera();
-            };
-            table.DoubleClickAction = (EquipmentSelection entry) => {
-                SoundDefOf.Tick_High.PlayOneShotOnCamera();
-                if (entry.Count > 0) {
-                    EquipmentCountUpdated(entry, entry.Count - 1);
-                }
-                else {
-                    EquipmentRemoved(entry);
-                }
-            };
-            table.AddColumn(new WidgetTable<EquipmentSelection>.Column() {
-                Width = columnWidthInfo,
-                Name = "Info",
-                DrawAction = (EquipmentSelection entry, Rect columnRect, WidgetTable<EquipmentSelection>.Metadata metadata) => {
-                    Rect infoRect = new Rect(columnRect.MiddleX() - sizeInfoButton.HalfX(), columnRect.MiddleY() - sizeInfoButton.HalfY(), sizeInfoButton.x, sizeInfoButton.y);
-                    Style.SetGUIColorForButton(infoRect);
-                    GUI.DrawTexture(infoRect, Textures.TextureButtonInfo);
-                    if (Widgets.ButtonInvisible(infoRect)) {
-                        if (entry.record.animal) {
-                            Find.WindowStack.Add((Window)new Dialog_InfoCard(entry.ThingDef));
-                        }
-                        else if (entry.StuffDef != null) {
-                            Find.WindowStack.Add((Window)new Dialog_InfoCard(entry.ThingDef, entry.StuffDef));
-                        }
-                        else {
-                            Find.WindowStack.Add((Window)new Dialog_InfoCard(entry.ThingDef));
-                        }
-                    }
-                    GUI.color = Color.white;
-                }
-            });
-            table.AddColumn(new WidgetTable<EquipmentSelection>.Column() {
-                Width = columnWidthIcon,
-                Name = "Icon",
-                DrawAction = (EquipmentSelection entry, Rect columnRect, WidgetTable<EquipmentSelection>.Metadata metadata) => {
-                    WidgetEquipmentIcon.Draw(columnRect, entry.Record);
-                }
-            });
-            table.AddColumn(new WidgetTable<EquipmentSelection>.Column() {
-                Width = columnWidthName,
-                Name = "Name",
-                Label = "Name",
-                DrawAction = (EquipmentSelection entry, Rect columnRect, WidgetTable<EquipmentSelection>.Metadata metadata) => {
-                    columnRect = columnRect.InsetBy(nameOffset.x, 0, 0, 0);
-                    GUI.color = Style.ColorText;
-                    Text.Font = GameFont.Small;
-                    Text.Anchor = TextAnchor.MiddleLeft;
-                    Widgets.Label(columnRect, entry.Record.Label);
-                    GUI.color = Color.white;
-                    Text.Anchor = TextAnchor.UpperLeft;
-                }
-            });
-            table.AddColumn(new WidgetTable<EquipmentSelection>.Column() {
-                Width = columnWidthCount,
-                Name = "Count",
-                Label = "Count",
-                AdjustForScrollbars = true,
-                DrawAction = (EquipmentSelection entry, Rect columnRect, WidgetTable<EquipmentSelection>.Metadata metadata) => {
-                    Rect fieldRect = new Rect(columnRect.x + 17, columnRect.y + 7, 60, 28);
-                    Widgets.DrawAtlas(fieldRect, Textures.TextureFieldAtlas);
-
-                    if (metadata.rowIndex >= numberFields.Count) {
-                        numberFields.Add(new WidgetNumberField() {
-                            MaxValue = 100000
-                        });
-                    }
-                    WidgetNumberField field = numberFields[metadata.rowIndex];
-                    field.UpdateAction = (int value) => {
-                        EquipmentCountUpdated(entry, value);
-                    };
-                    field.Draw(fieldRect, entry.Count);
-                }
-            });
+            Vector2 listSize = new Vector2(rect.width - padding.x * 2, rect.height - padding.y * 2);
+            RectList = new Rect(padding.x, padding.y, listSize.x, listSize.y);
+            RectRow = new Rect(0, 0, RectList.width, 42);
         }
 
-        protected override void DrawPanelContent(State state) {
-            base.DrawPanelContent(state);
+        public IEnumerable<CustomizedEquipment> SortedEquipment {
+            get {
+                if (State.Customizations.Equipment == null) {
+                    yield break; 
+                }
+                foreach (var equipment in State.Customizations.Equipment.OrderBy(e => e.SpawnType)) {
+                    yield return equipment;
+                }
+            }
+        }
 
-            IEnumerable<EquipmentSelection> entries = SelectedEquipment;
+        protected override void DrawPanelContent() {
+            base.DrawPanelContent();
 
-            if (table.Selected == null) {
-                table.Selected = entries.FirstOrDefault();
+            var savedGUIState = UtilityGUIState.Save();
+            float y = 0;
+            float? scrollToY = null;
+            ScrollView.Begin(RectList);
+            try {
+                float width = ScrollView.CurrentViewWidth;
+                EquipmentSpawnType? spawnType = null;
+                int index = 0;
+                foreach (var equipment in SortedEquipment) {
+                    if (spawnType == null || equipment.SpawnType != spawnType.Value) {
+                        Rect spawnTypeRect = new Rect(0, y, width, 22);
+                        GUI.color = Color.black;
+                        GUI.DrawTexture(spawnTypeRect, BaseContent.WhiteTex);
+                        GUI.color = Color.white;
+                        Text.Anchor = TextAnchor.MiddleLeft;
+                        Text.Font = GameFont.Tiny;
+                        Widgets.Label(spawnTypeRect.OffsetBy(10, 0), UtilityEquipmentSpawnType.LabelForSpawnTypeHeader(equipment.SpawnType.Value));
+                        spawnType = equipment.SpawnType;
+                        y += spawnTypeRect.height + 6;
+                        Text.Anchor = TextAnchor.UpperLeft;
+                        Text.Font = GameFont.Small;
+                    }
+
+                    if (ScrollToEntry == equipment) {
+                        scrollToY = y;
+                    }
+
+                    DrawSelectedEquipment(y, width, index, equipment);
+                    y += RectRow.height;
+                    index++;
+                }
+
+                foreach (var colonist in State.Customizations.ColonyPawns) {
+                    var possessions = colonist.Customizations.Possessions;
+                    if (!possessions.Any()) {
+                        continue;
+                    }
+                    Rect spawnTypeRect = new Rect(0, y, width, 22);
+                    GUI.color = Color.black;
+                    GUI.DrawTexture(spawnTypeRect, BaseContent.WhiteTex);
+                    GUI.color = Color.white;
+                    Text.Anchor = TextAnchor.MiddleLeft;
+                    Text.Font = GameFont.Tiny;
+                    Widgets.Label(spawnTypeRect.OffsetBy(10, 0), "EdB.PC.Equipment.SelectedEquipment.SpawnType.Possession".Translate(colonist.Pawn.LabelShortCap));
+                    y += spawnTypeRect.height + 6;
+                    Text.Anchor = TextAnchor.UpperLeft;
+                    Text.Font = GameFont.Small;
+                    foreach (var p in possessions) {
+                        DrawPossession(y, width, index, colonist, p);
+                        y += RectRow.height;
+                        index++;
+                    }
+                }
+            }
+            finally {
+                ScrollView.End(y);
+                savedGUIState.Restore();
             }
 
-            table.Draw(entries);
-
-            if (ScrollToEntry != null) {
-                ScrollTo(ScrollToEntry);
+            if (scrollToY != null) {
+                ScrollView.ScrollTo(y);
+                scrollToY = null;
                 ScrollToEntry = null;
             }
 
-            if (Widgets.ButtonText(RectRemoveButton, "EdB.PC.Panel.SelectedEquipment.Remove".Translate(), true, false, table.Selected != null)) {
-                SoundDefOf.Tick_High.PlayOneShotOnCamera();
-                EquipmentRemoved(table.Selected);
-                table.Selected = null;
+            if (equipmentToDelete != null) {
+                EquipmentRemoved?.Invoke(equipmentToDelete);
+                equipmentToDelete = null;
             }
+            if (possessionToDelete != null) {
+                PossessionRemoved?.Invoke(possessionPawn, possessionToDelete);
+                possessionToDelete = null;
+                possessionPawn = null;
+            }
+            else if (possessionToUpdate != null) {
+                PossessionCountUpdated?.Invoke(possessionPawn, possessionToUpdate, possessionUpdateCount);
+                possessionToUpdate = null;
+                possessionPawn = null;
+            }
+
         }
 
-        // Goes through all selected equipment entries and tries to make sure that they each have a non-null equipment record.
-        // Not sure that this is still necessary.  See FindEntry() below--don't remember why we needed that method.
-        protected IEnumerable<EquipmentSelection> SelectedEquipment {
-            get {
-                IEnumerable<EquipmentSelection> entries = PrepareCarefully.Instance.Equipment;
-                foreach (var e in entries) {
-                    if (e.record == null) {
-                        e.record = PrepareCarefully.Instance.EquipmentDatabase.LookupEquipmentRecord(e.Key);
+        public float DrawSelectedEquipment(float y, float width, int index, CustomizedEquipment equipment) {
+            float top = y;
+            float deleteButtonMargin = 10;
+            float deleteButtonSize = 12;
+            float deleteButtonPlusMarginSize = deleteButtonMargin + deleteButtonMargin + deleteButtonSize;
+            Rect rowRect = new Rect(0, y, width - deleteButtonPlusMarginSize, 36);
+            Rect deleteRect = new Rect(rowRect.xMax + deleteButtonMargin, rowRect.y + rowRect.HalfHeight() - deleteButtonSize * 0.5f, deleteButtonSize, deleteButtonSize);
+
+            var guiState = UtilityGUIState.Save();
+            try {
+                GUI.color = Color.white;
+                if (index % 2 == 0) {
+                    GUI.color = Style.ColorTableRow1;
+                }
+                else {
+                    GUI.color = Style.ColorTableRow2;
+                }
+                GUI.DrawTexture(rowRect, BaseContent.WhiteTex);
+
+                if (equipment.EquipmentOption.ThingDef?.DrawMatSingle != null && equipment.EquipmentOption?.ThingDef?.DrawMatSingle.mainTexture != null) {
+                    Rect iconRect = new Rect(8f, y + 2, 32f, 32f);
+                    ThingDef stuff = equipment.StuffDef;
+                    if (stuff == null && equipment.EquipmentOption.ThingDef.MadeFromStuff) {
+                        stuff = equipment.EquipmentOption.ThingDef.defaultStuff;
                     }
+                    Widgets.ThingIcon(iconRect, equipment.EquipmentOption.ThingDef, stuff);
                 }
-                return entries;
+                else if (equipment.EquipmentOption.RandomAnimal) {
+                    GUI.color = Style.ColorTextSecondary;
+                    Rect iconRect = new Rect(12f, y + 6, 24f, 24f);
+                    GUI.DrawTexture(iconRect, Textures.TextureButtonRandom);
+                    GUI.color = Color.white;
+                }
+                Text.Anchor = TextAnchor.MiddleLeft;
+                float labelLeftMargin = 48f;
+                Rect labelRect = new Rect(labelLeftMargin, y, rowRect.width - labelLeftMargin, 24f);
+                Rect subtitleRect = new Rect(labelLeftMargin, labelRect.y + 17f, rowRect.width - labelLeftMargin, 18f);
+                string text = equipment.EquipmentOption.Label;
+                GUI.color = Style.ColorText;
+                Text.WordWrap = false;
+                Text.Anchor = TextAnchor.UpperLeft;
+                Text.Font = GameFont.Small;
+                bool useStuff = equipment.StuffDef != null;
+                bool supportsQuality = UtilityQuality.ThingDefSupportsQuality(equipment.EquipmentOption.ThingDef);
+                bool useDefaultQuality = supportsQuality && !equipment.Quality.HasValue;
+                bool showQuality = supportsQuality && !useDefaultQuality;
+
+                if (useStuff && showQuality) {
+                    Text.Font = GameFont.Tiny;
+                    string subtitleText = equipment.StuffDef.LabelCap + ", " + equipment.Quality.Value.GetLabel();
+                    Widgets.Label(subtitleRect, subtitleText.Truncate(subtitleRect.width - 48));
+                }
+                else if (useStuff && !showQuality) {
+                    Text.Font = GameFont.Tiny;
+                    Widgets.Label(subtitleRect, equipment.StuffDef.LabelCap.Truncate(subtitleRect.width - 48));
+                }
+                else if (!useStuff && showQuality) {
+                    Text.Font = GameFont.Tiny;
+                    string subtitleText = equipment.Quality.Value.GetLabel().CapitalizeFirst();
+                    Widgets.Label(subtitleRect, subtitleText);
+                }
+                else if (equipment.Gender != null) {
+                    Text.Font = GameFont.Tiny;
+                    string subtitleText = equipment.Gender.Value.GetLabel().CapitalizeFirst();
+                    Widgets.Label(subtitleRect, subtitleText.Truncate(subtitleRect.width - 48));
+                }
+                else {
+                    labelRect = new Rect(labelLeftMargin, y, rowRect.width - labelLeftMargin, subtitleRect.yMax - labelRect.y);
+                    Text.Anchor = TextAnchor.MiddleLeft;
+                }
+
+                Text.Font = GameFont.Small;
+                Widgets.Label(labelRect, text.Truncate(labelRect.width - 48));
+                Text.WordWrap = true;
+
+
+                // Draw number field
+                Rect fieldRect = new Rect(rowRect.x + rowRect.width - 80f, rowRect.y + 4f, 60f, 28f);
+                Widgets.DrawAtlas(fieldRect, Textures.TextureFieldAtlas);
+
+                if (index >= numberFields.Count) {
+                    numberFields.Add(new WidgetNumberField() {
+                        MaxValue = 100000
+                    });
+                }
+                WidgetNumberField field = numberFields[index];
+                field.UpdateAction = (int value) => {
+                    EquipmentCountUpdated?.Invoke(equipment, value);
+                };
+                field.Draw(fieldRect, equipment.Count);
+
+                // Delete button
+                if (deleteRect.Contains(Event.current.mousePosition)) {
+                    GUI.color = Style.ColorButtonHighlight;
+                }
+                else {
+                    GUI.color = Style.ColorButton;
+                }
+                GUI.DrawTexture(deleteRect, Textures.TextureButtonDelete);
+                if (Widgets.ButtonInvisible(deleteRect, false)) {
+                    equipmentToDelete = equipment;
+                }
             }
+            finally {
+                guiState.Restore();
+            }
+
+            //Widgets.InfoCardButton(width - 24f, top, equipment.EquipmentOption.ThingDef);
+
+            y += rowRect.height;
+            return y - top;
+
         }
 
-        protected void ScrollTo(EquipmentRecord entry) {
-            var equipment = SelectedEquipment;
-            int count = equipment.TakeWhile((EquipmentSelection e) => {
-                return e.Record.def != entry.def || e.Record.stuffDef != entry.stuffDef;
-            }).Count();
-            if (count < equipment.Count()) {
-                int index = count;
+        public float DrawPossession(float y, float width, int index, CustomizedPawn pawn, CustomizedPossession possession) {
+            float top = y;
+            float deleteButtonMargin = 10;
+            float deleteButtonSize = 12;
+            float deleteButtonPlusMarginSize = deleteButtonMargin + deleteButtonMargin + deleteButtonSize;
+            Rect rowRect = new Rect(0, y, width - deleteButtonPlusMarginSize, 36);
+            Rect deleteRect = new Rect(rowRect.xMax + deleteButtonMargin, rowRect.y + rowRect.HalfHeight() - deleteButtonSize * 0.5f, deleteButtonSize, deleteButtonSize);
 
-                float min = table.ScrollView.Position.y;
-                float max = min + table.Rect.height;
-                float rowTop = (float)index * RectRow.height;
-                float rowBottom = rowTop + RectRow.height;
-                float pos = (float)index * RectRow.height;
-                if (rowTop < min) {
-                    float amount = min - rowTop;
-                    table.ScrollView.Position = new Vector2(table.ScrollView.Position.x, table.ScrollView.Position.y - amount);
+            var guiState = UtilityGUIState.Save();
+            try {
+                GUI.color = Color.white;
+                if (index % 2 == 0) {
+                    GUI.color = Style.ColorTableRow1;
                 }
-                else if (rowBottom > max) {
-                    float amount = rowBottom - max;
-                    table.ScrollView.Position = new Vector2(table.ScrollView.Position.x, table.ScrollView.Position.y + amount);
+                else {
+                    GUI.color = Style.ColorTableRow2;
+                }
+                GUI.DrawTexture(rowRect, BaseContent.WhiteTex);
+
+                if (possession.ThingDef.DrawMatSingle != null && possession.ThingDef.DrawMatSingle.mainTexture != null) {
+                    Rect iconRect = new Rect(8f, y + 2, 32f, 32f);
+                    Widgets.ThingIcon(iconRect, possession.ThingDef);
+                }
+                float labelLeftMargin = 48f;
+                Rect labelRect = new Rect(labelLeftMargin, y, rowRect.width - labelLeftMargin, rowRect.height);
+                GUI.color = Style.ColorText;
+                Text.Anchor = TextAnchor.MiddleLeft;
+                Text.Font = GameFont.Small;
+                string text = possession.ThingDef.LabelCap;
+                Widgets.Label(labelRect, text.Truncate(labelRect.width - 48));
+                Text.WordWrap = true;
+
+                // Draw number field
+                Rect fieldRect = new Rect(rowRect.x + rowRect.width - 80f, rowRect.y + 4f, 60f, 28f);
+                Widgets.DrawAtlas(fieldRect, Textures.TextureFieldAtlas);
+
+                if (index >= numberFields.Count) {
+                    numberFields.Add(new WidgetNumberField() {
+                        MaxValue = 100000
+                    });
+                }
+                WidgetNumberField field = numberFields[index];
+                field.UpdateAction = (int value) => {
+                    possessionToUpdate = possession.ThingDef;
+                    possessionUpdateCount = value;
+                    possessionPawn = pawn;
+                };
+                field.Draw(fieldRect, possession.Count);
+
+                // Delete button
+                if (deleteRect.Contains(Event.current.mousePosition)) {
+                    GUI.color = Style.ColorButtonHighlight;
+                }
+                else {
+                    GUI.color = Style.ColorButton;
+                }
+                GUI.DrawTexture(deleteRect, Textures.TextureButtonDelete);
+                if (Widgets.ButtonInvisible(deleteRect, false)) {
+                    possessionToDelete = possession.ThingDef;
+                    possessionPawn = pawn;
                 }
             }
+            finally {
+                guiState.Restore();
+            }
+
+            //Widgets.InfoCardButton(width - 24f, top, equipment.EquipmentOption.ThingDef);
+
+            y += rowRect.height;
+            return y - top;
         }
 
-        // TODO: Why did we need this?
-        //protected EquipmentSelection FindEntry(EquipmentSelection equipment) {
-        //    ThingDef def = equipment.ThingDef;
-        //    EquipmentRecord entry = PrepareCarefully.Instance.EquipmentDatabase.LookupEquipmentRecord(equipment.Key);
-        //    if (entry == null) {
-        //        string thing = def != null ? def.defName : "null";
-        //        string stuff = equipment.StuffDef != null ? equipment.StuffDef.defName : "null";
-        //        Logger.Warning(string.Format("Could not draw unrecognized resource/equipment.  Invalid item was removed.  This may have been caused by an invalid thing/stuff combination. (thing = {0}, stuff={1})", thing, stuff));
-        //        PrepareCarefully.Instance.RemoveEquipment(equipment);
-        //        return null;
-        //    }
-        //    return PrepareCarefully.Instance.Find(entry);
-        //}
-
-        public void EquipmentAdded(EquipmentRecord entry) {
-            EquipmentSelection loadoutRecord = PrepareCarefully.Instance.Find(entry);
-            if (loadoutRecord != null) {
-                table.Selected = loadoutRecord;
+        public void EquipmentAdded(CustomizedEquipment equipment) {
+            CustomizedEquipment matchingEquipment = FindEquipmentSelectionRefactored(equipment);
+            if (matchingEquipment != null) {
                 // Mark that we want to scroll to the newly added entry.  We can only scroll to it once
                 // it's already been drawn once in the list, so we need to temporarily store a value that
                 // we'll use on the next draw pass.
-                ScrollToEntry = loadoutRecord.Record;
+                ScrollToEntry = matchingEquipment;
             }
+        }
+
+        public CustomizedEquipment FindEquipmentSelectionRefactored(CustomizedEquipment equipment) {
+            return State.Customizations.Equipment.Find((CustomizedEquipment e) => {
+                return Equals(e, equipment);
+            });
         }
     }
 

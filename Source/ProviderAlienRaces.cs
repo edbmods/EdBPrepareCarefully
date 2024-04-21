@@ -23,6 +23,10 @@ namespace EdB.PrepareCarefully {
                 defaultMinAgeForAdulthood = 20.0f;
             }
         }
+        public AlienRace GetAlienRaceForPawn(Pawn pawn) {
+            return GetAlienRace(pawn.def);
+        }
+
         public AlienRace GetAlienRace(ThingDef def) {
             AlienRace result;
             if (lookup.TryGetValue(def, out result)) {

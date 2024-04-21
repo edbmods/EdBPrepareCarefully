@@ -17,19 +17,24 @@ namespace EdB.PrepareCarefully {
         public delegate void AddTraitHandler(Trait trait);
         public delegate void UpdateTraitHandler(int index, Trait trait);
         public delegate void RemoveTraitHandler(Trait trait);
+        public delegate void SetTraitsHandler(IEnumerable<Trait> traits);
 
         public event RandomizeTraitsHandler TraitsRandomized;
         public event AddTraitHandler TraitAdded;
         public event UpdateTraitHandler TraitUpdated;
         public event RemoveTraitHandler TraitRemoved;
+        public event SetTraitsHandler TraitsSet;
 
-        private ProviderTraits providerTraits = new ProviderTraits();
-        protected ScrollViewVertical scrollView = new ScrollViewVertical();
-        protected List<Field> fields = new List<Field>();
+        protected WidgetScrollViewVertical scrollView = new WidgetScrollViewVertical();
+        protected List<WidgetField> fields = new List<WidgetField>();
         protected List<Trait> traitsToRemove = new List<Trait>();
         protected HashSet<TraitDef> disallowedTraitDefs = new HashSet<TraitDef>();
         protected Dictionary<Trait, string> conflictingTraitList = new Dictionary<Trait, string>();
         protected TipCache tipCache = new TipCache();
+        public ModState State { get; set; }
+        public ViewState ViewState { get; set; }
+        public ProviderTraits ProviderTraits { get; set; }
+        public DialogManageTraits DialogManageTraits { get; set; }
 
         public override void Resize(float width) {
             base.Resize(width);
@@ -40,58 +45,64 @@ namespace EdB.PrepareCarefully {
             return 0;
         }
 
-        public override float Draw(State state, float y) {
+        public override float Draw(float y) {
             float top = y;
             y += Margin.y;
 
             y += DrawHeader(y, Width, "Traits".Translate().Resolve());
 
-            CustomPawn currentPawn = state.CurrentPawn;
+            CustomizedPawn customizedPawn = ViewState.CurrentPawn;
+            Pawn pawn = customizedPawn.Pawn;
             int index = 0;
             Action clickAction = null;
-            foreach (Trait trait in currentPawn.Traits) {
-                if (index > 0) {
-                    y += FieldPadding;
+            TraitSet traitSet = pawn.story.traits;
+            Vector2 currentPosition = new Vector2(FieldRect.x, FieldRect.y + y);
+            float maxPositionX = currentPosition.x + FieldRect.width;
+            int drawnTraitCount = 0;
+            foreach (Trait trait in traitSet.allTraits) {
+                if (trait == null) {
+                    continue;
                 }
+                drawnTraitCount++;
                 if (index >= fields.Count) {
-                    fields.Add(new Field());
+                    fields.Add(new WidgetField());
                 }
-                Field field = fields[index];
+                WidgetField field = fields[index];
 
-                Rect fieldRect = FieldRect.OffsetBy(0, y);
+                Vector2 labelSize = Text.CalcSize(trait.LabelCap);
+                float fieldWidth = labelSize.x + 32;
+                if (currentPosition.x + fieldWidth > maxPositionX) {
+                    y += FieldRect.height + 6;
+                    currentPosition = new Vector2(FieldRect.x, FieldRect.y + y);
+                }
+
+                Rect fieldRect = new Rect(currentPosition.x, currentPosition.y, fieldWidth, FieldRect.height);
                 field.Rect = fieldRect;
                 Rect fieldClickRect = fieldRect;
-                fieldClickRect.width -= 36;
-                field.ClickRect = fieldClickRect;
 
-                if (trait != null) {
-                    field.Label = trait.LabelCap;
-                    field.Tip = GetTraitTip(trait, currentPawn);
-                    field.Color = Style.ColorText;
-                    if (trait.Suppressed) {
-                        field.Color = ColoredText.SubtleGrayColor;
-                    }
-                    else if (trait.sourceGene != null) {
-                        field.Color = ColoredText.GeneColor;
-                    }
+                field.Label = trait.LabelCap;
+                field.LabelRect = new Rect(8, 0, labelSize.x, FieldRect.height);
+                field.Tip = GetTraitTip(trait, customizedPawn);
+                field.Color = Style.ColorText;
+                if (trait.Suppressed) {
+                    field.Color = ColoredText.SubtleGrayColor;
                 }
-                else {
-                    field.Label = null;
-                    field.Tip = null;
-                    field.Color = Style.ColorText;
+                else if (trait.sourceGene != null) {
+                    field.Color = ColoredText.GeneColor;
                 }
+
                 Trait localTrait = trait;
                 int localIndex = index;
                 field.ClickAction = () => {
                     Trait originalTrait = localTrait;
                     Trait selectedTrait = originalTrait;
-                    ComputeDisallowedTraits(currentPawn, originalTrait);
-                    Dialog_Options<Trait> dialog = new Dialog_Options<Trait>(providerTraits.Traits) {
+                    ComputeDisallowedTraits(customizedPawn, originalTrait);
+                    DialogOptions<Trait> dialog = new DialogOptions<Trait>(ProviderTraits.Traits) {
                         NameFunc = (Trait t) => {
                             return t.LabelCap;
                         },
                         DescriptionFunc = (Trait t) => {
-                            return GetTraitTip(t, currentPawn);
+                            return GetTraitTip(t, customizedPawn);
                         },
                         SelectedFunc = (Trait t) => {
                             if ((selectedTrait == null || t == null) && selectedTrait != t) {
@@ -106,7 +117,7 @@ namespace EdB.PrepareCarefully {
                             return !disallowedTraitDefs.Contains(t.def);
                         },
                         CloseAction = () => {
-                            TraitUpdated(localIndex, selectedTrait);
+                            TraitUpdated?.Invoke(localIndex, selectedTrait);
                         },
                         NoneSelectedFunc = () => {
                             return selectedTrait == null;
@@ -117,22 +128,14 @@ namespace EdB.PrepareCarefully {
                     };
                     Find.WindowStack.Add(dialog);
                 };
-                field.PreviousAction = () => {
-                    var capturedIndex = index;
-                    clickAction = () => {
-                        SelectPreviousTrait(currentPawn, capturedIndex);
-                    };
-                };
-                field.NextAction = () => {
-                    var capturedIndex = index;
-                    clickAction = () => {
-                        SelectNextTrait(currentPawn, capturedIndex);
-                    };
-                };
+                field.PreviousAction = null;
+                field.NextAction = null;
                 field.Draw();
 
+                currentPosition = new Vector2(currentPosition.x + fieldWidth + 6, currentPosition.y);
+
                 // Remove trait button.
-                Rect deleteRect = new Rect(field.Rect.xMax - 32, field.Rect.y + field.Rect.HalfHeight() - 6, 12, 12);
+                Rect deleteRect = new Rect(field.Rect.xMax - 16, field.Rect.y + field.Rect.HalfHeight() - 6, 12, 12);
                 if (deleteRect.Contains(Event.current.mousePosition)) {
                     GUI.color = Style.ColorButtonHighlight;
                 }
@@ -146,8 +149,9 @@ namespace EdB.PrepareCarefully {
                 }
 
                 index++;
-
-                y += FieldRect.height;
+            }
+            if (drawnTraitCount > 0) {
+                y += FieldRect.height + 8;
             }
 
             tipCache.MakeReady();
@@ -156,7 +160,7 @@ namespace EdB.PrepareCarefully {
             if (index == 0) {
                 GUI.color = Style.ColorText;
                 string message = "EdB.PC.Panel.Traits.None".Translate();
-                if (state.CurrentPawn.Pawn.DevelopmentalStage.Baby()) {
+                if (UtilityPawns.IsBaby(pawn)) {
                     message = "TraitsDevelopLaterBaby".Translate();
                 }
                 Widgets.Label(FieldRect.InsetBy(6, 0).OffsetBy(0, y - 4), message);
@@ -171,10 +175,26 @@ namespace EdB.PrepareCarefully {
                 clickAction = null;
             }
 
-            // Don't show add or randomize buttons if the pawn is a baby
-            if (!state.CurrentPawn.Pawn.DevelopmentalStage.Baby()) {
+            if (UtilityPawns.TraitsAllowed(pawn)) {
+
+                // Manage traits button.
+                Rect manageTraitsRect = new Rect(Width - 25, top + 14, 16, 16);
+                Style.SetGUIColorForButton(manageTraitsRect);
+                int traitCount = traitSet.allTraits.Count();
+                GUI.DrawTexture(manageTraitsRect, Textures.TextureButtonManage);
+                if (Widgets.ButtonInvisible(manageTraitsRect, false)) {
+                    if (DialogManageTraits == null) {
+                        DialogManageTraits = new DialogManageTraits(ProviderTraits);
+                        DialogManageTraits.TraitAdded += (t) => { TraitAdded?.Invoke(t); };
+                        DialogManageTraits.TraitRemoved += (t) => { TraitRemoved?.Invoke(t); };
+                        DialogManageTraits.TraitsSet += (t) => { TraitsSet?.Invoke(t); };
+                    }
+                    DialogManageTraits.InitializeWithCustomizedPawn(customizedPawn);
+                    Find.WindowStack.Add(DialogManageTraits);
+                }
+                
                 // Randomize traits button.
-                Rect randomizeRect = new Rect(Width - 32, top + 9, 22, 22);
+                Rect randomizeRect = new Rect(manageTraitsRect.x - 29, top + 9, 22, 22);
                 if (randomizeRect.Contains(Event.current.mousePosition)) {
                     GUI.color = Style.ColorButtonHighlight;
                 }
@@ -185,54 +205,15 @@ namespace EdB.PrepareCarefully {
                 if (Widgets.ButtonInvisible(randomizeRect, false)) {
                     SoundDefOf.Tick_Low.PlayOneShotOnCamera();
                     tipCache.Invalidate();
-                    TraitsRandomized();
+                    TraitsRandomized?.Invoke();
                 }
 
-                // Add trait button.
-                Rect addRect = new Rect(randomizeRect.x - 24, top + 12, 16, 16);
-                Style.SetGUIColorForButton(addRect);
-                int traitCount = state.CurrentPawn.Traits.Count();
-                bool addButtonEnabled = (state.CurrentPawn != null && traitCount < Constraints.MaxTraits);
-                if (!addButtonEnabled) {
-                    GUI.color = Style.ColorButtonDisabled;
-                }
-                GUI.DrawTexture(addRect, Textures.TextureButtonAdd);
-                if (addButtonEnabled && Widgets.ButtonInvisible(addRect, false)) {
-                    ComputeDisallowedTraits(currentPawn, null);
-                    SoundDefOf.Tick_Low.PlayOneShotOnCamera();
-                    Trait selectedTrait = null;
-                    Dialog_Options<Trait> dialog = new Dialog_Options<Trait>(providerTraits.Traits) {
-                        ConfirmButtonLabel = "EdB.PC.Common.Add".Translate(),
-                        NameFunc = (Trait t) => {
-                            return t.LabelCap;
-                        },
-                        DescriptionFunc = (Trait t) => {
-                            return GetTraitTip(t, state.CurrentPawn);
-                        },
-                        SelectedFunc = (Trait t) => {
-                            return selectedTrait == t;
-                        },
-                        SelectAction = (Trait t) => {
-                            selectedTrait = t;
-                        },
-                        EnabledFunc = (Trait t) => {
-                            return !disallowedTraitDefs.Contains(t.def);
-                        },
-                        CloseAction = () => {
-                            if (selectedTrait != null) {
-                                TraitAdded(selectedTrait);
-                                tipCache.Invalidate();
-                            }
-                        }
-                    };
-                    Find.WindowStack.Add(dialog);
-                }
             }
 
             // Remove any traits that were marked for deletion
             if (traitsToRemove.Count > 0) {
                 foreach (var trait in traitsToRemove) {
-                    TraitRemoved(trait);
+                    TraitRemoved?.Invoke(trait);
                 }
                 traitsToRemove.Clear();
                 tipCache.Invalidate();
@@ -243,9 +224,9 @@ namespace EdB.PrepareCarefully {
         }
 
 
-        protected string GetTraitTip(Trait trait, CustomPawn pawn) {
+        protected string GetTraitTip(Trait trait, CustomizedPawn customizedPawn) {
             if (!tipCache.Ready || !tipCache.Lookup.ContainsKey(trait)) {
-                string value = GenerateTraitTip(trait, pawn);
+                string value = GenerateTraitTip(trait, customizedPawn);
                 tipCache.Lookup.Add(trait, value);
                 return value;
             }
@@ -254,12 +235,12 @@ namespace EdB.PrepareCarefully {
             }
         }
 
-        protected string GenerateTraitTip(Trait trait, CustomPawn pawn) {
+        protected string GenerateTraitTip(Trait trait, CustomizedPawn customizedPawn) {
             try {
-                string baseTip = trait.TipString(pawn.Pawn);
+                string baseTip = trait.TipString(customizedPawn.Pawn);
                 string conflictingNames = null;
                 if (!conflictingTraitList.TryGetValue(trait, out conflictingNames)) {
-                    List<Trait> conflictingTraits = providerTraits.Traits.Where((Trait t) => {
+                    List<Trait> conflictingTraits = ProviderTraits.Traits.Where((Trait t) => {
                         return trait.def.conflictingTraits.Contains(t.def) || (t.def == trait.def && t.Label != trait.Label);
                     }).ToList();
                     if (conflictingTraits.Count == 0) {
@@ -296,9 +277,11 @@ namespace EdB.PrepareCarefully {
             }
         }
 
-        protected void ComputeDisallowedTraits(CustomPawn customPawn, Trait traitToReplace) {
+        protected void ComputeDisallowedTraits(CustomizedPawn customizedPawn, Trait traitToReplace) {
+            Pawn pawn = customizedPawn.Pawn;
+            var allTraits = pawn.story.traits.allTraits;
             disallowedTraitDefs.Clear();
-            foreach (Trait t in customPawn.Traits) {
+            foreach (Trait t in allTraits) {
                 if (t == traitToReplace) {
                     continue;
                 }
@@ -311,41 +294,45 @@ namespace EdB.PrepareCarefully {
             }
         }
 
-        protected void SelectNextTrait(CustomPawn customPawn, int traitIndex) {
-            Trait currentTrait = customPawn.GetTrait(traitIndex);
-            ComputeDisallowedTraits(customPawn, currentTrait);
+        protected void SelectNextTrait(CustomizedPawn customizedPawn, int traitIndex) {
+            Pawn pawn = customizedPawn.Pawn;
+            var allTraits = pawn.story.traits.allTraits;
+            Trait currentTrait = allTraits[traitIndex];
+            ComputeDisallowedTraits(customizedPawn, currentTrait);
             int index = -1;
             if (currentTrait != null) {
-                index = providerTraits.Traits.FindIndex((Trait t) => {
+                index = ProviderTraits.Traits.FindIndex((Trait t) => {
                     return t.Label.Equals(currentTrait.Label);
                 });
             }
             int count = 0;
             do {
                 index++;
-                if (index >= providerTraits.Traits.Count) {
+                if (index >= ProviderTraits.Traits.Count) {
                     index = 0;
                 }
-                if (++count > providerTraits.Traits.Count + 1) {
+                if (++count > ProviderTraits.Traits.Count + 1) {
                     index = -1;
                     break;
                 }
             }
-            while (index != -1 && (customPawn.HasTrait(providerTraits.Traits[index]) || disallowedTraitDefs.Contains(providerTraits.Traits[index].def)));
+            while (index != -1 && (allTraits.Contains(ProviderTraits.Traits[index]) || disallowedTraitDefs.Contains(ProviderTraits.Traits[index].def)));
 
             Trait newTrait = null;
             if (index > -1) {
-                newTrait = providerTraits.Traits[index];
+                newTrait = ProviderTraits.Traits[index];
             }
             TraitUpdated(traitIndex, newTrait);
         }
 
-        protected void SelectPreviousTrait(CustomPawn customPawn, int traitIndex) {
-            Trait currentTrait = customPawn.GetTrait(traitIndex);
-            ComputeDisallowedTraits(customPawn, currentTrait);
+        protected void SelectPreviousTrait(CustomizedPawn customizedPawn, int traitIndex) {
+            Pawn pawn = customizedPawn.Pawn;
+            var allTraits = pawn.story.traits.allTraits;
+            Trait currentTrait = allTraits[traitIndex];
+            ComputeDisallowedTraits(customizedPawn, currentTrait);
             int index = -1;
             if (currentTrait != null) {
-                index = providerTraits.Traits.FindIndex((Trait t) => {
+                index = ProviderTraits.Traits.FindIndex((Trait t) => {
                     return t.Label.Equals(currentTrait.Label);
                 });
             }
@@ -353,37 +340,25 @@ namespace EdB.PrepareCarefully {
             do {
                 index--;
                 if (index < 0) {
-                    index = providerTraits.Traits.Count - 1;
+                    index = ProviderTraits.Traits.Count - 1;
                 }
-                if (++count > providerTraits.Traits.Count + 1) {
+                if (++count > ProviderTraits.Traits.Count + 1) {
                     index = -1;
                     break;
                 }
             }
-            while (index != -1 && (customPawn.HasTrait(providerTraits.Traits[index]) || disallowedTraitDefs.Contains(providerTraits.Traits[index].def)));
+            while (index != -1 && (allTraits.Contains(ProviderTraits.Traits[index]) || disallowedTraitDefs.Contains(ProviderTraits.Traits[index].def)));
 
             Trait newTrait = null;
             if (index > -1) {
-                newTrait = providerTraits.Traits[index];
+                newTrait = ProviderTraits.Traits[index];
             }
             TraitUpdated(traitIndex, newTrait);
         }
 
-        protected void ClearTrait(CustomPawn customPawn, int traitIndex) {
-            TraitUpdated(traitIndex, null);
-            tipCache.Invalidate();
-        }
-
         public class TipCache {
             public Dictionary<Trait, string> Lookup = new Dictionary<Trait, string>();
-            private CustomPawn pawn = null;
             private bool ready = false;
-            public void CheckPawn(CustomPawn pawn) {
-                if (this.pawn != pawn) {
-                    this.pawn = pawn;
-                    Invalidate();
-                }
-            }
             public void Invalidate() {
                 this.ready = false;
                 Lookup.Clear();

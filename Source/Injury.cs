@@ -7,15 +7,14 @@ using UnityEngine;
 using Verse;
 
 namespace EdB.PrepareCarefully {
-    public class Injury : CustomBodyPart {
-        protected BodyPartRecord bodyPartRecord;
+    public class Injury : CustomizedHediff {
 
-        protected InjuryOption option;
 
-        protected Hediff hediff;
+        public Hediff Hediff { get; set; }
 
-        protected string tooltip;
+        public string tooltip;
 
+        public InjuryOption option;
         public InjuryOption Option {
             get {
                 return option;
@@ -27,19 +26,15 @@ namespace EdB.PrepareCarefully {
             }
         }
 
-        public Hediff Hediff {
-            get => hediff;
-            set => hediff = value;
-        }
 
-        protected float severity = 0;
 
         protected string stageLabel = null;
 
-        protected float? painFactor = null;
+        public float? PainFactor { get; set; }
 
         public ChemicalDef Chemical { get; set; }
 
+        protected float severity = 0;
         public float Severity {
             get {
                 return severity;
@@ -51,18 +46,10 @@ namespace EdB.PrepareCarefully {
             }
         }
 
-        public float? PainFactor {
-            get {
-                return painFactor;
-            }
-            set {
-                painFactor = value;
-            }
-        }
-
         public Injury() {
         }
 
+        public BodyPartRecord bodyPartRecord;
         override public BodyPartRecord BodyPartRecord {
             get {
                 return bodyPartRecord;
@@ -94,56 +81,6 @@ namespace EdB.PrepareCarefully {
                 else {
                     return Style.ColorText;
                 }
-            }
-        }
-
-        public override void AddToPawn(CustomPawn customPawn, Pawn pawn) {
-            if (Option.Giver != null) {
-                //Logger.Debug("Adding injury {" + Option.Label + "} to part {" + BodyPartRecord?.LabelCap + "} using giver {" + Option.Giver.GetType().FullName + "}");
-                Hediff hediff = HediffMaker.MakeHediff(Option.HediffDef, pawn, BodyPartRecord);
-                hediff.Severity = this.Severity;
-                pawn.health.AddHediff(hediff, BodyPartRecord);
-                this.hediff = hediff;
-            }
-            else if (Option.IsOldInjury) {
-                Hediff hediff = HediffMaker.MakeHediff(Option.HediffDef, pawn);
-                hediff.Severity = this.Severity;
-
-                HediffComp_GetsPermanent getsPermanent = hediff.TryGetComp<HediffComp_GetsPermanent>();
-                if (getsPermanent != null) {
-                    getsPermanent.IsPermanent = true;
-                    Reflection.ReflectorHediffComp_GetsPermanent.SetPainCategory(getsPermanent, PainCategoryForFloat(painFactor == null ? 0 : painFactor.Value));
-                }
-
-                pawn.health.AddHediff(hediff, BodyPartRecord);
-                this.hediff = hediff;
-            }
-            else if (Option.HediffDef.defName == "MissingBodyPart") {
-                //Logger.Debug("Adding {" + Option.Label + "} to part {" + BodyPartRecord?.LabelCap);
-                Hediff hediff = HediffMaker.MakeHediff(Option.HediffDef, pawn, BodyPartRecord);
-                hediff.Severity = this.Severity;
-                pawn.health.AddHediff(hediff, BodyPartRecord);
-                this.hediff = hediff;
-            }
-            else {
-                Hediff hediff = HediffMaker.MakeHediff(Option.HediffDef, pawn, this.bodyPartRecord);
-                hediff.Severity = this.Severity;
-                if (hediff is Hediff_Level hediffLevel) {
-                    // The default psylink behavior adds a random ability when you gain a level.  We don't want to do that, so we
-                    // just set the level field directly.  For any other level-based hediff, we call SetLevelTo() in case the behavior
-                    // defined in that method is required.
-                    if (hediff is Hediff_Psylink) {
-                        hediffLevel.level = (int)Mathf.Clamp(Severity, hediff.def.minSeverity, hediff.def.maxSeverity);
-                    }
-                    else {
-                        hediffLevel.SetLevelTo((int)Severity);
-                    }
-                }
-                if (hediff is Hediff_ChemicalDependency chemicalDependency) {
-                    chemicalDependency.chemical = Chemical;
-                }
-                pawn.health.AddHediff(hediff);
-                this.hediff = hediff;
             }
         }
 
@@ -201,7 +138,7 @@ namespace EdB.PrepareCarefully {
 
         public override bool HasTooltip {
             get {
-                return hediff != null;
+                return Hediff != null;
             }
         }
 
@@ -216,29 +153,50 @@ namespace EdB.PrepareCarefully {
 
         protected void InitializeTooltip() {
             StringBuilder stringBuilder = new StringBuilder();
-            if (hediff.Part != null) {
-                stringBuilder.Append(hediff.Part.def.LabelCap + ": ");
-                stringBuilder.Append(" " + hediff.pawn.health.hediffSet.GetPartHealth(hediff.Part).ToString() + " / " + hediff.Part.def.GetMaxHealth(hediff.pawn).ToString());
+            if (Hediff.Part != null) {
+                stringBuilder.Append(Hediff.Part.def.LabelCap + ": ");
+                stringBuilder.Append(" " + Hediff.pawn.health.hediffSet.GetPartHealth(Hediff.Part).ToString() + " / " + Hediff.Part.def.GetMaxHealth(Hediff.pawn).ToString());
             }
             else {
                 stringBuilder.Append("WholeBody".Translate());
             }
             stringBuilder.AppendLine();
             stringBuilder.AppendLine("------------------");
-            Hediff_Injury hediff_Injury = hediff as Hediff_Injury;
-            string damageLabel = hediff.SeverityLabel;
-            if (!hediff.Label.NullOrEmpty() || !damageLabel.NullOrEmpty() || !hediff.CapMods.NullOrEmpty<PawnCapacityModifier>()) {
-                stringBuilder.Append(hediff.LabelCap);
+            Hediff_Injury hediff_Injury = Hediff as Hediff_Injury;
+            string damageLabel = Hediff.SeverityLabel;
+            if (!Hediff.Label.NullOrEmpty() || !damageLabel.NullOrEmpty() || !Hediff.CapMods.NullOrEmpty<PawnCapacityModifier>()) {
+                stringBuilder.Append(Hediff.LabelCap);
                 if (!damageLabel.NullOrEmpty()) {
                     stringBuilder.Append(": " + damageLabel);
                 }
                 stringBuilder.AppendLine();
-                string tipStringExtra = hediff.TipStringExtra;
+                string tipStringExtra = Hediff.TipStringExtra;
                 if (!tipStringExtra.NullOrEmpty()) {
                     stringBuilder.AppendLine(tipStringExtra.TrimEndNewlines().Indented());
                 }
             }
             tooltip = stringBuilder.ToString();
+        }
+
+        public override bool Equals(object obj) {
+            return obj is Injury injury &&
+                   EqualityComparer<InjuryOption>.Default.Equals(option, injury.option) &&
+                   PainFactor == injury.PainFactor &&
+                   EqualityComparer<ChemicalDef>.Default.Equals(Chemical, injury.Chemical) &&
+                   severity == injury.severity &&
+                   EqualityComparer<BodyPartRecord>.Default.Equals(bodyPartRecord, injury.bodyPartRecord) &&
+                   EqualityComparer<HediffStage>.Default.Equals(CurStage, injury.CurStage);
+        }
+
+        public override int GetHashCode() {
+            var hashCode = 662792533;
+            hashCode = hashCode * -1521134295 + EqualityComparer<InjuryOption>.Default.GetHashCode(option);
+            hashCode = hashCode * -1521134295 + PainFactor.GetHashCode();
+            hashCode = hashCode * -1521134295 + EqualityComparer<ChemicalDef>.Default.GetHashCode(Chemical);
+            hashCode = hashCode * -1521134295 + severity.GetHashCode();
+            hashCode = hashCode * -1521134295 + EqualityComparer<BodyPartRecord>.Default.GetHashCode(bodyPartRecord);
+            hashCode = hashCode * -1521134295 + EqualityComparer<HediffStage>.Default.GetHashCode(CurStage);
+            return hashCode;
         }
     }
 }

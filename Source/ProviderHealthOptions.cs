@@ -12,13 +12,14 @@ namespace EdB.PrepareCarefully {
     public class ProviderHealthOptions {
         protected Dictionary<ThingDef, OptionsHealth> optionsLookup = new Dictionary<ThingDef, OptionsHealth>();
         protected HashSet<string> excludedOptions = new HashSet<string>() {
-            "VatLearning", "VatGrowing", "Pregnant", "PsychicBond", "PsychicBondTorn", "ResearchCommand", "Animal_Flu", "Stillborn", "Animal_Plague"
+            "VatLearning", "VatGrowing", "Pregnant", "PsychicBond", "PsychicBondTorn",
+            "ResearchCommand", "Animal_Flu", "Stillborn", "Animal_Plague"
         };
 
-        public OptionsHealth GetOptions(CustomPawn pawn) {
-            if (!optionsLookup.TryGetValue(pawn.Pawn.def, out var result)) {
-                result = InitializeHealthOptions(pawn.Pawn.def);
-                optionsLookup.Add(pawn.Pawn.def, result);
+        public OptionsHealth GetOptions(CustomizedPawn customizedPawn) {
+            if (!optionsLookup.TryGetValue(customizedPawn.Pawn.def, out var result)) {
+                result = InitializeHealthOptions(customizedPawn.Pawn.def);
+                optionsLookup.Add(customizedPawn.Pawn.def, result);
             }
             return result;
         }
@@ -30,6 +31,14 @@ namespace EdB.PrepareCarefully {
             }
             return result;
         }
+        public OptionsHealth GetOptions(ThingDef def) {
+            if (!optionsLookup.TryGetValue(def, out var result)) {
+                result = InitializeHealthOptions(def);
+                optionsLookup.Add(def, result);
+            }
+            return result;
+        }
+
         protected OptionsHealth InitializeHealthOptions(ThingDef pawnThingDef) {
             OptionsHealth result = new OptionsHealth();
             BodyDef bodyDef = pawnThingDef.race.body;

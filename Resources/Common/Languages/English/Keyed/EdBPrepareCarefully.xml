@@ -1,6 +1,26 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
 <!-- CHANGE NOTES -->
 
+<!-- v1.5.1 -->
+<!-- ADDED: EdB.PC.Dialog.ManageApparel.AllLayers -->
+<!-- ADDED: EdB.PC.Dialog.ManageApparel.AddApparelButton -->
+<!-- ADDED: EdB.PC.Dialog.ManageApparel.UpdateApparelButton -->
+<!-- ADDED: EdB.PC.Dialog.Abilties.PsycastLevelLabel -->
+<!-- ADDED: EdB.PC.Dialog.Preset.Error.FailedToLoad -->
+<!-- ADDED: EdB.PC.Panel.AvailableEquipment.AddButtonLabel -->
+<!-- ADDED: EdB.PC.Equipment.AvailableEquipment.CostLabelAndValue -->
+<!-- ADDED: EdB.PC.Equipment.AvailableEquipment.DefaultSpawnTypeOption -->
+<!-- ADDED: EdB.PC.Equipment.AvailableEquipment.GenderLabel -->
+<!-- ADDED: EdB.PC.Equipment.AvailableEquipment.HitPointsLabel -->
+<!-- ADDED: EdB.PC.Equipment.AvailableEquipment.MaterialLabel -->
+<!-- ADDED: EdB.PC.Equipment.AvailableEquipment.QualityLabel -->
+<!-- ADDED: EdB.PC.Equipment.AvailableEquipment.RandomAnimalLabel -->
+<!-- ADDED: EdB.PC.Equipment.AvailableEquipment.SpawnTypeLabel -->
+<!-- ADDED: EdB.PC.Equipment.DefaultOption -->
+<!-- ADDED: EdB.PC.Page.Points.CostSummary.Possessions -->
+<!-- ADDED: EdB.PC.Panel.Backstory.FavoriteColorLabel -->
+
+
 <!-- v1.4.1 -->
 <!-- ADDED: EdB.PC.Page.Points.DisablePoints -->
 <!-- ADDED: EdB.PC.Panel.Randomize.Tip.DevelopmentalStage -->
@@ -148,6 +168,7 @@
   <EdB.PC.Common.Select>Select</EdB.PC.Common.Select>
 
   <EdB.PC.Dialog.Abilities.Header>Select Abilities</EdB.PC.Dialog.Abilities.Header>
+  <EdB.PC.Dialog.Abilties.PsycastLevelLabel>Psycast Level: {0}</EdB.PC.Dialog.Abilties.PsycastLevelLabel>
   
   <EdB.PC.Dialog.Backstory.Filter.Add>Add Filter</EdB.PC.Dialog.Backstory.Filter.Add>
   <EdB.PC.Dialog.Backstory.Filter.NoDisabledWorkTypes>No Disabled Work Types</EdB.PC.Dialog.Backstory.Filter.NoDisabledWorkTypes>
@@ -180,6 +201,10 @@
   <EdB.PC.Dialog.Injury.Error.Required>You must select a condition</EdB.PC.Dialog.Injury.Error.Required>
   <EdB.PC.Dialog.Injury.OldInjury.Label>{0} ({1})</EdB.PC.Dialog.Injury.OldInjury.Label>
 
+  <EdB.PC.Dialog.ManageApparel.AllLayers>All Layers</EdB.PC.Dialog.ManageApparel.AllLayers>
+  <EdB.PC.Dialog.ManageApparel.AddApparelButton>Add</EdB.PC.Dialog.ManageApparel.AddApparelButton>
+  <EdB.PC.Dialog.ManageApparel.UpdateApparelButton>Update</EdB.PC.Dialog.ManageApparel.UpdateApparelButton>
+  
   <EdB.PC.Dialog.PawnPreset.Button.Load>Load</EdB.PC.Dialog.PawnPreset.Button.Load>
   <EdB.PC.Dialog.PawnPreset.Button.Save>Save</EdB.PC.Dialog.PawnPreset.Button.Save>
   <EdB.PC.Dialog.PawnPreset.DeleteTooltip>Delete this Colonist</EdB.PC.Dialog.PawnPreset.DeleteTooltip>
@@ -200,6 +225,7 @@
   <EdB.PC.Dialog.Preset.Error.SaveFailed>There was a problem while saving.  You may not be able to load the preset.</EdB.PC.Dialog.Preset.Error.SaveFailed>
   <EdB.PC.Dialog.Preset.Error.ThingDefFailed>Could not fully load preset.  Check that all required mods are enabled.</EdB.PC.Dialog.Preset.Error.ThingDefFailed>
   <EdB.PC.Dialog.Preset.Error.NoCharacter>Could not load saved character.  Check that all required mods are enabled.</EdB.PC.Dialog.Preset.Error.NoCharacter>
+  <EdB.PC.Dialog.Preset.Error.FailedToLoad>Failed to load preset {0}</EdB.PC.Dialog.Preset.Error.FailedToLoad>
   <EdB.PC.Dialog.Preset.Loaded>Loaded preset {0}</EdB.PC.Dialog.Preset.Loaded>
 
   <EdB.PC.Dialog.Severity.Header>Select a severity level</EdB.PC.Dialog.Severity.Header>
@@ -219,6 +245,7 @@
 "{0}"</EdB.PC.Dialog.UnrecoverableError.Message>
 
   <EdB.PC.Equipment.AnimalLabel>{0} {1}</EdB.PC.Equipment.AnimalLabel>
+  <EdB.PC.Equipment.DefaultOption>Default</EdB.PC.Equipment.DefaultOption>
   <EdB.PC.Equipment.Type.Animals>Animals</EdB.PC.Equipment.Type.Animals>
   <EdB.PC.Equipment.Type.Apparel>Apparel</EdB.PC.Equipment.Type.Apparel>
   <EdB.PC.Equipment.Type.Buildings>Furniture</EdB.PC.Equipment.Type.Buildings>
@@ -230,6 +257,20 @@
   <EdB.PC.Equipment.LoadingProgress.StuffDefs>Processing materials...</EdB.PC.Equipment.LoadingProgress.StuffDefs>
   <EdB.PC.Equipment.LoadingProgress.ThingDefs>Processing items...</EdB.PC.Equipment.LoadingProgress.ThingDefs>
   <EdB.PC.Equipment.LoadingProgress.Finished>Finished</EdB.PC.Equipment.LoadingProgress.Finished>
+  <EdB.PC.Equipment.SelectedEquipment.SpawnType.SpawnsWith>Spawn With Colonists</EdB.PC.Equipment.SelectedEquipment.SpawnType.SpawnsWith>
+  <EdB.PC.Equipment.SelectedEquipment.SpawnType.SpawnsNear>Spawn Near Colonists</EdB.PC.Equipment.SelectedEquipment.SpawnType.SpawnsNear>
+  <EdB.PC.Equipment.SelectedEquipment.SpawnType.Possession>Possessions - {0}</EdB.PC.Equipment.SelectedEquipment.SpawnType.Possession>
+  <EdB.PC.Equipment.SelectedEquipment.SpawnType.Animal>Animals</EdB.PC.Equipment.SelectedEquipment.SpawnType.Animal>
+  <EdB.PC.Equipment.AvailableEquipment.AllCategoriesOption>All Categories</EdB.PC.Equipment.AvailableEquipment.AllCategoriesOption>
+  <EdB.PC.Equipment.AvailableEquipment.AllModsOption>All Mods</EdB.PC.Equipment.AvailableEquipment.AllModsOption>
+  <EdB.PC.Equipment.AvailableEquipment.CostLabelAndValue>Cost: {0}</EdB.PC.Equipment.AvailableEquipment.CostLabelAndValue>
+  <EdB.PC.Equipment.AvailableEquipment.DefaultSpawnTypeOption>Default</EdB.PC.Equipment.AvailableEquipment.DefaultSpawnTypeOption>
+  <EdB.PC.Equipment.AvailableEquipment.GenderLabel>Gender:</EdB.PC.Equipment.AvailableEquipment.GenderLabel>
+  <EdB.PC.Equipment.AvailableEquipment.HitPointsLabel>Hit Points:</EdB.PC.Equipment.AvailableEquipment.HitPointsLabel>
+  <EdB.PC.Equipment.AvailableEquipment.MaterialLabel>Material:</EdB.PC.Equipment.AvailableEquipment.MaterialLabel>
+  <EdB.PC.Equipment.AvailableEquipment.QualityLabel>Quality:</EdB.PC.Equipment.AvailableEquipment.QualityLabel>
+  <EdB.PC.Equipment.AvailableEquipment.RandomAnimalLabel>Random Pet</EdB.PC.Equipment.AvailableEquipment.RandomAnimalLabel>
+  <EdB.PC.Equipment.AvailableEquipment.SpawnTypeLabel>Spawn Type:</EdB.PC.Equipment.AvailableEquipment.SpawnTypeLabel>
 
   <EdB.PC.Error.NotEnoughPoints>You've spent too many points.</EdB.PC.Error.NotEnoughPoints>
   <EdB.PC.Error.NotEnoughColonists1>You must have at least one colonist.</EdB.PC.Error.NotEnoughColonists1>
@@ -291,6 +332,7 @@ Before reporting an error, please try to figure out which mod may be causing the
   <EdB.PC.Page.Points.CostSummary.Apparel>Apparel: {0}</EdB.PC.Page.Points.CostSummary.Apparel>
   <EdB.PC.Page.Points.CostSummary.Colonist>{0}: {1}</EdB.PC.Page.Points.CostSummary.Colonist>
   <EdB.PC.Page.Points.CostSummary.Implants>Implants: {0}</EdB.PC.Page.Points.CostSummary.Implants>
+  <EdB.PC.Page.Points.CostSummary.Possessions>Possessions: {0}</EdB.PC.Page.Points.CostSummary.Possessions>
   <EdB.PC.Page.Points.DisablePoints>Disable Point Limits</EdB.PC.Page.Points.DisablePoints>
   <EdB.PC.Page.Points.NotEnoughPoints>You've spent too many points.</EdB.PC.Page.Points.NotEnoughPoints>
   <EdB.PC.Page.Points.Remaining>Points Remaining: {0}</EdB.PC.Page.Points.Remaining>
@@ -321,10 +363,13 @@ Disable point limits to prepare your starting colonists with no limitations.
   
 This is not the case for faction leaders.  If you make this character a faction leader, your apparel customizations will be preserved.</EdB.PC.Panel.Appearance.WorldPawnAlert>
 
+  <EdB.PC.Panel.AvailableEquipment.AddButtonLabel>Add</EdB.PC.Panel.AvailableEquipment.AddButtonLabel>
   <EdB.PC.Panel.AvailableEquipment.Add>Add Equipment</EdB.PC.Panel.AvailableEquipment.Add>
   <EdB.PC.Panel.AvailableEquipment.Materials.All>All Materials</EdB.PC.Panel.AvailableEquipment.Materials.All>
   <EdB.PC.Panel.AvailableEquipment.Materials.None>No Materials</EdB.PC.Panel.AvailableEquipment.Materials.None>
 
+  <EdB.PC.Panel.Backstory.FavoriteColorLabel>Favorite Color:</EdB.PC.Panel.Backstory.FavoriteColorLabel>
+  
   <EdB.PC.Panel.ColonyPawnList.Title>Colony</EdB.PC.Panel.ColonyPawnList.Title>
   
   <EdB.PC.Panel.Health.Error.MustSelectBodyPart>You must select a location</EdB.PC.Panel.Health.Error.MustSelectBodyPart>
@@ -388,6 +433,7 @@ Click the randomize button to generate a colonist with this xenotype</EdB.PC.Pan
   <EdB.PC.TabView.Relationships.Title>Relationships</EdB.PC.TabView.Relationships.Title>
 
   <EdB.PC.Panel.WorldPawnList.Title>World</EdB.PC.Panel.WorldPawnList.Title>
-  
+
+
 
 </LanguageData>

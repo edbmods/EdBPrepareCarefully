@@ -13,8 +13,10 @@ namespace EdB.PrepareCarefully {
         public static readonly Vector2 FieldPadding = new Vector2(6, 6);
 
         public Rect FieldRect;
-        protected Field FieldXenotype = new Field();
+        protected WidgetField FieldXenotype = new WidgetField();
         protected LabelTrimmer labelTrimmer = new LabelTrimmer();
+        public ModState State { get; set; }
+        public ViewState ViewState { get; set; }
 
         public override void Resize(float width) {
             base.Resize(width);
@@ -25,20 +27,20 @@ namespace EdB.PrepareCarefully {
             return 0;
         }
 
-        public override bool IsVisible(State state) {
+        public override bool IsVisible() {
             return ModsConfig.BiotechActive;
         }
 
-        public override float Draw(State state, float y) {
+        public override float Draw(float y) {
             float top = y;
             y += Margin.y;
 
             y += DrawHeader(y, Width, "Xenotype".Translate().CapitalizeFirst().Resolve());
 
-            CustomPawn pawn = state.CurrentPawn;
+            CustomizedPawn pawn = ViewState.CurrentPawn;
             Pawn_GeneTracker geneTracker = pawn.Pawn.genes;
             XenotypeDef xenotypeDef = geneTracker?.Xenotype;
-            CustomXenotype customXenotype = pawn.CustomXenotype;
+            CustomXenotype customXenotype = null;
 
             FieldXenotype.Rect = FieldRect.OffsetBy(0, y);
             labelTrimmer.Rect = FieldXenotype.Rect.InsetBy(8, 0);
@@ -71,7 +73,7 @@ namespace EdB.PrepareCarefully {
             GUI.color = Color.white;
             Text.Anchor = TextAnchor.UpperLeft;
 
-            y += Margin.y;
+            y += Margin.y + Margin.y;
 
             return y - top;
         }
