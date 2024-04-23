@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -6,6 +6,8 @@ using UnityEngine;
 using Verse;
 namespace EdB.PrepareCarefully {
     public class PawnLayer {
+        public ControllerTabViewPawns Controller { get; set; }
+
         public string Name {
             get;
             set;
@@ -46,21 +48,22 @@ namespace EdB.PrepareCarefully {
                 throw new NotImplementedException();
             }
         }
-        public virtual bool IsOptionSelected(CustomPawn pawn, PawnLayerOption option) {
+
+        public virtual bool IsOptionSelected(CustomizedPawn pawn, PawnLayerOption option) {
             return false;
         }
-        public virtual PawnLayerOption GetSelectedOption(CustomPawn pawn) {
+        public virtual PawnLayerOption GetSelectedOption(CustomizedPawn pawn) {
             return null;
         }
-        public virtual void SelectOption(CustomPawn pawn, PawnLayerOption option) {
+        public virtual void SelectOption(CustomizedPawn pawn, PawnLayerOption option) {
         }
-        public virtual int? GetSelectedIndex(CustomPawn pawn) {
+        public virtual int? GetSelectedIndex(CustomizedPawn pawn) {
             return null;
         }
-        public virtual Color GetSelectedColor(CustomPawn pawn) {
+        public virtual Color GetSelectedColor(CustomizedPawn pawn) {
             return Color.white;
         }
-        public virtual void SelectColor(CustomPawn pawn, Color color) {
+        public virtual void SelectColor(CustomizedPawn pawn, Color color) {
         }
     }
 }

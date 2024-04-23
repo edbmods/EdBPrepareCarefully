@@ -7,12 +7,10 @@ using Verse;
 
 namespace EdB.PrepareCarefully {
     public class RelationshipDefinitionHelper {
-        protected Randomizer randomizer = new Randomizer();
-
         public List<PawnRelationDef> AllowedRelationships { get; set; } = new List<PawnRelationDef>();
         public Dictionary<PawnRelationDef, PawnRelationDef> InverseRelationships { get; set; } = new Dictionary<PawnRelationDef, PawnRelationDef>();
 
-        public RelationshipDefinitionHelper() {
+        public void PostConstruct() {
             AllowedRelationships = InitializeAllowedRelationships();
             InverseRelationships = InitializeInverseRelationships();
         }
@@ -67,8 +65,9 @@ namespace EdB.PrepareCarefully {
         // We try to determine the inverse of a relationship by adding the relationship between two pawns.  If we're able to add
         // the relationship, the target pawn should have the inverse relationship.
         public PawnRelationDef TryToComputeInverseRelationship(PawnRelationDef def) {
-            Pawn source = randomizer.GenerateKindOfPawn(Find.FactionManager.OfPlayer.def.basicMemberKind);
-            Pawn target = randomizer.GenerateKindOfPawn(Find.FactionManager.OfPlayer.def.basicMemberKind);
+            PawnGenerationRequest request = new PawnGenerationRequestWrapper().Request;
+            Pawn source = PawnGenerator.GeneratePawn(request);
+            Pawn target = PawnGenerator.GeneratePawn(request);
             MethodInfo info = def.workerClass.GetMethod("CreateRelation", BindingFlags.Instance | BindingFlags.Public | BindingFlags.DeclaredOnly);
             if (info == null) {
                 return null;
@@ -76,10 +75,10 @@ namespace EdB.PrepareCarefully {
             var worker = FindPawnRelationWorker(def);
             PawnGenerationRequest req = new PawnGenerationRequest();
             worker.CreateRelation(source, target, ref req);
-            foreach (PawnRelationDef d in PawnRelationUtility.GetRelations(target, source)) {
-                return d;
-            }
-            return null;
+            PawnRelationDef d = PawnRelationUtility.GetRelations(target, source).FirstOrDefault();
+            UtilityPawns.DestroyPawn(source);
+            UtilityPawns.DestroyPawn(target);
+            return d;
         }
 
         public PawnRelationWorker FindPawnRelationWorker(PawnRelationDef def) {

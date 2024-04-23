@@ -26,11 +26,8 @@ namespace EdB.PrepareCarefully {
             labels.Add("Fat", "EdB.PC.Pawn.BodyType.Heavyset".Translate());
             labels.Add("Oval", "EdB.PC.Pawn.BodyType.Oval".Translate());
         }
-        public ProviderAlienRaces AlienRaceProvider {
+        public ProviderAlienRaces ProviderAlienRaces {
             get; set;
-        }
-        public List<BodyTypeDef> GetBodyTypesForPawn(CustomPawn pawn) {
-            return GetBodyTypesForPawn(pawn.Pawn);
         }
         public List<BodyTypeDef> GetBodyTypesForPawn(Pawn pawn) {
             return GetBodyTypesForPawn(pawn.def, pawn.gender);
@@ -102,7 +99,7 @@ namespace EdB.PrepareCarefully {
 
         protected OptionsBodyType InitializeAlienRaceBodyTypes(ThingDef def) {
             OptionsBodyType result = new OptionsBodyType();
-            AlienRace alienRace = AlienRaceProvider.GetAlienRace(def);
+            AlienRace alienRace = ProviderAlienRaces.GetAlienRace(def);
             if (alienRace == null) {
                 return null;
             }

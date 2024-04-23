@@ -4,33 +4,32 @@ using System.Collections.Generic;
 using System.Linq;
 using Verse;
 namespace EdB.PrepareCarefully {
-    public class ProviderEquipmentTypes {
+    public class ProviderEquipment {
+
+        public List<EquipmentOption> Apparel { get => EquipmentDatabase.ApparelOptions; }
+        public List<EquipmentOption> Equipment { get => EquipmentDatabase.EquipmentOptions; }
 
         protected List<EquipmentType> types = new List<EquipmentType>();
         protected Dictionary<EquipmentType, List<EquipmentRecord>> equipmentDictionary =
                 new Dictionary<EquipmentType, List<EquipmentRecord>>();
         protected bool initialized = false;
-        public ProviderEquipmentTypes() {
-            types = PrepareCarefully.Instance.EquipmentDatabase.EquipmentTypes.ToList();
+        public EquipmentDatabase EquipmentDatabase { get; set; }
+        public ProviderEquipment() {
+        }
+        public void PostConstruction() {
+            types = EquipmentDatabase.EquipmentTypes.ToList();
         }
         protected void Initialize() {
-            foreach (var type in types) {
-                List<EquipmentRecord> list = PrepareCarefully.Instance.EquipmentDatabase.AllEquipmentOfType(type).ToList();
-                list.Sort((EquipmentRecord a, EquipmentRecord b) => {
-                    return string.Compare(a.Label, b.Label);
-                });
-                equipmentDictionary.Add(type, list);
-            }
             initialized = true;
         }
         public bool DatabaseReady {
             get {
-                return PrepareCarefully.Instance.EquipmentDatabase.Loaded;
+                return EquipmentDatabase.Loaded;
             }
         }
         public EquipmentDatabase.LoadingState LoadingProgress {
             get {
-                return PrepareCarefully.Instance.EquipmentDatabase.LoadingProgress;
+                return EquipmentDatabase.LoadingProgress;
             }
         }
         public IEnumerable<EquipmentType> Types {
@@ -47,14 +46,14 @@ namespace EdB.PrepareCarefully {
                     Initialize();
                 }
             }
-            List<EquipmentRecord> result;
-            if (equipmentDictionary.TryGetValue(type, out result)) {
+            if (equipmentDictionary.TryGetValue(type, out List<EquipmentRecord> result)) {
                 return result;
             }
             else {
                 return null;
             }
         }
+
 
     }
 }

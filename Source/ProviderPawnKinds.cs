@@ -64,6 +64,10 @@ namespace EdB.PrepareCarefully {
                     //Logger.Debug("Excluding pawnKindDef because it's non-human {0}, {1}", kindDef.defName, kindDef.LabelCap);
                     continue;
                 }
+                // TODO: Revisit to see if we can add these in
+                if (kindDef is CreepJoinerFormKindDef) {
+                    continue;
+                }
                 if (kindDef.LabelCap.ToString().NullOrEmpty()) {
                     continue;
                 }

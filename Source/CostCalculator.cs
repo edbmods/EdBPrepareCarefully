@@ -6,7 +6,7 @@ using UnityEngine;
 using Verse;
 
 namespace EdB.PrepareCarefully {
-    public class ColonistCostDetails {
+    public class PawnCostDetailsRefactored {
         public string name;
         public double total = 0;
         public double passionCount = 0;
@@ -14,6 +14,7 @@ namespace EdB.PrepareCarefully {
         public double traits = 0;
         public double apparel = 0;
         public double bionics = 0;
+        public double possessions = 0;
         public double animals = 0;
         public double marketValue = 0;
         public void Clear() {
@@ -22,11 +23,12 @@ namespace EdB.PrepareCarefully {
             traits = 0;
             apparel = 0;
             bionics = 0;
+            possessions = 0;
             animals = 0;
             marketValue = 0;
         }
         public void ComputeTotal() {
-            total = Math.Ceiling(passions + traits + apparel + bionics + marketValue + animals);
+            total = Math.Ceiling(passions + traits + apparel + bionics + possessions + marketValue + animals);
         }
         public void Multiply(double amount) {
             passions = Math.Ceiling(passions * amount);
@@ -36,11 +38,12 @@ namespace EdB.PrepareCarefully {
         }
     }
 
-    public class CostDetails {
+    public class CostDetailsRefactored {
         public double total = 0;
-        public List<ColonistCostDetails> colonistDetails = new List<ColonistCostDetails>();
+        public List<PawnCostDetailsRefactored> colonistDetails = new List<PawnCostDetailsRefactored>();
         public double colonists = 0;
         public double colonistApparel = 0;
+        public double colonistPossessions = 0;
         public double colonistBionics = 0;
         public double equipment = 0;
         public double animals = 0;
@@ -51,6 +54,7 @@ namespace EdB.PrepareCarefully {
             animals = 0;
             colonists = 0;
             colonistApparel = 0;
+            colonistPossessions = 0;
             colonistBionics = 0;
             int listSize = colonistDetails.Count;
             if (colonistCount != listSize) {
@@ -61,7 +65,7 @@ namespace EdB.PrepareCarefully {
                 else {
                     int diff = colonistCount - listSize;
                     for (int i = 0; i < diff; i++) {
-                        colonistDetails.Add(new ColonistCostDetails());
+                        colonistDetails.Add(new PawnCostDetailsRefactored());
                     }
                 }
             }
@@ -75,59 +79,66 @@ namespace EdB.PrepareCarefully {
                 colonists += cost.total;
                 colonistApparel += cost.apparel;
                 colonistBionics += cost.bionics;
+                colonistPossessions += cost.possessions;
             }
             total = Math.Ceiling(total);
             colonists = Math.Ceiling(colonists);
             colonistApparel = Math.Ceiling(colonistApparel);
+            colonistPossessions = Math.Ceiling(colonistPossessions);
             colonistBionics = Math.Ceiling(colonistBionics);
         }
     }
 
     public class CostCalculator {
+        public ProviderHealthOptions ProviderHealthOptions { get; set; }
         protected HashSet<string> freeApparel = new HashSet<string>();
         protected HashSet<string> cheapApparel = new HashSet<string>();
-        StatWorker statWorker = null;
+        public StatWorker MarketValueStatWorker { get; set; }
+        public float CostForRandomAnimal { get; set; } = 250f;
+
 
         public CostCalculator() {
             cheapApparel.Add("Apparel_Pants");
             cheapApparel.Add("Apparel_BasicShirt");
             cheapApparel.Add("Apparel_Jacket");
+            MarketValueStatWorker = StatDefOf.MarketValue.Worker;
         }
-
-        public void Calculate(CostDetails cost, List<CustomPawn> pawns, List<EquipmentSelection> equipment, List<SelectedAnimal> animals) {
-            cost.Clear(pawns.Where(pawn => pawn.Type == CustomPawnType.Colonist).Count());
+        public CostDetailsRefactored Calculate(IEnumerable<CustomizedPawn> customizedPawns, IEnumerable<CustomizedEquipment> equipment) {
+            CostDetailsRefactored result = new CostDetailsRefactored();
 
             int i = 0;
-            foreach (var pawn in pawns) {
-                if (pawn.Type == CustomPawnType.Colonist) {
-                    CalculatePawnCost(cost.colonistDetails[i++], pawn);
+            foreach (var customizedPawn in customizedPawns) {
+                if (customizedPawn.Type == CustomizedPawnType.Colony) {
+                    if (i >= result.colonistDetails.Count) {
+                    }
+                    result.colonistDetails.Add(CalculatePawnCost(customizedPawn));
                 }
             }
             foreach (var e in equipment) {
-                cost.equipment += CalculateEquipmentCost(e);
+                result.equipment += CalculateEquipmentCost(e);
             }
-            cost.ComputeTotal();
+            result.ComputeTotal();
+            return result;
         }
 
-        public void CalculatePawnCost(ColonistCostDetails cost, CustomPawn pawn) {
+        public PawnCostDetailsRefactored CalculatePawnCost(CustomizedPawn pawn) {
+            PawnCostDetailsRefactored cost = new PawnCostDetailsRefactored();
             cost.Clear();
-            cost.name = pawn.NickName;
+            cost.name = pawn.Pawn.LabelShortCap;
 
-            // Start with the market value plus a bit of a mark-up.
-            cost.marketValue = pawn.Pawn.MarketValue;
+            //// Start with the market value plus a bit of a mark-up.
+            cost.marketValue = MarketValueStatWorker.GetValue(pawn.Pawn);
             cost.marketValue += 300;
 
             // Calculate passion cost.  Each passion above 8 makes all passions
             // cost more.  Minor passion counts as one passion.  Major passion
             // counts as 3.
-            double skillCount = pawn.currentPassions.Keys.Count();
             double passionLevelCount = 0;
             double passionLevelCost = 20;
             double passionateSkillCount = 0;
-            foreach (SkillDef def in pawn.currentPassions.Keys) {
-                Passion passion = pawn.currentPassions[def];
-                int level = pawn.GetSkillLevel(def);
-
+            foreach (SkillRecord skillRecord in pawn.Pawn.skills.skills.Where(r => r.passion != Passion.None)) {
+                Passion passion = skillRecord.passion;
+                int level = skillRecord.levelInt;
                 if (passion == Passion.Major) {
                     passionLevelCount += 3.0;
                     passionateSkillCount += 1.0;
@@ -144,53 +155,28 @@ namespace EdB.PrepareCarefully {
             }
             cost.marketValue += levelCost * passionLevelCount;
 
+
             // Calculate trait cost.
-            if (pawn.TraitCount > 3) {
-                int extraTraitCount = pawn.TraitCount - 3;
+            int traitCount = pawn.Pawn.story.traits.allTraits.Count;
+            if (traitCount > 3) {
+                int extraTraitCount = traitCount - 3;
                 double extraTraitCost = 100;
-                for (int i=0; i< extraTraitCount; i++) {
+                for (int i = 0; i < extraTraitCount; i++) {
                     cost.marketValue += extraTraitCost;
                     extraTraitCost = Math.Ceiling(extraTraitCost * 2.5);
                 }
             }
 
             // Calculate cost of worn apparel.
-            foreach (var layer in PrepareCarefully.Instance.Providers.PawnLayers.GetLayersForPawn(pawn)) {
-                if (layer.Apparel) {
-                    var def = pawn.GetAcceptedApparel(layer);
-                    if (def == null) {
-                        continue;
-                    }
-                    EquipmentKey key = new EquipmentKey();
-                    key.ThingDef = def;
-                    key.StuffDef = pawn.GetSelectedStuff(layer);
-                    EquipmentRecord record = PrepareCarefully.Instance.EquipmentDatabase.Find(key);
-                    if (record == null) {
-                        continue;
-                    }
-                    EquipmentSelection selection = new EquipmentSelection(record, 1);
-                    double c = CalculateEquipmentCost(selection);
-                    if (def != null) {
-                        // TODO: Discounted materials should be based on the faction, not hard-coded.
-                        // TODO: Should we continue with the discounting?
-                        if (key.StuffDef != null) {
-                            if (key.StuffDef.defName == "Synthread") {
-                                if (freeApparel.Contains(key.ThingDef.defName)) {
-                                    c = 0;
-                                }
-                                else if (cheapApparel.Contains(key.ThingDef.defName)) {
-                                    c = c * 0.15d;
-                                }
-                            }
-                        }
-                    }
-                    cost.apparel += c;
-                }
+            foreach (var apparel in pawn.Pawn.apparel.WornApparel) {
+                double c = MarketValueStatWorker.GetValue(apparel, pawn.Pawn);
+                cost.apparel += c;
+                //Logger.Debug(string.Format("Market value for pawn apparel; pawn = {0}, apparel = {1}, cost = {2}", pawn.Pawn.LabelShortCap, apparel.def.defName, c));
             }
 
             // Calculate cost for any materials needed for implants.
-            OptionsHealth healthOptions = PrepareCarefully.Instance.Providers.Health.GetOptions(pawn);
-            foreach (Implant option in pawn.Implants) {
+            OptionsHealth healthOptions = ProviderHealthOptions.GetOptions(pawn);
+            foreach (Implant option in pawn.Customizations.Implants) {
 
                 // Check if there are any ancestor parts that override the selection.
                 UniqueBodyPart uniquePart = healthOptions.FindBodyPartsForRecord(option.BodyPartRecord);
@@ -198,37 +184,25 @@ namespace EdB.PrepareCarefully {
                     Logger.Warning("Could not find body part record when computing the cost of an implant: " + option.BodyPartRecord.def.defName);
                     continue;
                 }
-                if (pawn.AtLeastOneImplantedPart(uniquePart.Ancestors.Select((UniqueBodyPart p) => { return p.Record; }))) {
-                    continue;
-                }
 
-                //  Figure out the cost of the part replacement based on its recipe's ingredients.
-                if (option.recipe != null) {
-                    RecipeDef def = option.recipe;
-                    foreach (IngredientCount amount in def.ingredients) {
-                        int count = 0;
-                        double totalCost = 0;
-                        bool skip = false;
-                        foreach (ThingDef ingredientDef in amount.filter.AllowedThingDefs) {
-                            if (ingredientDef.IsMedicine) {
-                                skip = true;
-                                break;
-                            }
-                            count++;
-                            EquipmentRecord entry = PrepareCarefully.Instance.EquipmentDatabase.LookupEquipmentRecord(new EquipmentKey(ingredientDef, null));
-                            if (entry != null) {
-                                totalCost += entry.cost * (double)amount.GetBaseCount();
-                            }
-                        }
-                        if (skip || count == 0) {
-                            continue;
-                        }
-                        cost.bionics += (int)(totalCost / (double)count);
+                bool foundOverridingAncestor = false;
+                foreach (var ancestorPart in uniquePart.Ancestors.Select((UniqueBodyPart p) => { return p.Record; })) {
+                    if (pawn.Customizations.Implants.Any(i => i.BodyPartRecord == ancestorPart)) {
+                        foundOverridingAncestor = true;
+                        break;
                     }
+                }
+                if (foundOverridingAncestor) {
+                    continue;
                 }
             }
 
+            foreach (CustomizedPossession possession in pawn.Customizations.Possessions) {
+                cost.possessions += MarketValueStatWorker.GetValue(StatRequest.For(possession.ThingDef, null)) * possession.Count;
+            }
+
             cost.apparel = Math.Ceiling(cost.apparel);
+            cost.possessions = Math.Ceiling(cost.possessions);
             cost.bionics = Math.Ceiling(cost.bionics);
 
             // Use a multiplier to balance pawn cost vs. equipment cost.
@@ -236,61 +210,27 @@ namespace EdB.PrepareCarefully {
             cost.Multiply(1.0);
 
             cost.ComputeTotal();
+            return cost;
         }
 
-        public double CalculateEquipmentCost(EquipmentSelection equipment) {
-            EquipmentRecord entry = PrepareCarefully.Instance.EquipmentDatabase.LookupEquipmentRecord(equipment.Key);
-            if (entry != null) {
-                return (double)equipment.Count * entry.cost;
+        public double CalculateEquipmentCost(CustomizedEquipment equipment) {
+            double cost;
+            if (equipment.EquipmentOption.ThingDef != null) {
+                if (equipment.Quality.HasValue) {
+                    cost = MarketValueStatWorker.GetValue(StatRequest.For(equipment.EquipmentOption.ThingDef, equipment.StuffDef, equipment.Quality.Value));
+                }
+                else {
+                    cost = MarketValueStatWorker.GetValue(StatRequest.For(equipment.EquipmentOption.ThingDef, equipment.StuffDef));
+                }
+                //Logger.Debug(string.Format("Market value for equipment; item = {0}, stuff = {1}, quality = {2}, cost = {3} x {4} = {5}", equipment.ThingDef?.LabelCap, equipment.StuffDef?.LabelCap, equipment.Quality?.GetLabel(), cost, equipment.Count, cost * equipment.Count));
+                return cost * equipment.Count;
+            }
+            else if (equipment.EquipmentOption.RandomAnimal) {
+                return CostForRandomAnimal * equipment.Count;
             }
             else {
                 return 0;
             }
-        }
-
-        public double GetAnimalCost(Thing thing) {
-            if (statWorker == null) {
-                StatDef marketValueStatDef = StatDefOf.MarketValue;
-                statWorker = marketValueStatDef.Worker;
-            }
-            float value = statWorker.GetValue(StatRequest.For(thing));
-            return value;
-        }
-
-        public double GetBaseThingCost(ThingDef def, ThingDef stuffDef) {
-            double value = 0;
-            if (stuffDef != null) {
-                value = StatWorker_MarketValue.CalculatedBaseMarketValue(def, stuffDef);
-            }
-            if (value == 0) {
-                value = def.BaseMarketValue;
-            }
-            if (value > 100) {
-                value = Math.Round(value / 5.0) * 5.0;
-            }
-            value = Math.Round(value, 2);
-            return value;
-        }
-
-        public double CalculateStackCost(ThingDef def, ThingDef stuffDef, double baseCost) {
-            double cost = baseCost;
-
-            if (def.MadeFromStuff) {
-                if (def.IsApparel) {
-                    cost *= 1;
-                }
-                else {
-                    cost *= 0.5;
-                }
-            }
-
-            if (def.IsRangedWeapon) {
-                cost *= 2;
-            }
-
-            cost = Math.Round(cost, 2);
-
-            return cost;
         }
     }
 }

@@ -7,7 +7,6 @@ using Verse;
 
 namespace EdB.PrepareCarefully {
     public class SaveRecordPawnV5 : IExposable {
-        private Pawn pawn = null;
         public string id;
         public string type;
         public SaveRecordFactionV4 faction;
@@ -39,7 +38,7 @@ namespace EdB.PrepareCarefully {
         public long? chronologicalAgeInTicks;
         public string developmentalStage;
         public List<SaveRecordSkillV4> skills = new List<SaveRecordSkillV4>();
-        public List<SaveRecordApparelV4> apparel = new List<SaveRecordApparelV4>();
+        public List<SaveRecordApparelV5> apparel = new List<SaveRecordApparelV5>();
         public List<int> apparelLayers = new List<int>();
         public List<string> apparelStuff = new List<string>();
         public List<Color> apparelColors = new List<Color>();
@@ -54,140 +53,12 @@ namespace EdB.PrepareCarefully {
         public List<string> hediffXmls = null;
         public SaveRecordGenesV5 genes;
         public List<SaveRecordHediffV5> hediffs = null;
+        public List<SaveRecordPossessionV5> possessions = null;
+        public List<SaveRecordTitleV5> titles = null;
 
         // Deprecated.  Here for backwards compatibility with V4
         public List<string> traitNames = new List<string>();
         public List<int> traitDegrees = new List<int>();
-
-        public PawnCompsSaver pawnCompsSaver = null;
-
-        public SaveRecordPawnV5() {
-        }
-
-        public SaveRecordPawnV5(CustomPawn pawn) {
-            this.pawn = pawn.Pawn;
-            this.id = pawn.Id;
-            this.thingDef = pawn.Pawn.def.defName;
-            this.type = pawn.Type.ToString();
-            if (pawn.Type == CustomPawnType.World && pawn.Faction != null) {
-                this.faction = new SaveRecordFactionV4() {
-                    def = pawn.Faction?.Def?.defName,
-                    index = pawn.Faction.Index,
-                    leader = pawn.Faction.Leader
-                };
-            }
-            this.pawnKindDef = pawn.OriginalKindDef?.defName ?? pawn.Pawn.kindDef.defName;
-            this.originalFactionDef = pawn.OriginalFactionDef?.defName;
-            this.gender = pawn.Gender;
-            this.adulthood = pawn.Adulthood?.defName ?? pawn.LastSelectedAdulthoodBackstory?.defName;
-            this.childhood = pawn.Childhood?.defName;
-            this.skinColor = pawn.Pawn.story.SkinColor;
-            this.melanin = pawn.MelaninLevel;
-            this.hairDef = pawn.HairDef.defName;
-            this.hairColor = pawn.Pawn.story.HairColor;
-            this.bodyType = pawn.BodyType.defName;
-            this.headType = pawn.HeadType.defName;
-            this.beard = pawn.Beard?.defName;
-            this.faceTattoo = pawn.FaceTattoo?.defName;
-            this.bodyTattoo = pawn.BodyTattoo?.defName;
-            this.firstName = pawn.FirstName;
-            this.nickName = pawn.NickName;
-            this.lastName = pawn.LastName;
-            this.favoriteColor = pawn.Pawn.story.favoriteColor;
-            this.age = 0;
-            this.biologicalAge = pawn.BiologicalAge;
-            this.chronologicalAge = pawn.ChronologicalAge;
-            this.biologicalAgeInTicks = pawn.BiologicalAgeInTicks;
-            this.chronologicalAgeInTicks = pawn.ChronologicalAgeInTicks;
-            
-            foreach (var trait in pawn.Traits) {
-                if (trait != null) {
-                    this.traits.Add(new SaveRecordTraitV5() {
-                        def = trait.def.defName,
-                        degree = trait.Degree
-                    });
-                }
-            }
-            foreach (var skill in pawn.Pawn.skills.skills) {
-                this.skills.Add(new SaveRecordSkillV4() {
-                    name = skill.def.defName,
-                    value = pawn.GetUnmodifiedSkillLevel(skill.def),
-                    passion = pawn.currentPassions[skill.def]
-                });
-            }
-            foreach (var layer in PrepareCarefully.Instance.Providers.PawnLayers.GetLayersForPawn(pawn)) {
-                if (layer.Apparel) {
-                    ThingDef apparelThingDef = pawn.GetAcceptedApparel(layer);
-                    Color color = pawn.GetColor(layer);
-                    if (apparelThingDef != null) {
-                        ThingDef apparelStuffDef = pawn.GetSelectedStuff(layer);
-                        this.apparel.Add(new SaveRecordApparelV4() {
-                            layer = layer.Name,
-                            apparel = apparelThingDef.defName,
-                            stuff = apparelStuffDef?.defName ?? "",
-                            color = color
-                        });
-                    }
-                }
-            }
-            OptionsHealth healthOptions = PrepareCarefully.Instance.Providers.Health.GetOptions(pawn);
-            foreach (Implant implant in pawn.Implants) {
-                var saveRecord = new SaveRecordImplantV5(implant);
-                if (implant.BodyPartRecord != null) {
-                    UniqueBodyPart part = healthOptions.FindBodyPartsForRecord(implant.BodyPartRecord);
-                    if (part != null && part.Index > 0) {
-                        saveRecord.bodyPartIndex = part.Index;
-                    }
-                }
-                this.implants.Add(saveRecord);
-            }
-            foreach (Injury injury in pawn.Injuries) {
-                var saveRecord = new SaveRecordInjuryV5(injury);
-                if (injury.BodyPartRecord != null) {
-                    UniqueBodyPart part = healthOptions.FindBodyPartsForRecord(injury.BodyPartRecord);
-                    if (part != null && part.Index > 0) {
-                        saveRecord.bodyPartIndex = part.Index;
-                    }
-                }
-                this.injuries.Add(saveRecord);
-            }
-            if (pawn.Pawn?.abilities != null) {
-                this.abilities.AddRange(pawn.Pawn.abilities.abilities.Select(a => a.def.defName));
-            }
-            if (ModsConfig.IdeologyActive && pawn.Pawn.ideo != null) {
-                Ideo ideo = pawn.Pawn.ideo.Ideo;
-                this.ideo = new SaveRecordIdeoV5() {
-                    certainty = pawn.Pawn.ideo.Certainty,
-                    name = ideo?.name,
-                    sameAsColony = ideo == Find.FactionManager.OfPlayer.ideos.PrimaryIdeo,
-                    culture = ideo?.culture.defName
-                };
-                if (ideo != null) {
-                    this.ideo.memes = new List<string>(ideo.memes.Select(m => m.defName));
-                }
-                //Logger.Debug(string.Join(", ", pawn.Pawn.ideo.Ideo?.memes.Select(m => m.defName)));
-            }
-            if (ModsConfig.BiotechActive) {
-                this.genes = new SaveRecordGenesV5() {
-                    xenotypeDef = pawn.Pawn.genes?.Xenotype?.defName,
-                    customXenotypeName = pawn.Pawn.genes?.CustomXenotype?.name,
-                    endogenes = pawn.Pawn.genes?.Endogenes.ConvertAll(g => g.def.defName),
-                    xenogenes = pawn.Pawn.genes?.Xenogenes.ConvertAll(g => g.def.defName)
-                };
-            }
-
-            if (pawn.Pawn?.health?.hediffSet?.hediffs != null) {
-                hediffs = new List<SaveRecordHediffV5>();
-                foreach (var hediff in pawn.Pawn.health.hediffSet.hediffs) {
-                    hediffs.Add(new SaveRecordHediffV5() {
-                        Pawn = pawn.Pawn,
-                        Hediff = hediff
-                    });
-                }
-            }
-
-            pawnCompsSaver = new PawnCompsSaver(pawn.Pawn, DefaultPawnCompRules.RulesForSaving);
-        }
 
         public void ExposeData() {
             Scribe_Values.Look<string>(ref this.id, "id", null, false);
@@ -222,10 +93,12 @@ namespace EdB.PrepareCarefully {
             Scribe_Values.Look<long?>(ref this.biologicalAgeInTicks, "biologicalAgeInTicks", null, false);
             Scribe_Values.Look<long?>(ref this.chronologicalAgeInTicks, "chronologicalAgeInTicks", null, false);
             Scribe_Collections.Look<SaveRecordSkillV4>(ref this.skills, "skills", LookMode.Deep, null);
-            Scribe_Collections.Look<SaveRecordApparelV4>(ref this.apparel, "apparel", LookMode.Deep, null);
+            Scribe_Collections.Look<SaveRecordApparelV5>(ref this.apparel, "apparel", LookMode.Deep, null);
             Scribe_Deep.Look<SaveRecordIdeoV5>(ref this.ideo, "ideo");
             Scribe_Deep.Look<SaveRecordGenesV5>(ref this.genes, "genes");
             Scribe_Collections.Look<string>(ref this.abilities, "abilities", LookMode.Value, null);
+            Scribe_Collections.Look<SaveRecordPossessionV5>(ref this.possessions, "possessions", LookMode.Deep, null);
+            Scribe_Collections.Look<SaveRecordTitleV5>(ref this.titles, "titles", LookMode.Deep, null);
 
             if (Scribe.mode == LoadSaveMode.Saving) {
                 Scribe_Collections.Look<SaveRecordImplantV5>(ref this.implants, "implants", LookMode.Deep, null);
@@ -243,22 +116,6 @@ namespace EdB.PrepareCarefully {
                 if (Scribe.loader.curXmlParent["injuries"] != null) {
                     Scribe_Collections.Look<SaveRecordInjuryV5>(ref this.injuries, "injuries", LookMode.Deep, null);
                 }
-            }
-
-            if (Scribe.mode == LoadSaveMode.Saving) {
-                Scribe_Deep.Look<PawnCompsSaver>(ref this.pawnCompsSaver, "compFields");
-                Scribe_Collections.Look<string>(ref this.pawnCompsSaver.savedComps, "savedComps");
-            }
-            else {
-                if (Scribe.loader.EnterNode("compFields")) {
-                    try {
-                        compsXml = Scribe.loader.curXmlParent.InnerXml;
-                    }
-                    finally {
-                        Scribe.loader.ExitNode();
-                    }
-                }
-                Scribe_Collections.Look<string>(ref this.savedComps, "savedComps");
             }
 
             if (Scribe.mode == LoadSaveMode.Saving) {

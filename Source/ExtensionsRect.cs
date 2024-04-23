@@ -6,7 +6,10 @@ namespace EdB.PrepareCarefully {
             return rect.x + rect.width * 0.5f;
         }
         public static float MiddleY(this Rect rect) {
-        	return rect.y + rect.height * 0.5f;
+            return rect.y + rect.height * 0.5f;
+        }
+        public static Rect GrowBy(this Rect rect, float xAmount, float yAmount) {
+            return new Rect(rect.x, rect.y, rect.width + xAmount, rect.height + yAmount);
         }
         public static float HalfWidth(this Rect rect) {
             return rect.width * 0.5f;
@@ -40,6 +43,9 @@ namespace EdB.PrepareCarefully {
         }
         public static Rect InsetBy(this Rect rect, float xAmount, float yAmount) {
             return rect.InsetBy(new Vector2(xAmount, yAmount), new Vector2(xAmount, yAmount));
+        }
+        public static Rect OutsetBy(this Rect rect, float x, float y) {
+            return new Rect(rect.x - x * 0.5f, rect.y - y * 0.5f, rect.width + x, rect.height + y);
         }
         public static Rect ShrinkBy(this Rect rect, float amount) {
             return new Rect(rect.x, rect.y, rect.width - amount, rect.height - amount);

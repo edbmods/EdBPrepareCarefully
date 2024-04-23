@@ -14,6 +14,8 @@ namespace EdB.PrepareCarefully {
         public MethodInfo GraphicDatabaseHeadRecords_BuildDatabaseIfNecessary { get; set; }
         public MethodInfo CharacterCardUtility_WorkTagsFrom { get; set; }
         public MethodInfo GenFilePaths_FolderUnderSaveData { get; set; }
+
+        public MethodInfo PawnGenerator_GenerateTraits { get; set; }
         public MethodInfo PawnBioAndNameGenerator_BioSelectionWeight { get; set; }
         public MethodInfo PawnBioAndNameGenerator_GetBackstoryCategoryFiltersFor { get; set; }
         public MethodInfo PawnBioAndNameGenerator_IsBioUseable { get; set; }
@@ -27,6 +29,7 @@ namespace EdB.PrepareCarefully {
         public FieldInfo HediffComp_GetsPermanent_PainCategory { get; set; }
         public FieldInfo PawnBioAndNameGenerator_FallbackCategoryGroup { get; set; }
         public FieldInfo PawnBioAndNameGenerator_tmpNames { get; set; }
+
 
         public static ReflectionCache Instance {
             get {
@@ -48,6 +51,7 @@ namespace EdB.PrepareCarefully {
                 new Type[] { typeof(List<BackstoryCategoryFilter>), typeof(PawnKindDef), typeof(Gender), typeof(string), typeof(PawnBio).MakeByRefType() });
             PawnBioAndNameGenerator_IsBioUseable = ReflectionUtil.RequiredMethod(typeof(PawnBioAndNameGenerator), "IsBioUseable");
             PawnBioAndNameGenerator_BioSelectionWeight = ReflectionUtil.RequiredMethod(typeof(PawnBioAndNameGenerator), "BioSelectionWeight");
+            PawnGenerator_GenerateTraits = ReflectionUtil.RequiredMethod(typeof(PawnGenerator), "GenerateTraits");
 
             ScenPart_StartingAnimal_RandomPets = ReflectionUtil.RequiredMethod(typeof(ScenPart_StartingAnimal), "RandomPets");
             ScenPart_ForcedHediff_PossibleHediffs = ReflectionUtil.RequiredMethod(typeof(ScenPart_ForcedHediff), "PossibleHediffs");

@@ -7,73 +7,90 @@ using System.Reflection;
 using UnityEngine;
 using Verse;
 using Verse.Sound;
+
 namespace EdB.PrepareCarefully {
     public class PanelRandomize : PanelBase {
         public delegate void RandomizeAllHandler();
 
         public event RandomizeAllHandler RandomizeAllClicked;
+        public ModState State { get; set; }
+        public ViewState ViewState { get; set; }
 
-        public override void Draw(State state) {
+        public override void Draw() {
             if (ModsConfig.BiotechActive) {
-                DrawForBiotech(state);
+                DrawForBiotech();
                 return;
             }
             else {
-                DrawForNonBiotech(state);
+                DrawForNonBiotech();
             }
         }
 
-        public void DrawForNonBiotech(State state) {
-            base.Draw(state);
+        public void DrawForNonBiotech() {
+            base.Draw();
             Rect randomRect = new Rect(
                 PanelRect.x + PanelRect.width / 2 - Textures.TextureButtonRandomLarge.width / 2 - 1,
                 PanelRect.y + PanelRect.height / 2 - Textures.TextureButtonRandomLarge.height / 2,
                 Textures.TextureButtonRandomLarge.width,
                 Textures.TextureButtonRandomLarge.height
             );
-            if (randomRect.Contains(Event.current.mousePosition)) {
-                GUI.color = Style.ColorButtonHighlight;
+            try {
+                if (randomRect.Contains(Event.current.mousePosition)) {
+                    GUI.color = Style.ColorButtonHighlight;
+                }
+                else {
+                    GUI.color = Style.ColorButton;
+                }
+                GUI.DrawTexture(randomRect, Textures.TextureButtonRandomLarge);
+                if (Widgets.ButtonInvisible(randomRect, false)) {
+                    SoundDefOf.Tick_Low.PlayOneShotOnCamera();
+                    RandomizeAllClicked?.Invoke();
+                }
             }
-            else {
-                GUI.color = Style.ColorButton;
+            finally {
+                GUI.color = Color.white;
             }
-            GUI.DrawTexture(randomRect, Textures.TextureButtonRandomLarge);
-            if (Widgets.ButtonInvisible(randomRect, false)) {
-                SoundDefOf.Tick_Low.PlayOneShotOnCamera();
-                RandomizeAllClicked();
-            }
-
-            GUI.color = Color.white;
         }
 
-        public void DrawForBiotech(State state) {
-            base.Draw(state);
+        public void DrawForBiotech() {
+            base.Draw();
 
-            var texture = DevelopmentalStageIconTexture(state.CurrentPawn.RandomizeDevelopmentalStage);
+            CustomizedPawn customizedPawn = ViewState.CurrentPawn;
+
+            if (!ViewState.PawnRandomizerOptions.TryGetValue(customizedPawn, out PawnRandomizerOptions randomizerOptions)) {
+                randomizerOptions = new PawnRandomizerOptions {
+                    DevelopmentalStage = customizedPawn.Pawn.DevelopmentalStage,
+                    Xenotype = customizedPawn.Pawn.genes.Xenotype,
+                    CustomXenotype = customizedPawn.Pawn.genes.CustomXenotype
+                };
+                ViewState.PawnRandomizerOptions.Add(customizedPawn, randomizerOptions);
+            }
+
+            var texture = DevelopmentalStageIconTexture(randomizerOptions.DevelopmentalStage);
             float buttonSize = 20f;
             Rect dropdownRect = new Rect(PanelRect.x + 6, PanelRect.y + PanelRect.height * 0.25f - buttonSize * 0.5f, 34.0f, 18.0f);
-            if (WidgetDropdown.ImageButton(dropdownRect,texture, new Vector2(buttonSize, buttonSize), false, false, true)) {
+            if (WidgetDropdown.ImageButton(dropdownRect, texture, new Vector2(buttonSize, buttonSize), false, false, true)) {
                 List<FloatMenuOption> options = new List<FloatMenuOption> {
                     new FloatMenuOption("Adult".Translate().CapitalizeFirst(), delegate
                     {
-                        state.CurrentPawn.RandomizeDevelopmentalStage = DevelopmentalStage.Adult;
+                        randomizerOptions.DevelopmentalStage = DevelopmentalStage.Adult;
                     }, Textures.TextureAdult, Color.white),
                     new FloatMenuOption("Child".Translate().CapitalizeFirst(), delegate
                     {
-                        state.CurrentPawn.RandomizeDevelopmentalStage = DevelopmentalStage.Child;
+                        randomizerOptions.DevelopmentalStage = DevelopmentalStage.Child;
                     }, Textures.TextureChild, Color.white),
                     new FloatMenuOption("Baby".Translate().CapitalizeFirst(), delegate
                     {
-                        state.CurrentPawn.RandomizeDevelopmentalStage = DevelopmentalStage.Baby;
+                        randomizerOptions.DevelopmentalStage = DevelopmentalStage.Baby;
                     }, Textures.TextureBaby, Color.white)
                 };
                 Find.WindowStack.Add(new FloatMenu(options));
             }
             string tipTitle = "";
-            if (state.CurrentPawn.Pawn.DevelopmentalStage == DevelopmentalStage.Adult) {
+            if (customizedPawn.Pawn.DevelopmentalStage == DevelopmentalStage.Adult) {
                 tipTitle = "Adult".Translate().CapitalizeFirst();
             }
-            else if (state.CurrentPawn.Pawn.DevelopmentalStage == DevelopmentalStage.Child) {
+            else if (customizedPawn.Pawn.DevelopmentalStage == DevelopmentalStage.Child) {
                 tipTitle = "Child".Translate().CapitalizeFirst();
             }
             else {
@@ -82,13 +99,13 @@ namespace EdB.PrepareCarefully {
             tipTitle = tipTitle.Colorize(ColoredText.TipSectionTitleColor);
             TooltipHandler.TipRegion(dropdownRect, "EdB.PC.Panel.Randomize.Tip.DevelopmentalStage".Translate(tipTitle));
 
-            if (state.CurrentPawn.RandomizeXenotype != null) {
-                texture = state.CurrentPawn.RandomizeXenotype.Icon;
+            if (randomizerOptions.Xenotype != null) {
+                texture = randomizerOptions.Xenotype.Icon;
             }
-            else if (state.CurrentPawn.RandomizeCustomXenotype != null) {
-                texture = state.CurrentPawn.RandomizeCustomXenotype.IconDef?.Icon;
+            else if (randomizerOptions.CustomXenotype != null) {
+                texture = randomizerOptions.CustomXenotype.IconDef?.Icon;
             }
-            else if (state.CurrentPawn.RandomizeAnyNonArchite) {
+            else if (randomizerOptions.AnyNonArchite) {
                 texture = Textures.TextureButtonRandom;
             }
             else {
@@ -100,9 +117,9 @@ namespace EdB.PrepareCarefully {
                 List<FloatMenuOption> list = new List<FloatMenuOption> {
                     new FloatMenuOption("AnyNonArchite".Translate().CapitalizeFirst(), delegate
                     {
-                        state.CurrentPawn.RandomizeXenotype = null;
-                        state.CurrentPawn.RandomizeCustomXenotype = null;
-                        state.CurrentPawn.RandomizeAnyNonArchite = true;
+                        randomizerOptions.Xenotype = null;
+                        randomizerOptions.CustomXenotype = null;
+                        randomizerOptions.AnyNonArchite = true;
                     }),
                     new FloatMenuOption("XenotypeEditor".Translate() + "...", delegate
                     {
@@ -115,14 +132,12 @@ namespace EdB.PrepareCarefully {
 
                 foreach (XenotypeDef item in DefDatabase<XenotypeDef>.AllDefs.OrderBy((XenotypeDef x) => 0f - x.displayPriority)) {
                     XenotypeDef xenotype = item;
-                    list.Add(new FloatMenuOption(xenotype.LabelCap, delegate
-                    {
-                        state.CurrentPawn.RandomizeXenotype = xenotype;
-                        state.CurrentPawn.RandomizeCustomXenotype = null;
-                        state.CurrentPawn.RandomizeAnyNonArchite = false;
+                    list.Add(new FloatMenuOption(xenotype.LabelCap, delegate {
+                        randomizerOptions.Xenotype = xenotype;
+                        randomizerOptions.CustomXenotype = null;
+                        randomizerOptions.AnyNonArchite = false;
                     },
-                    xenotype.Icon, XenotypeDef.IconColor, MenuOptionPriority.Default, delegate (Rect r)
-                    {
+                    xenotype.Icon, XenotypeDef.IconColor, MenuOptionPriority.Default, delegate (Rect r) {
                         TooltipHandler.TipRegion(r, xenotype.descriptionShort ?? xenotype.description);
                     },
                     null, 24f, (Rect r) => Widgets.InfoCardButton(r.x, r.y + 3f, xenotype) ? true : false, null, playSelectionSound: true, 0, HorizontalJustification.Left, extraPartRightJustified: true));
@@ -132,14 +147,13 @@ namespace EdB.PrepareCarefully {
                 if (customXenotypes != null) {
                     foreach (CustomXenotype customXenotype in customXenotypes) {
                         CustomXenotype customInner = customXenotype;
-                        list.Add(new FloatMenuOption(customInner.name.CapitalizeFirst() + " (" + "Custom".Translate() + ")", delegate
-                        {
-                            state.CurrentPawn.RandomizeCustomXenotype = customInner;
-                            state.CurrentPawn.RandomizeXenotype = null;
-                            state.CurrentPawn.RandomizeAnyNonArchite = false;
+                        list.Add(new FloatMenuOption(customInner.name.CapitalizeFirst() + " (" + "Custom".Translate() + ")", delegate {
+                            randomizerOptions.CustomXenotype = customInner;
+                            randomizerOptions.Xenotype = null;
+                            randomizerOptions.AnyNonArchite = false;
                         },
                         customInner.IconDef.Icon, XenotypeDef.IconColor, MenuOptionPriority.Default, null, null, 24f, delegate (Rect r) {
-                            if (Widgets.ButtonImage(new Rect(r.x, r.y + (r.height - r.width) / 2f, r.width, r.width), TexButton.DeleteX, GUI.color)) {
+                            if (Widgets.ButtonImage(new Rect(r.x, r.y + (r.height - r.width) / 2f, r.width, r.width), TexButton.Delete, GUI.color)) {
                                 Find.WindowStack.Add(Dialog_MessageBox.CreateConfirmation("ConfirmDelete".Translate(customInner.name.CapitalizeFirst()), delegate {
                                     string path = GenFilePaths.AbsFilePathForXenotype(customInner.name);
                                     if (File.Exists(path)) {
@@ -156,13 +170,13 @@ namespace EdB.PrepareCarefully {
                 Find.WindowStack.Add(new FloatMenu(list));
             }
             string xenotypeTipLabel = "";
-            if (state.CurrentPawn.RandomizeXenotype != null) {
-                xenotypeTipLabel = state.CurrentPawn.RandomizeXenotype.LabelCap;
+            if (randomizerOptions.Xenotype != null) {
+                xenotypeTipLabel = randomizerOptions.Xenotype.LabelCap;
             }
-            else if (state.CurrentPawn.RandomizeCustomXenotype != null) {
-                xenotypeTipLabel = state.CurrentPawn.RandomizeCustomXenotype.name;
+            else if (randomizerOptions.CustomXenotype != null) {
+                xenotypeTipLabel = randomizerOptions.CustomXenotype.name;
             }
-            else if (state.CurrentPawn.RandomizeAnyNonArchite) {
+            else if (randomizerOptions.AnyNonArchite) {
                 xenotypeTipLabel = "AnyNonArchite".Translate().CapitalizeFirst();
             }
             xenotypeTipLabel = xenotypeTipLabel.Colorize(ColoredText.TipSectionTitleColor);

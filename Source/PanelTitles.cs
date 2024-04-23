@@ -14,13 +14,14 @@ namespace EdB.PrepareCarefully {
         public Rect FieldRect;
         public static readonly float FieldPadding = 6;
 
-        protected ProviderTitles providerTitles = new ProviderTitles();
-        protected ScrollViewVertical scrollView = new ScrollViewVertical();
-        protected List<Field> fields = new List<Field>();
+        protected WidgetScrollViewVertical scrollView = new WidgetScrollViewVertical();
+        protected List<WidgetField> fields = new List<WidgetField>();
         protected List<RoyalTitle> itemsToRemove = new List<RoyalTitle>();
         protected HashSet<TraitDef> disallowedTraitDefs = new HashSet<TraitDef>();
         protected Dictionary<Trait, string> conflictingTraitList = new Dictionary<Trait, string>();
-        protected TipCache tipCache = new TipCache();
+        public ModState State { get; set; }
+        public ViewState ViewState { get; set; }
+        public ProviderTitles ProviderTitles { get; set; }
 
         public override void Resize(float width) {
             base.Resize(width);
@@ -31,7 +32,7 @@ namespace EdB.PrepareCarefully {
             return 0;
         }
 
-        public override bool IsVisible(State state) {
+        public override bool IsVisible() {
             return ModsConfig.RoyaltyActive;
         }
 
@@ -55,11 +56,11 @@ namespace EdB.PrepareCarefully {
 
         public float DrawDialogGroupContent(Dictionary<Faction, int> favorLookup, ProviderTitles.TitleSet set, float y, float width) {
             if (!favorLookup.ContainsKey(set.Faction)) {
-                Logger.Debug("Drawing dialog group content, but faction not found: " + favorLookup.Count);
+                //Logger.Debug("Drawing dialog group content, but faction not found: " + favorLookup.Count);
                 return 0;
             }
             int favorValue = favorLookup[set.Faction];
-            Logger.Debug("Drawing dialog group content, and value was " + favorValue);
+            //Logger.Debug("Drawing dialog group content, and value was " + favorValue);
 
             float top = y;
 
@@ -113,7 +114,7 @@ namespace EdB.PrepareCarefully {
             }
         }
 
-        public void OpenOptionsDialog(CustomPawn pawn) {
+        public void OpenOptionsDialog(CustomizedPawn pawn) {
             Dictionary<Faction, RoyalTitleDef> selectedTitles = new Dictionary<Faction, RoyalTitleDef>();
             Dictionary<Faction, int> favorLookup = new Dictionary<Faction, int>();
             foreach (var title in pawn.Pawn.royalty.AllTitlesForReading) {
@@ -127,7 +128,7 @@ namespace EdB.PrepareCarefully {
             }
             Find.WindowStack.Add(new DialogTitles<ProviderTitles.TitleSet, ProviderTitles.Title>() {
                 Header = "EdB.PC.Dialog.Titles.Header".Translate(),
-                Groups = () => providerTitles.Titles,
+                Groups = () => ProviderTitles.Titles,
                 GroupTitle = (g) => g.Faction.Name,
                 DrawGroupHeader = DrawDialogGroupHeader,
                 DrawGroupContent = (g, y, width) => DrawDialogGroupContent(favorLookup, g, y, width),
@@ -161,7 +162,7 @@ namespace EdB.PrepareCarefully {
             });
         }
 
-        protected void ConfigureTitles(CustomPawn pawn, Dictionary<Faction, RoyalTitleDef> selectedTitles, Dictionary<Faction, int> favorLookup) {
+        protected void ConfigureTitles(CustomizedPawn pawn, Dictionary<Faction, RoyalTitleDef> selectedTitles, Dictionary<Faction, int> favorLookup) {
             List<RoyalTitle> toRemove = new List<RoyalTitle>();
             foreach (var title in pawn.Pawn.royalty.AllTitlesForReading) {
                 RoyalTitleDef def = selectedTitles.GetOrDefault(title.faction);
@@ -178,17 +179,15 @@ namespace EdB.PrepareCarefully {
             foreach (var pair in favorLookup) {
                 pawn.Pawn.royalty.SetFavor(pair.Key, pair.Value, false);
             }
-            pawn.ResetCachedIncapableOf();
-            pawn.ClearPawnCaches();
         }
 
-        public override float Draw(State state, float y) {
+        public override float Draw(float y) {
             float top = y;
             y += Margin.y;
 
             y += DrawHeader(y, Width, "EdB.PC.Panel.Titles.Header".Translate().Resolve());
 
-            CustomPawn currentPawn = state.CurrentPawn;
+            CustomizedPawn currentPawn = ViewState.CurrentPawn;
             int index = 0;
             Action clickAction = null;
             foreach (RoyalTitle title in currentPawn.Pawn.royalty.AllTitlesForReading) {
@@ -199,7 +198,7 @@ namespace EdB.PrepareCarefully {
                     y += FieldPadding;
                 }
                 if (index >= fields.Count) {
-                    fields.Add(new Field() {
+                    fields.Add(new WidgetField() {
                         IconSizeFunc = () => new Vector2(22, 22)
                     });
                 }
@@ -208,7 +207,7 @@ namespace EdB.PrepareCarefully {
                 RoyalTitleDef localTitleDef = title.def;
                 int localIndex = index;
 
-                Field field = fields[index];
+                WidgetField field = fields[index];
                 Rect fieldRect = FieldRect.OffsetBy(0, y);
                 field.Rect = fieldRect;
                 Rect fieldClickRect = fieldRect;
@@ -250,8 +249,6 @@ namespace EdB.PrepareCarefully {
                 y += FieldRect.height;
             }
 
-            tipCache.MakeReady();
-
             // If the index is still zero, then the pawn has no titles.  Draw the "none" label.
             if (index == 0) {
                 GUI.color = Style.ColorText;
@@ -281,35 +278,11 @@ namespace EdB.PrepareCarefully {
                     //TraitRemoved(item);
                 }
                 itemsToRemove.Clear();
-                tipCache.Invalidate();
             }
 
             y += Margin.y;
             return y - top;
         }
 
-        public class TipCache {
-            public Dictionary<Trait, string> Lookup = new Dictionary<Trait, string>();
-            private CustomPawn pawn = null;
-            private bool ready = false;
-            public void CheckPawn(CustomPawn pawn) {
-                if (this.pawn != pawn) {
-                    this.pawn = pawn;
-                    Invalidate();
-                }
-            }
-            public void Invalidate() {
-                this.ready = false;
-                Lookup.Clear();
-            }
-            public void MakeReady() {
-                this.ready = true;
-            }
-            public bool Ready {
-                get {
-                    return ready;
-                }
-            }
-        }
     }
 }

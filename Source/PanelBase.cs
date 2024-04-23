@@ -39,12 +39,12 @@ namespace EdB.PrepareCarefully {
                 BodyRect = new Rect(0, 36, rect.width, rect.height - 36);
             }
         }
-        public virtual void Draw(State state) {
+        public virtual void Draw() {
             DrawPanelBackground();
             DrawPanelHeader();
             GUI.BeginGroup(PanelRect);
             try {
-                DrawPanelContent(state);
+                DrawPanelContent();
             }
             finally {
                 GUI.EndGroup();
@@ -72,12 +72,13 @@ namespace EdB.PrepareCarefully {
             var colorValue = GUI.color;
             Text.Font = GameFont.Medium;
             Text.Anchor = TextAnchor.UpperLeft;
+            GUI.color = Style.ColorTextPanelHeader;
             Widgets.Label(HeaderLabelRect, PanelHeader);
             Text.Font = fontValue;
             Text.Anchor = anchorValue;
             GUI.color = colorValue;
         }
-        protected virtual void DrawPanelContent(State state) {
+        protected virtual void DrawPanelContent() {
             GUI.color = Style.ColorTextPanelHeader;
 
             GUI.color = Color.white;

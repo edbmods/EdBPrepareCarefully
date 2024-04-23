@@ -10,7 +10,7 @@ using Verse.Sound;
 
 namespace EdB.PrepareCarefully {
     public class PawnGenerationRequestWrapper {
-        public PawnKindDef KindDef { get; set; } = Faction.OfPlayer.def.basicMemberKind;
+        public PawnKindDef KindDef { get; set; } = Find.GameInitData.startingPawnKind ?? Faction.OfPlayer.def.basicMemberKind;
         public Faction Faction { get; set; } = Faction.OfPlayer;
         public PawnGenerationContext Context { get; set; } = PawnGenerationContext.PlayerStarter;
         public float? FixedBiologicalAge { get; set; } = null;
@@ -31,6 +31,9 @@ namespace EdB.PrepareCarefully {
         public string FixedBirthName { get; set; } = null;
         public RoyalTitleDef FixedTitle { get; set; } = null;
         public bool AllowDowned { get; set; } = false;
+        public bool IsCreepJoiner { get; set; } = false;
+
+        public BodyTypeDef ForceBodyType { get; set; } = null;
         public PawnGenerationRequestWrapper() {
         }
         private PawnGenerationRequest CreateRequest() {
@@ -40,8 +43,8 @@ namespace EdB.PrepareCarefully {
                 allowDowned = true;
             }
             var dedupedForcedXenogenes = RemoveDuplicateXenogenes(ForcedXenogenes);
-            return new PawnGenerationRequest(
-                KindDef, //PawnKindDef kind,
+            var result = new PawnGenerationRequest(
+                KindDef ?? Find.GameInitData.startingPawnKind ?? Faction.OfPlayer.def.basicMemberKind, //PawnKindDef kind,
                 Faction, //Faction faction = null,
                 Context, //PawnGenerationContext context = PawnGenerationContext.NonPlayer,
                 -1, //int tile = -1,
@@ -92,6 +95,9 @@ namespace EdB.PrepareCarefully {
                 null, //FloatRange ? biologicalAgeRange = null,
                 false //bool forceRecruitable = false
             );
+            result.ForceBodyType = ForceBodyType;
+            result.IsCreepJoiner = IsCreepJoiner;
+            return result;
         }
         public PawnGenerationRequest Request {
             get {

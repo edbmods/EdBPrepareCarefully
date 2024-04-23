@@ -1,4 +1,4 @@
-﻿using RimWorld;
+using RimWorld;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -9,9 +9,9 @@ using Verse.Sound;
 
 namespace EdB.PrepareCarefully {
     public class ParentChildGroup {
-        private List<CustomPawn> parents = new List<CustomPawn>();
-        private List<CustomPawn> children = new List<CustomPawn>();
-        public List<CustomPawn> Parents {
+        private List<CustomizedPawn> parents = new List<CustomizedPawn>();
+        private List<CustomizedPawn> children = new List<CustomizedPawn>();
+        public List<CustomizedPawn> Parents {
             get {
                 return parents;
             }
@@ -19,7 +19,7 @@ namespace EdB.PrepareCarefully {
                 parents = value;
             }
         }
-        public List<CustomPawn> Children {
+        public List<CustomizedPawn> Children {
             get {
                 return children;
             }
@@ -33,14 +33,14 @@ namespace EdB.PrepareCarefully {
                 result += "null";
             }
             else {
-                result += "[" + string.Join(", ", parents.Select((CustomPawn pawn) => { return pawn == null ? "null" : pawn.ToString(); }).ToArray()) + "]";
+                result += "[" + string.Join(", ", parents.Select((CustomizedPawn pawn) => { return pawn == null ? "null" : pawn.ToString(); }).ToArray()) + "]";
             }
             result += ", " + (children != null ? children.Count.ToString() : "0") + " children = ";
             if (children == null) {
                 result += "null";
             }
             else {
-                result += "[" + string.Join(", ", children.Select((CustomPawn pawn) => { return pawn == null ? "null" : pawn.ToString(); }).ToArray()) + "]";
+                result += "[" + string.Join(", ", children.Select((CustomizedPawn pawn) => { return pawn == null ? "null" : pawn.ToString(); }).ToArray()) + "]";
             }
             result += " }";
             return result;

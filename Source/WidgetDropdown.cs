@@ -87,5 +87,43 @@ namespace EdB.PrepareCarefully {
             GUI.color = color;
             return active && Widgets.ButtonInvisible(rect, false);
         }
+        public static bool SmallDropdown(Rect rect, string buttonText, string label = null) {
+            Color savedColor = GUI.color;
+            GameFont savedFont = Text.Font;
+            TextAnchor savedAnchor = Text.Anchor;
+            try {
+                float dropdownHeight = 18;
+                Vector2 cursor = new Vector2(0, 0);
+                Text.Font = GameFont.Tiny;
+                Text.Anchor = TextAnchor.MiddleLeft;
+                if (label != null) {
+                    float labelWidth = Text.CalcSize(label).x;
+                    Rect labelRect = new Rect(rect.x, rect.y, labelWidth, dropdownHeight);
+                    GUI.color = Style.ColorText;
+                    Widgets.Label(labelRect, label);
+                    cursor.x += labelWidth + 3;
+                }
+                float buttonTextWidth = Text.CalcSize(buttonText).x;
+                Rect dropdownRect = new Rect(rect.x + cursor.x, rect.y + cursor.y, buttonTextWidth + 30, dropdownHeight);
+                Widgets.DrawAtlas(dropdownRect, Textures.TextureFilterAtlas1);
+                if (dropdownRect.Contains(Event.current.mousePosition)) {
+                    GUI.color = Style.ColorButtonHighlight;
+                }
+                else {
+                    GUI.color = Style.ColorText;
+                }
+                Widgets.Label(dropdownRect.InsetBy(10, 0, 20, 0).OffsetBy(0, 1), buttonText);
+                GUI.DrawTexture(new Rect(dropdownRect.xMax - 19, dropdownRect.y + 6, 11, 8), Textures.TextureDropdownIndicator);
+                if (Widgets.ButtonInvisible(dropdownRect, false)) {
+                    return true;
+                }
+                return false;
+            }
+            finally {
+                GUI.color = savedColor;
+                Text.Font = savedFont;
+                Text.Anchor = savedAnchor;
+            }
+        }
     }
 }

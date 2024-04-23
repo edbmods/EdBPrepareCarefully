@@ -1,21 +1,18 @@
-﻿using System;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
 using UnityEngine;
 using Verse;
+using static UnityEngine.Random;
+
 namespace EdB.PrepareCarefully {
     public class TabViewRelationships : TabViewBase {
-        public TabViewRelationships() {
-            PanelRelationshipsParentChild = new PanelRelationshipsParentChild();
-            PanelRelationshipsOther = new PanelRelationshipsOther();
-        }
-        
+        public override string Name => "EdB.PC.TabView.Relationships.Title".Translate();
         public PanelRelationshipsParentChild PanelRelationshipsParentChild { get; set; }
         public PanelRelationshipsOther PanelRelationshipsOther { get; set; }
 
-        public override string Name {
-            get {
-                return "EdB.PC.TabView.Relationships.Title".Translate();
-            }
-        }
 
         protected override void Resize(Rect rect) {
             base.Resize(rect);
@@ -29,12 +26,12 @@ namespace EdB.PrepareCarefully {
             PanelRelationshipsOther.Resize(otherRect);
         }
 
-        public override void Draw(State state, Rect rect) {
-            base.Draw(state, rect);
+        public override void Draw(Rect rect) {
+            base.Draw(rect);
 
             // Draw the panels.
-            PanelRelationshipsParentChild.Draw(state);
-            PanelRelationshipsOther.Draw(state);
+            PanelRelationshipsParentChild.Draw();
+            PanelRelationshipsOther.Draw();
         }
     }
 }

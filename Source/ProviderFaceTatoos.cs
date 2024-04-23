@@ -15,18 +15,12 @@ namespace EdB.PrepareCarefully {
         protected List<TattooDef> empty = new List<TattooDef>();
         public ProviderFaceTattoos() {
         }
-        public ProviderAlienRaces AlienRaceProvider {
+        public ProviderAlienRaces ProviderAlienRaces {
             get; set;
-        }
-        public List<TattooDef> GetTattoos(CustomPawn pawn) {
-            return GetTattoos(pawn.Pawn.def, pawn.Gender);
         }
         public List<TattooDef> GetTattoos(ThingDef raceDef, Gender gender) {
             List<TattooDef> defs = GetTattoosForRace(raceDef);
             return defs;
-        }
-        public List<TattooDef> GetTattoosForRace(CustomPawn pawn) {
-            return GetTattoosForRace(pawn.Pawn.def);
         }
         public List<TattooDef> GetTattoosForRace(ThingDef raceDef) {
             if (lookup.TryGetValue(raceDef, out var defs)) {
@@ -48,7 +42,7 @@ namespace EdB.PrepareCarefully {
         }
         // TODO: Handle tattoos for alien races
         protected List<TattooDef> InitializeForRace(ThingDef raceDef) {
-            AlienRace alienRace = AlienRaceProvider.GetAlienRace(raceDef);
+            AlienRace alienRace = ProviderAlienRaces.GetAlienRace(raceDef);
             if (alienRace == null) {
                 return Humanlike;
             }

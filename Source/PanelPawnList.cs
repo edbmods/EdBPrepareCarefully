@@ -5,25 +5,23 @@ using System.Linq;
 using UnityEngine;
 using Verse;
 using Verse.Sound;
+
 namespace EdB.PrepareCarefully {
     public abstract class PanelPawnList : PanelBase {
-        public delegate void SelectPawnHandler(CustomPawn pawn);
-        public delegate void DeletePawnHandler(CustomPawn pawn);
-        public delegate void SwapPawnHandler(CustomPawn pawn);
-        public delegate void MaximizeHandler();
-        public delegate void MinimizeHandler();
-        public delegate void AddPawnHandler(bool startingPawn);
+        public delegate void SelectPawnHandler(CustomizedPawn pawn);
+        public delegate void DeletePawnHandler(CustomizedPawn pawn);
+        public delegate void SwapPawnHandler(CustomizedPawn pawn, bool activatePawn);
+        public delegate void AddPawnHandler();
         public delegate void AddFactionPawnHandler(FactionDef def, bool startingPawn);
         public delegate void AddPawnWithPawnKindHandler(PawnKindOption def, bool startingPawn);
-        public delegate void LoadCharacterHandler(string name);
+        public delegate void LoadPawnHandler(string name);
 
         public event SelectPawnHandler PawnSelected;
         public event DeletePawnHandler PawnDeleted;
         public event SwapPawnHandler PawnSwapped;
         public event AddPawnHandler AddingPawn;
         public event AddPawnWithPawnKindHandler AddingPawnWithPawnKind;
-        public event MaximizeHandler Maximize;
-        public event LoadCharacterHandler CharacterLoaded;
+        public event LoadPawnHandler PawnLoaded;
 
         protected Rect RectButtonQuickAdd;
         protected Rect RectButtonAdvancedAdd;
@@ -39,27 +37,21 @@ namespace EdB.PrepareCarefully {
         protected Rect RectButtonDelete;
         protected Rect RectButtonSwap;
         protected float SizeEntrySpacing = 8;
-        protected ScrollViewVertical scrollView = new ScrollViewVertical();
+        protected WidgetScrollViewVertical scrollView = new WidgetScrollViewVertical();
         protected FactionDef previousFaction = null;
-        protected Rect RectMinimize;
-        protected Rect RectMaximize;
         protected Rect RectHeader;
 
         protected LabelTrimmer nameTrimmerNoScrollbar = new LabelTrimmer();
         protected LabelTrimmer nameTrimmerWithScrollbar = new LabelTrimmer();
         protected LabelTrimmer descriptionTrimmerNoScrollbar = new LabelTrimmer();
         protected LabelTrimmer descriptionTrimmerWithScrollbar = new LabelTrimmer();
+        public override Color ColorPanelBackground => Style.ColorPanelBackgroundDeep;
+        public override string PanelHeader => base.PanelHeader;
 
-        public override Color ColorPanelBackground {
-            get {
-                return Style.ColorPanelBackgroundDeep;
-            }
-        }
-        public override string PanelHeader {
-            get {
-                return base.PanelHeader;
-            }
-        }
+        public ModState State { get; set; }
+        public ViewState ViewState { get; set; }
+        public ProviderPawnKinds ProviderPawnKinds { get; set; }
+
         public override void Resize(Rect rect) {
             base.Resize(rect);
 
@@ -95,86 +87,18 @@ namespace EdB.PrepareCarefully {
             RectButtonDelete = new Rect(RectEntry.xMax - 18, 6, 12, 12);
             RectButtonSwap = new Rect(RectEntry.xMax - 20, RectEntry.yMax - 20, 16, 16);
 
-            Vector2 resizeButtonSize = new Vector2(18, 18);
-            RectMinimize = new Rect(rect.width - 25, 4, resizeButtonSize.x, resizeButtonSize.y);
-            RectMaximize = new Rect(rect.width - 25, 9, resizeButtonSize.x, resizeButtonSize.y);
             RectHeader = new Rect(0, 0, rect.width, headerHeight);
         }
 
-        protected override void DrawPanelContent(State state) {
-            /*
-            // Test code for adjusting the size and position of the portrait.
-            if (Event.current.type == EventType.KeyDown) {
-                if (Event.current.shift) {
-                    if (Event.current.keyCode == KeyCode.LeftArrow) {
-                        float portraitWidth = RectPortrait.width;
-                        portraitWidth -= 1f;
-                        float portraitHeight = Mathf.Floor(portraitWidth * 1.4f);
-                        RectPortrait = new Rect(RectPortrait.x, RectPortrait.y, portraitWidth, portraitHeight);
-                        Logger.Debug("RectPortrait = " + RectPortrait);
-                    }
-                    else if (Event.current.keyCode == KeyCode.RightArrow) {
-                        float portraitWidth = RectPortrait.width;
-                        portraitWidth += 1f;
-                        float portraitHeight = Mathf.Floor(portraitWidth * 1.4f);
-                        RectPortrait = new Rect(RectPortrait.x, RectPortrait.y, portraitWidth, portraitHeight);
-                        Logger.Debug("RectPortrait = " + RectPortrait);
-                    }
-                }
-                else {
-                    if (Event.current.keyCode == KeyCode.LeftArrow) {
-                        RectPortrait = RectPortrait.OffsetBy(new Vector2(-1, 0));
-                        Logger.Debug("RectPortrait = " + RectPortrait);
-                    }
-                    else if (Event.current.keyCode == KeyCode.RightArrow) {
-                        RectPortrait = RectPortrait.OffsetBy(new Vector2(1, 0));
-                        Logger.Debug("RectPortrait = " + RectPortrait);
-                    }
-                    else if (Event.current.keyCode == KeyCode.UpArrow) {
-                        RectPortrait = RectPortrait.OffsetBy(new Vector2(0, -1));
-                        Logger.Debug("RectPortrait = " + RectPortrait);
-                    }
-                    else if (Event.current.keyCode == KeyCode.DownArrow) {
-                        RectPortrait = RectPortrait.OffsetBy(new Vector2(0, 1));
-                        Logger.Debug("RectPortrait = " + RectPortrait);
-                    }
-                }
-            }
-            */
-            base.DrawPanelContent(state);
+        protected override void DrawPanelContent() {
+            base.DrawPanelContent();
 
-            CustomPawn currentPawn = state.CurrentPawn;
-            CustomPawn pawnToSelect = null;
-            CustomPawn pawnToSwap = null;
-            CustomPawn pawnToDelete = null;
-            List<CustomPawn> pawns = GetPawnListFromState(state);
-            int colonistCount = pawns.Count();
-
-            if (IsMinimized(state)) {
-                // Count label.
-                Text.Font = GameFont.Medium;
-                float headerWidth = Text.CalcSize(PanelHeader).x;
-                Rect countRect = new Rect(10 + headerWidth + 3, 3, 50, 27);
-                GUI.color = Style.ColorTextPanelHeader;
-                Text.Font = GameFont.Small;
-                Text.Anchor = TextAnchor.LowerLeft;
-                Widgets.Label(countRect, "EdB.PC.Panel.PawnList.PawnCount".Translate(colonistCount ));
-                GUI.color = Color.white;
-
-                // Maximize button.
-                if (RectHeader.Contains(Event.current.mousePosition)) {
-                    GUI.color = Style.ColorButtonHighlight;
-                }
-                else {
-                    GUI.color = Style.ColorButton;
-                }
-                GUI.DrawTexture(RectMaximize, IsTopPanel() ? Textures.TextureMaximizeDown : Textures.TextureMaximizeUp);
-                if (Widgets.ButtonInvisible(RectHeader, false)) {
-                    SoundDefOf.ThingSelected.PlayOneShotOnCamera();
-                    Maximize();
-                }
-                return;
-            }
+            CustomizedPawn currentPawn = ViewState.CurrentPawn;
+            CustomizedPawn pawnToSelect = null;
+            CustomizedPawn pawnToSwap = null;
+            CustomizedPawn pawnToDelete = null;
+            IEnumerable<CustomizedPawn> pawns = GetPawns();
+            int pawnCount = pawns.Count();
 
             float cursor = 0;
             GUI.BeginGroup(RectScrollFrame);
@@ -200,7 +124,7 @@ namespace EdB.PrepareCarefully {
                         GUI.color = Color.white;
                         Rect deleteRect = RectButtonDelete.OffsetBy(rect.position);
                         deleteRect.x = deleteRect.x - (scrollView.ScrollbarsVisible ? 16 : 0);
-                        if (CanDeleteLastPawn || colonistCount > 1) {
+                        if (CanDeleteLastPawn || pawnCount > 1) {
                             Style.SetGUIColorForButton(deleteRect);
                             GUI.DrawTexture(deleteRect, Textures.TextureButtonDelete);
                             // For some reason, this GUI.Button call is causing weirdness with text field focus (select
@@ -214,11 +138,11 @@ namespace EdB.PrepareCarefully {
                                     pawnToDelete = pawn;
                                 }
                                 else {
-                                    CustomPawn localPawn = pawn;
+                                    CustomizedPawn localPawn = pawn;
                                     Find.WindowStack.Add(
-                                        new Dialog_Confirm("EdB.PC.Panel.PawnList.Delete.Confirm".Translate(),
+                                        new DialogConfirm("EdB.PC.Panel.PawnList.Delete.Confirm".Translate(),
                                         delegate {
-                                            PawnDeleted(localPawn);
+                                            PawnDeleted?.Invoke(localPawn);
                                         },
                                         true, null, true)
                                     );
@@ -229,9 +153,9 @@ namespace EdB.PrepareCarefully {
                         if (rect.Contains(Event.current.mousePosition)) {
                             Rect swapRect = RectButtonSwap.OffsetBy(rect.position);
                             swapRect.x -= (scrollView.ScrollbarsVisible ? 16 : 0);
-                            if (CanDeleteLastPawn || colonistCount > 1) {
+                            if (CanDeleteLastPawn || pawnCount > 1) {
                                 Style.SetGUIColorForButton(swapRect);
-                                GUI.DrawTexture(swapRect, pawn.Type == CustomPawnType.Colonist ? Textures.TextureButtonWorldPawn : Textures.TextureButtonColonyPawn);
+                                GUI.DrawTexture(swapRect, pawn.Type == CustomizedPawnType.Colony ? Textures.TextureButtonWorldPawn : Textures.TextureButtonColonyPawn);
                                 if (Event.current.type == EventType.MouseDown && swapRect.Contains(Event.current.mousePosition)) {
                                     pawnToSwap = pawn;
                                 }
@@ -239,12 +163,16 @@ namespace EdB.PrepareCarefully {
                             }
                         }
                     }
-                    
-                    Rect pawnRect = RectPortrait.OffsetBy(rect.position);
+
                     GUI.color = Color.white;
 
+                    Rect pawnRect = RectPortrait.OffsetBy(rect.position);
                     Rect clipRect = RectEntry.OffsetBy(rect.position);
-                    RenderTexture pawnTexture = pawn.GetPortrait(pawnRect.size);
+                    //WidgetPortrait.Draw(pawn.Pawn, clipRect, pawnRect);
+                    // TODO
+                    // See Page_ConfigureStartingPawns.DrawPawnList() to see how the pawns are drawn
+                    // in the vanilla page
+                    RenderTexture pawnTexture = PortraitsCache.Get(pawn.Pawn, pawnRect.size, Rot4.South);
                     try {
                         GUI.BeginClip(clipRect);
                         GUI.DrawTexture(RectPortrait, (Texture)pawnTexture);
@@ -261,8 +189,9 @@ namespace EdB.PrepareCarefully {
                     Text.Anchor = TextAnchor.LowerLeft;
                     Rect nameRect = RectName.OffsetBy(rect.position);
                     nameRect.width = nameRect.width - (scrollView.ScrollbarsVisible ? 16 : 0);
-                    Vector2 nameSize = Text.CalcSize(pawn.Pawn.LabelShort);
-                    Widgets.Label(nameRect, nameTrimmer.TrimLabelIfNeeded(pawn.Pawn.LabelShort));
+                    string name = pawn.Pawn.LabelShort;
+                    Vector2 nameSize = Text.CalcSize(name);
+                    Widgets.Label(nameRect, nameTrimmer.TrimLabelIfNeeded(name));
 
                     Text.Font = GameFont.Tiny;
                     Text.Anchor = TextAnchor.UpperLeft;
@@ -270,19 +199,17 @@ namespace EdB.PrepareCarefully {
                     Rect professionRect = RectDescription.OffsetBy(rect.position);
                     professionRect.width = professionRect.width - (scrollView.ScrollbarsVisible ? 16 : 0);
                     string description = null;
-                    if (pawn.IsAdult) {
-                        if (pawn.Adulthood != null) {
-                            description = pawn.Adulthood.TitleShortFor(pawn.Gender).CapitalizeFirst();
-                        }
+                    if (pawn.Pawn.story.Adulthood != null) {
+                        description = pawn.Pawn.story.Adulthood.TitleShortFor(pawn.Customizations.Gender).CapitalizeFirst();
                     }
-                    else {
-                        description = pawn.Childhood.TitleShortFor(pawn.Gender).CapitalizeFirst();
+                    else if (pawn.Pawn.story.Childhood != null) {
+                        description = pawn.Pawn.story.Childhood.TitleShortFor(pawn.Customizations.Gender).CapitalizeFirst();
                     }
                     if (!description.NullOrEmpty()) {
                         Widgets.Label(professionRect, descriptionTrimmer.TrimLabelIfNeeded(description));
                     }
 
-                    if (pawn != state.CurrentPawn && Event.current.type == EventType.MouseDown && rect.Contains(Event.current.mousePosition) && pawnToSwap == null) {
+                    if (pawn != ViewState.CurrentPawn && Event.current.type == EventType.MouseDown && rect.Contains(Event.current.mousePosition) && pawnToSwap == null) {
                         pawnToSelect = pawn;
                     }
 
@@ -306,7 +233,7 @@ namespace EdB.PrepareCarefully {
             GUI.DrawTexture(RectButtonQuickAdd, Textures.TextureButtonAdd);
             if (Widgets.ButtonInvisible(RectButtonQuickAdd, false)) {
                 SoundDefOf.Click.PlayOneShotOnCamera();
-                AddingPawn(StartingPawns);
+                AddingPawn?.Invoke();
             }
 
             GUI.color = Color.white;
@@ -314,9 +241,9 @@ namespace EdB.PrepareCarefully {
 
             // Load button
             if (Widgets.ButtonText(RectButtonLoad, "EdB.PC.Panel.PawnList.Load".Translate(), true, false, true)) {
-                Find.WindowStack.Add(new Dialog_LoadColonist(
+                Find.WindowStack.Add(new DialogLoadColonist(
                     (string name) => {
-                        CharacterLoaded(name);
+                        PawnLoaded?.Invoke(name);
                     }
                 ));
             }
@@ -329,23 +256,18 @@ namespace EdB.PrepareCarefully {
             Text.Font = GameFont.Small;
             Text.Anchor = TextAnchor.UpperLeft;
 
-            if (pawnToDelete != null) {
-                PawnDeleted(pawnToDelete);
+            if (pawnToDelete != null && PawnDeleted != null) {
+                PawnDeleted?.Invoke(pawnToDelete);
             }
-            else if (pawnToSwap != null) {
-                PawnSwapped(pawnToSwap);
+            else if (pawnToSwap != null && PawnSwapped != null) {
+                PawnSwapped?.Invoke(pawnToSwap, true);
             }
-            else if (pawnToSelect != null) {
-                PawnSelected(pawnToSelect);
+            else if (pawnToSelect != null && PawnSelected != null) {
+                PawnSelected?.Invoke(pawnToSelect);
             }
-
         }
 
-        protected abstract bool IsMaximized(State state);
-
-        protected abstract bool IsMinimized(State state);
-
-        protected abstract List<CustomPawn> GetPawnListFromState(State state);
+        protected abstract IEnumerable<CustomizedPawn> GetPawns();
 
         protected abstract bool IsTopPanel();
 
@@ -357,8 +279,8 @@ namespace EdB.PrepareCarefully {
             get;
         }
 
-        public void SelectPawn(CustomPawn pawn) {
-            PawnSelected(pawn);
+        public void SelectPawn(CustomizedPawn pawn) {
+            PawnSelected?.Invoke(pawn);
         }
 
         public IEnumerable<PawnKindDef> ColonyKindDefs(PawnKindDef basicKind, IEnumerable<PawnKindDef> factionKinds) {
@@ -392,9 +314,9 @@ namespace EdB.PrepareCarefully {
             var disabled = new HashSet<PawnKindOption>();
             rowGroups.Clear();
 
-            PawnKindOption selected = PrepareCarefully.Instance.State.LastSelectedPawnKindDef;
+            PawnKindOption selected = ViewState.LastSelectedPawnKindDef;
 
-            List<ProviderPawnKinds.FactionPawnKinds> factionPawnKindsList = new List<ProviderPawnKinds.FactionPawnKinds>(PrepareCarefully.Instance.Providers.PawnKinds.PawnKindsByFaction);
+            List<ProviderPawnKinds.FactionPawnKinds> factionPawnKindsList = new List<ProviderPawnKinds.FactionPawnKinds>(ProviderPawnKinds.PawnKindsByFaction);
             // Sort the pawn kinds to put the colony faction at the top.
             factionPawnKindsList.Sort((a, b) => {
                 if (a.Faction == Find.FactionManager.OfPlayer.def && b.Faction != Find.FactionManager.OfPlayer.def) {
@@ -424,8 +346,8 @@ namespace EdB.PrepareCarefully {
                         factionPawnKinds.PawnKinds.ConvertAll(f => new PawnKindOption(factionPawnKinds.Faction, f))));
                 }
             }
-            if (!PrepareCarefully.Instance.Providers.PawnKinds.PawnKindsWithNoFaction.EnumerableNullOrEmpty()) {
-                rowGroups.Add(new WidgetTable<PawnKindOption>.RowGroup("<b>Other</b>", PrepareCarefully.Instance.Providers.PawnKinds.PawnKindsWithNoFaction.Select(k => new PawnKindOption(null, k))));
+            if (!ProviderPawnKinds.PawnKindsWithNoFaction.EnumerableNullOrEmpty()) {
+                rowGroups.Add(new WidgetTable<PawnKindOption>.RowGroup("<b>Other</b>", ProviderPawnKinds.PawnKindsWithNoFaction.Select(k => new PawnKindOption(null, k))));
             }
 
             DialogPawnKinds dialog = new DialogPawnKinds() {
@@ -436,15 +358,15 @@ namespace EdB.PrepareCarefully {
                 CloseAction = () => {
                     SoundDefOf.Click.PlayOneShotOnCamera();
                     if (selected != null) {
-                        PrepareCarefully.Instance.State.LastSelectedPawnKindDef = selected;
-                        AddingPawnWithPawnKind(selected, StartingPawns);
+                        ViewState.LastSelectedPawnKindDef = selected;
+                        AddingPawnWithPawnKind?.Invoke(selected, StartingPawns);
                     }
                 },
                 Selected = selected,
-                ShowRace = PrepareCarefully.Instance.Providers.PawnKinds.AnyNonHumanPawnKinds && !PawnKindRaceDiversificationEnabled
+                ShowRace = ProviderPawnKinds.AnyNonHumanPawnKinds && !PawnKindRaceDiversificationEnabled
             };
-            dialog.ScrollToWhenOpened(PrepareCarefully.Instance.State.LastSelectedPawnKindDef);
-            //Logger.Debug("ScrollToWhenOpened = " + PrepareCarefully.Instance.State.LastSelectedPawnKindDef);
+            dialog.ScrollToWhenOpened(ViewState.LastSelectedPawnKindDef);
+            //Logger.Debug("ScrollToWhenOpened = " + ViewState.LastSelectedPawnKindDef);
             Find.WindowStack.Add(dialog);
         }
 

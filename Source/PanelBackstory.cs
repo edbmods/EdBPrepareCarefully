@@ -1,8 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using UnityEngine;
 using RimWorld;
 using Verse;
@@ -12,20 +10,35 @@ namespace EdB.PrepareCarefully {
     public class PanelBackstory : PanelModule {
         protected Rect LabelRect { get; set; }
         protected Rect FieldRect { get; set; }
-        protected Field FieldChildhood = new Field();
-        protected Field FieldAdulthood = new Field();
-        protected ProviderBackstories providerBackstories = PrepareCarefully.Instance.Providers.Backstories;
+        protected Rect FavoriteColorLabelRect { get; set; }
+        protected Vector2 FavoriteColorRectSize { get; set; }
+        protected Rect FavoriteColorRect { get; set; }
+
+        protected WidgetField FieldChildhood = new WidgetField();
+        protected WidgetField FieldAdulthood = new WidgetField();
         protected List<Filter<BackstoryDef>> availableFilters = new List<Filter<BackstoryDef>>();
         protected List<Filter<BackstoryDef>> activeFilters = new List<Filter<BackstoryDef>>();
 
         public delegate void UpdateBackstoryHandler(BackstorySlot slot, BackstoryDef backstory);
-        public delegate void RandomizeBackstoriesHandler();
+        public delegate void RandomizeButtonClickedHandler();
+        public delegate void UpdateFavoriteColorHandler(Color? color);
 
         public event UpdateBackstoryHandler BackstoryUpdated;
-        public event RandomizeBackstoriesHandler BackstoriesRandomized;
+        public event RandomizeButtonClickedHandler RandomizeButtonClicked;
+        public event UpdateFavoriteColorHandler FavoriteColorUpdated;
+
+        public ModState State { get; set; }
+        public ViewState ViewState { get; set; }
+        public ProviderBackstories ProviderBackstories { get; set; }
 
         public PanelBackstory() {
-            availableFilters.Add(new FilterBackstoryMatchesFaction());
+
+        }
+        public void PostConstruct() {
+            availableFilters.Add(new FilterBackstoryMatchesFaction() {
+                ViewState = ViewState,
+                ProviderBackstories = ProviderBackstories,
+            });
             availableFilters.Add(new FilterBackstoryNoDisabledWorkTypes());
             availableFilters.Add(new FilterBackstoryNoPenalties());
             foreach (var s in DefDatabase<SkillDef>.AllDefs) {
@@ -34,6 +47,7 @@ namespace EdB.PrepareCarefully {
                 availableFilters.Add(new FilterBackstorySkillAdjustment(s, 5));
             }
         }
+
         public override void Resize(float width) {
             base.Resize(width);
             float panelPadding = 12;
@@ -49,13 +63,18 @@ namespace EdB.PrepareCarefully {
 
             LabelRect = new Rect(panelPadding, 0, labelWidth, Style.FieldHeight);
             FieldRect = new Rect(LabelRect.xMax + fieldPadding, 0, width - LabelRect.xMax - fieldPadding * 2, Style.FieldHeight);
+
+            Vector2 favoriteColorSize = Text.CalcSize("EdB.PC.Panel.Backstory.FavoriteColorLabel".Translate());
+            FavoriteColorRectSize = new Vector2(width - fieldPadding - fieldPadding - 23 - favoriteColorSize.x, favoriteColorSize.y - 4);
+            FavoriteColorLabelRect = new Rect(panelPadding, 0, favoriteColorSize.x, Style.FieldHeight);
+            FavoriteColorRect = new Rect(FavoriteColorLabelRect.xMax + fieldPadding, FavoriteColorLabelRect.HalfHeight() - FavoriteColorRectSize.HalfY(), FavoriteColorRectSize.x, FavoriteColorRectSize.y);
         }
 
         public float Measure() {
             return 0;
         }
 
-        protected float DrawChildhood(CustomPawn pawn, float y, float width) {
+        protected float DrawChildhood(CustomizedPawn customizedPawn, float y, float width) {
             // Draw the label
             Text.Font = GameFont.Small;
             GUI.color = Style.ColorText;
@@ -65,16 +84,20 @@ namespace EdB.PrepareCarefully {
             Text.Anchor = TextAnchor.UpperLeft;
             GUI.color = Color.white;
 
+            Pawn pawn = customizedPawn.Pawn;
+            BackstoryDef backstory = pawn.story.Childhood;
+            Gender gender = pawn.gender;
+
             // Draw the field
             FieldChildhood.Rect = FieldRect.OffsetBy(0, y);
-            if (pawn.Childhood != null) {
-                FieldChildhood.Label = pawn.Childhood.TitleCapFor(pawn.Gender);
+            if (backstory != null) {
+                FieldChildhood.Label = backstory.TitleCapFor(gender);
             }
             else {
                 FieldChildhood.Label = null;
             }
-            FieldChildhood.Tip = pawn.Childhood.CheckedDescriptionFor(pawn.Pawn);
-            if (pawn.IsNewborn() || pawn.IsJuvenile()) {
+            FieldChildhood.Tip = backstory.CheckedDescriptionFor(pawn);
+            if (UtilityPawns.IsNewborn(pawn) || UtilityPawns.IsJuvenile(pawn)) {
                 FieldChildhood.ClickAction = null;
                 FieldChildhood.PreviousAction = null;
                 FieldChildhood.NextAction = null;
@@ -83,13 +106,13 @@ namespace EdB.PrepareCarefully {
             else {
                 FieldChildhood.NextPreviousButtonsHidden = false;
                 FieldChildhood.ClickAction = () => {
-                    ShowBackstoryDialog(pawn, BackstorySlot.Childhood);
+                    ShowBackstoryDialog(customizedPawn, BackstorySlot.Childhood);
                 };
                 FieldChildhood.PreviousAction = () => {
-                    NextBackstory(pawn, BackstorySlot.Childhood, -1);
+                    NextBackstory(customizedPawn, BackstorySlot.Childhood, -1);
                 };
                 FieldChildhood.NextAction = () => {
-                    NextBackstory(pawn, BackstorySlot.Childhood, 1);
+                    NextBackstory(customizedPawn, BackstorySlot.Childhood, 1);
                 };
             }
 
@@ -98,11 +121,14 @@ namespace EdB.PrepareCarefully {
             return FieldRect.height;
         }
 
-        protected float DrawAdulthood(CustomPawn pawn, float y, float width) {
+        protected float DrawAdulthood(CustomizedPawn customizedPawn, float y, float width) {
+            Pawn pawn = customizedPawn.Pawn;
             Text.Font = GameFont.Small;
             GUI.color = Style.ColorText;
             Text.Anchor = TextAnchor.MiddleCenter;
-            if (!pawn.HasAdulthoodBackstory) {
+            BackstoryDef backstory = pawn.story.Adulthood;
+            bool hasAdulthoodBackstory = (pawn.story.Adulthood != null);
+            if (!hasAdulthoodBackstory) {
                 GUI.color = Style.ColorControlDisabled;
             }
             Rect labelRect = LabelRect.OffsetBy(0, y);
@@ -112,18 +138,18 @@ namespace EdB.PrepareCarefully {
 
             // Draw the field
             FieldAdulthood.Rect = FieldRect.OffsetBy(0, y);
-            FieldAdulthood.Enabled = pawn.HasAdulthoodBackstory;
+            FieldAdulthood.Enabled = hasAdulthoodBackstory;
             if (FieldAdulthood.Enabled) {
-                FieldAdulthood.Label = pawn.Adulthood.TitleCapFor(pawn.Gender);
-                FieldAdulthood.Tip = pawn.Adulthood.CheckedDescriptionFor(pawn.Pawn);
+                FieldAdulthood.Label = backstory.TitleCapFor(pawn.gender);
+                FieldAdulthood.Tip = backstory.CheckedDescriptionFor(pawn);
                 FieldAdulthood.ClickAction = () => {
-                    ShowBackstoryDialog(pawn, BackstorySlot.Adulthood);
+                    ShowBackstoryDialog(customizedPawn, BackstorySlot.Adulthood);
                 };
                 FieldAdulthood.PreviousAction = () => {
-                    NextBackstory(pawn, BackstorySlot.Adulthood, -1);
+                    NextBackstory(customizedPawn, BackstorySlot.Adulthood, -1);
                 };
                 FieldAdulthood.NextAction = () => {
-                    NextBackstory(pawn, BackstorySlot.Adulthood, 1);
+                    NextBackstory(customizedPawn, BackstorySlot.Adulthood, 1);
                 };
             }
             else {
@@ -150,59 +176,79 @@ namespace EdB.PrepareCarefully {
             GUI.DrawTexture(randomizeRect, Textures.TextureButtonRandom);
             if (Widgets.ButtonInvisible(randomizeRect, false)) {
                 SoundDefOf.Tick_Low.PlayOneShotOnCamera();
-                BackstoriesRandomized();
+                RandomizeButtonClicked?.Invoke();
             }
             Text.Font = GameFont.Small;
             GUI.color = Color.white;
             Text.Anchor = TextAnchor.UpperLeft;
         }
 
-        // Deprecated
-        // Leave here for compatibility with any patches that used the old method for drawing
-        protected override void DrawPanelContent(State state) {
-        }
-
-        public override float Draw(State state, float y) {
+        public override float Draw(float y) {
             float top = y;
             y += Margin.y;
 
-            CustomPawn pawn = state.CurrentPawn;
-            if (pawn.Pawn.DevelopmentalStage == DevelopmentalStage.Adult) {
+            CustomizedPawn customizedPawn = ViewState.CurrentPawn;
+            if (customizedPawn.Pawn.DevelopmentalStage == DevelopmentalStage.Adult) {
                 DrawRandomizeButton(y, Width);
             }
             y += DrawHeader(y, Width, "Backstory".Translate().Resolve());
-            y += DrawChildhood(pawn, y, Width);
+            y += DrawChildhood(customizedPawn, y, Width);
             y += 6;
-            y += DrawAdulthood(pawn, y, Width);
+            y += DrawAdulthood(customizedPawn, y, Width);
+
+
+            if (ModsConfig.IdeologyActive && !UtilityPawns.IsBaby(customizedPawn.Pawn)) {
+                y += 8;
+                Text.Font = GameFont.Small;
+                GUI.color = Style.ColorText;
+                Text.Anchor = TextAnchor.MiddleCenter;
+                Widgets.Label(FavoriteColorLabelRect.OffsetBy(0, y), "EdB.PC.Panel.Backstory.FavoriteColorLabel".Translate());
+                Text.Anchor = TextAnchor.UpperLeft;
+                GUI.color = Color.white;
+
+                Rect favoriteColorRect = FavoriteColorRect.OffsetBy(0, y);
+                Color favoriteColor = customizedPawn.Pawn.story.favoriteColor ?? new Color(0.5f, 0.5f, 0.5f);
+
+                if (favoriteColorRect.Contains(Event.current.mousePosition)) {
+                    Widgets.DrawAtlas(favoriteColorRect, Textures.TextureFieldAtlasWhite);
+                    GUI.color = favoriteColor;
+                    Widgets.DrawAtlas(favoriteColorRect.InsetBy(1), Textures.TextureFieldAtlasWhite);
+                }
+                else {
+                    GUI.color = favoriteColor;
+                    Widgets.DrawAtlas(favoriteColorRect, Textures.TextureFieldAtlasWhite);
+                }
+                GUI.color = Color.white;
+                if (Widgets.ButtonInvisible(favoriteColorRect, false)) {
+                    var dialog = new DialogFavoriteColor(favoriteColor) {
+                        ConfirmAction = (Color color) => FavoriteColorUpdated(color)
+                    };
+                    Find.WindowStack.Add(dialog);
+                }
+                y += FavoriteColorRect.height - 4;
+            }
+            y += 6;
 
             y += Margin.y;
-
-            // For backwards compatibility with any patches that used the old method for drawing
-            GUI.BeginGroup(new Rect(0, top, Width, y - top));
-            try {
-                DrawPanelContent(state);
-            }
-            finally {
-                GUI.EndGroup();
-            }
 
             return y - top;
         }
 
-        protected void ShowBackstoryDialog(CustomPawn customPawn, BackstorySlot slot) {
-            BackstoryDef originalBackstory = (slot == BackstorySlot.Childhood) ? customPawn.Childhood : customPawn.Adulthood;
+        protected void ShowBackstoryDialog(CustomizedPawn customizedPawn, BackstorySlot slot) {
+            Pawn pawn = customizedPawn.Pawn;
+            BackstoryDef originalBackstory = (slot == BackstorySlot.Childhood) ? pawn.story.Childhood : pawn.story.Adulthood;
             BackstoryDef selectedBackstory = originalBackstory;
             Filter<BackstoryDef> filterToRemove = null;
             bool filterListDirtyFlag = true;
             List<BackstoryDef> fullOptionsList = slot == BackstorySlot.Childhood ?
-                    this.providerBackstories.AllChildhookBackstories : this.providerBackstories.AllAdulthookBackstories;
+                    this.ProviderBackstories.AllChildhookBackstories : this.ProviderBackstories.AllAdulthookBackstories;
             List<BackstoryDef> filteredBackstories = new List<BackstoryDef>(fullOptionsList.Count);
-            Dialog_Options<BackstoryDef> dialog = new Dialog_Options<BackstoryDef>(filteredBackstories) {
+            DialogOptions<BackstoryDef> dialog = new DialogOptions<BackstoryDef>(filteredBackstories) {
                 NameFunc = (BackstoryDef backstory) => {
-                    return backstory.TitleCapFor(customPawn.Gender);
+                    return backstory.TitleCapFor(pawn.gender);
                 },
                 DescriptionFunc = (BackstoryDef backstory) => {
-                    return backstory.CheckedDescriptionFor(customPawn.Pawn);
+                    return backstory.CheckedDescriptionFor(pawn);
                 },
                 SelectedFunc = (BackstoryDef backstory) => {
                     return selectedBackstory == backstory;
@@ -212,10 +258,10 @@ namespace EdB.PrepareCarefully {
                 },
                 CloseAction = () => {
                     if (slot == BackstorySlot.Childhood) {
-                        BackstoryUpdated(BackstorySlot.Childhood, selectedBackstory);
+                        BackstoryUpdated?.Invoke(BackstorySlot.Childhood, selectedBackstory);
                     }
                     else {
-                        BackstoryUpdated(BackstorySlot.Adulthood, selectedBackstory);
+                        BackstoryUpdated?.Invoke(BackstorySlot.Adulthood, selectedBackstory);
                     }
                 }
             };
@@ -305,7 +351,7 @@ namespace EdB.PrepareCarefully {
             Find.WindowStack.Add(dialog);
         }
 
-        protected void NextBackstory(CustomPawn pawn, BackstorySlot slot, int direction) {
+        protected void NextBackstory(CustomizedPawn pawn, BackstorySlot slot, int direction) {
             BackstoryDef backstory;
             List<BackstoryDef> backstories;
             PopulateBackstoriesFromSlot(pawn, slot, out backstories, out backstory);
@@ -318,21 +364,22 @@ namespace EdB.PrepareCarefully {
             else if (currentIndex < 0) {
                 currentIndex = backstories.Count - 1;
             }
-            BackstoryUpdated(slot, backstories[currentIndex]);
+            BackstoryUpdated?.Invoke(slot, backstories[currentIndex]);
         }
 
-        protected int FindBackstoryIndex(CustomPawn pawn, BackstorySlot slot) {
+        protected int FindBackstoryIndex(CustomizedPawn pawn, BackstorySlot slot) {
             BackstoryDef backstory;
             List<BackstoryDef> backstories;
             PopulateBackstoriesFromSlot(pawn, slot, out backstories, out backstory);
             return backstories.IndexOf(backstory);
         }
 
-        protected void PopulateBackstoriesFromSlot(CustomPawn pawn, BackstorySlot slot, out List<BackstoryDef> backstories,
+        protected void PopulateBackstoriesFromSlot(CustomizedPawn customizedPawn, BackstorySlot slot, out List<BackstoryDef> backstories,
                 out BackstoryDef backstory) {
-            backstory = (slot == BackstorySlot.Childhood) ? pawn.Childhood : pawn.Adulthood;
-            backstories = (slot == BackstorySlot.Childhood) ? providerBackstories.GetChildhoodBackstoriesForPawn(pawn)
-                : providerBackstories.GetAdulthoodBackstoriesForPawn(pawn);
+            Pawn pawn = customizedPawn.Pawn;
+            backstory = (slot == BackstorySlot.Childhood) ? pawn.story.Childhood : pawn.story.Adulthood;
+            backstories = (slot == BackstorySlot.Childhood) ? ProviderBackstories.GetChildhoodBackstoriesForPawn(pawn)
+                : ProviderBackstories.GetAdulthoodBackstoriesForPawn(pawn);
         }
     }
 }

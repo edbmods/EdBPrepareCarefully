@@ -15,18 +15,12 @@ namespace EdB.PrepareCarefully {
         protected List<BeardDef> noBeards = new List<BeardDef>();
         public ProviderBeards() {
         }
-        public ProviderAlienRaces AlienRaceProvider {
+        public ProviderAlienRaces ProviderAlienRaces {
             get; set;
-        }
-        public List<BeardDef> GetBeards(CustomPawn pawn) {
-            return GetBeards(pawn.Pawn.def, pawn.Gender);
         }
         public List<BeardDef> GetBeards(ThingDef raceDef, Gender gender) {
             List<BeardDef> beards = GetBeardsForRace(raceDef);
             return beards;
-        }
-        public List<BeardDef> GetBeardsForRace(CustomPawn pawn) {
-            return GetBeardsForRace(pawn.Pawn.def);
         }
         public List<BeardDef> GetBeardsForRace(ThingDef raceDef) {
             List<BeardDef> beards;
@@ -48,7 +42,7 @@ namespace EdB.PrepareCarefully {
             }
         }
         protected List<BeardDef> InitializeBeards(ThingDef raceDef) {
-            AlienRace alienRace = AlienRaceProvider.GetAlienRace(raceDef);
+            AlienRace alienRace = ProviderAlienRaces.GetAlienRace(raceDef);
             if (alienRace == null) {
                 return HumanlikeBeards;
             }

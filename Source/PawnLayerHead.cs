@@ -9,6 +9,12 @@ using Verse;
 
 namespace EdB.PrepareCarefully {
     public class PawnLayerHead : PawnLayer {
+        public delegate void HeadTypeUpdatedHandler(HeadTypeDef headTypeDef);
+        public delegate void SkinColorUpdatedHandler(Color color);
+
+        public event HeadTypeUpdatedHandler HeadTypeUpdated;
+        public event SkinColorUpdatedHandler SkinColorUpdated;
+
         private List<PawnLayerOption> options = new List<PawnLayerOption>();
         private List<Color> swatches = null;
 
@@ -36,23 +42,17 @@ namespace EdB.PrepareCarefully {
             }
         }
 
-        public override bool IsOptionSelected(CustomPawn pawn, PawnLayerOption option) {
+        public override bool IsOptionSelected(CustomizedPawn pawn, PawnLayerOption option) {
             var headOption = option as PawnLayerOptionHead;
             if (headOption == null) {
                 return false;
             }
-            return pawn.HeadType == headOption.HeadType;
+            return pawn.Pawn.story.headType == headOption.HeadType;
         }
-
-        public override int? GetSelectedIndex(CustomPawn pawn) {
+        public override int? GetSelectedIndex(CustomizedPawn pawn) {
             int selectedIndex = options.FirstIndexOf((option) => {
-                PawnLayerOptionHead headOption = option as PawnLayerOptionHead;
-                if (headOption == null) {
-                    return false;
-                }
-                else {
-                    return headOption.HeadType == pawn.HeadType;
-                }
+                var o = option as PawnLayerOptionHead;
+                return option is PawnLayerOptionHead headOption && headOption.HeadType == pawn.Pawn.story.headType;
             });
             if (selectedIndex > -1) {
                 return selectedIndex;
@@ -61,8 +61,7 @@ namespace EdB.PrepareCarefully {
                 return null;
             }
         }
-
-        public override PawnLayerOption GetSelectedOption(CustomPawn pawn) {
+        public override PawnLayerOption GetSelectedOption(CustomizedPawn pawn) {
             int? selectedIndex = GetSelectedIndex(pawn);
             if (selectedIndex == null) {
                 return null;
@@ -75,19 +74,40 @@ namespace EdB.PrepareCarefully {
             }
         }
 
-        public override void SelectOption(CustomPawn pawn, PawnLayerOption option) {
+        public override void SelectOption(CustomizedPawn pawn, PawnLayerOption option) {
             PawnLayerOptionHead headOption = option as PawnLayerOptionHead;
+            HeadTypeUpdated?.Invoke(headOption.HeadType);
             if (headOption != null) {
-                pawn.HeadType = headOption.HeadType;
+                pawn.Pawn.story.headType = headOption.HeadType;
+                pawn.Pawn.Drawer?.renderer?.SetAllGraphicsDirty();
             }
         }
 
-        public override Color GetSelectedColor(CustomPawn pawn) {
-            return pawn.SkinColor;
+        public override Color GetSelectedColor(CustomizedPawn pawn) {
+            return pawn.Pawn.story.SkinColor;
         }
 
-        public override void SelectColor(CustomPawn pawn, Color color) {
-            pawn.SkinColor = color;
+        public override void SelectColor(CustomizedPawn pawn, Color color) {
+            if (color == pawn.Pawn.story.SkinColor) {
+                return;
+            }
+            SkinColorUpdated?.Invoke(color);
+            bool removeOverride = false;
+            var melaninGeneDef = pawn.Pawn.genes.GetMelaninGene();
+            Gene activeSkinColorGene = null;
+            if (pawn.Pawn?.genes?.GenesListForReading != null) {
+                activeSkinColorGene = pawn.Pawn.genes.GenesListForReading.Where(g => g.Active && g.def.skinColorOverride.HasValue && g.overriddenByGene == null).FirstOrDefault();
+            }
+            if (activeSkinColorGene == null && melaninGeneDef?.skinColorBase != null && melaninGeneDef.skinColorBase == color) {
+                removeOverride = true;
+            }
+            if (removeOverride) {
+                pawn.Pawn.story.skinColorOverride = null;
+            }
+            else {
+                pawn.Pawn.story.skinColorOverride = color;
+            }
+            pawn.Pawn.Drawer?.renderer?.SetAllGraphicsDirty();
         }
     }
 }

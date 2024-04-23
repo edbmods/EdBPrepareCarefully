@@ -3,10 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Text;
-using EdB.PrepareCarefully.HarmonyPatches;
 using UnityEngine;
 using Verse;
-using Verse.Noise;
 
 namespace EdB.PrepareCarefully {
 

@@ -14,6 +14,7 @@ namespace EdB.PrepareCarefully {
         public List<SaveRecordEquipmentV3> equipment = new List<SaveRecordEquipmentV3>();
         public List<SaveRecordParentChildGroupV3> parentChildGroups = new List<SaveRecordParentChildGroupV3>();
         public List<SaveRecordRelationshipV3> relationships = new List<SaveRecordRelationshipV3>();
+        public List<SaveRecordTemporaryPawnV5> temporaryPawns = new List<SaveRecordTemporaryPawnV5>();
 
         public void ExposeData() {
             Scribe_Values.Look<int>(ref this.version, "version", VERSION, true);
@@ -22,6 +23,7 @@ namespace EdB.PrepareCarefully {
             Scribe_Collections.Look<SaveRecordParentChildGroupV3>(ref this.parentChildGroups, "parentChildGroups", LookMode.Deep, null);
             Scribe_Collections.Look<SaveRecordRelationshipV3>(ref this.relationships, "relationships", LookMode.Deep, null);
             Scribe_Collections.Look<SaveRecordEquipmentV3>(ref this.equipment, "equipment", LookMode.Deep, null);
+            Scribe_Collections.Look<SaveRecordTemporaryPawnV5>(ref this.temporaryPawns, "temporaryPawns", LookMode.Deep, null);
         }
     }
 }

@@ -8,10 +8,10 @@ using Verse;
 using Verse.Sound;
 namespace EdB.PrepareCarefully {
     public class PanelRelationshipsParentChild : PanelBase {
-        public delegate void AddParentToGroupHandler(ParentChildGroup group, CustomPawn pawn);
-        public delegate void RemoveParentFromGroupHandler(ParentChildGroup group, CustomPawn pawn);
-        public delegate void AddChildToGroupHandler(ParentChildGroup group, CustomPawn pawn);
-        public delegate void RemoveChildFromGroupHandler(ParentChildGroup group, CustomPawn pawn);
+        public delegate void AddParentToGroupHandler(ParentChildGroup group, CustomizedPawn pawn);
+        public delegate void RemoveParentFromGroupHandler(ParentChildGroup group, CustomizedPawn pawn);
+        public delegate void AddChildToGroupHandler(ParentChildGroup group, CustomizedPawn pawn);
+        public delegate void RemoveChildFromGroupHandler(ParentChildGroup group, CustomizedPawn pawn);
         public delegate void RemoveGroupHandler(ParentChildGroup group);
         public delegate void AddGroupHandler(ParentChildGroup group);
 
@@ -21,7 +21,7 @@ namespace EdB.PrepareCarefully {
         public event RemoveChildFromGroupHandler ChildRemovedFromGroup;
         public event AddGroupHandler GroupAdded;
 
-        private ScrollViewHorizontal scrollView = new ScrollViewHorizontal();
+        private WidgetScrollViewHorizontal scrollView = new WidgetScrollViewHorizontal();
         private Rect RectScrollView;
         private float SpacingGroup = 16;
         private Vector2 SizePawn = new Vector2(90, 90);
@@ -44,6 +44,10 @@ namespace EdB.PrepareCarefully {
         private Color ColorChildEmpty = new Color(22f / 255f, 22f / 255f, 23f / 255f, 0.40f);
 
         private HashSet<BackstoryDef> visibleBackstories = new HashSet<BackstoryDef>();
+        public ModState State { get; set; }
+        public ViewState ViewState { get; set; }
+        public ManagerRelationships RelationshipManager { get; set; }
+        public ControllerTabViewRelationships Controller { get; set; }
 
         public PanelRelationshipsParentChild() {
             // TODO: Pull this out and put it in a utility somewhere, i.e. ProviderBackstory.
@@ -63,8 +67,8 @@ namespace EdB.PrepareCarefully {
             Vector2 padding = Style.SizePanelPadding;
             RectScrollView = new Rect(padding.x, BodyRect.y, rect.width - padding.x * 2, rect.height - BodyRect.y - padding.y);
         }
-        protected override void DrawPanelContent(State state) {
-            base.DrawPanelContent(state);
+        protected override void DrawPanelContent() {
+            base.DrawPanelContent();
             float cursor = 0;
 
             GUI.color = Color.white;
@@ -72,7 +76,7 @@ namespace EdB.PrepareCarefully {
             GUI.BeginGroup(RectScrollView);
             scrollView.Begin(new Rect(Vector2.zero, RectScrollView.size));
             try {
-                foreach (var group in PrepareCarefully.Instance.RelationshipManager.ParentChildGroups) {
+                foreach (var group in State.Customizations.ParentChildGroups) {
                     cursor = DrawGroup(cursor, group);
                 }
                 cursor = DrawNextGroup(cursor);
@@ -98,9 +102,9 @@ namespace EdB.PrepareCarefully {
         }
         
         protected struct PawnGroupPair {
-            public CustomPawn Pawn;
+            public CustomizedPawn Pawn;
             public ParentChildGroup Group;
-            public PawnGroupPair(CustomPawn Pawn, ParentChildGroup Group) {
+            public PawnGroupPair(CustomizedPawn Pawn, ParentChildGroup Group) {
                 this.Pawn = Pawn;
                 this.Group = Group;
             }
@@ -165,7 +169,7 @@ namespace EdB.PrepareCarefully {
                 Style.SetGUIColorForButton(parentPawnRect);
                 GUI.DrawTexture(addParentRect, Textures.TextureButtonAdd);
                 if (Widgets.ButtonInvisible(parentPawnRect)) {
-                    ShowParentDialogForGroup(group, null, (CustomPawn pawn) => {
+                    ShowParentDialogForGroup(group, null, (CustomizedPawn pawn) => {
                         ParentAddedToGroup(group, pawn);
                     });
                 }
@@ -217,7 +221,7 @@ namespace EdB.PrepareCarefully {
                 Style.SetGUIColorForButton(childPawnRect);
                 GUI.DrawTexture(addChildRect, Textures.TextureButtonAdd);
                 if (Widgets.ButtonInvisible(childPawnRect)) {
-                    ShowChildDialogForGroup(group, null, (CustomPawn pawn) => {
+                    ShowChildDialogForGroup(group, null, (CustomizedPawn pawn) => {
                         ChildAddedToGroup(group, pawn);
                     });
                 }
@@ -236,12 +240,12 @@ namespace EdB.PrepareCarefully {
 
             return cursor;
         }
-        protected void DrawPortrait(CustomPawn pawn, Rect rect) {
+        protected void DrawPortrait(CustomizedPawn pawn, Rect rect) {
             Rect parentNameRect = new Rect(rect.x, rect.yMax - 34, rect.width, 26);
             Text.Font = GameFont.Small;
             Text.Anchor = TextAnchor.UpperCenter;
             GUI.color = Style.ColorText;
-            Widgets.Label(parentNameRect, pawn.ShortName);
+            Widgets.Label(parentNameRect, GetPawnShortName(pawn));
             GUI.color = Color.white;
 
             Rect parentProfessionRect = new Rect(rect.x, rect.yMax - 18, rect.width, 18);
@@ -253,20 +257,17 @@ namespace EdB.PrepareCarefully {
             Text.Font = GameFont.Small;
             Text.Anchor = TextAnchor.UpperLeft;
 
-            bool hidden = pawn.Hidden;
-            if (!hidden) {
-                Rect parentPortraitRect = rect.InsetBy(6);
-                parentPortraitRect.y -= 8;
-                var parentPortraitTexture = pawn.GetPortrait(parentPortraitRect.size);
-                GUI.DrawTexture(parentPortraitRect.OffsetBy(0, -4), parentPortraitTexture);
+            if (IsPawnVisible(pawn)) {
+                Rect clipRect = new Rect(rect.x, rect.y, rect.width, 60);
+                WidgetPortrait.Draw(pawn.Pawn, clipRect, new Rect(0, 0, rect.width, 70).OutsetBy(10, 10).OffsetBy(0, -3));
             }
             else {
                 GUI.color = Style.ColorButton;
                 Rect parentPortraitRect = new Rect(rect.MiddleX() - SizeGender.HalfX(), rect.y + SpacingGender, SizeGender.x, SizeGender.y);
-                if (pawn.Gender == Gender.Female) {
+                if (pawn.TemporaryPawn.Gender == Gender.Female) {
                     GUI.DrawTexture(parentPortraitRect, Textures.TextureGenderFemaleLarge);
                 }
-                else if (pawn.Gender == Gender.Male) {
+                else if (pawn.TemporaryPawn.Gender == Gender.Male) {
                     GUI.DrawTexture(parentPortraitRect, Textures.TextureGenderMaleLarge);
                 }
                 else {
@@ -276,54 +277,87 @@ namespace EdB.PrepareCarefully {
             
             TooltipHandler.TipRegion(rect, GetTooltipText(pawn));
         }
-        protected string GetTooltipText(CustomPawn pawn) {
+        public bool IsPawnVisible(CustomizedPawn pawn) {
+            return pawn.Type != CustomizedPawnType.Hidden && pawn.Type != CustomizedPawnType.Temporary;
+        }
+
+        // TODO: Move somewhere else and de-dupe with other panel
+        protected string GetPawnShortName(CustomizedPawn customizedPawn) {
+            if (customizedPawn.Type == CustomizedPawnType.Hidden) {
+                if (customizedPawn.TemporaryPawn != null) {
+                    return "EdB.PC.Pawn.HiddenPawnNameShort".Translate(customizedPawn.TemporaryPawn.Index);
+                }
+                else {
+                    return "EdB.PC.Pawn.HiddenPawnNameShort".Translate();
+                }
+            }
+            else if (customizedPawn.Type == CustomizedPawnType.Temporary) {
+                if (customizedPawn.TemporaryPawn != null) {
+                    return "EdB.PC.Pawn.TemporaryPawnNameShort".Translate(customizedPawn.TemporaryPawn.Index);
+                }
+                else {
+                    return "EdB.PC.Pawn.TemporaryPawnNameShort".Translate();
+                }
+            }
+            else {
+                Pawn pawn = customizedPawn?.Pawn;
+                if (pawn == null) {
+                    Logger.Warning("Pawn was null");
+                    return "";
+                }
+                return pawn.LabelShortCap;
+            }
+
+        }
+
+        protected string GetTooltipText(CustomizedPawn pawn) {
             string description;
-            bool hidden = pawn.Hidden;
-            if (!hidden) {
-                string age = pawn.BiologicalAge != pawn.ChronologicalAge ?
-                    "EdB.PC.Pawn.AgeWithChronological".Translate(pawn.BiologicalAge, pawn.ChronologicalAge) :
-                    "EdB.PC.Pawn.AgeWithoutChronological".Translate(pawn.BiologicalAge);
-                description = pawn.Gender != Gender.None ?
-                    "EdB.PC.Pawn.PawnDescriptionWithGender".Translate(pawn.ProfessionLabel, pawn.Gender.GetLabel(), age) :
-                    "EdB.PC.Pawn.PawnDescriptionNoGender".Translate(pawn.ProfessionLabel, age);
+            if (IsPawnVisible(pawn)) {
+                string age = pawn.Pawn.ageTracker.AgeBiologicalYears != pawn.Pawn.ageTracker.AgeChronologicalYears ?
+                    "EdB.PC.Pawn.AgeWithChronological".Translate(pawn.Pawn.ageTracker.AgeBiologicalYears, pawn.Pawn.ageTracker.AgeChronologicalYears) :
+                    "EdB.PC.Pawn.AgeWithoutChronological".Translate(pawn.Pawn.ageTracker.AgeBiologicalYears);
+                description = pawn.Pawn.gender != Gender.None ?
+                    "EdB.PC.Pawn.PawnDescriptionWithGender".Translate(UtilityPawns.GetShortProfessionLabel(pawn.Pawn), pawn.Pawn.gender.GetLabel(), age) :
+                    "EdB.PC.Pawn.PawnDescriptionNoGender".Translate(UtilityPawns.GetShortProfessionLabel(pawn.Pawn), age);
+                return pawn.Pawn.Label + "\n" + description;
             }
             else {
                 string profession = "EdB.PC.Pawn.HiddenPawnProfession".Translate();
-                description = pawn.Gender != Gender.None ?
-                    "EdB.PC.Pawn.HiddenPawnDescriptionWithGender".Translate(profession, pawn.Gender.GetLabel()) :
+                description = (pawn.TemporaryPawn?.Gender ?? Gender.None) != Gender.None ?
+                    "EdB.PC.Pawn.HiddenPawnDescriptionWithGender".Translate(profession, pawn.TemporaryPawn?.Gender.GetLabel()) :
                     "EdB.PC.Pawn.HiddenPawnDescriptionNoGender".Translate(profession);
+                return GetPawnShortName(pawn) + "\n" + description;
             }
-            return pawn.FullName + "\n" + description;
         }
-        protected List<WidgetTable<CustomPawn>.RowGroup> rowGroups = new List<WidgetTable<CustomPawn>.RowGroup>();
-        protected void ShowParentDialogForGroup(ParentChildGroup group, CustomPawn selected, Action<CustomPawn> action) {
-            CustomPawn selectedPawn = selected;
-            HashSet<CustomPawn> disabled = new HashSet<CustomPawn>();
+        protected List<WidgetTable<CustomizedPawn>.RowGroup> rowGroups = new List<WidgetTable<CustomizedPawn>.RowGroup>();
+        protected void ShowParentDialogForGroup(ParentChildGroup group, CustomizedPawn selected, Action<CustomizedPawn> action) {
+            CustomizedPawn selectedPawn = selected;
+            HashSet<CustomizedPawn> disabled = new HashSet<CustomizedPawn>();
             if (group != null) {
                 disabled.AddRange(group.Parents);
                 disabled.AddRange(group.Children);
             }
             rowGroups.Clear();
-            rowGroups.Add(new WidgetTable<CustomPawn>.RowGroup("<b>" + "EdB.PC.AddParentChild.Header.SelectColonist".Translate() + "</b>",
-                PrepareCarefully.Instance.RelationshipManager.AvailableColonyPawns));
-            List<CustomPawn> sortedHiddenPawns = PrepareCarefully.Instance.RelationshipManager.HiddenParentChildPawns.ToList();
+            rowGroups.Add(new WidgetTable<CustomizedPawn>.RowGroup("<b>" + "EdB.PC.AddParentChild.Header.SelectColonist".Translate() + "</b>",
+                RelationshipManager.AvailableColonyPawns));
+            List<CustomizedPawn> sortedHiddenPawns = RelationshipManager.HiddenParentChildPawns.ToList();
             sortedHiddenPawns.Sort((a, b) => {
                 if (a.Type != b.Type) {
-                    return a.Type == CustomPawnType.Hidden ? -1 : 1;
+                    return a.Type == CustomizedPawnType.Hidden ? -1 : 1;
                 }
                 else {
-                    int aInt = a.Index == null ? 0 : a.Index.Value;
-                    int bInt = b.Index == null ? 0 : b.Index.Value;
+                    int aInt = a.TemporaryPawn.Index;
+                    int bInt = b.TemporaryPawn.Index;
                     return aInt.CompareTo(bInt);
                 }
             });
-            rowGroups.Add(new WidgetTable<CustomPawn>.RowGroup("<b>" + "EdB.PC.AddParentChild.Header.SelectWorldPawn".Translate() + "</b>",
-                PrepareCarefully.Instance.RelationshipManager.AvailableWorldPawns));
-            WidgetTable<CustomPawn>.RowGroup newPawnGroup = new WidgetTable<CustomPawn>.RowGroup("<b>" + "EdB.PC.AddParentChild.Header.CreateTemporaryPawn".Translate() + "</b>", PrepareCarefully.Instance.RelationshipManager.TemporaryPawns);
+            rowGroups.Add(new WidgetTable<CustomizedPawn>.RowGroup("<b>" + "EdB.PC.AddParentChild.Header.SelectWorldPawn".Translate() + "</b>",
+                RelationshipManager.AvailableWorldPawns));
+            WidgetTable<CustomizedPawn>.RowGroup newPawnGroup = new WidgetTable<CustomizedPawn>.RowGroup("<b>" + "EdB.PC.AddParentChild.Header.CreateTemporaryPawn".Translate() + "</b>", RelationshipManager.TemporaryPawns);
             rowGroups.Add(newPawnGroup);
-            DialogSelectParentChildPawn pawnDialog = new DialogSelectParentChildPawn() {
+            var pawnDialog = new DialogSelectParentChildPawn() {
                 HeaderLabel = "EdB.PC.AddParentChild.Header.AddParent".Translate(),
-                SelectAction = (CustomPawn pawn) => { selectedPawn = pawn; },
+                SelectAction = (CustomizedPawn pawn) => { selectedPawn = pawn; },
                 RowGroups = rowGroups,
                 DisabledPawns = disabled,
                 ConfirmValidation = () => {
@@ -336,11 +370,11 @@ namespace EdB.PrepareCarefully {
                 },
                 CloseAction = () => {
                     // If the user selected a new pawn, replace the pawn in the new pawn list with another one.
-                    int index = newPawnGroup.Rows.FirstIndexOf((CustomPawn p) => {
+                    int index = newPawnGroup.Rows.FirstIndexOf((CustomizedPawn p) => {
                         return p == selectedPawn;
                     });
-                    if (index > -1 && index < PrepareCarefully.Instance.RelationshipManager.TemporaryPawns.Count) {
-                        selectedPawn = PrepareCarefully.Instance.RelationshipManager.ReplaceNewTemporaryCharacter(index);
+                    if (index > -1 && index < RelationshipManager.TemporaryPawns.Count) {
+                        selectedPawn = RelationshipManager.ReplaceNewTemporaryCharacter(index);
                     }
                     action(selectedPawn);
                 }
@@ -348,36 +382,36 @@ namespace EdB.PrepareCarefully {
             Find.WindowStack.Add(pawnDialog);
         }
 
-        protected void ShowChildDialogForGroup(ParentChildGroup group, CustomPawn selected, Action<CustomPawn> action) {
-            CustomPawn selectedPawn = selected;
-            HashSet<CustomPawn> disabled = new HashSet<CustomPawn>();
+        protected void ShowChildDialogForGroup(ParentChildGroup group, CustomizedPawn selected, Action<CustomizedPawn> action) {
+            CustomizedPawn selectedPawn = selected;
+            HashSet<CustomizedPawn> disabled = new HashSet<CustomizedPawn>();
             if (group != null) {
                 disabled.AddRange(group.Parents);
                 disabled.AddRange(group.Children);
             }
             rowGroups.Clear();
-            rowGroups.Add(new WidgetTable<CustomPawn>.RowGroup("<b>" + "EdB.PC.AddParentChild.Header.SelectColonist".Translate() + "</b>",
-                PrepareCarefully.Instance.RelationshipManager.ColonyAndWorldPawnsForRelationships.Where((CustomPawn pawn) => {
-                    return pawn.Type == CustomPawnType.Colonist;
+            rowGroups.Add(new WidgetTable<CustomizedPawn>.RowGroup("<b>" + "EdB.PC.AddParentChild.Header.SelectColonist".Translate() + "</b>",
+                RelationshipManager.ColonyAndWorldPawnsForRelationships.Where((CustomizedPawn pawn) => {
+                    return pawn.Type == CustomizedPawnType.Colony;
                 })));
-            List<CustomPawn> sortedHiddenPawns = PrepareCarefully.Instance.RelationshipManager.HiddenParentChildPawns.ToList();
+            List<CustomizedPawn> sortedHiddenPawns = RelationshipManager.HiddenParentChildPawns.ToList();
             sortedHiddenPawns.Sort((a, b) => {
                 if (a.Type != b.Type) {
-                    return a.Type == CustomPawnType.Hidden ? -1 : 1;
+                    return a.Type == CustomizedPawnType.Hidden ? -1 : 1;
                 }
                 else {
-                    int aInt = a.Index == null ? 0 : a.Index.Value;
-                    int bInt = b.Index == null ? 0 : b.Index.Value;
+                    int aInt = a.TemporaryPawn.Index;
+                    int bInt = b.TemporaryPawn.Index;
                     return aInt.CompareTo(bInt);
                 }
             });
-            rowGroups.Add(new WidgetTable<CustomPawn>.RowGroup("<b>" + "EdB.PC.AddParentChild.Header.SelectWorldPawn".Translate() + "</b>",
-                PrepareCarefully.Instance.RelationshipManager.AvailableWorldPawns.Concat(sortedHiddenPawns)));
-            WidgetTable<CustomPawn>.RowGroup newPawnGroup = new WidgetTable<CustomPawn>.RowGroup("EdB.PC.AddParentChild.Header.CreateTemporaryPawn".Translate(), PrepareCarefully.Instance.RelationshipManager.TemporaryPawns);
+            rowGroups.Add(new WidgetTable<CustomizedPawn>.RowGroup("<b>" + "EdB.PC.AddParentChild.Header.SelectWorldPawn".Translate() + "</b>",
+                RelationshipManager.AvailableWorldPawns.Concat(sortedHiddenPawns)));
+            WidgetTable<CustomizedPawn>.RowGroup newPawnGroup = new WidgetTable<CustomizedPawn>.RowGroup("EdB.PC.AddParentChild.Header.CreateTemporaryPawn".Translate(), RelationshipManager.TemporaryPawns);
             rowGroups.Add(newPawnGroup);
-            DialogSelectParentChildPawn pawnDialog = new DialogSelectParentChildPawn() {
+            var pawnDialog = new DialogSelectParentChildPawn() {
                 HeaderLabel = "EdB.PC.AddParentChild.Header.AddChild".Translate(),
-                SelectAction = (CustomPawn pawn) => { selectedPawn = pawn; },
+                SelectAction = (CustomizedPawn pawn) => { selectedPawn = pawn; },
                 RowGroups = rowGroups,
                 DisabledPawns = disabled,
                 ConfirmValidation = () => {
@@ -390,11 +424,11 @@ namespace EdB.PrepareCarefully {
                 },
                 CloseAction = () => {
                     // If the user selected a new pawn, replace the pawn in the new pawn list with another one.
-                    int index = newPawnGroup.Rows.FirstIndexOf((CustomPawn p) => {
+                    int index = newPawnGroup.Rows.FirstIndexOf((CustomizedPawn p) => {
                         return p == selectedPawn;
                     });
-                    if (index > -1 && index < PrepareCarefully.Instance.RelationshipManager.TemporaryPawns.Count) {
-                        selectedPawn = PrepareCarefully.Instance.RelationshipManager.ReplaceNewTemporaryCharacter(index);
+                    if (index > -1 && index < RelationshipManager.TemporaryPawns.Count) {
+                        selectedPawn = RelationshipManager.ReplaceNewTemporaryCharacter(index);
                     }
                     action(selectedPawn);
                 }
@@ -423,7 +457,7 @@ namespace EdB.PrepareCarefully {
                 Style.SetGUIColorForButton(parentPawnRect);
                 GUI.DrawTexture(addParentRect, Textures.TextureButtonAdd);
                 if (Widgets.ButtonInvisible(parentPawnRect)) {
-                    ShowParentDialogForGroup(null, null, (CustomPawn pawn) => {
+                    ShowParentDialogForGroup(null, null, (CustomizedPawn pawn) => {
                         ParentChildGroup group = new ParentChildGroup();
                         group.Parents.Add(pawn);
                         GroupAdded(group);
@@ -442,7 +476,7 @@ namespace EdB.PrepareCarefully {
                 Style.SetGUIColorForButton(childPawnRect);
                 GUI.DrawTexture(addChildRect, Textures.TextureButtonAdd);
                 if (Widgets.ButtonInvisible(childPawnRect)) {
-                    ShowChildDialogForGroup(null, null, (CustomPawn pawn) => {
+                    ShowChildDialogForGroup(null, null, (CustomizedPawn pawn) => {
                         ParentChildGroup group = new ParentChildGroup();
                         group.Children.Add(pawn);
                         GroupAdded(group);
@@ -469,13 +503,13 @@ namespace EdB.PrepareCarefully {
 
             return cursor;
         }
-        private string GetProfessionLabel(CustomPawn pawn) {
-            bool hidden = pawn.Hidden;
+        private string GetProfessionLabel(CustomizedPawn customizedPawn) {
+            bool hidden = customizedPawn.Type == CustomizedPawnType.Hidden;
             if (!hidden) {
-                return pawn.Type == CustomPawnType.Colonist ? "EdB.PC.AddParentChild.Colony".Translate() : "EdB.PC.AddParentChild.World".Translate();
+                return customizedPawn.Type == CustomizedPawnType.Colony ? "EdB.PC.AddParentChild.Colony".Translate() : "EdB.PC.AddParentChild.World".Translate();
             }
             else {
-                return pawn.Type == CustomPawnType.Temporary ? "EdB.PC.AddParentChild.Temporary".Translate() : "EdB.PC.AddParentChild.World".Translate();
+                return customizedPawn.Type == CustomizedPawnType.Temporary ? "EdB.PC.AddParentChild.Temporary".Translate() : "EdB.PC.AddParentChild.World".Translate();
             }
         }
     }
