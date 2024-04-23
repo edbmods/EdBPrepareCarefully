@@ -5,10 +5,9 @@
 
  - Compatibility for 1.5
  - Now requires the Harmony mod
- - Added new larger layout
- - Changed the user interface for editing apparel to better support how
-   apparel works in the game by adding an Apparel panel
- - Added panels for Possession, Titles and Abilities
+ - Added a new larger layout
+ - Added an Apparel panel to better support the way apparel works in the game
+ - Added panels for Possessions, Titles and Abilities
  - Removed the Faction panel
  - Moved favorite color selection out of its own panel and into the Backstory
    panel
