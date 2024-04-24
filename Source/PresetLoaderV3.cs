@@ -103,7 +103,7 @@ namespace EdB.PrepareCarefully {
                 try {
                     Scribe_Collections.Look<SaveRecordPawnV3>(ref hiddenPawns, "hiddenPawns", LookMode.Deep, null);
                 }
-                catch (Exception e) {
+                catch (Exception) {
                     //Messages.Message("EdB.PC.Dialog.Preset.Error.Failed".Translate(), MessageTypeDefOf.ThreatBig);
                     //Logger.Warning("Error while loading preset. Failed to load hidden pawns", e);
                     //Logger.Warning("Preset was created with the following mods: " + ModString);

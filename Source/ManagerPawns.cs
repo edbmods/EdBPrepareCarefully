@@ -513,6 +513,10 @@ namespace EdB.PrepareCarefully {
             foreach (var customizedSkill in pawn.Customizations.Skills) {
                 if (modifiers.TryGetValue(customizedSkill.SkillDef, out int minimumLevel)) {
                     customizedSkill.Level = minimumLevel;
+                    var skillRecord = pawn.Pawn.skills.GetSkill(customizedSkill.SkillDef);
+                    if (skillRecord != null) {
+                        skillRecord.Level = minimumLevel;
+                    }
                 }
             }
             CostAffected?.Invoke();
@@ -523,6 +527,10 @@ namespace EdB.PrepareCarefully {
             }
             foreach (var customizedSkill in pawn.Customizations.Skills) {
                 customizedSkill.Level = customizedSkill.OriginalLevel;
+                var skillRecord = pawn.Pawn.skills.GetSkill(customizedSkill.SkillDef);
+                if (skillRecord != null) {
+                    skillRecord.Level = customizedSkill.OriginalLevel;
+                }
             }
             CostAffected?.Invoke();
         }

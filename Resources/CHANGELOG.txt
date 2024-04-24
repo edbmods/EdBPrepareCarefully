@@ -10,6 +10,7 @@
    - Fixed a problem where the color selector was not visible in the Apparel
      dialog in some cases
    - Fixed a problem where abilities were written to the save file twice
+   - Fixed the skill clear and reset buttons 
 
  _____________________________________________________________________________
  
