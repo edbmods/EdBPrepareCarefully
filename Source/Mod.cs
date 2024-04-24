@@ -370,6 +370,7 @@ namespace EdB.PrepareCarefully {
             namePanel.FirstNameUpdated += controllerPawns.UpdateFirstName;
             namePanel.NickNameUpdated += controllerPawns.UpdateNickName;
             namePanel.LastNameUpdated += controllerPawns.UpdateLastName;
+            namePanel.NameRandomized += controllerPawns.RandomizeName;
 
             saveCharacterPanel.CharacterSaved += controllerPawns.SavePawn;
 

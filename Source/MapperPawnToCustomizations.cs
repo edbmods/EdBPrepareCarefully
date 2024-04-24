@@ -70,6 +70,8 @@ namespace EdB.PrepareCarefully {
         }
         public void MapXenotype(Pawn pawn, CustomizationsPawn customizations) {
             customizations.XenotypeDef = pawn.genes.Xenotype;
+            customizations.XenotypeName = pawn.genes.xenotypeName;
+            customizations.UniqueXenotype = pawn.genes.UniqueXenotype;
             customizations.CustomXenotype = pawn.genes.CustomXenotype;
         }
         public void MapGender(Pawn pawn, CustomizationsPawn customizations) {

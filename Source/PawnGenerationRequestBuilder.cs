@@ -20,7 +20,8 @@ namespace EdB.PrepareCarefully {
                 FixedBiologicalAge = biologicalAge,
                 FixedChronologicalAge = chronologicalAge,
                 ForceBodyType = customizations.BodyType,
-                ForcedXenotype = customizations.XenotypeDef
+                ForcedXenotype = customizations.XenotypeDef,
+                ForcedCustomXenotype = customizations.CustomXenotype,
             };
             if (customizations.PawnKind is CreepJoinerFormKindDef) {
                 wrapper.IsCreepJoiner = true;

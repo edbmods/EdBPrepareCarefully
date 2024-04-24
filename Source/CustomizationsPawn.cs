@@ -55,6 +55,8 @@ namespace EdB.PrepareCarefully {
 
         public PawnKindDef PawnKind { get; set; }
         public XenotypeDef XenotypeDef { get; set; }
+        public bool UniqueXenotype { get; set; }
+        public string XenotypeName { get; set; }
         public CustomXenotype CustomXenotype { get; set; }
         public AlienRace AlienRace { get; set; }
 

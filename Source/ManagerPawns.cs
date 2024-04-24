@@ -1155,5 +1155,15 @@ namespace EdB.PrepareCarefully {
                 PawnToCustomizationsMapper.MapFavoriteColor(pawn, customizations);
             }
         }
+
+        public void RandomizeName(CustomizedPawn customizedPawn) {
+            Pawn pawn = customizedPawn?.Pawn;
+            CustomizationsPawn customizations = customizedPawn?.Customizations;
+            if (pawn == null || customizations == null) {
+                return;
+            }
+            pawn.Name = PawnBioAndNameGenerator.GeneratePawnName(pawn, NameStyle.Full, null, false, pawn.genes.Xenotype);
+            PawnToCustomizationsMapper.MapName(pawn, customizations);
+        }
     }
 }
