@@ -441,7 +441,7 @@ namespace EdB.PrepareCarefully {
                 backgroundRect = backgroundRect.GrowBy(0, dropdownHeight);
             }
             backgroundRect = backgroundRect.GrowBy(0, dropdownHeight); // Add space for the cost label
-            if (SelectedOption.DefaultSpawnType == EquipmentSpawnType.SpawnsWith || SelectedOption.DefaultSpawnType == EquipmentSpawnType.SpawnsNear) {
+            if (!SelectedOption.RestrictedSpawnType && (SelectedOption.DefaultSpawnType == EquipmentSpawnType.SpawnsWith || SelectedOption.DefaultSpawnType == EquipmentSpawnType.SpawnsNear)) {
                 backgroundRect = backgroundRect.GrowBy(0, dropdownHeight); // Add space for spawn type dropdown
             }
             if (SelectedOption.Animal && (SelectedOption?.ThingDef?.race?.hasGenders ?? false)) {
@@ -480,7 +480,7 @@ namespace EdB.PrepareCarefully {
                 y += 24;
 
                 // Draw Spawn type
-                if (SelectedOption.DefaultSpawnType == EquipmentSpawnType.SpawnsWith || SelectedOption.DefaultSpawnType == EquipmentSpawnType.SpawnsNear) {
+                if (!SelectedOption.RestrictedSpawnType && (SelectedOption.DefaultSpawnType == EquipmentSpawnType.SpawnsWith || SelectedOption.DefaultSpawnType == EquipmentSpawnType.SpawnsNear)) {
                     GUI.color = Color.white;
                     Rect spawnTypeDropdownRect = new Rect(insetMargin, y, width, 18);
                     string selectedSpawnTypeLabel = SelectedValues.SpawnType != null ? UtilityEquipmentSpawnType.LabelForSpawnTypeHeader(SelectedValues.SpawnType.Value) : "EdB.PC.Equipment.DefaultOption".Translate().ToString();

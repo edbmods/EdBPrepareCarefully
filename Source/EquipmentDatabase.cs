@@ -394,10 +394,13 @@ namespace EdB.PrepareCarefully {
                 }
                 progress = "1";
 
+                bool restrictedSpawnType = false;
+                var defaultSpawnType = DefaultSpawnTypeForThingDef(def, out restrictedSpawnType);
                 EquipmentOption option = new EquipmentOption() {
                     EquipmentType = type,
                     ThingDef = def,
-                    DefaultSpawnType = DefaultSpawnTypeForThingDef(def)
+                    DefaultSpawnType = defaultSpawnType,
+                    RestrictedSpawnType = restrictedSpawnType
                 };
                 progress = "2";
 
@@ -455,9 +458,13 @@ namespace EdB.PrepareCarefully {
             }
             return true;
         }
-
         public EquipmentSpawnType DefaultSpawnTypeForThingDef(ThingDef def) {
-            //Logger.Debug("DefaultSpawnTypeForThingDef(): " + def?.defName);
+            bool restricted;
+            return DefaultSpawnTypeForThingDef(def, out restricted);
+        }
+
+        public EquipmentSpawnType DefaultSpawnTypeForThingDef(ThingDef def, out bool restricted) {
+            restricted = false;
             if (def?.race?.Animal ?? false) {
                 return EquipmentSpawnType.Animal;
             }
@@ -465,6 +472,10 @@ namespace EdB.PrepareCarefully {
                 return EquipmentSpawnType.SpawnsWith;
             }
             if (def.weaponTags?.Count > 0) {
+                return EquipmentSpawnType.SpawnsWith;
+            }
+            if (def.HasComp(typeof(CompBook))) {
+                restricted = true;
                 return EquipmentSpawnType.SpawnsWith;
             }
 
