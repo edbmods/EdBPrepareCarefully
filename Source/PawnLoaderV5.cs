@@ -203,17 +203,24 @@ namespace EdB.PrepareCarefully {
             }
 
             if (record.genes != null) {
-                if (!record.genes.xenotypeDef.NullOrEmpty()) {
-                    XenotypeDef xenotypeDef = DefDatabase<XenotypeDef>.GetNamedSilentFail(record.genes.xenotypeDef);
-                    if (xenotypeDef != null) {
-                        customizations.XenotypeDef = xenotypeDef;
-                    }
-                }
-                else if (!record.genes.customXenotypeName.NullOrEmpty()) {
+                if (!record.genes.customXenotypeName.NullOrEmpty()) {
                     var customXenotypes = ReflectionUtil.GetStaticPropertyValue<List<CustomXenotype>>(typeof(CharacterCardUtility), "CustomXenotypes");
+                    if (customXenotypes == null) {
+                        Logger.Debug("Go no custom xenotypes from the reflected property");
+                    }
                     CustomXenotype xenotype = customXenotypes?.Where(x => { return x.name == record.genes.customXenotypeName; }).FirstOrDefault();
                     if (xenotype != null) {
                         customizations.CustomXenotype = xenotype;
+                    }
+                    else {
+                        customizations.UniqueXenotype = true;
+                        customizations.XenotypeName = record.genes.customXenotypeName;
+                    }
+                }
+                else if (!record.genes.xenotypeDef.NullOrEmpty()) {
+                    XenotypeDef xenotypeDef = DefDatabase<XenotypeDef>.GetNamedSilentFail(record.genes.xenotypeDef);
+                    if (xenotypeDef != null) {
+                        customizations.XenotypeDef = xenotypeDef;
                     }
                 }
 
@@ -571,6 +578,8 @@ namespace EdB.PrepareCarefully {
                     };
                     // TODO: This looks weird; something to do with caching the label. Should rework it.
                     implant.label = implant.Label;
+                    customizations.Implants.Add(implant);
+                    Logger.Debug("Added implant customizations " + recipeDef?.defName);
                 }
                 else if (implantRecord.hediffDef != null) {
                     HediffDef hediffDef = DefDatabase<HediffDef>.GetNamedSilentFail(implantRecord.hediffDef);

@@ -95,9 +95,6 @@ namespace EdB.PrepareCarefully {
                     color = apparel.Color
                 });
             }
-            foreach (var ability in customizations.Abilities) {
-                result.abilities.Add(ability.AbilityDef.defName);
-            }
 
             OptionsHealth healthOptions = ProviderHealthOptions.GetOptions(customizedPawn.Pawn);
             foreach (Implant implant in customizations.Implants) {
@@ -157,7 +154,8 @@ namespace EdB.PrepareCarefully {
             if (ModsConfig.BiotechActive) {
                 result.genes = new SaveRecordGenesV5() {
                     xenotypeDef = customizations.XenotypeDef?.defName,
-                    customXenotypeName = customizations.CustomXenotype?.name,
+                    customXenotypeName = customizations.XenotypeName,
+                    uniqueXenotype = customizations.UniqueXenotype,
                     endogenes = customizedPawn.Pawn.genes?.Endogenes.ConvertAll(g => g.def?.defName),
                     xenogenes = customizedPawn.Pawn.genes?.Xenogenes.ConvertAll(g => g.def?.defName)
                 };

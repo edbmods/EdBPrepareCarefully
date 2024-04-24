@@ -295,6 +295,11 @@ namespace EdB.PrepareCarefully {
         }
 
         public void ScrollToSelectedApparel(Apparel apparel) {
+            EquipmentOption option = ProviderEquipment.EquipmentDatabase.FindOptionForThingDef(apparel.def);
+            if (option == null) {
+                return;
+            }
+            SelectApparelOption(option);
             ScrollToThingDef = apparel.def;
             SelectedStuff = apparel.Stuff;
             if (apparel.TryGetQuality(out QualityCategory quality)) {

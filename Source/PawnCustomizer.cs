@@ -98,21 +98,32 @@ namespace EdB.PrepareCarefully {
         }
 
         public void ApplyGeneCustomizationsToPawn(Pawn pawn, CustomizationsPawn customizations) {
+            //Logger.Debug("ApplyGeneCustomizationsToPawn()");
             if (!ModsConfig.BiotechActive || pawn == null || customizations == null) {
                 return;
             }
+            //Logger.Debug("  customizations.UniqueXenotype = " + customizations.UniqueXenotype);
+            if (customizations.UniqueXenotype) {
+                pawn.genes.xenotypeName = customizations.XenotypeName;
+            }
+            //Logger.Debug("  pawn.genes.xenotypeName = " + pawn.genes.xenotypeName);
+            //Logger.Debug("  XenotypeLabelCap = " + pawn.genes.XenotypeLabelCap);
             // May not include any customizations for genes (if loading from an older save format or from a save where
             // Biotech was disabled). In that case, we'll leave the genes from the original pawn.
             if (customizations.Genes != null) {
-                // TODO
-                //var genesToRemove = new List<Gene>();
-                //pawn?.genes?.GenesListForReading.ForEach(gene => genesToRemove.Add(gene));
-                //genesToRemove.ForEach(gene => pawn?.genes?.RemoveGene(gene));
-                //customizations?.Genes?.ForEach(gene => pawn?.genes.AddGene(gene.GeneDef, gene.Xenogene));
-                // Note that if you add a gene that affects appearance (i.e. hair color), it may overwrite
-                // any override value in the pawn story or style, so be sure to set those overrides again
-                // afterwards
+                var genesToRemove = new List<Gene>();
+                pawn?.genes?.GenesListForReading?.ForEach(gene => genesToRemove.Add(gene));
+                genesToRemove.ForEach(gene => pawn?.genes?.RemoveGene(gene));
+                customizations?.Genes?.Endogenes?.ForEach(gene => {
+                    pawn?.genes.AddGene(gene.GeneDef, false);
+                });
+                customizations?.Genes?.Xenogenes?.ForEach(gene => {
+                    pawn?.genes.AddGene(gene.GeneDef, true);
+                });
             }
+            // Note that if you add a gene that affects appearance (i.e. hair color), it may overwrite
+            // any override value in the pawn story or style, so be sure to set those overrides again
+            // afterwards
         }
 
         public void ApplyApparelCustomizationsToPawn(Pawn pawn, CustomizationsPawn customizations) {
@@ -130,7 +141,7 @@ namespace EdB.PrepareCarefully {
 
         public void ApplyAbilityCustomizationsToPawn(Pawn pawn, CustomizationsPawn customizations) {
             var abilities = customizations.Abilities;
-            List<AbilityDef> toRemove = new List<AbilityDef>(pawn.abilities.abilities.Select(a => a.def));
+            HashSet<AbilityDef> toRemove = new HashSet<AbilityDef>(pawn.abilities.abilities.Select(a => a.def));
             foreach (var def in toRemove) {
                 pawn.abilities.RemoveAbility(def);
             }
@@ -331,7 +342,7 @@ namespace EdB.PrepareCarefully {
             if (pawn == null || implant == null) {
                 return;
             }
-            //Logger.Debug("Adding implant to pawn, recipe = " + implant.Recipe?.defName + ", hediff = " + implant.HediffDef?.defName);
+            Logger.Debug("Adding implant to pawn, recipe = " + implant.Recipe?.defName + ", hediff = " + implant.HediffDef?.defName);
             if (implant.BodyPartRecord == null) {
                 Logger.Warning("Could not add implant to pawn because no BodyPartRecord is defined");
             }

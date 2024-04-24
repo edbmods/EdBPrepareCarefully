@@ -391,5 +391,9 @@ namespace EdB.PrepareCarefully {
         public void UpdateFavoriteColor(Color? color) {
             PawnManager.UpdateFavoriteColor(ViewState?.CurrentPawn, color);
         }
+
+        public void RandomizeName() {
+            PawnManager.RandomizeName(ViewState?.CurrentPawn);
+        }
     }
 }

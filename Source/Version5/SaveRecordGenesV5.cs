@@ -8,6 +8,7 @@ namespace EdB.PrepareCarefully {
     public class SaveRecordGenesV5 : IExposable {
         public string xenotypeDef;
         public string customXenotypeName;
+        public bool uniqueXenotype;
         public List<string> endogenes;
         public List<string> xenogenes;
 
@@ -17,6 +18,7 @@ namespace EdB.PrepareCarefully {
         public void ExposeData() {
             Scribe_Values.Look<string>(ref this.xenotypeDef, "xenotypeDef", null, false);
             Scribe_Values.Look<string>(ref this.customXenotypeName, "customXenotypeName", null, false);
+            Scribe_Values.Look<bool>(ref this.uniqueXenotype, "uniqueXenotype", false);
             Scribe_Collections.Look<string>(ref this.endogenes, "endogenes");
             Scribe_Collections.Look<string>(ref this.xenogenes, "xenogenes");
         }

@@ -40,27 +40,20 @@ namespace EdB.PrepareCarefully {
             CustomizedPawn pawn = ViewState.CurrentPawn;
             Pawn_GeneTracker geneTracker = pawn.Pawn.genes;
             XenotypeDef xenotypeDef = geneTracker?.Xenotype;
-            CustomXenotype customXenotype = null;
+            CustomXenotype customXenotype = geneTracker?.CustomXenotype;
 
             FieldXenotype.Rect = FieldRect.OffsetBy(0, y);
             labelTrimmer.Rect = FieldXenotype.Rect.InsetBy(8, 0);
 
-            if (customXenotype != null) {
-                FieldXenotype.Label = customXenotype.name != null ? labelTrimmer.TrimLabelIfNeeded(customXenotype.name.CapitalizeFirst()) : "";
-            }
-            else if (xenotypeDef != null) {
-                FieldXenotype.Label = labelTrimmer.TrimLabelIfNeeded(xenotypeDef.LabelCap);
-            }
+            FieldXenotype.Label = geneTracker.XenotypeLabelCap;
             FieldXenotype.Enabled = true;
             FieldXenotype.ClickAction = () => {
                 Find.WindowStack.Add(new Dialog_ViewGenes(pawn.Pawn));
             };
             FieldXenotype.DrawIconFunc = (Rect rect) => {
-                if (customXenotype != null) {
-                    GUI.DrawTexture(rect, customXenotype.IconDef?.Icon);
-                }
-                else if (xenotypeDef != null) {
-                    GUI.DrawTexture(rect, xenotypeDef.Icon);
+                Texture iconTexture = geneTracker.iconDef?.Icon ?? xenotypeDef?.Icon;
+                if (iconTexture != null) {
+                    GUI.DrawTexture(rect, geneTracker.iconDef?.Icon ?? xenotypeDef?.Icon);
                 }
             };
             FieldXenotype.IconSizeFunc = () => new Vector2(24, 24);
