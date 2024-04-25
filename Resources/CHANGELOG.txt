@@ -1,5 +1,16 @@
  _____________________________________________________________________________
  
+   Version 1.5.3
+ _____________________________________________________________________________
+
+ - Bug fixes:
+   - Removed spawn type options for books and schematics so that they can only
+     "spawn with" your pawns
+   - Fixed the positioning of the Appearance Panel dialog
+   - The Psylink hediff is now saved with the correct level
+
+ _____________________________________________________________________________
+ 
    Version 1.5.2
  _____________________________________________________________________________
 

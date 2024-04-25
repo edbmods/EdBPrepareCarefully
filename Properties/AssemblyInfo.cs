@@ -14,4 +14,4 @@ using System.Runtime.CompilerServices;
 [assembly: AssemblyVersion("1.1.1")]
 
 // Increment for each new release
-[assembly: AssemblyFileVersion("1.5.2")]
+[assembly: AssemblyFileVersion("1.5.3")]
