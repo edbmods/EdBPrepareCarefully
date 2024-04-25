@@ -54,6 +54,7 @@ namespace EdB.PrepareCarefully {
 
         public override void Resize(float width) {
 
+            Width = width;
             Vector2 panelPadding = new Vector2(16, 12);
             float panelContentWidth = width - panelPadding.x - panelPadding.x;
             Vector2 randomizeButtonSize = new Vector2(22, 22);
@@ -301,7 +302,7 @@ namespace EdB.PrepareCarefully {
             Find.WindowStack.Add(dialog);
         }
         protected float CalculateDialogPositionX() {
-            return Find.WindowStack.currentlyDrawnWindow.windowRect.x + Width + 24f;
+            return Find.WindowStack.currentlyDrawnWindow.windowRect.x + 212f + Width + 6f;
         }
         protected string PawnLayerLabel {
             get {
