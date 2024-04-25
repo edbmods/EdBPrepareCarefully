@@ -212,10 +212,14 @@ namespace EdB.PrepareCarefully {
             if (equipment.Animal) {
                 return CreateStartingAnimalScenarioPart(equipment);
             }
-            if (equipment.SpawnType == EquipmentSpawnType.SpawnsWith) {
+            var spawnType = equipment.SpawnType;
+            if (equipment.EquipmentOption.RestrictedSpawnType && equipment.EquipmentOption.DefaultSpawnType != spawnType) {
+                spawnType = equipment.EquipmentOption.DefaultSpawnType;
+            }
+            if (spawnType == EquipmentSpawnType.SpawnsWith) {
                 return CreateStartsWithScenarioPart(equipment);
             }
-            else if (equipment.SpawnType == EquipmentSpawnType.SpawnsNear) {
+            else if (spawnType == EquipmentSpawnType.SpawnsNear) {
                 return CreateScatterThingsNearScenarioPart(equipment);
             }
             else {
