@@ -55,10 +55,16 @@ namespace EdB.PrepareCarefully {
         public List<SaveRecordHediffV5> hediffs = null;
         public List<SaveRecordPossessionV5> possessions = null;
         public List<SaveRecordTitleV5> titles = null;
+        public Dictionary<string, IExposable> more = null;
 
         // Deprecated.  Here for backwards compatibility with V4
         public List<string> traitNames = new List<string>();
         public List<int> traitDegrees = new List<int>();
+        public List<SaveRecordValueGroupV5> otherValues = new List<SaveRecordValueGroupV5>();
+
+        public SaveRecordValueGroupV5 FindValueGroup(string name) {
+            return otherValues.FirstOrDefault(g => g.name == name);
+        }
 
         public void ExposeData() {
             Scribe_Values.Look<string>(ref this.id, "id", null, false);
@@ -99,6 +105,7 @@ namespace EdB.PrepareCarefully {
             Scribe_Collections.Look<string>(ref this.abilities, "abilities", LookMode.Value, null);
             Scribe_Collections.Look<SaveRecordPossessionV5>(ref this.possessions, "possessions", LookMode.Deep, null);
             Scribe_Collections.Look<SaveRecordTitleV5>(ref this.titles, "titles", LookMode.Deep, null);
+            Scribe_Collections.Look(ref this.otherValues, "otherValues");
 
             if (Scribe.mode == LoadSaveMode.Saving) {
                 Scribe_Collections.Look<SaveRecordImplantV5>(ref this.implants, "implants", LookMode.Deep, null);

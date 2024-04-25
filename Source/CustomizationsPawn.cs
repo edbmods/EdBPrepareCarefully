@@ -120,5 +120,7 @@ namespace EdB.PrepareCarefully {
 
         public Ideo Ideo { get; set; }
         public float? Certainty { get; set; }
+
+        public Dictionary<string, object> OtherCustomizations { get; set; } = new Dictionary<string, System.Object>();
     }
 }

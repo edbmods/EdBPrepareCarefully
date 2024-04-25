@@ -31,6 +31,7 @@ namespace EdB.PrepareCarefully {
             ApplyInjuryAndImplantCustomizationsToPawn(pawn, customizations);
             ApplyIdeoCustomizationToPawn(pawn, customizations);
             ApplyTitleCustomizationsToPawn(pawn, customizations);
+            ApplyOtherCustomizationsToPawn(pawn, customizations);
         }
 
         public void ApplyFavoriteColorCustomizationToPawn(Pawn pawn, CustomizationsPawn customizations) {
@@ -464,6 +465,10 @@ namespace EdB.PrepareCarefully {
                     pawn.ideo.Debug_ReduceCertainty(current - customizations.Certainty.Value);
                 }
             }
+        }
+
+        public void ApplyOtherCustomizationsToPawn(Pawn pawn, CustomizationsPawn customizations) {
+
         }
     }
 }

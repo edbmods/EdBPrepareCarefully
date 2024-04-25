@@ -659,8 +659,17 @@ namespace EdB.PrepareCarefully {
 
             LoadTitles(record, customizations, result);
             LoadPossessions(record, customizations, result);
+            LoadOtherValues(record, customizations, result);
 
             return result;
+        }
+
+        public void LoadOtherValues(SaveRecordPawnV5 record, CustomizationsPawn customizations, PawnLoaderResult result) {
+            //var group = record.FindValueGroup("Example");
+            //if (group != null) {
+            //    string color = group.GetStringValue("Color");
+            //    Logger.Debug("other value Color = " + color);
+            //}
         }
 
         protected void LoadPossessions(SaveRecordPawnV5 record, CustomizationsPawn customizations, PawnLoaderResult result) {

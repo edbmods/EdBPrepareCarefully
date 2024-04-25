@@ -32,6 +32,7 @@ namespace EdB.PrepareCarefully {
             MapApparel(pawn, result);
             MapAbilities(pawn, result);
             MapInjuriesAndImplants(pawn, result);
+            MapOtherValues(pawn, result);
 
             return result;
         }
@@ -216,7 +217,12 @@ namespace EdB.PrepareCarefully {
                     Injury injury = new Injury();
                     injury.BodyPartRecord = hediff.Part;
                     injury.Option = option;
-                    injury.Severity = hediff.Severity;
+                    if (hediff is Hediff_Level hediffLevel) {
+                        injury.Severity = hediffLevel.level;
+                    }
+                    else {
+                        injury.Severity = hediff.Severity;
+                    }
                     injury.Hediff = hediff;
                     HediffComp_GetsPermanent getsPermanent = hediff.TryGetComp<HediffComp_GetsPermanent>();
                     if (getsPermanent != null) {
@@ -293,6 +299,10 @@ namespace EdB.PrepareCarefully {
 
         public void MapFavoriteColor(Pawn pawn, CustomizationsPawn customizations) {
             customizations.FavoriteColor = pawn.story.favoriteColor;
+        }
+
+        public void MapOtherValues(Pawn pawn, CustomizationsPawn customizations) {
+
         }
     }
 }
