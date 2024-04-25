@@ -16,10 +16,13 @@
 <!-- ADDED: EdB.PC.Equipment.AvailableEquipment.QualityLabel -->
 <!-- ADDED: EdB.PC.Equipment.AvailableEquipment.RandomAnimalLabel -->
 <!-- ADDED: EdB.PC.Equipment.AvailableEquipment.SpawnTypeLabel -->
+<!-- ADDED: EdB.PC.Equipment.SelectedEquipment.SpawnType.Animal -->
+<!-- ADDED: EdB.PC.Equipment.SelectedEquipment.SpawnType.Possession -->
+<!-- ADDED: EdB.PC.Equipment.SelectedEquipment.SpawnType.SpawnsNear -->
+<!-- ADDED: EdB.PC.Equipment.SelectedEquipment.SpawnType.SpawnsWith -->
 <!-- ADDED: EdB.PC.Equipment.DefaultOption -->
 <!-- ADDED: EdB.PC.Page.Points.CostSummary.Possessions -->
 <!-- ADDED: EdB.PC.Panel.Backstory.FavoriteColorLabel -->
-
 
 <!-- v1.4.1 -->
 <!-- ADDED: EdB.PC.Page.Points.DisablePoints -->
@@ -257,8 +260,8 @@
   <EdB.PC.Equipment.LoadingProgress.StuffDefs>Processing materials...</EdB.PC.Equipment.LoadingProgress.StuffDefs>
   <EdB.PC.Equipment.LoadingProgress.ThingDefs>Processing items...</EdB.PC.Equipment.LoadingProgress.ThingDefs>
   <EdB.PC.Equipment.LoadingProgress.Finished>Finished</EdB.PC.Equipment.LoadingProgress.Finished>
-  <EdB.PC.Equipment.SelectedEquipment.SpawnType.SpawnsWith>Spawn With Colonists</EdB.PC.Equipment.SelectedEquipment.SpawnType.SpawnsWith>
-  <EdB.PC.Equipment.SelectedEquipment.SpawnType.SpawnsNear>Spawn Near Colonists</EdB.PC.Equipment.SelectedEquipment.SpawnType.SpawnsNear>
+  <EdB.PC.Equipment.SelectedEquipment.SpawnType.SpawnsWith>Start With</EdB.PC.Equipment.SelectedEquipment.SpawnType.SpawnsWith>
+  <EdB.PC.Equipment.SelectedEquipment.SpawnType.SpawnsNear>Start Near</EdB.PC.Equipment.SelectedEquipment.SpawnType.SpawnsNear>
   <EdB.PC.Equipment.SelectedEquipment.SpawnType.Possession>Possessions - {0}</EdB.PC.Equipment.SelectedEquipment.SpawnType.Possession>
   <EdB.PC.Equipment.SelectedEquipment.SpawnType.Animal>Animals</EdB.PC.Equipment.SelectedEquipment.SpawnType.Animal>
   <EdB.PC.Equipment.AvailableEquipment.AllCategoriesOption>All Categories</EdB.PC.Equipment.AvailableEquipment.AllCategoriesOption>
