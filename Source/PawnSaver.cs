@@ -71,52 +71,112 @@ namespace EdB.PrepareCarefully {
             result.chronologicalAgeInTicks = customizations.ChronologicalAgeInTicks;
             result.favoriteColor = customizations.FavoriteColor;
 
-            foreach (var trait in customizations.Traits) {
-                if (trait != null) {
-                    result.traits.Add(new SaveRecordTraitV5() {
-                        def = trait.TraitDef?.defName,
-                        degree = trait.Degree
-                    });
-                }
-            }
-            foreach (var skill in customizations.Skills) {
-                result.skills.Add(new SaveRecordSkillV4() {
-                    name = skill.SkillDef?.defName,
-                    value = skill.Level,
-                    passion = skill.Passion
-                });
-            }
-            foreach (var apparel in customizations.Apparel) {
-                result.apparel.Add(new SaveRecordApparelV5() {
-                    apparel = apparel.ThingDef?.defName,
-                    stuff = apparel.StuffDef?.defName,
-                    quality = apparel.Quality.ToString(),
-                    hitPoints = apparel.HitPoints,
-                    color = apparel.Color
-                });
-            }
-
+            ConvertTraits(result, customizations);
+            ConvertSkills(result, customizations);
+            ConvertApparel(result, customizations);
             OptionsHealth healthOptions = ProviderHealthOptions.GetOptions(customizedPawn.Pawn);
-            foreach (Implant implant in customizations.Implants) {
-                var saveRecord = new SaveRecordImplantV5(implant);
-                if (implant.BodyPartRecord != null) {
-                    UniqueBodyPart part = healthOptions.FindBodyPartsForRecord(implant.BodyPartRecord);
-                    if (part != null && part.Index > 0) {
-                        saveRecord.bodyPartIndex = part.Index;
-                    }
-                }
-                result.implants.Add(saveRecord);
+            ConvertImplants(result, customizations, healthOptions);
+            ConvertInjuries(result, customizations, healthOptions);
+            ConvertPossessions(result, customizations);
+            ConvertAbilities(result, customizations);
+            ConvertIdeo(result, customizations);
+            ConvertGenes(result, customizations);
+            ConvertTitles(result, customizations);
+            ConvertOtherValues(result, customizations);
+
+            return result;
+
+        }
+
+        public void ConvertOtherValues(SaveRecordPawnV5 result, CustomizationsPawn customizations) {
+            //var group = new SaveRecordValueGroupV5() { name = "Example" };
+            //group.SetValue("Color", "Red");
+        }
+
+        public void ConvertTitles(SaveRecordPawnV5 result, CustomizationsPawn customizations) {
+            if (!ModsConfig.RoyaltyActive) {
+                return;
             }
-            foreach (Injury injury in customizations.Injuries) {
-                var saveRecord = new SaveRecordInjuryV5(injury);
-                if (injury.BodyPartRecord != null) {
-                    UniqueBodyPart part = healthOptions.FindBodyPartsForRecord(injury.BodyPartRecord);
-                    if (part != null && part.Index > 0) {
-                        saveRecord.bodyPartIndex = part.Index;
-                    }
+            List<SaveRecordTitleV5> titleList = new List<SaveRecordTitleV5>();
+            //Dictionary<Faction, SaveRecordTitleV5> titleLookup = new Dictionary<Faction, SaveRecordTitleV5>();
+            if (customizations.Titles != null) {
+                foreach (var title in customizations.Titles) {
+                    var record = new SaveRecordTitleV5() {
+                        factionName = title.Faction?.Name,
+                        factionDef = title.Faction?.def?.defName,
+                        titleDef = title.TitleDef?.defName,
+                        favor = title.Honor,
+                    };
+                    titleList.Add(record);
+                    //titleLookup.Add(title.Faction, record);
                 }
-                result.injuries.Add(saveRecord);
             }
+            //foreach (var faction in Find.FactionManager.AllFactionsListForReading) {
+            //    int favor = customizedPawn.Pawn.royalty.GetFavor(faction);
+            //    if (favor > 0) {
+            //        if (titleLookup.TryGetValue(faction, out var title)) {
+            //            title.favor = favor;
+            //        }
+            //        else {
+            //            var record = new SaveRecordTitleV5() {
+            //                factionName = faction?.Name,
+            //                factionDef = faction?.def?.defName,
+            //                favor = favor,
+            //            };
+            //            titleList.Add(record);
+            //            titleLookup.Add(faction, record);
+            //        }
+            //    }
+            //}
+            if (titleList.Count > 0) {
+                result.titles = titleList;
+            }
+        }
+
+        public void ConvertGenes(SaveRecordPawnV5 result, CustomizationsPawn customizations) {
+            if (!ModsConfig.BiotechActive) {
+                return;
+            }
+            result.genes = new SaveRecordGenesV5() {
+                xenotypeDef = customizations.XenotypeDef?.defName,
+                customXenotypeName = customizations.XenotypeName,
+                uniqueXenotype = customizations.UniqueXenotype,
+                endogenes = customizations.Genes?.Endogenes.ConvertAll(g => g.GeneDef?.defName),
+                xenogenes = customizations.Genes?.Xenogenes.ConvertAll(g => g.GeneDef?.defName)
+            };
+        }
+
+        public void ConvertIdeo(SaveRecordPawnV5 result, CustomizationsPawn customizations) {
+            if (!ModsConfig.IdeologyActive || customizations.Ideo == null) {
+                return;
+            }
+            if (!Find.IdeoManager.classicMode) {
+                Ideo ideo = customizations.Ideo;
+                result.ideo = new SaveRecordIdeoV5() {
+                    certainty = customizations.Certainty.Value,
+                    name = ideo?.name,
+                    sameAsColony = ideo == Find.FactionManager.OfPlayer.ideos.PrimaryIdeo,
+                    culture = ideo?.culture.defName
+                };
+                if (ideo != null) {
+                    result.ideo.memes = new List<string>(ideo.memes.Select(m => m.defName));
+                }
+            }
+            else {
+                result.ideo = new SaveRecordIdeoV5() {
+                    sameAsColony = true,
+                };
+            }
+            //Logger.Debug(string.Join(", ", customizedPawn.Pawn.ideo.Ideo?.memes.Select(m => m.defName)));
+        }
+
+        public void ConvertAbilities(SaveRecordPawnV5 result, CustomizationsPawn customizations) {
+            if (customizations.Abilities != null) {
+                result.abilities.AddRange(customizations.Abilities.Select(a => a.AbilityDef.defName));
+            }
+        }
+
+        public void ConvertPossessions(SaveRecordPawnV5 result, CustomizationsPawn customizations) {
             if (!customizations.Possessions.NullOrEmpty()) {
                 result.possessions = new List<SaveRecordPossessionV5>();
                 foreach (var p in customizations.Possessions) {
@@ -128,84 +188,65 @@ namespace EdB.PrepareCarefully {
                     }
                 }
             }
-            if (customizations.Abilities != null) {
-                result.abilities.AddRange(customizedPawn.Pawn.abilities.abilities.Select(a => a.def.defName));
+        }
+
+        public void ConvertTraits(SaveRecordPawnV5 result, CustomizationsPawn customizations) {
+            foreach (var trait in customizations.Traits) {
+                if (trait != null) {
+                    result.traits.Add(new SaveRecordTraitV5() {
+                        def = trait.TraitDef?.defName,
+                        degree = trait.Degree
+                    });
+                }
             }
-            if (ModsConfig.IdeologyActive && customizations.Ideo != null) {
-                if (!Find.IdeoManager.classicMode) {
-                    Ideo ideo = customizations.Ideo;
-                    result.ideo = new SaveRecordIdeoV5() {
-                        certainty = customizations.Certainty.Value,
-                        name = ideo?.name,
-                        sameAsColony = ideo == Find.FactionManager.OfPlayer.ideos.PrimaryIdeo,
-                        culture = ideo?.culture.defName
-                    };
-                    if (ideo != null) {
-                        result.ideo.memes = new List<string>(ideo.memes.Select(m => m.defName));
+        }
+
+        public void ConvertSkills(SaveRecordPawnV5 result, CustomizationsPawn customizations) {
+            foreach (var skill in customizations.Skills) {
+                result.skills.Add(new SaveRecordSkillV4() {
+                    name = skill.SkillDef?.defName,
+                    value = skill.Level,
+                    passion = skill.Passion
+                });
+            }
+        }
+
+        public void ConvertApparel(SaveRecordPawnV5 result, CustomizationsPawn customizations) {
+            foreach (var apparel in customizations.Apparel) {
+                result.apparel.Add(new SaveRecordApparelV5() {
+                    apparel = apparel.ThingDef?.defName,
+                    style = apparel.StyleCategoryDef?.defName,
+                    stuff = apparel.StuffDef?.defName,
+                    quality = apparel.Quality.ToString(),
+                    hitPoints = apparel.HitPoints,
+                    color = apparel.Color
+                });
+            }
+        }
+        public void ConvertInjuries(SaveRecordPawnV5 result, CustomizationsPawn customizations, OptionsHealth healthOptions) {
+            foreach (Injury injury in customizations.Injuries) {
+                var saveRecord = new SaveRecordInjuryV5(injury);
+                if (injury.BodyPartRecord != null) {
+                    UniqueBodyPart part = healthOptions.FindBodyPartsForRecord(injury.BodyPartRecord);
+                    if (part != null && part.Index > 0) {
+                        saveRecord.bodyPartIndex = part.Index;
                     }
                 }
-                else {
-                    result.ideo = new SaveRecordIdeoV5() {
-                        sameAsColony = true,
-                    };
-                }
-                //Logger.Debug(string.Join(", ", customizedPawn.Pawn.ideo.Ideo?.memes.Select(m => m.defName)));
+                result.injuries.Add(saveRecord);
             }
-            if (ModsConfig.BiotechActive) {
-                result.genes = new SaveRecordGenesV5() {
-                    xenotypeDef = customizations.XenotypeDef?.defName,
-                    customXenotypeName = customizations.XenotypeName,
-                    uniqueXenotype = customizations.UniqueXenotype,
-                    endogenes = customizedPawn.Pawn.genes?.Endogenes.ConvertAll(g => g.def?.defName),
-                    xenogenes = customizedPawn.Pawn.genes?.Xenogenes.ConvertAll(g => g.def?.defName)
-                };
-            }
-            if (ModsConfig.RoyaltyActive) {
-                List<SaveRecordTitleV5> titleList = new List<SaveRecordTitleV5>();
-                Dictionary<Faction, SaveRecordTitleV5> titleLookup = new Dictionary<Faction, SaveRecordTitleV5>();
-                foreach (var title in customizedPawn.Pawn.royalty?.AllTitlesForReading) {
-                    var record = new SaveRecordTitleV5() {
-                        factionName = title.faction?.Name,
-                        factionDef = title.faction?.def?.defName,
-                        titleDef = title.def?.defName,
-                    };
-                    titleList.Add(record);
-                    titleLookup.Add(title.faction, record);
-                }
-                foreach (var faction in Find.FactionManager.AllFactionsListForReading) {
-                    int favor = customizedPawn.Pawn.royalty.GetFavor(faction);
-                    if (favor > 0) {
-                        if (titleLookup.TryGetValue(faction, out var title)) {
-                            title.favor = favor;
-                        }
-                        else {
-                            var record = new SaveRecordTitleV5() {
-                                factionName = faction?.Name,
-                                factionDef = faction?.def?.defName,
-                                favor = favor,
-                            };
-                            titleList.Add(record);
-                            titleLookup.Add(faction, record);
-                        }
+        }
+
+        public void ConvertImplants(SaveRecordPawnV5 result, CustomizationsPawn customizations, OptionsHealth healthOptions) {
+            foreach (Implant implant in customizations.Implants) {
+                var saveRecord = new SaveRecordImplantV5(implant);
+                if (implant.BodyPartRecord != null) {
+                    UniqueBodyPart part = healthOptions.FindBodyPartsForRecord(implant.BodyPartRecord);
+                    if (part != null && part.Index > 0) {
+                        saveRecord.bodyPartIndex = part.Index;
                     }
                 }
-                if (titleList.Count > 0) {
-                    result.titles = titleList;
-                }
+                result.implants.Add(saveRecord);
             }
-
-            //if (customizedPawn.Pawn?.health?.hediffSet?.hediffs != null) {
-            //    hediffs = new List<SaveRecordHediffV5>();
-            //    foreach (var hediff in customizedPawn.Pawn.health.hediffSet.hediffs) {
-            //        hediffs.Add(new SaveRecordHediffV5() {
-            //            Pawn = customizedPawn.Pawn,
-            //            Hediff = hediff
-            //        });
-            //    }
-            //}
-
-            //pawnCompsSaver = new PawnCompsSaver(customizedPawn.Pawn, DefaultPawnCompRules.RulesForSaving);
-            return result;
         }
     }
 }

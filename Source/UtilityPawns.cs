@@ -15,7 +15,7 @@ namespace EdB.PrepareCarefully {
         public static Dictionary<SkillDef, int> ComputeSkillGains(Pawn pawn) {
             Dictionary<SkillDef, int> result = new Dictionary<SkillDef, int>();
             foreach (var skill in pawn.skills.skills) {
-                result.Add(skill.def, 0);
+                result.Add(skill.def, skill.Aptitude);
             }
             foreach (BackstoryDef item in pawn.story.AllBackstories.Where((BackstoryDef bs) => bs != null)) {
                 foreach (SkillGain skillGain in item.skillGains) {

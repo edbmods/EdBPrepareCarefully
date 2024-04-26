@@ -10,8 +10,6 @@ namespace EdB.PrepareCarefully {
     public class PawnCustomizer {
         public PawnGenerationRequestBuilder PawnGenerationRequestBuilder { get; set; } = new PawnGenerationRequestBuilder();
         public Pawn CreatePawnFromCustomizations(CustomizationsPawn customizations) {
-            float biologicalAge = customizations.BiologicalAgeInTicks / 3600000f;
-            float chronologicalAge = customizations.ChronologicalAgeInTicks / 3600000f;
             var pawn = PawnGenerator.GeneratePawn(PawnGenerationRequestBuilder.BuildFromCustomizations(customizations));
             ApplyAllCustomizationsToPawn(pawn, customizations);
             return pawn;
@@ -23,14 +21,15 @@ namespace EdB.PrepareCarefully {
             ApplyBackstoryCustomizationsToPawn(pawn, customizations);
             ApplyFavoriteColorCustomizationToPawn(pawn, customizations);
             ApplyTraitCustomizationsToPawn(pawn, customizations);
-            ApplySkillCustomizationsToPawn(pawn, customizations);
             ApplyGeneCustomizationsToPawn(pawn, customizations);
+            ApplyAbilityCustomizationsToPawn(pawn, customizations);
+            ApplySkillCustomizationsToPawn(pawn, customizations);
             ApplyAppearanceCustomizationsToPawn(pawn, customizations);
             ApplyApparelCustomizationsToPawn(pawn, customizations);
-            ApplyAbilityCustomizationsToPawn(pawn, customizations);
             ApplyInjuryAndImplantCustomizationsToPawn(pawn, customizations);
             ApplyIdeoCustomizationToPawn(pawn, customizations);
             ApplyTitleCustomizationsToPawn(pawn, customizations);
+            ApplyOtherCustomizationsToPawn(pawn, customizations);
         }
 
         public void ApplyFavoriteColorCustomizationToPawn(Pawn pawn, CustomizationsPawn customizations) {
@@ -168,6 +167,12 @@ namespace EdB.PrepareCarefully {
             // pawn kind definition, so after we call it, we need to reset the quality and damage.
             PawnGenerator.PostProcessGeneratedGear(apparel, pawn);
 
+            if (apparelCustomization.StyleCategoryDef != null) {
+                var thingStyleDef = apparelCustomization.StyleCategoryDef.GetStyleForThingDef(thingDef);
+                if (thingStyleDef != null) {
+                    apparel.SetStyleDef(thingStyleDef);
+                }
+            }
             if (apparelCustomization.Quality.HasValue) {
                 apparel.SetQuality(apparelCustomization.Quality.Value);
             }
@@ -236,7 +241,7 @@ namespace EdB.PrepareCarefully {
                 if (level < minimumLevel) {
                     level = minimumLevel;
                 }
-                record.Level = level;
+                record.Level = level - record.Aptitude;
                 // TODO: Should this be at zero? What happens in pawn generation?
                 record.xpSinceLastLevel = 0;
                 record.passion = customizedSkill.Passion;
@@ -464,6 +469,10 @@ namespace EdB.PrepareCarefully {
                     pawn.ideo.Debug_ReduceCertainty(current - customizations.Certainty.Value);
                 }
             }
+        }
+
+        public void ApplyOtherCustomizationsToPawn(Pawn pawn, CustomizationsPawn customizations) {
+
         }
     }
 }

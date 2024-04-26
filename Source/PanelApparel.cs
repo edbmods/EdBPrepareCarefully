@@ -4,7 +4,6 @@ using System.Linq;
 using UnityEngine;
 using Verse;
 using RimWorld;
-using RimWorld.Planet;
 
 namespace EdB.PrepareCarefully {
     public class PanelApparel : PanelModule {
@@ -23,13 +22,15 @@ namespace EdB.PrepareCarefully {
         public DialogApparel DialogManageApparel { get; set; }
 
         public Rect ManageButtonRect { get; private set; }
+        public Rect ApparelAlertRect { get; private set; }
 
         private List<WidgetField> fields = new List<WidgetField>();
 
         public override void Resize(float width) {
             base.Resize(width);
 
-            ManageButtonRect = new Rect(width - 27, 10, 16, 16);
+            ManageButtonRect = new Rect(width - 24, 10, 16, 16);
+            ApparelAlertRect = ManageButtonRect;
         }
 
         public override float Draw(float y) {
@@ -81,6 +82,12 @@ namespace EdB.PrepareCarefully {
                     OpenManageApparelDialog();
                 }
             }
+            else {
+                Rect alertButtonRect = ApparelAlertRect.OffsetBy(0, top);
+                Style.SetGUIColorForButton(alertButtonRect);
+                GUI.DrawTexture(alertButtonRect, Textures.TextureIconWarning);
+                TooltipHandler.TipRegion(alertButtonRect, "EdB.PC.Panel.Apparel.ApparelLocked".Translate());
+            }
 
             y += Margin.y;
 
@@ -100,76 +107,5 @@ namespace EdB.PrepareCarefully {
             Find.WindowStack.Add(DialogManageApparel);
         }
 
-        private float DrawThingRow(float y, float width, int index, Thing thing, bool inventory = false) {
-            float top = y;
-            Rect rowRect = new Rect(0, y, width, 36);
-
-            var guiState = UtilityGUIState.Save();
-            try {
-                GUI.color = Color.white;
-
-                Widgets.DrawAtlas(rowRect, Textures.TextureFieldAtlas);
-
-                if (thing.def.DrawMatSingle != null && thing.def.DrawMatSingle.mainTexture != null) {
-                    Widgets.ThingIcon(new Rect(4f, y+3, 28f, 28f), thing);
-                }
-                Text.Anchor = TextAnchor.MiddleLeft;
-                Rect labelRect = new Rect(36f, y, rowRect.width - 36f, 24);
-                string text = thing.def.LabelCap;
-                GUI.color = Style.ColorText;
-                Text.WordWrap = false;
-                Text.Anchor = TextAnchor.UpperLeft;
-                Text.Font = GameFont.Small;
-                Widgets.Label(labelRect, text.Truncate(labelRect.width - 48));
-                Rect subtitleRect = new Rect(36f, labelRect.y + 17, rowRect.width - 36f, 18);
-                bool hasQuality = thing.TryGetQuality(out QualityCategory quality);
-                int percent = 100;
-                if (thing.def.useHitPoints) {
-                    int hitPoints = thing.HitPoints;
-                    int maxHitPoints = thing.MaxHitPoints;
-                    if (hitPoints < maxHitPoints) {
-                        percent = (int)((float)hitPoints / (float)maxHitPoints * 100f);
-                    }
-                }
-                if (thing.Stuff != null && hasQuality) {
-                    Text.Font = GameFont.Tiny;
-                    string subtitleText = thing.Stuff.LabelCap + ", " + quality.GetLabel();
-                    if (percent != 100) {
-                        subtitleText += " (" + percent + "%)";
-                    }
-                    Widgets.Label(subtitleRect, subtitleText.Truncate(subtitleRect.width - 48));
-                }
-                else if (thing.Stuff != null) {
-                    Text.Font = GameFont.Tiny;
-                    Widgets.Label(subtitleRect, thing.Stuff.LabelCap.Truncate(subtitleRect.width - 48));
-                }
-                else if (hasQuality) {
-                    Text.Font = GameFont.Tiny;
-                    string subtitleText = quality.GetLabel();
-                    if (percent != 100) {
-                        subtitleText += " (" + percent + "%)";
-                    }
-                    Widgets.Label(subtitleRect, subtitleText);
-                }
-                Text.WordWrap = true;
-            }
-            finally {
-                guiState.Restore();
-            }
-
-
-            //Widgets.InfoCardButton(rect.width - 24f, y, thing);
-
-            //if (Mouse.IsOver(rect)) {
-            //    string text2 = thing.LabelNoParenthesisCap.AsTipTitle() + GenLabel.LabelExtras(thing, includeHp: true, includeQuality: true) + "\n\n" + thing.DescriptionDetailed;
-            //    if (thing.def.useHitPoints) {
-            //        text2 = text2 + "\n" + thing.HitPoints + " / " + thing.MaxHitPoints;
-            //    }
-            //    TooltipHandler.TipRegion(rect, text2);
-            //}
-            y += rowRect.height;
-            return y - top;
-            
-        }
     }
 }

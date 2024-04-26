@@ -23,7 +23,7 @@ namespace EdB.PrepareCarefully {
                 Widgets.DrawBox(progressBarRect);
                 if (progress.defCount > 0) {
                     int totalCount = progress.defCount * 2;
-                    int processed = progress.stuffProcessed + progress.thingsProcessed;
+                    int processed = progress.stuffProcessed + progress.equipmentProcessed;
                     float percent = (float)processed / (float)totalCount;
                     float barWidth = progressBarRect.width * percent;
                     Widgets.DrawRectFast(new Rect(progressBarRect.x, progressBarRect.y, barWidth, progressBarRect.height), Color.green);
@@ -34,7 +34,7 @@ namespace EdB.PrepareCarefully {
                 if (progress.phase == EquipmentDatabase.LoadingPhase.ProcessingStuff) {
                     label = "EdB.PC.Equipment.LoadingProgress.StuffDefs".Translate();
                 }
-                else if (progress.phase == EquipmentDatabase.LoadingPhase.ProcessingThings) {
+                else if (progress.phase == EquipmentDatabase.LoadingPhase.ProcessingEquipment) {
                     label = "EdB.PC.Equipment.LoadingProgress.ThingDefs".Translate();
                 }
                 else if (progress.phase == EquipmentDatabase.LoadingPhase.Loaded) {

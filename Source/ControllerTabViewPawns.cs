@@ -38,24 +38,23 @@ namespace EdB.PrepareCarefully {
         }
 
         public void AddColonyPawn() {
-            AddPawnWithPawnKind(null, true);
+            AddPawnWithPawnKind(CustomizedPawnType.Colony, null);
         }
 
 
         public void AddWorldPawn() {
-            AddPawnWithPawnKind(null, false);
+            AddPawnWithPawnKind(CustomizedPawnType.World, null);
         }
 
-        public void AddPawnWithPawnKind(PawnKindOption option, bool startingPawn) {
-            if (startingPawn) {
-                CustomizedPawn customizedPawn = PawnManager.AddPawn(CustomizedPawnType.Colony, option);
+        public void AddPawnWithPawnKind(CustomizedPawnType pawnType, PawnKindOption option) {
+            CustomizedPawn customizedPawn = PawnManager.AddPawn(pawnType, option);
+            if (pawnType == CustomizedPawnType.Colony) {
                 SelectPawn(customizedPawn);
                 if (ViewState.PawnListMode != PawnListMode.ColonyPawnsMaximized) {
                     ViewState.PawnListMode = PawnListMode.ColonyPawnsMaximized;
                 }
             }
             else {
-                CustomizedPawn customizedPawn = PawnManager.AddPawn(CustomizedPawnType.World, option);
                 SelectPawn(customizedPawn);
                 if (ViewState.PawnListMode != PawnListMode.WorldPawnsMaximized) {
                     ViewState.PawnListMode = PawnListMode.WorldPawnsMaximized;
@@ -93,10 +92,10 @@ namespace EdB.PrepareCarefully {
         }
 
         public void MoveColonyPawnToWorldPawnList(CustomizedPawn pawn, bool activatePawn) {
-            if (State.Customizations.ColonyPawns.Count < 2) {
+            if (State.Customizations.ColonyPawns.Count <= 1) {
                 return;
             }
-            PawnManager.ChangeWorldPawnToColonyPawn(pawn);
+            PawnManager.ChangeColonyPawnToWorldPawn(pawn);
             if (activatePawn) {
                 SelectPawn(pawn);
                 ViewState.PawnListMode = PawnListMode.WorldPawnsMaximized;
@@ -142,8 +141,7 @@ namespace EdB.PrepareCarefully {
                 return;
             }
             PawnManager.SavePawn(ViewState.CurrentPawn, filename);
-            // TODO
-            //state.AddMessage("SavedAs".Translate(filename));
+            Messages.Message("SavedAs".Translate(filename), MessageTypeDefOf.TaskCompletion);
         }
 
         public void RandomizeCurrentPawn() {

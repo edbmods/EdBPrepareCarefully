@@ -13,7 +13,7 @@ namespace EdB.PrepareCarefully {
         public delegate void SwapPawnHandler(CustomizedPawn pawn, bool activatePawn);
         public delegate void AddPawnHandler();
         public delegate void AddFactionPawnHandler(FactionDef def, bool startingPawn);
-        public delegate void AddPawnWithPawnKindHandler(PawnKindOption def, bool startingPawn);
+        public delegate void AddPawnWithPawnKindHandler(CustomizedPawnType type, PawnKindOption def);
         public delegate void LoadPawnHandler(string name);
 
         public event SelectPawnHandler PawnSelected;
@@ -168,10 +168,6 @@ namespace EdB.PrepareCarefully {
 
                     Rect pawnRect = RectPortrait.OffsetBy(rect.position);
                     Rect clipRect = RectEntry.OffsetBy(rect.position);
-                    //WidgetPortrait.Draw(pawn.Pawn, clipRect, pawnRect);
-                    // TODO
-                    // See Page_ConfigureStartingPawns.DrawPawnList() to see how the pawns are drawn
-                    // in the vanilla page
                     RenderTexture pawnTexture = PortraitsCache.Get(pawn.Pawn, pawnRect.size, Rot4.South);
                     try {
                         GUI.BeginClip(clipRect);
@@ -260,7 +256,7 @@ namespace EdB.PrepareCarefully {
                 PawnDeleted?.Invoke(pawnToDelete);
             }
             else if (pawnToSwap != null && PawnSwapped != null) {
-                PawnSwapped?.Invoke(pawnToSwap, true);
+                PawnSwapped?.Invoke(pawnToSwap, !Event.current.shift);
             }
             else if (pawnToSelect != null && PawnSelected != null) {
                 PawnSelected?.Invoke(pawnToSelect);
@@ -359,7 +355,7 @@ namespace EdB.PrepareCarefully {
                     SoundDefOf.Click.PlayOneShotOnCamera();
                     if (selected != null) {
                         ViewState.LastSelectedPawnKindDef = selected;
-                        AddingPawnWithPawnKind?.Invoke(selected, StartingPawns);
+                        AddingPawnWithPawnKind?.Invoke(StartingPawns ? CustomizedPawnType.Colony : CustomizedPawnType.World, selected);
                     }
                 },
                 Selected = selected,

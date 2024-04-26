@@ -63,6 +63,7 @@ namespace EdB.PrepareCarefully {
         private Color? SelectedColor = null;
         private float SelectedHitPoints = 1.0f;
         private ApparelLayerDef SelectedLayer = null;
+        private StyleCategoryDef SelectedStyle = null;
         private string ButtonLabel = null;
         private bool ColorSelectionEnabled = false;
         private List<Color> CurrentSwatches = new List<Color>();
@@ -299,9 +300,9 @@ namespace EdB.PrepareCarefully {
             if (option == null) {
                 return;
             }
-            SelectApparelOption(option);
-            ScrollToThingDef = apparel.def;
+            ScrollToSelectedOption(option);
             SelectedStuff = apparel.Stuff;
+            SelectedStyle = apparel.StyleDef?.Category;
             if (apparel.TryGetQuality(out QualityCategory quality)) {
                 SelectedQuality = quality;
             }
@@ -309,6 +310,17 @@ namespace EdB.PrepareCarefully {
                 SelectedQuality = QualityCategory.Normal;
             }
             SelectedHitPoints = UtilityApparel.HitPointPercentForApparel(apparel);
+            if (ColorSelectionEnabled) {
+                SelectedColor = apparel.GetColor();
+            }
+        }
+
+        public void ScrollToSelectedOption(EquipmentOption option) {
+            if (option == null) {
+                return;
+            }
+            SelectApparelOption(option);
+            ScrollToThingDef = option.ThingDef;
             ButtonLabel = "EdB.PC.Dialog.ManageApparel.UpdateApparelButton".Translate();
             CheckSelectionVisibility = true;
         }
@@ -331,6 +343,9 @@ namespace EdB.PrepareCarefully {
             if (SelectedQuality == null) {
                 SelectedQuality = QualityCategory.Normal;
             }
+            if (SelectedStyle == null || option.Styles == null || !option.Styles.ContainsAny(s => s == SelectedStyle)) {
+                SelectedStyle = null;
+            }
             if (CustomizedPawn.Customizations.Apparel.Select(a => a.ThingDef).Contains(option.ThingDef)) {
                 ButtonLabel = "EdB.PC.Dialog.ManageApparel.UpdateApparelButton".Translate();
             }
@@ -345,6 +360,7 @@ namespace EdB.PrepareCarefully {
                 ColorSelectionEnabled = false;
             }
             CheckSelectionVisibility = true;
+            Logger.Debug("Style count for selected apparel option: " + (option.Styles?.Count ?? 0));
         }
 
         public void UpdateColorSwatchesForSelectedThing() {
@@ -418,13 +434,12 @@ namespace EdB.PrepareCarefully {
                 GUI.color = Color.white;
                 Widgets.DrawAtlas(BoxRect, Textures.TextureFieldAtlas);
 
-                float rowHeight = 36;
-                float lineHeight = 32;
-                float lineWidth = width;
-                float insetMargin = 42;
-                Rect RowRect = new Rect(0, 0, lineWidth, rowHeight);
-                Rect IconRect = new Rect(2, 2, lineHeight, lineHeight);
-                Rect LabelRect = new Rect(42f, 3, lineWidth - 42f, lineHeight - 1);
+                float labelHeight = 36;
+                Vector2 iconSize = new Vector2(48, 48);
+                float insetMargin = iconSize.x + 14;
+                Rect RowRect = new Rect(0, 0, width, labelHeight);
+                Rect IconRect = new Rect(4, 4, iconSize.x, iconSize.y);
+                Rect LabelRect = new Rect(insetMargin, 3, width - insetMargin, labelHeight - 1);
 
                 // Draw Apparel Label
                 Rect rowRect = RowRect.OffsetBy(0, y);
@@ -435,7 +450,17 @@ namespace EdB.PrepareCarefully {
                     if (option.ThingDef.MadeFromStuff) {
                         stuff = SelectedStuff ?? option.ThingDef.defaultStuff;
                     }
-                    Widgets.ThingIcon(iconRect, option.ThingDef, stuff);
+                    var thingDef = option.ThingDef;
+                    ThingStyleDef thingStyleDef = null;
+                    if (SelectedStyle != null) {
+                        thingStyleDef = SelectedStyle.GetStyleForThingDef(thingDef);
+                    }
+                    if (ColorSelectionEnabled) {
+                        Widgets.ThingIcon(iconRect, thingDef, stuff, thingStyleDef, 1f, SelectedColor);
+                    }
+                    else {
+                        Widgets.ThingIcon(iconRect, thingDef, stuff, thingStyleDef);
+                    }
                 }
                 GUI.color = Style.ColorText;
                 if (option == SelectedOption || rowRect.Contains(Event.current.mousePosition)) {
@@ -445,11 +470,32 @@ namespace EdB.PrepareCarefully {
                 if (Widgets.ButtonInvisible(rowRect, false)) {
                     optionDeselected = true;
                 }
-                y += rowHeight;
+                y += labelHeight;
 
+                // Draw Styles Dropdown
+                if (SelectedOption.Styles.CountAllowNull() > 0) {
+                    Rect materialDropdownRect = new Rect(insetMargin, y, width, 18);
+                    string selectedLabel = "";
+                    if (SelectedStyle != null) {
+                        selectedLabel = SelectedStyle.LabelCap;
+                    }
+                    else {
+                        selectedLabel = "EdB.PC.Equipment.AvailableEquipment.DefaultStyleOption".Translate();
+                    }
+                    if (WidgetDropdown.SmallDropdown(materialDropdownRect, selectedLabel, "EdB.PC.Equipment.AvailableEquipment.StyleLabel".Translate())) {
+                        List<FloatMenuOption> list = new List<FloatMenuOption>();
+                        list.Add(new FloatMenuOption("EdB.PC.Equipment.AvailableEquipment.DefaultStyleOption".Translate(), () => { SelectStyle(null); }, MenuOptionPriority.Default, null, null, 0, null, null));
+                        foreach (var style in SelectedOption.Styles) {
+                            string label = style.LabelCap;
+                            list.Add(new FloatMenuOption(label, () => { SelectStyle(style); }, MenuOptionPriority.Default, null, null, 0, null, null));
+                        }
+                        Find.WindowStack.Add(new FloatMenu(list, null, false));
+                    }
+                    y += 24;
+                }
 
                 // Draw Material Dropdown
-                if (SelectedOption.ThingDef.MadeFromStuff && SelectedOption.Materials != null && SelectedOption.Materials.Count() > 0) {
+                if (SelectedOption.ThingDef.MadeFromStuff && SelectedOption.Materials.CountAllowNull() > 0) {
                     Rect materialDropdownRect = new Rect(insetMargin, y, width, 18);
                     string selectedLabel = "";
                     if (SelectedStuff != null) {
@@ -554,6 +600,10 @@ namespace EdB.PrepareCarefully {
             }
         }
 
+        public void SelectStyle(StyleCategoryDef def) {
+            SelectedStyle = def;
+        }
+
         public Color DefaultColorForSelectedOption() {
             if (SelectedOption.ThingDef?.MadeFromStuff ?? false) {
                 return SelectedOption.ThingDef.GetColorForStuff(SelectedStuff);
@@ -573,6 +623,7 @@ namespace EdB.PrepareCarefully {
             CustomizationsApparel c = new CustomizationsApparel() {
                 ThingDef = SelectedOption.ThingDef,
                 StuffDef = stuffDef,
+                StyleCategoryDef = SelectedStyle,
                 Color = SelectedColor,
                 Quality = quality,
                 HitPoints = SelectedHitPoints
@@ -582,28 +633,29 @@ namespace EdB.PrepareCarefully {
             }
             Logger.Debug("Added apparel with hitpoints = " + SelectedHitPoints);
             ApparelAdded?.Invoke(c);
+            ScrollToSelectedOption(SelectedOption);
         }
 
         public float MeasureRowForSelectedOption(EquipmentOption option, float y, float width) {
             float rowHeight = 36;
             float buttonHeight = 22;
-            float result = rowHeight;
+            float result = rowHeight + buttonHeight;
 
-            if (SelectedOption.ThingDef.MadeFromStuff && SelectedOption.Materials != null && SelectedOption.Materials.Count() > 0) {
+            if (SelectedOption.ThingDef.MadeFromStuff && SelectedOption.Materials.CountAllowNull() > 0) {
                 result += 24;
             }
-
             if (SelectedOption.SupportsQuality) {
                 result += 24;
             }
-
+            if (SelectedOption.Styles.CountAllowNull() > 0) {
+                result += 24;
+            }
             if (SelectedOption.ThingDef.useHitPoints) {
                 result += HitPointsLabelRect.height + 8;
             }
             if (ColorSelectionEnabled) {
                 result += WidgetColorSelector.Measure(width, CurrentSwatches) + 12;
             }
-            result += buttonHeight;
             result += 8;
 
             return result;

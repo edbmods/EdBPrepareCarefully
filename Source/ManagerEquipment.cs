@@ -163,7 +163,7 @@ namespace EdB.PrepareCarefully {
             if (equipment == null || equipment.EquipmentOption == null) {
                 return false;
             }
-            if (equipment.SpawnType == null) {
+            if (equipment.SpawnType == null || equipment.EquipmentOption.RestrictedSpawnType) {
                 equipment.SpawnType = equipment.EquipmentOption.DefaultSpawnType;
             }
             //SyncEquipmentRemovals();

@@ -441,7 +441,7 @@ namespace EdB.PrepareCarefully {
                 backgroundRect = backgroundRect.GrowBy(0, dropdownHeight);
             }
             backgroundRect = backgroundRect.GrowBy(0, dropdownHeight); // Add space for the cost label
-            if (SelectedOption.DefaultSpawnType == EquipmentSpawnType.SpawnsWith || SelectedOption.DefaultSpawnType == EquipmentSpawnType.SpawnsNear) {
+            if (!SelectedOption.RestrictedSpawnType && (SelectedOption.DefaultSpawnType == EquipmentSpawnType.SpawnsWith || SelectedOption.DefaultSpawnType == EquipmentSpawnType.SpawnsNear)) {
                 backgroundRect = backgroundRect.GrowBy(0, dropdownHeight); // Add space for spawn type dropdown
             }
             if (SelectedOption.Animal && (SelectedOption?.ThingDef?.race?.hasGenders ?? false)) {
@@ -480,7 +480,7 @@ namespace EdB.PrepareCarefully {
                 y += 24;
 
                 // Draw Spawn type
-                if (SelectedOption.DefaultSpawnType == EquipmentSpawnType.SpawnsWith || SelectedOption.DefaultSpawnType == EquipmentSpawnType.SpawnsNear) {
+                if (!SelectedOption.RestrictedSpawnType && (SelectedOption.DefaultSpawnType == EquipmentSpawnType.SpawnsWith || SelectedOption.DefaultSpawnType == EquipmentSpawnType.SpawnsNear)) {
                     GUI.color = Color.white;
                     Rect spawnTypeDropdownRect = new Rect(insetMargin, y, width, 18);
                     string selectedSpawnTypeLabel = SelectedValues.SpawnType != null ? UtilityEquipmentSpawnType.LabelForSpawnTypeHeader(SelectedValues.SpawnType.Value) : "EdB.PC.Equipment.DefaultOption".Translate().ToString();
@@ -586,7 +586,7 @@ namespace EdB.PrepareCarefully {
             Widgets.DrawBox(progressBarRect);
             if (progress.defCount > 0) {
                 int totalCount = progress.defCount * 2;
-                int processed = progress.stuffProcessed + progress.thingsProcessed;
+                int processed = progress.stuffProcessed + progress.equipmentProcessed;
                 float percent = (float)processed / (float)totalCount;
                 float barWidth = progressBarRect.width * percent;
                 Widgets.DrawRectFast(new Rect(progressBarRect.x, progressBarRect.y, barWidth, progressBarRect.height), Color.green);
@@ -597,7 +597,7 @@ namespace EdB.PrepareCarefully {
             if (progress.phase == EquipmentDatabase.LoadingPhase.ProcessingStuff) {
                 label = "EdB.PC.Equipment.LoadingProgress.StuffDefs".Translate();
             }
-            else if (progress.phase == EquipmentDatabase.LoadingPhase.ProcessingThings) {
+            else if (progress.phase == EquipmentDatabase.LoadingPhase.ProcessingEquipment) {
                 label = "EdB.PC.Equipment.LoadingProgress.ThingDefs".Translate();
             }
             else if (progress.phase == EquipmentDatabase.LoadingPhase.Loaded) {
