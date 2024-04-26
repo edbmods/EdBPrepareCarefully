@@ -3,11 +3,19 @@
    Version 1.5.3
  _____________________________________________________________________________
 
+ - Added a style selection dropdown to the Apparel dialog
+ - Added an indicator to show when a pawn is not allowed to add apparel
  - Bug fixes:
    - Removed spawn type options for books and schematics so that they can only
-     "spawn with" your pawns
+     "spawn with" your pawns to avoid uninitialized books
    - Fixed the positioning of the Appearance Panel dialog
    - The Psylink hediff is now saved with the correct level
+   - Fixed a problem where trying to move a pawn from the colony list to the
+     world list would add a duplicate of the pawn to the colony list instead
+   - Fixed a problem where saving a preset would not save all pawn values
+     correctly, even though saving just the character would
+   - Fixed problems when changing and loading skill levels for pawns with an
+     aptitude for a skill
 
  _____________________________________________________________________________
  

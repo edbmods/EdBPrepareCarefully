@@ -173,18 +173,18 @@ namespace EdB.PrepareCarefully {
             return result;
         }
         public void ChangeColonyPawnToWorldPawn(CustomizedPawn pawn) {
-            if (State.Customizations.ColonyPawns.Count < 2) {
+            if (State.Customizations.ColonyPawns.Count <= 1) {
                 return;
             }
             State.Customizations.ColonyPawns.Remove(pawn);
-            State.Customizations.WorldPawns.Add(pawn);
             pawn.Type = CustomizedPawnType.World;
+            State.Customizations.WorldPawns.Add(pawn);
             CostAffected?.Invoke();
         }
         public void ChangeWorldPawnToColonyPawn(CustomizedPawn pawn) {
             State.Customizations.WorldPawns.Remove(pawn);
-            State.Customizations.ColonyPawns.Add(pawn);
             pawn.Type = CustomizedPawnType.Colony;
+            State.Customizations.ColonyPawns.Add(pawn);
             CostAffected?.Invoke();
         }
         public PawnLoaderResult LoadPawn(CustomizedPawnType pawnType, string file) {
@@ -471,7 +471,7 @@ namespace EdB.PrepareCarefully {
             if (level < minimum) {
                 level = minimum;
             }
-            record.Level = level;
+            record.Level = level - record.Aptitude;
             var customizedSkill = customizations.Skills.FirstOrDefault(s => s.SkillDef == skill);
             if (customizedSkill != null) {
                 customizedSkill.Level = level;

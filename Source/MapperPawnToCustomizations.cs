@@ -158,6 +158,7 @@ namespace EdB.PrepareCarefully {
             foreach (var apparel in pawn.apparel.WornApparel) {
                 var customizedApparel = new CustomizationsApparel() {
                     ThingDef = apparel.def,
+                    StyleCategoryDef = apparel.StyleDef?.Category,
                     StuffDef = apparel.Stuff,
                     Quality = apparel.GetQuality()
                 };

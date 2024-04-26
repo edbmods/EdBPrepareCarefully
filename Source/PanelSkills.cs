@@ -299,37 +299,8 @@ namespace EdB.PrepareCarefully {
             Text.Anchor = TextAnchor.UpperLeft;
         }
 
-        // EdB: Copy of private static SkillUI.GetSkillDescription().
         private static string GetSkillDescription(SkillRecord sk) {
-            StringBuilder stringBuilder = new StringBuilder();
-            if (sk.TotallyDisabled) {
-                stringBuilder.Append("DisabledLower".Translate().CapitalizeFirst());
-            }
-            else {
-                stringBuilder.AppendLine(string.Concat(new object[] {
-                            "Level".Translate(),
-                            " ",
-                            sk.Level,
-                            ": ",
-                            sk.LevelDescriptor
-                        }));
-                stringBuilder.Append("Passion".Translate() + ": ");
-                switch (sk.passion) {
-                    case Passion.None:
-                        stringBuilder.Append("PassionNone".Translate("0.3"));
-                        break;
-                    case Passion.Minor:
-                        stringBuilder.Append("PassionMinor".Translate("1.0"));
-                        break;
-                    case Passion.Major:
-                        stringBuilder.Append("PassionMajor".Translate("1.5"));
-                        break;
-                }
-            }
-            stringBuilder.AppendLine();
-            stringBuilder.AppendLine();
-            stringBuilder.Append(sk.def.description);
-            return stringBuilder.ToString();
+            return ReflectionUtil.InvokeNonPublicStaticMethod<string>(typeof(SkillUI), "GetSkillDescription", new object[] { sk }) ?? "";
         }
 
         protected void SetSkillLevel(SkillDef skillDef, int value) {

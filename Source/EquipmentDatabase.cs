@@ -31,6 +31,7 @@ namespace EdB.PrepareCarefully {
 
         public List<EquipmentOption> ApparelOptions { get; set; } = new List<EquipmentOption>();
         public List<EquipmentOption> EquipmentOptions { get; set; } = new List<EquipmentOption>();
+        public List<StyleCategoryDef> StyleCategories { get; set; } = new List<StyleCategoryDef>();
         public Dictionary<ThingCategoryDef, int> ThingCategoryItemCounts { get; set; } = new Dictionary<ThingCategoryDef, int>();
         public Dictionary<string, int> ModItemCounts { get; set; } = new Dictionary<string, int>();
         public EquipmentOption RandomAnimalEquipmentOption { get; private set; }
@@ -99,31 +100,33 @@ namespace EdB.PrepareCarefully {
 
             public IEnumerator<ThingDef> thingEnumerator;
             public IEnumerator<ThingCategoryDef> thingCategoryEnumerator;
+            public IEnumerator<StyleCategoryDef> styleCategoryEnumerator;
 
-            public int thingsProcessed = 0;
-            public int thingCategoriesProcessed = 0;
-            public int stuffProcessed = 0;
-            public int apparelProcessed = 0;
-            public int equipmentProcessed = 0;
             public int defsToCountPerFrame = 500;
             public int stuffToProcessPerFrame = 100;
             public int thingsToProcessPerFrame = 50;
+
+            public int stuffProcessed = 0;
+            public int apparelProcessed = 0;
+            public int equipmentProcessed = 0;
+            public int stylesProcessed = 0;
+
             public int defCount = 0;
             public int stuffCount = 0;
             public int thingCount = 0;
             public int thingCategoryCount = 0;
             public int apparelCount = 0;
             public int equipmentCount = 0;
+            public int styleCount = 0;
         }
 
         public enum LoadingPhase {
             NotStarted,
             CountingDefs,
             ProcessingStuff,
-            ProcessingThings,
-            ProcessingThingCategories,
-            ProcessingApparel,
             ProcessingEquipment,
+            ProcessingStyles,
+            ProcessingApparel,
             Loaded
         }
 
@@ -141,17 +144,14 @@ namespace EdB.PrepareCarefully {
             else if (LoadingProgress.phase == LoadingPhase.ProcessingStuff) {
                 ProcessStuff();
             }
-            else if (LoadingProgress.phase == LoadingPhase.ProcessingThings) {
-                ProcessThings();
+            else if (LoadingProgress.phase == LoadingPhase.ProcessingEquipment) {
+                ProcessEquipment();
             }
-            else if (LoadingProgress.phase == LoadingPhase.ProcessingThingCategories) {
-                ProcessThingCategories();
+            else if (LoadingProgress.phase == LoadingPhase.ProcessingStyles) {
+                ProcessStyles();
             }
             else if (LoadingProgress.phase == LoadingPhase.ProcessingApparel) {
                 ProcessApparel();
-            }
-            else if (LoadingProgress.phase == LoadingPhase.ProcessingEquipment) {
-                ProcessEquipment();
             }
         }
 
@@ -162,12 +162,12 @@ namespace EdB.PrepareCarefully {
                     LoadingProgress.thingEnumerator = DefDatabase<ThingDef>.AllDefs
                         .Where((ThingDef d) => (d.IsApparel && d.category == ThingCategory.Item && d.scatterableOnMapGen && !d.destroyOnDrop)).GetEnumerator();
                 }
-                else if (phase == LoadingPhase.ProcessingThingCategories) {
-                    LoadingProgress.thingCategoryEnumerator = DefDatabase<ThingCategoryDef>.AllDefs.GetEnumerator();
+                else if (phase == LoadingPhase.ProcessingStyles) {
+                    LoadingProgress.styleCategoryEnumerator = DefDatabase<StyleCategoryDef>.AllDefs.GetEnumerator();
                 }
                 else {
                     // Get all of the same equipment available from ScenPart_ThingCount.PossibleThingDefs()
-                    // TODO: Should use reflection to actually call ScenPart_ThingCount.PossibleThingDefs()
+                    // TODO: Should use reflection to actually call ScenPart_ThingCount.PossibleThingDefs()?
                     LoadingProgress.thingEnumerator = DefDatabase<ThingDef>.AllDefs
                         .Where((ThingDef d) => (d.category == ThingCategory.Item
                                 && d.scatterableOnMapGen && !d.destroyOnDrop)
@@ -189,22 +189,19 @@ namespace EdB.PrepareCarefully {
                 UpdateLoadingPhase(LoadingPhase.ProcessingStuff);
             }
             else if (LoadingProgress.phase == LoadingPhase.ProcessingStuff) {
-                UpdateLoadingPhase(LoadingPhase.ProcessingThings);
-            }
-            else if (LoadingProgress.phase == LoadingPhase.ProcessingThings) {
-                UpdateLoadingPhase(LoadingPhase.ProcessingThingCategories);
-            }
-            else if (LoadingProgress.phase == LoadingPhase.ProcessingThingCategories) {
-                UpdateLoadingPhase(LoadingPhase.ProcessingApparel);
-            }
-            else if (LoadingProgress.phase == LoadingPhase.ProcessingApparel) {
-                ApparelOptions.Sort((EquipmentOption a, EquipmentOption b) => {
-                    return string.Compare(a.Label.ToStringSafe(), b.Label.ToStringSafe());
-                });
                 UpdateLoadingPhase(LoadingPhase.ProcessingEquipment);
             }
             else if (LoadingProgress.phase == LoadingPhase.ProcessingEquipment) {
                 EquipmentOptions.Sort((EquipmentOption a, EquipmentOption b) => {
+                    return string.Compare(a.Label.ToStringSafe(), b.Label.ToStringSafe());
+                });
+                UpdateLoadingPhase(LoadingPhase.ProcessingStyles);
+            }
+            else if (LoadingProgress.phase == LoadingPhase.ProcessingStyles) {
+                UpdateLoadingPhase(LoadingPhase.ProcessingApparel);
+            }
+            else if (LoadingProgress.phase == LoadingPhase.ProcessingApparel) {
+                ApparelOptions.Sort((EquipmentOption a, EquipmentOption b) => {
                     return string.Compare(a.Label.ToStringSafe(), b.Label.ToStringSafe());
                 });
                 UpdateLoadingPhase(LoadingPhase.Loaded);
@@ -236,34 +233,6 @@ namespace EdB.PrepareCarefully {
             }
         }
 
-        protected void ProcessThings() {
-            for (int i=0; i<LoadingProgress.thingsToProcessPerFrame; i++) {
-                if (!LoadingProgress.thingEnumerator.MoveNext()) {
-                    Logger.Message("Loaded equipment database with " + LoadingProgress.thingCount + " item(s)");
-                    NextPhase();
-                    return;
-                }
-                ThingDef def = LoadingProgress.thingEnumerator.Current;
-                LoadingProgress.thingCount++;
-                LoadingProgress.thingsProcessed++;
-            }
-        }
-
-        protected void ProcessThingCategories() {
-            for (int i = 0; i < LoadingProgress.thingsToProcessPerFrame; i++) {
-                if (!LoadingProgress.thingCategoryEnumerator.MoveNext()) {
-                    Logger.Message("Loaded equipment database with " + LoadingProgress.thingCategoryCount + (LoadingProgress.thingCategoryCount != 1 ? " categories" : " category"));
-                    NextPhase();
-                    return;
-                }
-                ThingCategoryDef def = LoadingProgress.thingCategoryEnumerator.Current;
-                //if (AddThingCategory(def)) {
-                //    LoadingProgress.thingCategoryCount++;
-                //}
-                LoadingProgress.thingCategoriesProcessed++;
-            }
-        }
-
         protected void ProcessApparel() {
             for (int i = 0; i < LoadingProgress.thingsToProcessPerFrame; i++) {
                 if (!LoadingProgress.thingEnumerator.MoveNext()) {
@@ -271,7 +240,7 @@ namespace EdB.PrepareCarefully {
                     NextPhase();
                     return;
                 }
-                if (AddApparelToEquipmentOptions(LoadingProgress.thingEnumerator.Current)) {
+                if (AddApparelToApparelOptions(LoadingProgress.thingEnumerator.Current)) {
                     LoadingProgress.apparelCount++;
                 }
                 LoadingProgress.apparelProcessed++;
@@ -288,6 +257,19 @@ namespace EdB.PrepareCarefully {
                     LoadingProgress.equipmentCount++;
                 }
                 LoadingProgress.equipmentProcessed++;
+            }
+        }
+        protected void ProcessStyles() {
+            for (int i = 0; i < LoadingProgress.thingsToProcessPerFrame; i++) {
+                if (!LoadingProgress.styleCategoryEnumerator.MoveNext()) {
+                    Logger.Message("Loaded equipment database with " + LoadingProgress.styleCount + " style(s)");
+                    NextPhase();
+                    return;
+                }
+                if (AddStyleToEquipmentOptions(LoadingProgress.styleCategoryEnumerator.Current)) {
+                    LoadingProgress.styleCount++;
+                }
+                LoadingProgress.stylesProcessed++;
             }
         }
 
@@ -343,28 +325,15 @@ namespace EdB.PrepareCarefully {
             return true;
         }
 
-        protected bool AddApparelToEquipmentOptions(ThingDef def) {
-            if (!def.IsApparel) {
+        protected bool AddApparelToApparelOptions(ThingDef def) {
+            EquipmentOption option = FindOptionForThingDef(def);
+            if (option != null) {
+                ApparelOptions.Add(option);
+                return true;
+            }
+            else {
                 return false;
             }
-            EquipmentOption option = new EquipmentOption() {
-                ThingDef = def
-            };
-
-            if (def.MadeFromStuff) {
-                option.Materials = new List<ThingDef>();
-                foreach (var s in stuff) {
-                    if (s.stuffProps.CanMake(def)) {
-                        option.Materials.Add(s);
-                    }
-                }
-            }
-            if (def.HasComp(typeof(CompQuality))) {
-                option.SupportsQuality = true;
-            }
-
-            ApparelOptions.Add(option);
-            return true;
         }
 
         protected void AddRandomAnimalToEquipmentOptions() {
@@ -377,6 +346,29 @@ namespace EdB.PrepareCarefully {
                 EquipmentType = TypeAnimals
             };
             EquipmentOptions.Add(RandomAnimalEquipmentOption);
+        }
+
+        protected bool AddStyleToEquipmentOptions(StyleCategoryDef def) {
+            if (def.thingDefStyles.NullOrEmpty()) {
+                return false;
+            }
+            bool atLeastOneThing = false;
+            foreach (var thingDefStyle in def.thingDefStyles) {
+                var option = FindOptionForThingDef(thingDefStyle.ThingDef);
+                if (option != null) {
+                    atLeastOneThing = true;
+                    if (option.Styles == null) {
+                        option.Styles = new List<StyleCategoryDef>();
+                    }
+                    option.Styles.Add(def);
+                    //Logger.Debug(string.Format("Added {0} style to equipment option {1}", def.defName, option.ThingDef.defName));
+                    //Logger.Debug(string.Format("  thingDefStyle.ThingDef = {0}, thingDefStyle.StyleDef = {1}", thingDefStyle.ThingDef.defName, thingDefStyle.StyleDef.defName));
+                }
+            }
+            if (atLeastOneThing) {
+                StyleCategories.Add(def);
+            }
+            return atLeastOneThing;
         }
 
         protected bool AddEquipmentToEquipmentOptions(ThingDef def) {
@@ -392,6 +384,11 @@ namespace EdB.PrepareCarefully {
                 if (type == null || type == TypeDiscard) {
                     return false;
                 }
+                //if (def.RelevantStyleCategories.CountAllowNull() > 0) {
+                //    Logger.Debug(string.Format("  Relevant styles: {0}", string.Join(", ", def.RelevantStyleCategories.Select(c => c.defName))));
+                //    Logger.Debug(string.Format("  Style defs: {0}", string.Join(", ", def.RelevantStyleCategories.SelectMany(c => c.thingDefStyles).Select(s => s.StyleDef?.defName))));
+                //    Logger.Debug(string.Format("  Style thing defs: {0}", string.Join(", ", def.RelevantStyleCategories.SelectMany(c => c.thingDefStyles).Select(s => s.ThingDef?.defName))));
+                //}
                 progress = "1";
 
                 bool restrictedSpawnType = false;

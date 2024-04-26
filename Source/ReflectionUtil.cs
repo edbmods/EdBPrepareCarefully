@@ -128,6 +128,16 @@ namespace EdB.PrepareCarefully {
             return info;
         }
 
+        public static T InvokeNonPublicStaticMethod<T>(Type type, string name, object[] arguments) {
+            MethodInfo info = type.GetMethod(name, BindingFlags.NonPublic | BindingFlags.Static);
+            if (info == null) {
+                Logger.Warning("Could not find the static method " + type.Name + "." + name + " via reflection");
+                return default(T);
+            }
+            object result = info.Invoke(null, arguments);
+            return (T)result;
+        }
+
         public static T GetNonPublicStatic<T>(Type type, string name) {
             FieldInfo field = GetNonPublicStaticField(type, name);
             if (field == null) {

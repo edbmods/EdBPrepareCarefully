@@ -1,6 +1,11 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
 <!-- CHANGE NOTES -->
 
+<!-- v1.5.3 -->
+<!-- ADDED: EdB.PC.Panel.Apparel.ApparelLocked -->
+<!-- ADDED: EdB.PC.Equipment.AvailableEquipment.DefaultStyleOption -->
+<!-- ADDED: EdB.PC.Equipment.AvailableEquipment.StyleLabel -->
+
 <!-- v1.5.1 -->
 <!-- ADDED: EdB.PC.Dialog.ManageApparel.AllLayers -->
 <!-- ADDED: EdB.PC.Dialog.ManageApparel.AddApparelButton -->
@@ -268,12 +273,14 @@
   <EdB.PC.Equipment.AvailableEquipment.AllModsOption>All Mods</EdB.PC.Equipment.AvailableEquipment.AllModsOption>
   <EdB.PC.Equipment.AvailableEquipment.CostLabelAndValue>Cost: {0}</EdB.PC.Equipment.AvailableEquipment.CostLabelAndValue>
   <EdB.PC.Equipment.AvailableEquipment.DefaultSpawnTypeOption>Default</EdB.PC.Equipment.AvailableEquipment.DefaultSpawnTypeOption>
+  <EdB.PC.Equipment.AvailableEquipment.DefaultStyleOption>Default</EdB.PC.Equipment.AvailableEquipment.DefaultStyleOption>
   <EdB.PC.Equipment.AvailableEquipment.GenderLabel>Gender:</EdB.PC.Equipment.AvailableEquipment.GenderLabel>
   <EdB.PC.Equipment.AvailableEquipment.HitPointsLabel>Hit Points:</EdB.PC.Equipment.AvailableEquipment.HitPointsLabel>
   <EdB.PC.Equipment.AvailableEquipment.MaterialLabel>Material:</EdB.PC.Equipment.AvailableEquipment.MaterialLabel>
   <EdB.PC.Equipment.AvailableEquipment.QualityLabel>Quality:</EdB.PC.Equipment.AvailableEquipment.QualityLabel>
   <EdB.PC.Equipment.AvailableEquipment.RandomAnimalLabel>Random Pet</EdB.PC.Equipment.AvailableEquipment.RandomAnimalLabel>
   <EdB.PC.Equipment.AvailableEquipment.SpawnTypeLabel>Spawn Type:</EdB.PC.Equipment.AvailableEquipment.SpawnTypeLabel>
+  <EdB.PC.Equipment.AvailableEquipment.StyleLabel>Style:</EdB.PC.Equipment.AvailableEquipment.StyleLabel>
 
   <EdB.PC.Error.NotEnoughPoints>You've spent too many points.</EdB.PC.Error.NotEnoughPoints>
   <EdB.PC.Error.NotEnoughColonists1>You must have at least one colonist.</EdB.PC.Error.NotEnoughColonists1>
@@ -358,6 +365,8 @@ Disable point limits to prepare your starting colonists with no limitations.
   <EdB.PC.Panel.Age.Label.Days>Days</EdB.PC.Panel.Age.Label.Days>
   <EdB.PC.Panel.Age.Biological>Biological Age</EdB.PC.Panel.Age.Biological>
   <EdB.PC.Panel.Age.Chronological>Chronological Age</EdB.PC.Panel.Age.Chronological>
+
+  <EdB.PC.Panel.Apparel.ApparelLocked>This character is restricted from wearing apparel</EdB.PC.Panel.Apparel.ApparelLocked>
 
   <EdB.PC.Panel.Appearance.ApparelConflict.Description>Cannot wear the selected {0} with the following apparel:</EdB.PC.Panel.Appearance.ApparelConflict.Description>
   <EdB.PC.Panel.Appearance.ApparelConflict.LineItem> - {0}</EdB.PC.Panel.Appearance.ApparelConflict.LineItem>

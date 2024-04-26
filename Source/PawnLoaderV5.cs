@@ -435,26 +435,6 @@ namespace EdB.PrepareCarefully {
             }
             customizations.BodyTattoo = bodyTattooDef;
 
-            // TODO: Generic appearance layers
-
-
-            // TODO: Pawn comps
-            // Load pawn comps
-            //Logger.Debug("pre-copy comps xml: " + record.compsXml);
-            //String compsXml = "<saveable Class=\"" + typeof(PawnCompsLoader).FullName + "\">" + record.compsXml + "</saveable>";
-            //PawnCompInclusionRules rules = new PawnCompInclusionRules();
-            //rules.IncludeComps(record.savedComps);
-            //UtilityCopy.DeserializeExposable<PawnCompsLoader>(compsXml, new object[] { pawn.Pawn, rules });
-            //Dictionary<string, ThingComp> compLookup = new Dictionary<string, ThingComp>();
-            //foreach (var c in pawn.Pawn.AllComps) {
-            //    if (!compLookup.ContainsKey(c.GetType().FullName)) {
-            //        //Logger.Debug("Added comp to comp lookup with key: " + c.GetType().FullName);
-            //        compLookup.Add(c.GetType().FullName, c);
-            //    }
-            //}
-            //HashSet<string> savedComps = record.savedComps != null ? new HashSet<string>(record.savedComps) : new HashSet<string>();
-            //DefaultPawnCompRules.PostLoadModifiers.Apply(pawn, compLookup, savedComps);
-
             if (record.traits != null) {
                 for (int i = 0; i < record.traits.Count; i++) {
                     string traitDefName = record.traits[i].def;
@@ -526,8 +506,16 @@ namespace EdB.PrepareCarefully {
                             result.AddWarning("Did not recognize the saved quality attribute for an apparel item. Using the default quality instead");
                         }
                     }
+                    StyleCategoryDef styleCategoryDef = null;
+                    if (apparelRecord.style != null) {
+                        styleCategoryDef = DefDatabase<StyleCategoryDef>.GetNamedSilentFail(apparelRecord.style);
+                        if (styleCategoryDef == null) {
+                            result.AddWarning("Could not style category definition \"" + apparelRecord.style + "\" for apparel \"" + apparelRecord.apparel + "\"");
+                        }
+                    }
                     customizations.Apparel.Add(new CustomizationsApparel() {
                         ThingDef = def,
+                        StyleCategoryDef = styleCategoryDef,
                         StuffDef = stuffDef,
                         HitPoints = apparelRecord.hitPoints,
                         Quality = quality,

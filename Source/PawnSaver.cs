@@ -215,6 +215,7 @@ namespace EdB.PrepareCarefully {
             foreach (var apparel in customizations.Apparel) {
                 result.apparel.Add(new SaveRecordApparelV5() {
                     apparel = apparel.ThingDef?.defName,
+                    style = apparel.StyleCategoryDef?.defName,
                     stuff = apparel.StuffDef?.defName,
                     quality = apparel.Quality.ToString(),
                     hitPoints = apparel.HitPoints,

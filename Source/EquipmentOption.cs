@@ -9,6 +9,7 @@ using Verse;
 namespace EdB.PrepareCarefully {
     public class EquipmentOption {
         public ThingDef ThingDef { get; set; }
+        public List<StyleCategoryDef> Styles { get; set; }
         public List<ThingDef> Materials { get; set; }
         public bool SupportsQuality { get; set; } = false;
         public EquipmentSpawnType DefaultSpawnType { get; set; }

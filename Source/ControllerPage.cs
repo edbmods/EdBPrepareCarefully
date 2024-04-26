@@ -360,6 +360,7 @@ namespace EdB.PrepareCarefully {
                 ManagerPawns.MapCustomizationsForPawn(customizedPawn);
             }
             PresetSaver.SaveToFile(State, filename);
+            Messages.Message("SavedAs".Translate(filename), MessageTypeDefOf.TaskCompletion);
         }
     }
 }

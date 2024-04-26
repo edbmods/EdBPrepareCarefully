@@ -28,6 +28,7 @@ namespace EdB.PrepareCarefully {
     public class CustomizationsApparel {
         public ThingDef ThingDef { get; set; }
         public ThingDef StuffDef { get; set; }
+        public StyleCategoryDef StyleCategoryDef { get; set; }
         public QualityCategory? Quality { get; set; }
         public Color? Color {  get; set; }
         public float? HitPoints {  get; set; }
