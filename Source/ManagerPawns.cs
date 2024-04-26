@@ -379,9 +379,19 @@ namespace EdB.PrepareCarefully {
             }
             customizedPawn.Pawn.story.Childhood = childhood;
             customizedPawn.Pawn.story.Adulthood = adulthood;
-            RecalculateSkillLevelsFromSkillGains(customizedPawn);
             PawnToCustomizationsMapper.MapBackstories(customizedPawn.Pawn, customizedPawn.Customizations);
+            RecalculateSkillLevelsFromSkillGains(customizedPawn);
             CostAffected?.Invoke();
+        }
+
+        public void ClearSkillCaches(CustomizedPawn customizedPawn) {
+            Pawn pawn = customizedPawn.Pawn;
+            if (pawn == null) {
+                return;
+            }
+            foreach (SkillRecord skillRecord in pawn.skills.skills) {
+                skillRecord.Notify_SkillDisablesChanged();
+            }
         }
 
         public void RandomizePawnBackstories(CustomizedPawn customizedPawn) {
@@ -542,6 +552,7 @@ namespace EdB.PrepareCarefully {
         // change to 6, maintaining a delta of 2 between the values.  To do this, we store the skill gains for each
         // pawn and adjust all of the skill levels accordingly everytime those skill gains change.
         public void RecalculateSkillLevelsFromSkillGains(CustomizedPawn customizedPawn) {
+            ClearSkillCaches(customizedPawn);
             Pawn pawn = customizedPawn.Pawn;
             CustomizationsPawn customizations = customizedPawn.Customizations;
             if (pawn == null || customizations == null) {
