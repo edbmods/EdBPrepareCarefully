@@ -878,6 +878,7 @@ namespace EdB.PrepareCarefully {
                 pawn.story.skinColorOverride = color;
             }
             ClearPawnGraphicsCache(pawn);
+            customizations.SkinColor = pawn.story.SkinColor;
             customizations.SkinColorOverride = pawn.story.skinColorOverride;
         }
         public void UpdateAlienAddon(CustomizedPawn customizedPawn, AlienRaceBodyAddon addon, int index) {
@@ -1147,8 +1148,12 @@ namespace EdB.PrepareCarefully {
             // set it in customizations
         }
 
-        public void SavePawn(CustomizedPawn customizedPawn, string filename) {
+        public void MapCustomizationsForPawn(CustomizedPawn customizedPawn) {
             customizedPawn.Customizations = PawnToCustomizationsMapper.Map(customizedPawn.Pawn);
+        }
+
+        public void SavePawn(CustomizedPawn customizedPawn, string filename) {
+            MapCustomizationsForPawn(customizedPawn);
             PawnSaver.SaveToFile(customizedPawn, filename);
         }
 

@@ -356,6 +356,9 @@ namespace EdB.PrepareCarefully {
         }
 
         public void SavePreset(string filename) {
+            foreach (var customizedPawn in State.Customizations.AllPawns) {
+                ManagerPawns.MapCustomizationsForPawn(customizedPawn);
+            }
             PresetSaver.SaveToFile(State, filename);
         }
     }
