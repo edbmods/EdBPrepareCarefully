@@ -973,11 +973,11 @@ namespace EdB.PrepareCarefully {
         }
 
         public void ClearPawnGraphicsCache(Pawn pawn) {
-            pawn?.Drawer?.renderer?.SetAllGraphicsDirty();
+            UtilityPawns.ClearPawnGraphicsCache(pawn);
         }
 
         public void ClearPawnGraphicsCache(CustomizedPawn pawn) {
-            ClearPawnGraphicsCache(pawn.Pawn);
+            UtilityPawns.ClearPawnGraphicsCache(pawn?.Pawn);
         }
 
         public void RemoveApparel(CustomizedPawn customizedPawn, Thing thing) {

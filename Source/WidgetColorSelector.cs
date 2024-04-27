@@ -84,68 +84,76 @@ namespace EdB.PrepareCarefully {
             GUI.color = Color.white;
         }
 
-        public static float Draw(float x, float y, float width, Color currentColor, List<Color> swatches, SelectColorHandler selectAction) {
-            Rect rect = new Rect(x, y, SwatchSize.x, SwatchSize.y);
-            if (swatches != null && swatches.Count > 0) {
-                foreach (Color color in swatches) {
-                    bool selected = (color == currentColor);
-                    if (selected) {
-                        Rect selectionRect = new Rect(rect.x - 2, rect.y - 2, SwatchSize.x + 4, SwatchSize.y + 4);
-                        GUI.color = SelectedSwatchBorderColor;
-                        GUI.DrawTexture(selectionRect, BaseContent.WhiteTex);
-                    }
-
-                    Rect borderRect = new Rect(rect.x - 1, rect.y - 1, SwatchSize.x + 2, SwatchSize.y + 2);
-                    GUI.color = SwatchBorderColor;
-                    GUI.DrawTexture(borderRect, BaseContent.WhiteTex);
-
-                    GUI.color = color;
-                    GUI.DrawTexture(rect, BaseContent.WhiteTex);
-
-                    if (!selected) {
-                        if (Widgets.ButtonInvisible(rect, false)) {
-                            selectAction?.Invoke(color);
-                        }
-                    }
-
-                    rect.x += SwatchSize.x + SwatchSpacing.x;
-                    if (rect.x >= width - (SwatchSize.x + SwatchSpacing.x)) {
-                        rect.y += SwatchSize.y + SwatchSpacing.y;
-                        rect.x = x;
-                    }
-                }
+        public static float Draw(float x, float y, float width, float swatchSize, float selectorHeight, Color currentColor, List<Color> swatches, SelectColorHandler selectAction) {
+            float top = y;
+            if (swatches.CountAllowNull() > 0) {
+                y += DrawSwatches(x, y, width, swatchSize, currentColor, swatches, selectAction);
             }
+            y += 8f;
+            DrawSelector(new Rect(x, y, width, selectorHeight), currentColor, selectAction);
+            y += selectorHeight;
+            return y - top;
+            //Rect rect = new Rect(x, y, swatchSize, swatchSize);
+            //if (swatches != null && swatches.Count > 0) {
+            //    foreach (Color color in swatches) {
+            //        bool selected = (color == currentColor);
+            //        if (selected) {
+            //            Rect selectionRect = new Rect(rect.x - 2, rect.y - 2, swatchSize + 4, swatchSize + 4);
+            //            GUI.color = SelectedSwatchBorderColor;
+            //            GUI.DrawTexture(selectionRect, BaseContent.WhiteTex);
+            //        }
 
-            GUI.color = Color.white;
+            //        Rect borderRect = new Rect(rect.x - 1, rect.y - 1, swatchSize + 2, swatchSize + 2);
+            //        GUI.color = SwatchBorderColor;
+            //        GUI.DrawTexture(borderRect, BaseContent.WhiteTex);
 
-            if (rect.x != x) {
-                rect.x = x;
-                rect.y += SwatchSize.y + SwatchSpacing.y;
-            }
-            rect.y += 4;
-            rect.width = 49;
-            rect.height = 49;
-            GUI.color = SwatchBorderColor;
-            GUI.DrawTexture(rect, BaseContent.WhiteTex);
-            GUI.color = currentColor;
-            GUI.DrawTexture(rect.ContractedBy(1), BaseContent.WhiteTex);
+            //        GUI.color = color;
+            //        GUI.DrawTexture(rect, BaseContent.WhiteTex);
 
-            GUI.color = Color.red;
-            float originalR = currentColor.r;
-            float originalG = currentColor.g;
-            float originalB = currentColor.b;
-            float r = GUI.HorizontalSlider(new Rect(rect.x + 56, rect.y - 1, 136, 16), currentColor.r, 0, 1);
-            GUI.color = Color.green;
-            float g = GUI.HorizontalSlider(new Rect(rect.x + 56, rect.y + 19, 136, 16), currentColor.g, 0, 1);
-            GUI.color = Color.blue;
-            float b = GUI.HorizontalSlider(new Rect(rect.x + 56, rect.y + 39, 136, 16), currentColor.b, 0, 1);
-            if (!CloseEnough(r, originalR) || !CloseEnough(g, originalG) || !CloseEnough(b, originalB)) {
-                selectAction?.Invoke(new Color(r, g, b));
-            }
+            //        if (!selected) {
+            //            if (Widgets.ButtonInvisible(rect, false)) {
+            //                selectAction?.Invoke(color);
+            //            }
+            //        }
 
-            GUI.color = Color.white;
+            //        rect.x += SwatchSize.x + SwatchSpacing.x;
+            //        if (rect.x >= width - (SwatchSize.x + SwatchSpacing.x)) {
+            //            rect.y += SwatchSize.y + SwatchSpacing.y;
+            //            rect.x = x;
+            //        }
+            //    }
+            //}
 
-            return rect.yMax - y;
+            //GUI.color = Color.white;
+
+            //if (rect.x != x) {
+            //    rect.x = x;
+            //    rect.y += SwatchSize.y + SwatchSpacing.y;
+            //}
+            //rect.y += 4;
+            //rect.width = 49;
+            //rect.height = 49;
+            //GUI.color = SwatchBorderColor;
+            //GUI.DrawTexture(rect, BaseContent.WhiteTex);
+            //GUI.color = currentColor;
+            //GUI.DrawTexture(rect.ContractedBy(1), BaseContent.WhiteTex);
+
+            //GUI.color = Color.red;
+            //float originalR = currentColor.r;
+            //float originalG = currentColor.g;
+            //float originalB = currentColor.b;
+            //float r = GUI.HorizontalSlider(new Rect(rect.x + 56, rect.y - 1, 136, 16), currentColor.r, 0, 1);
+            //GUI.color = Color.green;
+            //float g = GUI.HorizontalSlider(new Rect(rect.x + 56, rect.y + 19, 136, 16), currentColor.g, 0, 1);
+            //GUI.color = Color.blue;
+            //float b = GUI.HorizontalSlider(new Rect(rect.x + 56, rect.y + 39, 136, 16), currentColor.b, 0, 1);
+            //if (!CloseEnough(r, originalR) || !CloseEnough(g, originalG) || !CloseEnough(b, originalB)) {
+            //    selectAction?.Invoke(new Color(r, g, b));
+            //}
+
+            //GUI.color = Color.white;
+
+            //return rect.yMax - y;
         }
 
         public static float Measure(float width, List<Color> swatches) {

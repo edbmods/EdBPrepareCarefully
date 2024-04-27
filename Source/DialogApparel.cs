@@ -58,13 +58,14 @@ namespace EdB.PrepareCarefully {
 
         private bool ApparelOptionsLoaded = false;
         private EquipmentOption SelectedOption = null;
+        private Apparel SelectedApparel = null;
         private ThingDef SelectedStuff = null;
         private QualityCategory? SelectedQuality = null;
         private Color? SelectedColor = null;
         private float SelectedHitPoints = 1.0f;
         private ApparelLayerDef SelectedLayer = null;
         private StyleCategoryDef SelectedStyle = null;
-        private string ButtonLabel = null;
+
         private bool ColorSelectionEnabled = false;
         private List<Color> CurrentSwatches = new List<Color>();
         private bool CheckSelectionVisibility = false;
@@ -77,7 +78,7 @@ namespace EdB.PrepareCarefully {
             this.forcePause = true;
 
             foreach (var quality in Enum.GetValues(typeof(QualityCategory)).Cast<QualityCategory>()) {
-                QualityFloatMenuOptions.Add(new FloatMenuOption(quality.GetLabel().CapitalizeFirst(), () => { SelectedQuality = quality; }, MenuOptionPriority.Default, null, null, 0, null, null));
+                QualityFloatMenuOptions.Add(new FloatMenuOption(quality.GetLabel().CapitalizeFirst(), () => { SelectQuality(quality); }, MenuOptionPriority.Default, null, null, 0, null, null));
             }
 
             ApparelLayerFloatMenuOptions.Add(new FloatMenuOption("EdB.PC.Dialog.ManageApparel.AllLayers".Translate(), () => { SelectedLayer = null; }, MenuOptionPriority.Default, null, null, 0, null, null));
@@ -186,16 +187,12 @@ namespace EdB.PrepareCarefully {
                     int index = 0;
                     
                     foreach (Apparel item in pawn.apparel.WornApparel.OrderByDescending(a => a.def.apparel.bodyPartGroups[0].listOrder)) {
-                    //foreach (Apparel item in from x in pawn.apparel.WornApparel
-                    //                         select x into ap
-                    //                         orderby ap.def.apparel.bodyPartGroups[0].listOrder descending
-                    //                         select ap) {
                         if (index > 0) {
                             y += 4;
                         }
                         float width = SelectedApparelScrollRect.width;
                         void labelClickAction() {
-                            ScrollToSelectedApparel(item);
+                            SelectApparel(item);
                         }
                         void deleteAction() {
                             apparelToRemove = item;
@@ -222,7 +219,8 @@ namespace EdB.PrepareCarefully {
                 ApparelRemoved?.Invoke(apparelToRemove);
             }
 
-            // Draw available apparel
+            // If we're meant to scroll to a specific item, make sure that it's available in the current filtered list of apparel.
+            // If it's not, remove the filter.  If it is, mark it as the selected option
             if (ScrollToThingDef != null) {
                 if (SelectedLayer != null) {
                     if (!ApparelList.Where(e => e.ThingDef.apparel.layers.Contains(SelectedLayer)).Select(e => e.ThingDef).Contains(ScrollToThingDef)) {
@@ -234,6 +232,7 @@ namespace EdB.PrepareCarefully {
                 ScrollToThingDef = null;
             }
 
+            // Layer filter
             if (WidgetDropdown.SmallDropdown(AvailableApparelFilterRect, SelectedLayer?.LabelCap ?? "EdB.PC.Dialog.ManageApparel.AllLayers".Translate())) {
                 Find.WindowStack.Add(new FloatMenu(ApparelLayerFloatMenuOptions, null, false));
             }
@@ -255,6 +254,7 @@ namespace EdB.PrepareCarefully {
                         float topOfBox = y;
                         float scrollBoxTopPosition = ScrollViewAvailableApparel.Position.y;
                         y += DrawSelectedRow(option, y, ScrollViewAvailableApparel.CurrentViewWidth);
+                        // Make sure the selected item is fully visible.  If not scroll to it
                         if (CheckSelectionVisibility) {
                             if (y > scrollBoxTopPosition + ScrollViewAvailableApparel.ViewHeight) {
                                 float amount = y - (scrollBoxTopPosition + ScrollViewAvailableApparel.ViewHeight);
@@ -295,11 +295,13 @@ namespace EdB.PrepareCarefully {
             }
         }
 
-        public void ScrollToSelectedApparel(Apparel apparel) {
+        public void SelectApparel(Apparel apparel) {
             EquipmentOption option = ProviderEquipment.EquipmentDatabase.FindOptionForThingDef(apparel.def);
             if (option == null) {
                 return;
             }
+            SelectedApparel = apparel;
+            SelectOption(option);
             ScrollToSelectedOption(option);
             SelectedStuff = apparel.Stuff;
             SelectedStyle = apparel.StyleDef?.Category;
@@ -311,7 +313,14 @@ namespace EdB.PrepareCarefully {
             }
             SelectedHitPoints = UtilityApparel.HitPointPercentForApparel(apparel);
             if (ColorSelectionEnabled) {
-                SelectedColor = apparel.GetColor();
+                if (!apparel.def.MadeFromStuff) {
+                    SelectedColor = apparel.GetColor();
+                }
+                else {
+                    //Color color = apparel.def.GetColorForStuff(apparel.Stuff);
+                    //SelectedColor = color;
+                    SelectedColor = apparel.GetColor();
+                }
             }
         }
 
@@ -319,14 +328,13 @@ namespace EdB.PrepareCarefully {
             if (option == null) {
                 return;
             }
-            SelectApparelOption(option);
             ScrollToThingDef = option.ThingDef;
-            ButtonLabel = "EdB.PC.Dialog.ManageApparel.UpdateApparelButton".Translate();
             CheckSelectionVisibility = true;
         }
 
-        public void SelectApparelOption(EquipmentOption option) {
+        public void SelectOption(EquipmentOption option) {
             SelectedOption = option;
+            SelectedApparel = FindApparelOnPawn(option.ThingDef);
             if (!option.Materials.NullOrEmpty()) {
                 if (SelectedStuff == null || !option.Materials.Contains(SelectedStuff)) {
                     foreach (var m in PreferredMaterials) {
@@ -346,12 +354,6 @@ namespace EdB.PrepareCarefully {
             if (SelectedStyle == null || option.Styles == null || !option.Styles.ContainsAny(s => s == SelectedStyle)) {
                 SelectedStyle = null;
             }
-            if (CustomizedPawn.Customizations.Apparel.Select(a => a.ThingDef).Contains(option.ThingDef)) {
-                ButtonLabel = "EdB.PC.Dialog.ManageApparel.UpdateApparelButton".Translate();
-            }
-            else {
-                ButtonLabel = "EdB.PC.Dialog.ManageApparel.AddApparelButton".Translate();
-            }
             if (SelectedOption?.ThingDef?.HasComp<CompColorable>() ?? false) {
                 ColorSelectionEnabled = true;
                 UpdateColorSwatchesForSelectedThing();
@@ -360,7 +362,6 @@ namespace EdB.PrepareCarefully {
                 ColorSelectionEnabled = false;
             }
             CheckSelectionVisibility = true;
-            Logger.Debug("Style count for selected apparel option: " + (option.Styles?.Count ?? 0));
         }
 
         public void UpdateColorSwatchesForSelectedThing() {
@@ -418,7 +419,7 @@ namespace EdB.PrepareCarefully {
             }
             Widgets.Label(labelRect, option.ThingDef.LabelCap);
             if (Widgets.ButtonInvisible(rowRect, false) && SelectedOption != option) {
-                SelectApparelOption(option);
+                SelectOption(option);
             }
             y += rowHeight + detailBoxHeight;
             return y - top;
@@ -505,7 +506,7 @@ namespace EdB.PrepareCarefully {
                         List<FloatMenuOption> list = new List<FloatMenuOption>();
                         foreach (var stuff in SelectedOption.Materials) {
                             string label = stuff.LabelCap;
-                            list.Add(new FloatMenuOption(label, () => { UpdateMaterial(stuff); }, MenuOptionPriority.Default, null, null, 0, null, null));
+                            list.Add(new FloatMenuOption(label, () => { SelectMaterial(stuff); }, MenuOptionPriority.Default, null, null, 0, null, null));
                         }
                         Find.WindowStack.Add(new FloatMenu(list, null, false));
                     }
@@ -551,25 +552,26 @@ namespace EdB.PrepareCarefully {
                     y += 8;
 
                     // Update the hit points based on the slider value
-                    SelectedHitPoints = hitPoints;
+                    SelectHitPoints(hitPoints);
                 }
 
                 // Color selector
                 if (ColorSelectionEnabled) {
                     Color currentColor = SelectedColor ?? DefaultColorForSelectedOption();
-                    y += WidgetColorSelector.Draw(insetMargin, y, width, currentColor, CurrentSwatches, (c) => { currentColor = c; });
+                    y += WidgetColorSelector.Draw(insetMargin, y, HitPointsSliderRect.xMax - HitPointsLabelRect.xMin, 22f, 50f, currentColor, CurrentSwatches, (c) => { currentColor = c; });
                     y += 12;
-                    SelectedColor = currentColor;
+                    SelectColor(currentColor);
                 }
 
                 // Draw Add/Update Button
                 Vector2 buttonSize = new Vector2(120, 22);
-                //Rect addButtonRect = new Rect(width * 0.5f - buttonSize.HalfX(), y, buttonSize.x, buttonSize.y); // If we want it centered
                 Rect addButtonRect = new Rect(insetMargin, y, buttonSize.x, buttonSize.y);
                 Text.Font = GameFont.Tiny;
-                if (Widgets.ButtonText(addButtonRect, ButtonLabel, true, false, true)) {
-                    SoundDefOf.Click.PlayOneShotOnCamera();
-                    AddApparel();
+                if (SelectedApparel == null) {
+                    if (Widgets.ButtonText(addButtonRect, "EdB.PC.Dialog.ManageApparel.AddApparelButton".Translate(), true, false, true)) {
+                        SoundDefOf.Click.PlayOneShotOnCamera();
+                        AddApparel();
+                    }
                 }
                 y += buttonSize.y + 8;
 
@@ -584,7 +586,35 @@ namespace EdB.PrepareCarefully {
             }
         }
 
-        public void UpdateMaterial(ThingDef stuff) {
+        public void SelectHitPoints(float hitPoints) {
+            if (SelectedHitPoints == hitPoints) {
+                return;
+            }
+            SelectedHitPoints = hitPoints;
+            if (SelectedApparel != null) {
+                int hitPointValue = (int)((float)SelectedApparel.MaxHitPoints * SelectedHitPoints);
+                if (SelectedApparel.HitPoints != hitPointValue) {
+                    SelectedApparel.HitPoints = hitPointValue;
+                }
+            }
+        }
+
+        public void SelectColor(Color color) {
+            if (SelectedColor == color) {
+                return;
+            }
+            SelectedColor = color;
+            if (SelectedApparel != null) {
+                Logger.Debug("SelectColor for SelectedApparel");
+                Color currentColor = SelectedApparel.GetColor();
+                if (currentColor != color) {
+                    SelectedApparel.SetColor(color);
+                    UtilityPawns.ClearPawnGraphicsCache(CustomizedPawn?.Pawn);
+                }
+            }
+        }
+
+        public void SelectMaterial(ThingDef stuff) {
             ThingDef previousStuff = SelectedStuff;
             Logger.Debug("SelectedColor = " + SelectedColor);
             Color? colorForPreviousStuff = SelectedOption.ThingDef.GetColorForStuff(previousStuff);
@@ -598,10 +628,32 @@ namespace EdB.PrepareCarefully {
                     SelectedColor = colorForCurrentStuff.Value;
                 }
             }
+            if (SelectedApparel != null) {
+                if (SelectedApparel.Stuff != stuff) {
+                    AddApparel();
+                }
+            }
         }
 
         public void SelectStyle(StyleCategoryDef def) {
             SelectedStyle = def;
+            if (SelectedApparel != null) {
+                if (SelectedApparel.StyleDef?.Category != SelectedStyle) {
+                    AddApparel();
+                }
+            }
+        }
+
+        public void SelectQuality(QualityCategory? quality) {
+            SelectedQuality = quality;
+            if (SelectedApparel != null) {
+                QualityCategory newQuality = quality ?? QualityCategory.Normal;
+                if (SelectedApparel.TryGetQuality(out var currentQuality)) {
+                    if (currentQuality != newQuality) {
+                        AddApparel();
+                    }
+                }
+            }
         }
 
         public Color DefaultColorForSelectedOption() {
@@ -631,9 +683,22 @@ namespace EdB.PrepareCarefully {
             if (ColorSelectionEnabled) {
                 c.Color = SelectedColor;
             }
-            Logger.Debug("Added apparel with hitpoints = " + SelectedHitPoints);
+            //Logger.Debug("Added apparel with hitpoints = " + SelectedHitPoints);
             ApparelAdded?.Invoke(c);
-            ScrollToSelectedOption(SelectedOption);
+            Apparel a = FindApparelOnPawn(c.ThingDef);
+            if (a != null) {
+                SelectApparel(a);
+            }
+            else {
+                ScrollToSelectedOption(SelectedOption);
+            }
+        }
+
+        public Apparel FindApparelOnPawn(ThingDef thingDef) {
+            if (thingDef == null) {
+                return null;
+            }
+            return CustomizedPawn.Pawn.apparel.WornApparel.FirstOrDefault(a => a.def == thingDef);
         }
 
         public float MeasureRowForSelectedOption(EquipmentOption option, float y, float width) {

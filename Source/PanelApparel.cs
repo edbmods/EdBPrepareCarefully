@@ -59,7 +59,7 @@ namespace EdB.PrepareCarefully {
                     y += WidgetEquipmentField.DrawSelectedEquipment(rowMargin, y, rowWidth, item, () => {
                         if (!pawn.apparel.AllApparelLocked) {
                             OpenManageApparelDialog();
-                            DialogManageApparel.ScrollToSelectedApparel(item);
+                            DialogManageApparel.SelectApparel(item);
                         }
                     });
                     index++;

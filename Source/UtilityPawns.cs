@@ -89,5 +89,9 @@ namespace EdB.PrepareCarefully {
             PawnComponentsUtility.RemoveComponentsOnDespawned(pawn);
             Find.WorldPawns.PassToWorld(pawn, PawnDiscardDecideMode.Discard);
         }
+
+        public static void ClearPawnGraphicsCache(Pawn pawn) {
+            pawn?.Drawer?.renderer?.SetAllGraphicsDirty();
+        }
     }
 }
