@@ -32,6 +32,8 @@ namespace EdB.PrepareCarefully {
         public ModState State { get; set; }
         public ViewState ViewState { get; set; }
         public ControllerTabViewPawns PawnController { get; set; }
+        public ProviderPawnLayers ProviderPawnLayers { get; set; }
+        public ProviderAlienRaces ProviderAlienRaces { get; set; }
 
         public PanelAppearance() {
 
@@ -49,8 +51,6 @@ namespace EdB.PrepareCarefully {
         protected static Vector2 SwatchSpacing = new Vector2(21, 21);
         protected static Color ColorSwatchBorder = new Color(0.77255f, 0.77255f, 0.77255f);
         protected static Color ColorSwatchSelection = new Color(0.9098f, 0.9098f, 0.9098f);
-
-        public ProviderPawnLayers ProviderPawnLayers { get; set; }
 
         public override void Resize(float width) {
 
@@ -163,13 +163,13 @@ namespace EdB.PrepareCarefully {
                 y += DrawColorSelectorForPawnLayer(customizedPawn, y, selectedPawnLayer.ColorSwatches, true);
             }
             else if (selectedPawnLayer.ColorSelectorType == ColorSelectorType.Skin) {
-                //AlienRace alienRace = customPawn.AlienRace;
-                //if (alienRace == null || alienRace.UseMelaninLevels || alienRace.ThingDef?.defName == "Human") {
+                AlienRace alienRace = ProviderAlienRaces.GetAlienRaceForPawn(customizedPawn);
+                if (alienRace == null || alienRace.UseMelaninLevels || alienRace.ThingDef?.defName == "Human") {
                     y += DrawSkinColorSelector(customizedPawn, y, skinColors, true);
-                //}
-                //else if (alienRace.ChangeableColor) {
-                //    DrawSkinColorSelector(customPawn, cursorY, alienRace.PrimaryColors, true);
-                //}
+                }
+                else if (alienRace.ChangeableColor) {
+                    y += DrawSkinColorSelector(customizedPawn, y, alienRace.PrimaryColors, true);
+                }
             }
 
             // Random button
@@ -255,12 +255,12 @@ namespace EdB.PrepareCarefully {
         }
         public List<Color> SkinColorsForPawn(Verse.Pawn pawn) {
             List<Color> result = new List<Color>();
-            result.AddRange(RimWorld.PawnSkinColors.SkinColorGenesInOrder.ConvertAll(gene => RimWorld.PawnSkinColors.GetSkinColor(gene.minMelanin)));
+            result.AddRange(RimWorld.PawnSkinColors.SkinColorGenesInOrder.ConvertAll(gene => RimWorld.PawnSkinColors.GetSkinColor(gene.minMelanin)).Distinct());
             if (pawn == null) {
                 return result;
             }
             result.AddRange(pawn.genes.GenesListForReading.Where(g => g.def.skinColorOverride.HasValue).Select(g => g.def.skinColorOverride.Value));
-            return result;
+            return result.Distinct().ToList();
         }
 
         protected void SelectNextPawnLayerOption(CustomizedPawn customizedPawn, int direction) {

@@ -23,14 +23,8 @@ namespace EdB.PrepareCarefully {
                 options = value;
             }
         }
-        public bool Hair {
-            get;
-            set;
-        }
-        public bool Skin {
-            get;
-            set;
-        }
+        public bool Hair { get; set; }
+        public bool Skin { get; set; }
         public override ColorSelectorType ColorSelectorType {
             get {
                 return colorSelectorType;
@@ -47,10 +41,9 @@ namespace EdB.PrepareCarefully {
                 swatches = value;
             }
         }
-        public AlienRaceBodyAddon AlienAddon {
-            get;
-            set;
-        }
+        public List<PawnLayerOption> LinkedLayers { get; set; }
+
+        public AlienRaceBodyAddon AlienAddon { get; set; }
 
         public override bool IsOptionSelected(CustomizedPawn pawn, PawnLayerOption option) {
             PawnLayerOptionAlienAddon addonOption = option as PawnLayerOptionAlienAddon;

@@ -218,6 +218,7 @@ namespace EdB.PrepareCarefully {
                 State = state,
                 ViewState = viewState,
                 ProviderPawnLayers = providerPawnLayers,
+                ProviderAlienRaces = providerAlienRaces,
                 PawnController = controllerPawns
             };
             var apparelPanel = new PanelApparel() {
