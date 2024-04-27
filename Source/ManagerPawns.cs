@@ -385,13 +385,11 @@ namespace EdB.PrepareCarefully {
         }
 
         public void ClearSkillCaches(CustomizedPawn customizedPawn) {
-            Pawn pawn = customizedPawn.Pawn;
+            Pawn pawn = customizedPawn?.Pawn;
             if (pawn == null) {
                 return;
             }
-            foreach (SkillRecord skillRecord in pawn.skills.skills) {
-                skillRecord.Notify_SkillDisablesChanged();
-            }
+            pawn.ClearCachedDisabledSkillRecords();
         }
 
         public void RandomizePawnBackstories(CustomizedPawn customizedPawn) {
@@ -575,7 +573,7 @@ namespace EdB.PrepareCarefully {
                     continue;
                 }
                 int delta = currentGain - previousGain;
-                Logger.Debug("previous gains: " + previousGain + ", current gains: " + currentGain + ", delta = " + delta + ", level = " + record.Level);
+                //Logger.Debug("previous gains: " + previousGain + ", current gains: " + currentGain + ", delta = " + delta + ", level = " + record.Level);
                 record.Level += delta;
             }
             foreach (var skillGainPair in skillGains) {
