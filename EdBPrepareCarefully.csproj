@@ -203,6 +203,7 @@
     <Compile Include="Source\UtilityColor.cs" />
     <Compile Include="Source\UtilityEnumerable.cs" />
     <Compile Include="Source\UtilityEquipmentSpawnType.cs" />
+    <Compile Include="Source\UtilityIdeo.cs" />
     <Compile Include="Source\UtilityPawns.cs" />
     <Compile Include="Source\RelationshipBuilder.cs" />
     <Compile Include="Source\RelationshipList.cs" />

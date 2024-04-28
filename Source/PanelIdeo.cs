@@ -55,10 +55,7 @@ namespace EdB.PrepareCarefully {
         }
 
         public override bool IsVisible() {
-            return ModsConfig.IdeologyActive
-                && !Find.IdeoManager.classicMode
-                && !(ViewState.CurrentPawn?.Pawn?.DevelopmentalStage.Baby() ?? false)
-                && (ViewState.CurrentPawn?.Pawn?.ShouldHaveIdeo ?? false);
+            return UtilityIdeo.IdeoEnabledForPawn(ViewState.CurrentPawn);
         }
 
         public override float Draw(float y) {

@@ -42,12 +42,13 @@ namespace EdB.PrepareCarefully {
         public Rect HitPointsLabelRect { get; private set; }
         public Rect PercentLabelRect { get; private set; }
         public Rect HitPointsSliderRect { get; private set; }
+
+        public Rect RectButtonRotateView { get; private set; }
         public string ConfirmButtonLabel { get; private set; } = "EdB.PC.Dialog.Implant.Button.Confirm";
         public string CancelButtonLabel { get; private set; } = "EdB.PC.Common.Cancel";
         public WidgetScrollViewVertical ScrollViewAvailableApparel { get; private set; } = new WidgetScrollViewVertical();
         public WidgetScrollViewVertical ScrollViewSelectedApparel { get; private set; } = new WidgetScrollViewVertical();
         public ThingDef ScrollToThingDef { get; set; }
-        public EquipmentOption ScrollToEquipmentOption { get; set; }
 
         public static Color ColorPortraitBorder = new Color(0.3843f, 0.3843f, 0.3843f);
 
@@ -70,6 +71,7 @@ namespace EdB.PrepareCarefully {
         private List<Color> CurrentSwatches = new List<Color>();
         private bool CheckSelectionVisibility = false;
         private LinkedList<ThingDef> PreferredMaterials = new LinkedList<ThingDef>();
+        private Rot4 pawnViewRotation = Rot4.South;
 
         public DialogApparel() {
             this.closeOnCancel = true;
@@ -86,13 +88,14 @@ namespace EdB.PrepareCarefully {
                 ApparelLayerFloatMenuOptions.Add(new FloatMenuOption(layer.LabelCap, () => { SelectedLayer = layer; }, MenuOptionPriority.Default, null, null, 0, null, null));
             }
 
-            var synthread = DefDatabase<ThingDef>.GetNamedSilentFail("Synthread");
-            var wood = DefDatabase<ThingDef>.GetNamedSilentFail("WoodLog");
-            var steel = DefDatabase<ThingDef>.GetNamedSilentFail("Steel");
             foreach (var m in Find.FactionManager.OfPlayer.def.apparelStuffFilter.AllowedThingDefs) {
                 PreferredMaterials.AddLast(m);
             }
-            foreach (var m in new ThingDef[] { synthread, wood, steel }) {
+            foreach (var m in new ThingDef[] { DefDatabase<ThingDef>.GetNamedSilentFail("Synthread"),
+                    DefDatabase<ThingDef>.GetNamedSilentFail("Steel"),
+                    DefDatabase<ThingDef>.GetNamedSilentFail("Plasteel"),
+                    DefDatabase<ThingDef>.GetNamedSilentFail("WoodLog"),
+                }) {
                 if (m != null) {
                     PreferredMaterials.AddLast(m);
                 }
@@ -104,8 +107,9 @@ namespace EdB.PrepareCarefully {
             CustomizedPawn = pawn;
             OriginalApparelSelections = pawn.Customizations.Apparel.ConvertAll(c => c);
             SelectedOption = null;
-            
+            pawnViewRotation = Rot4.South;
         }
+
         public override Vector2 InitialSize {
             get => new Vector2(WindowSize.x, WindowSize.y);
         }
@@ -159,7 +163,8 @@ namespace EdB.PrepareCarefully {
                 sliderWidth, sliderHeight);
             PercentLabelRect = new Rect(HitPointsSliderRect.xMax + fieldPadding, HitPointsLabelRect.yMin, sizePercent.x, labelHeight);
 
-
+            Vector2 rotateViewButtonSize = new Vector2(24, 12);
+            RectButtonRotateView = new Rect(PortraitRect.x + 10, PortraitRect.yMax - rotateViewButtonSize.y - 10, rotateViewButtonSize.x, rotateViewButtonSize.y);
         }
 
         public override void DoWindowContents(Rect inRect) {
@@ -175,6 +180,31 @@ namespace EdB.PrepareCarefully {
                 }
             }
             DrawPawn(CustomizedPawn, PortraitRect);
+
+            // Rotate view button
+            if (RectButtonRotateView.Contains(Event.current.mousePosition)) {
+                GUI.color = Style.ColorButtonHighlight;
+            }
+            else {
+                GUI.color = Style.ColorButton;
+            }
+            GUI.DrawTexture(RectButtonRotateView, Textures.TextureButtonRotateView);
+            if (Widgets.ButtonInvisible(RectButtonRotateView, false)) {
+                SoundDefOf.Tick_Low.PlayOneShotOnCamera();
+                if (pawnViewRotation == Rot4.South) {
+                    pawnViewRotation = Rot4.East;
+                }
+                else if (pawnViewRotation == Rot4.East) {
+                    pawnViewRotation = Rot4.North;
+                }
+                else if (pawnViewRotation == Rot4.North) {
+                    pawnViewRotation = Rot4.West;
+                }
+                else if (pawnViewRotation == Rot4.West) {
+                    pawnViewRotation = Rot4.South;
+                }
+            }
+            GUI.color = Color.white;
 
             // Draw selected apparel
             Pawn pawn = CustomizedPawn?.Pawn;
@@ -229,7 +259,6 @@ namespace EdB.PrepareCarefully {
                 }
                 SelectedOption = ApparelList.Where(e => SelectedLayer == null || e.ThingDef.apparel.layers.Contains(SelectedLayer))
                         .FirstOrDefault(e => e.ThingDef == ScrollToThingDef);
-                ScrollToThingDef = null;
             }
 
             // Layer filter
@@ -253,9 +282,14 @@ namespace EdB.PrepareCarefully {
                     if (SelectedOption == option) {
                         float topOfBox = y;
                         float scrollBoxTopPosition = ScrollViewAvailableApparel.Position.y;
-                        y += DrawSelectedRow(option, y, ScrollViewAvailableApparel.CurrentViewWidth);
+                        float height = DrawSelectedRow(option, y, ScrollViewAvailableApparel.CurrentViewWidth);
+                        y += height;
+                        if (ScrollToThingDef == option.ThingDef) {
+                            float scrollToY = topOfBox - ScrollViewAvailableApparel.ViewHeight * 0.5f + height * 0.5f;
+                            ScrollViewAvailableApparel.ScrollTo(scrollToY);
+                        }
                         // Make sure the selected item is fully visible.  If not scroll to it
-                        if (CheckSelectionVisibility) {
+                        else if (CheckSelectionVisibility) {
                             if (y > scrollBoxTopPosition + ScrollViewAvailableApparel.ViewHeight) {
                                 float amount = y - (scrollBoxTopPosition + ScrollViewAvailableApparel.ViewHeight);
                                 ScrollViewAvailableApparel.ScrollTo(scrollBoxTopPosition + amount);
@@ -263,7 +297,6 @@ namespace EdB.PrepareCarefully {
                             else if (y < ScrollViewAvailableApparel.Position.y) {
                                 ScrollViewAvailableApparel.ScrollTo(topOfBox);
                             }
-                            CheckSelectionVisibility = false;
                         }
                     }
                     else {
@@ -275,6 +308,8 @@ namespace EdB.PrepareCarefully {
                 ScrollViewAvailableApparel.End(y);
                 Text.Anchor = savedAlignment;
                 GUI.color = savedColor;
+                ScrollToThingDef = null;
+                CheckSelectionVisibility = false;
             }
 
 
@@ -317,10 +352,17 @@ namespace EdB.PrepareCarefully {
                     SelectedColor = apparel.GetColor();
                 }
                 else {
-                    //Color color = apparel.def.GetColorForStuff(apparel.Stuff);
-                    //SelectedColor = color;
-                    SelectedColor = apparel.GetColor();
+                    Color stuffColor = apparel.def.GetColorForStuff(apparel.Stuff);
+                    SelectedColor = stuffColor;
+                    CompColorable comp = apparel.TryGetComp<CompColorable>();
+                    if (comp?.Active ?? false) {
+                        SelectedColor = comp.Color;
+                    }
                 }
+                UpdateColorSwatchesForSelectedThing();
+            }
+            else {
+                SelectedColor = null;
             }
         }
 
@@ -333,10 +375,15 @@ namespace EdB.PrepareCarefully {
         }
 
         public void SelectOption(EquipmentOption option) {
+            bool matchColorSelectionToMaterial = SelectedColorMatchesDefault();
+            var PreviousOption = SelectedOption;
+            Color? PreviousColor = SelectedColor;
+            var PreviousMaterial = SelectedStuff;
             SelectedOption = option;
             SelectedApparel = FindApparelOnPawn(option.ThingDef);
             if (!option.Materials.NullOrEmpty()) {
                 if (SelectedStuff == null || !option.Materials.Contains(SelectedStuff)) {
+                    SelectedStuff = null;
                     foreach (var m in PreferredMaterials) {
                         if (option.Materials.Contains(m)) {
                             SelectedStuff = m;
@@ -357,6 +404,9 @@ namespace EdB.PrepareCarefully {
             if (SelectedOption?.ThingDef?.HasComp<CompColorable>() ?? false) {
                 ColorSelectionEnabled = true;
                 UpdateColorSwatchesForSelectedThing();
+                if (matchColorSelectionToMaterial) {
+                    SelectedColor = DefaultColorForSelectedOption();
+                }
             }
             else {
                 ColorSelectionEnabled = false;
@@ -364,15 +414,45 @@ namespace EdB.PrepareCarefully {
             CheckSelectionVisibility = true;
         }
 
+        public bool SelectedColorMatchesDefault() {
+            if (SelectedOption?.ThingDef == null) {
+                return false;
+            }
+            Color defaultColor = DefaultColorForSelectedOption();
+            if (SelectedColor == null) {
+                return defaultColor.IndistinguishableFrom(Color.white);
+            }
+            else {
+                return defaultColor.IndistinguishableFrom(SelectedColor.Value);
+            }
+        }
+
         public void UpdateColorSwatchesForSelectedThing() {
             CurrentSwatches.Clear();
+            if (!(SelectedOption.ThingDef?.HasComp<CompColorable>() ?? false)) {
+                return;
+            }
             if (SelectedOption.ThingDef?.MadeFromStuff ?? false || SelectedStuff != null) {
                 CurrentSwatches.Add(SelectedOption.ThingDef.GetColorForStuff(SelectedStuff));
+            }
+            else {
+                CurrentSwatches.Add(Color.white);
             }
             if (!SelectedOption.ThingDef?.colorGenerator.GetColorList().NullOrEmpty() ?? true) {
                 CurrentSwatches.AddRange(SelectedOption.ThingDef.colorGenerator.GetColorList());
             }
+            if (CustomizedPawn?.Pawn?.story?.favoriteColor != null) {
+                CurrentSwatches.Add(CustomizedPawn.Pawn.story.favoriteColor.Value);
+            }
+            if (UtilityIdeo.IdeoEnabledForPawn(CustomizedPawn) && CustomizedPawn?.Pawn?.Ideo?.ApparelColor != null) {
+                CurrentSwatches.Add(CustomizedPawn.Pawn.Ideo.ApparelColor);
+            }
+            foreach (var item in CustomizedPawn?.Pawn?.apparel?.WornApparel) {
+                CurrentSwatches.Add(UtilityApparel.ColorForApparel(item));
+            }
+            CurrentSwatches = CurrentSwatches.Distinct().ToList();
         }
+
 
         protected void DrawPawn(CustomizedPawn customizedPawn, Rect rect) {
             GUI.DrawTexture(rect, Textures.TexturePortraitBackground);
@@ -383,7 +463,7 @@ namespace EdB.PrepareCarefully {
                 return;
             }
             Rect pawnRect = rect.OffsetBy(-rect.x, -rect.y + 12);
-            RenderTexture pawnTexture = PortraitsCache.Get(customizedPawn.Pawn, rect.size, Rot4.South);
+            RenderTexture pawnTexture = PortraitsCache.Get(customizedPawn.Pawn, rect.size, pawnViewRotation);
             try {
                 GUI.BeginClip(rect);
                 GUI.DrawTexture(pawnRect, (Texture)pawnTexture);
@@ -419,7 +499,13 @@ namespace EdB.PrepareCarefully {
             }
             Widgets.Label(labelRect, option.ThingDef.LabelCap);
             if (Widgets.ButtonInvisible(rowRect, false) && SelectedOption != option) {
-                SelectOption(option);
+                Apparel apparel = CustomizedPawn.Pawn?.apparel?.WornApparel.FirstOrDefault(a => a.def == option.ThingDef);
+                if (apparel == null) {
+                    SelectOption(option);
+                }
+                else {
+                    SelectApparel(apparel);
+                }
             }
             y += rowHeight + detailBoxHeight;
             return y - top;
@@ -558,7 +644,10 @@ namespace EdB.PrepareCarefully {
                 // Color selector
                 if (ColorSelectionEnabled) {
                     Color currentColor = SelectedColor ?? DefaultColorForSelectedOption();
-                    y += WidgetColorSelector.Draw(insetMargin, y, HitPointsSliderRect.xMax - HitPointsLabelRect.xMin, 22f, 50f, currentColor, CurrentSwatches, (c) => { currentColor = c; });
+                    y += WidgetColorSelector.DrawSwatches(insetMargin, y, width - 12, 22f, currentColor, CurrentSwatches, (c) => { currentColor = c; }, CustomizedPawn);
+                    y += 8;
+                    WidgetColorSelector.DrawSelector(new Rect(insetMargin, y, HitPointsSliderRect.xMax - HitPointsLabelRect.xMin, 50f), currentColor, (c) => { currentColor = c; });
+                    y += 50f;
                     y += 12;
                     SelectColor(currentColor);
                 }
@@ -608,7 +697,27 @@ namespace EdB.PrepareCarefully {
                 Logger.Debug("SelectColor for SelectedApparel");
                 Color currentColor = SelectedApparel.GetColor();
                 if (currentColor != color) {
-                    SelectedApparel.SetColor(color);
+
+                    Color? newCompColor = color;
+                    // Don't bother coloring something made from stuff if the selected color is the same color as the stuff
+                    if (SelectedApparel.def.MadeFromStuff && SelectedApparel.Stuff != null) {
+                        Color stuffColor = SelectedApparel.def.GetColorForStuff(SelectedApparel.Stuff);
+                        if (stuffColor.IndistinguishableFrom(color)) {
+                            newCompColor = null;
+                        }
+                    }
+                    if (newCompColor != null) {
+                        SelectedApparel.SetColor(color);
+                    }
+                    else {
+                        CompColorable comp = SelectedApparel.TryGetComp<CompColorable>();
+                        if (comp != null) {
+                            comp.Disable();
+                        }
+                        else {
+                            SelectedApparel.SetColor(color);
+                        }
+                    }
                     UtilityPawns.ClearPawnGraphicsCache(CustomizedPawn?.Pawn);
                 }
             }
@@ -618,9 +727,9 @@ namespace EdB.PrepareCarefully {
             ThingDef previousStuff = SelectedStuff;
             Logger.Debug("SelectedColor = " + SelectedColor);
             Color? colorForPreviousStuff = SelectedOption.ThingDef.GetColorForStuff(previousStuff);
-            Logger.Debug(previousStuff?.defName + ", colorForPreviousStuff = " + colorForPreviousStuff.Value);
+            //Logger.Debug(previousStuff?.defName + ", colorForPreviousStuff = " + colorForPreviousStuff.Value);
             Color? colorForCurrentStuff = SelectedOption.ThingDef.GetColorForStuff(stuff);
-            Logger.Debug(stuff?.defName + ", colorForCurrentStuff = " + colorForCurrentStuff.Value);
+            //Logger.Debug(stuff?.defName + ", colorForCurrentStuff = " + colorForCurrentStuff.Value);
             SelectedStuff = stuff;
             UpdateColorSwatchesForSelectedThing();
             if (previousStuff != null && stuff != null && SelectedColor != null) {
@@ -657,7 +766,7 @@ namespace EdB.PrepareCarefully {
         }
 
         public Color DefaultColorForSelectedOption() {
-            if (SelectedOption.ThingDef?.MadeFromStuff ?? false) {
+            if (SelectedOption.ThingDef?.MadeFromStuff ?? false && SelectedStuff != null) {
                 return SelectedOption.ThingDef.GetColorForStuff(SelectedStuff);
             }
             return SelectedOption.ThingDef?.colorGenerator?.GetColorList().FirstOrDefault() ?? Color.white;

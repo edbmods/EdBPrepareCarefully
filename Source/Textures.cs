@@ -64,6 +64,8 @@ namespace EdB.PrepareCarefully {
         public static Texture2D TextureButtonRotateView;
         public static Texture2D TextureFieldAtlasWhite;
         public static Texture2D TextureIconWarning;
+        public static Texture2D TextureFavoriteColor;
+        public static Texture2D TextureIdeoColor;
 
         public static Texture2D TextureWhite {
             get {
@@ -156,6 +158,8 @@ namespace EdB.PrepareCarefully {
 
             TextureFieldAtlasWhite = ContentFinder<Texture2D>.Get("EdB/PrepareCarefully/FieldAtlasWhite", true);
 
+            TextureFavoriteColor = ContentFinder<Texture2D>.Get("UI/Icons/ColorSelector/ColorFavourite", true);
+            TextureIdeoColor = ContentFinder<Texture2D>.Get("UI/Icons/ColorSelector/ColorIdeology", true);
 
             loaded = true;
         }
