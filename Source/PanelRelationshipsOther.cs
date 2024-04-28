@@ -321,19 +321,8 @@ namespace EdB.PrepareCarefully {
             List<WidgetTable<CustomizedPawn>.RowGroup> sourceRowGroups = new List<WidgetTable<CustomizedPawn>.RowGroup>();
             sourceRowGroups.Add(new WidgetTable<CustomizedPawn>.RowGroup("EdB.PC.AddParentChild.Header.SelectColonist".Translate(),
                 RelationshipManager.AvailableColonyPawns));
-            List<CustomizedPawn> hiddenPawnsForSource = RelationshipManager.AvailableHiddenPawns.ToList();
-            hiddenPawnsForSource.Sort((a, b) => {
-                if (a.Type != b.Type) {
-                    return a.Type == CustomizedPawnType.Hidden ? -1 : 1;
-                }
-                else {
-                    int aInt = a.TemporaryPawn.Index;
-                    int bInt = b.TemporaryPawn.Index;
-                    return aInt.CompareTo(bInt);
-                }
-            });
             sourceRowGroups.Add(new WidgetTable<CustomizedPawn>.RowGroup("<b>" + "EdB.PC.AddParentChild.Header.SelectWorldPawn".Translate() + "</b>",
-                RelationshipManager.AvailableWorldPawns.Concat(hiddenPawnsForSource)));
+                RelationshipManager.AvailableWorldPawns));
             WidgetTable<CustomizedPawn>.RowGroup sourceNewPawnGroup = new WidgetTable<CustomizedPawn>.RowGroup("EdB.PC.AddParentChild.Header.CreateTemporaryPawn".Translate(),
                 RelationshipManager.AvailableTemporaryPawns);
             sourceRowGroups.Add(sourceNewPawnGroup);
@@ -392,23 +381,12 @@ namespace EdB.PrepareCarefully {
             relationshipDialog.CloseAction = () => {
                 SetDisabledTargets(sourceParentChildPawn, selectedRelationship);
                 targetPawnDialog.DisabledPawns = disabledTargets;
-
+                targetPawnDialog.PawnForCompatibility = sourceParentChildPawn;
                 var targetRowGroups = new List<WidgetTable<CustomizedPawn>.RowGroup>();
                 targetRowGroups.Add(new WidgetTable<CustomizedPawn>.RowGroup("EdB.PC.AddParentChild.Header.SelectColonist".Translate(),
                     RelationshipManager.AvailableColonyPawns.Where(pawn => pawn != sourceParentChildPawn)));
-                List<CustomizedPawn> hiddenPawnsForTarget = RelationshipManager.AvailableHiddenPawns.ToList();
-                hiddenPawnsForTarget.Sort((a, b) => {
-                    if (a.Type != b.Type) {
-                        return a.Type == CustomizedPawnType.Hidden ? -1 : 1;
-                    }
-                    else {
-                        int aInt = a.TemporaryPawn.Index;
-                        int bInt = b.TemporaryPawn.Index;
-                        return aInt.CompareTo(bInt);
-                    }
-                });
                 targetRowGroups.Add(new WidgetTable<CustomizedPawn>.RowGroup("<b>" + "EdB.PC.AddParentChild.Header.SelectWorldPawn".Translate() + "</b>",
-                    RelationshipManager.AvailableWorldPawns.Where(pawn => pawn != sourceParentChildPawn).Concat(hiddenPawnsForTarget)));
+                    RelationshipManager.AvailableWorldPawns.Where(pawn => pawn != sourceParentChildPawn)));
                 targetNewPawnGroup = new WidgetTable<CustomizedPawn>.RowGroup("EdB.PC.AddParentChild.Header.CreateTemporaryPawn".Translate(),
                     RelationshipManager.AvailableTemporaryPawns);
                 targetRowGroups.Add(targetNewPawnGroup);

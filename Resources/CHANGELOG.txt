@@ -6,9 +6,12 @@
  - In the Apparel dialog, changing values for an apparel item that a pawn is
  - already weating in the now updates the apparel immediately without needing
    to click the "Update" button
+ - Pawn compatibility is displayed in the Other Relationships dialog
  - Bug fixes:
    - The Ideo panel is now hidden for pawns that should not have an ideo
    - Disabled skills now update properly when changing backstories or traits
+   - Relationships for randomized pawns are now deleted instead of swapped for
+     the new random pawn
 
  _____________________________________________________________________________
  
