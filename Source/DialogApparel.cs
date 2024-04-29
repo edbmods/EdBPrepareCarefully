@@ -87,11 +87,13 @@ namespace EdB.PrepareCarefully {
             foreach (var layer in DefDatabase<ApparelLayerDef>.AllDefs) {
                 ApparelLayerFloatMenuOptions.Add(new FloatMenuOption(layer.LabelCap, () => { SelectedLayer = layer; }, MenuOptionPriority.Default, null, null, 0, null, null));
             }
-
-            foreach (var m in Find.FactionManager.OfPlayer.def.apparelStuffFilter.AllowedThingDefs) {
-                PreferredMaterials.AddLast(m);
+            if (Find.FactionManager.OfPlayer.def.apparelStuffFilter?.AllowedThingDefs != null) {
+                foreach (var m in Find.FactionManager.OfPlayer.def.apparelStuffFilter?.AllowedThingDefs) {
+                    PreferredMaterials.AddLast(m);
+                }
             }
-            foreach (var m in new ThingDef[] { DefDatabase<ThingDef>.GetNamedSilentFail("Synthread"),
+            foreach (var m in new ThingDef[] {
+                    DefDatabase<ThingDef>.GetNamedSilentFail("Synthread"),
                     DefDatabase<ThingDef>.GetNamedSilentFail("Steel"),
                     DefDatabase<ThingDef>.GetNamedSilentFail("Plasteel"),
                     DefDatabase<ThingDef>.GetNamedSilentFail("WoodLog"),

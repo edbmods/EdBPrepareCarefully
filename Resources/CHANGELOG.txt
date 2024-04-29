@@ -3,9 +3,11 @@
    Version 1.5.4
  _____________________________________________________________________________
 
- - In the Apparel dialog, changing values for an apparel item that a pawn is
- - already weating in the now updates the apparel immediately without needing
-   to click the "Update" button
+ - In the Apparel dialog, changing a value for an apparel item that a pawn is
+   already wearing now updates the apparel immediately without needing to
+   click the "Update" button
+ - Added color swatches for Favorite Color and Ideo to the Apparel dialog
+ - Added a Rotate View button to the Apparel dialog
  - Pawn compatibility is displayed in the Other Relationships dialog
  - Bug fixes:
    - The Ideo panel is now hidden for pawns that should not have an ideo
