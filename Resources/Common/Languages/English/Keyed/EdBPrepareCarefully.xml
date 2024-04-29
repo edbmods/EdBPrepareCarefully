@@ -5,6 +5,8 @@
 <!-- ADDED: EdB.PC.Panel.Apparel.ApparelLocked -->
 <!-- ADDED: EdB.PC.Equipment.AvailableEquipment.DefaultStyleOption -->
 <!-- ADDED: EdB.PC.Equipment.AvailableEquipment.StyleLabel -->
+<!-- ADDED: EdB.PC.AddRelationship.Compatibility -->
+<!-- ADDED: EdB.PC.AddRelationship.UnknownCompatibility -->
 
 <!-- v1.5.1 -->
 <!-- ADDED: EdB.PC.Dialog.ManageApparel.AllLayers -->
@@ -159,6 +161,8 @@
   <EdB.PC.AddRelationship.Error.RelationshipRequired>You must select a relationship</EdB.PC.AddRelationship.Error.RelationshipRequired>
   <EdB.PC.AddRelationship.Error.SourceRequired>You must select a character</EdB.PC.AddRelationship.Error.SourceRequired>
   <EdB.PC.AddRelationship.Error.TargetRequired>You must select a character</EdB.PC.AddRelationship.Error.TargetRequired>
+  <EdB.PC.AddRelationship.Compatibility>Compatibility Score: {0}</EdB.PC.AddRelationship.Compatibility>
+  <EdB.PC.AddRelationship.UnknownCompatibility>Unknown</EdB.PC.AddRelationship.UnknownCompatibility>
 
   <EdB.PC.Animals.LabelWithGender>{0}, {1}</EdB.PC.Animals.LabelWithGender>
   <EdB.PC.Animals.LabelWithoutGender>{0}</EdB.PC.Animals.LabelWithoutGender>

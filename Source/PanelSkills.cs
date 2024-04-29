@@ -173,8 +173,8 @@ namespace EdB.PrepareCarefully {
 
                     // Handle the tooltip.
                     // TODO: Should cover the whole row, not just the skill bar rect.
-                    TooltipHandler.TipRegion(rect, new TipSignal(GetSkillDescription(skillRecord),
-                        skillRecord.def.GetHashCode() * 397945));
+                    TooltipHandler.TipRegion(rect, () => GetSkillDescription(skillRecord),
+                        (GetType().FullName + skillRecord?.def?.defName).GetHashCode());
 
                     if (!disabled) {
                         // Draw the decrement button.
@@ -300,7 +300,13 @@ namespace EdB.PrepareCarefully {
         }
 
         private static string GetSkillDescription(SkillRecord sk) {
-            return ReflectionUtil.InvokeNonPublicStaticMethod<string>(typeof(SkillUI), "GetSkillDescription", new object[] { sk }) ?? "";
+            try {
+                return ReflectionUtil.InvokeNonPublicStaticMethod<string>(typeof(SkillUI), "GetSkillDescription", new object[] { sk }) ?? "";
+            }
+            catch (Exception) {
+                Logger.Warning("There was an error when trying to get a skill description tooltip for skill " + sk?.def?.defName);
+                return "";
+            }
         }
 
         protected void SetSkillLevel(SkillDef skillDef, int value) {

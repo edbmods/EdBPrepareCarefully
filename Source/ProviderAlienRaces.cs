@@ -23,11 +23,18 @@ namespace EdB.PrepareCarefully {
                 defaultMinAgeForAdulthood = 20.0f;
             }
         }
+        public AlienRace GetAlienRaceForPawn(CustomizedPawn pawn) {
+            return GetAlienRace(pawn.Pawn?.def);
+        }
+
         public AlienRace GetAlienRaceForPawn(Pawn pawn) {
-            return GetAlienRace(pawn.def);
+            return GetAlienRace(pawn?.def);
         }
 
         public AlienRace GetAlienRace(ThingDef def) {
+            if (def == null) {
+                return null;
+            }
             AlienRace result;
             if (lookup.TryGetValue(def, out result)) {
                 return result;
@@ -87,7 +94,16 @@ namespace EdB.PrepareCarefully {
             return GetCrownTypeFromComp(alienComp);
         }
 
+        public static bool IsAlienRace(CustomizedPawn customizedPawn) {
+            return IsAlienRace(customizedPawn.Pawn?.def);
+        }
+        public static bool IsAlienRace(Pawn pawn) {
+            return IsAlienRace(pawn?.def);
+        }
         public static bool IsAlienRace(ThingDef raceDef) {
+            if (raceDef == null) {
+                return false;
+            }
             FieldInfo alienRaceField = raceDef.GetType().GetField("alienRace", BindingFlags.Public | BindingFlags.Instance);
             return (alienRaceField != null);
         }
@@ -387,7 +403,7 @@ namespace EdB.PrepareCarefully {
                         addon.VariantIndex = index;
                         addons.Add(addon);
                     }
-                    result.addons = addons;
+                    result.Addons = addons;
                 }
 
                 return result;

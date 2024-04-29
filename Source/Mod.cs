@@ -157,7 +157,8 @@ namespace EdB.PrepareCarefully {
                 State = state,
                 ViewState = viewState,
                 Customizer = pawnCustomizer,
-                PawnManager = pawnManager
+                PawnManager = pawnManager,
+                RelationshipManager = relationshipManager,
             };
             var controllerRelationships = new ControllerTabViewRelationships() {
                 State = state,
@@ -218,6 +219,7 @@ namespace EdB.PrepareCarefully {
                 State = state,
                 ViewState = viewState,
                 ProviderPawnLayers = providerPawnLayers,
+                ProviderAlienRaces = providerAlienRaces,
                 PawnController = controllerPawns
             };
             var apparelPanel = new PanelApparel() {

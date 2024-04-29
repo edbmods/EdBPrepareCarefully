@@ -522,6 +522,18 @@ namespace EdB.PrepareCarefully {
             return pawn;
         }
 
+        public void RemoveAllRelationshipsForPawn(Pawn pawn) {
+            if (pawn == null) {
+                return;
+            }
+            State.Customizations.Relationships.RemoveAll(r => r.Source.Pawn == pawn || r.Target.Pawn == pawn);
+            foreach (var group in State.Customizations.ParentChildGroups) {
+                group.Parents.RemoveAll(p => p.Pawn == pawn);
+                group.Children.RemoveAll(p => p.Pawn == pawn);
+            }
+            State.Customizations.ParentChildGroups.RemoveAll(g => g.Parents.Count + g.Children.Count <= 1);
+        }
+
         public RelationshipBuilder GetRelationshipBuilder() {
             return new RelationshipBuilder(State.Customizations.Relationships, State.Customizations.ParentChildGroups);
         }

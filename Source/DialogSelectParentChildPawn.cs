@@ -27,6 +27,7 @@ namespace EdB.PrepareCarefully {
         protected string headerLabel;
         protected bool resizeDirtyFlag = true;
         protected bool confirmed = false;
+        public CustomizedPawn PawnForCompatibility { get; set; } = null;
 
         public DialogSelectParentChildPawn() {
             this.closeOnCancel = true;
@@ -116,7 +117,11 @@ namespace EdB.PrepareCarefully {
 
             Vector2 portraitSize = new Vector2(70, 70);
             float nameOffset = 2;
-            float descriptionOffset = -2;
+            float descriptionOffset = 34;
+            float compatibilityOffset = 18;
+            if (PawnForCompatibility != null) {
+                nameOffset = -6;
+            }
             float radioWidth = 36;
             Vector2 nameSize = new Vector2(ContentRect.width - portraitSize.x - radioWidth, portraitSize.y * 0.5f);
 
@@ -165,7 +170,8 @@ namespace EdB.PrepareCarefully {
                 DrawAction = (CustomizedPawn pawn, Rect rect, WidgetTable<CustomizedPawn>.Metadata metadata) => {
                     Text.Anchor = TextAnchor.LowerLeft;
                     Text.Font = GameFont.Small;
-                    Widgets.Label(new Rect(rect.x, rect.y + nameOffset, rect.width, nameSize.y), FullNameForPawn(pawn));
+                    Rect nameRect = new Rect(rect.x, rect.y + nameOffset, rect.width, nameSize.y);
+                    Widgets.Label(nameRect, FullNameForPawn(pawn));
                     Text.Anchor = TextAnchor.UpperLeft;
                     string description;
                     if (IsPawnVisible(pawn)) {
@@ -183,7 +189,25 @@ namespace EdB.PrepareCarefully {
                             "EdB.PC.Pawn.HiddenPawnDescriptionNoGender".Translate(profession);
                     }
                     Text.Font = GameFont.Tiny;
-                    Widgets.Label(new Rect(rect.x, rect.y + nameSize.y + descriptionOffset, rect.width, nameSize.y), description);
+                    Rect descriptionRect = new Rect(rect.x, nameRect.y + descriptionOffset, rect.width, nameSize.y);
+                    Widgets.Label(descriptionRect, description);
+
+                    if (PawnForCompatibility != null) {
+                        string value;
+                        if (PawnForCompatibility.Type != CustomizedPawnType.Hidden) {
+                            if (pawn.Pawn == null || PawnForCompatibility.Pawn == null) {
+                                value = "EdB.PC.AddRelationship.UnknownCompatibility".Translate();
+                            }
+                            else {
+                                float score = (float)Math.Round(PawnForCompatibility?.Pawn?.relations?.CompatibilityWith(pawn.Pawn) ?? 0f, 2);
+                                value = score.ToString();
+                            }
+                        }
+                        else {
+                            value = "EdB.PC.AddRelationship.UnknownCompatibility".Translate();
+                        }
+                        Widgets.Label(new Rect(rect.x, descriptionRect.y + compatibilityOffset, rect.width, nameSize.y), "EdB.PC.AddRelationship.Compatibility".Translate(value));
+                    }
                     Text.Font = GameFont.Small;
                     Text.Anchor = TextAnchor.UpperLeft;
                 }

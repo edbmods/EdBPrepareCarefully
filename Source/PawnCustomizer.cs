@@ -194,7 +194,17 @@ namespace EdB.PrepareCarefully {
                 if (apparel.def.HasComp(typeof(CompColorable))) {
                     CompColorable colorable = apparel.TryGetComp<CompColorable>();
                     if (colorable != null) {
-                        colorable.SetColor(apparelCustomization.Color.Value);
+                        Color? color = apparelCustomization.Color.Value;
+                        // Don't bother coloring something made from stuff if the selected color is the same color as the stuff
+                        if (apparel.def.MadeFromStuff && stuffDef != null) {
+                            Color stuffColor = apparel.def.GetColorForStuff(stuffDef);
+                            if (stuffColor.IndistinguishableFrom(apparelCustomization.Color.Value)) {
+                                color = null;
+                            }
+                        }
+                        if (color != null) {
+                            colorable.SetColor(apparelCustomization.Color.Value);
+                        }
                     }
                 }
             }

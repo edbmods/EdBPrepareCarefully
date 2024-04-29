@@ -14,6 +14,7 @@ namespace EdB.PrepareCarefully {
         public ViewState ViewState { get; set; }
         public PawnCustomizer Customizer { get; set; }
         public ManagerPawns PawnManager { get; set; }
+        public ManagerRelationships RelationshipManager { get; set; }
 
         protected Dictionary<Type, PawnLayerOptionUpdatedHandler> PawnLayerOptionUpdateHandlers { get; set; } = new Dictionary<Type, PawnLayerOptionUpdatedHandler>();
         protected Dictionary<Type, PawnLayerColorUpdatedHandler> PawnLayerColorUpdateHandlers { get; set; } = new Dictionary<Type, PawnLayerColorUpdatedHandler>();
@@ -77,6 +78,7 @@ namespace EdB.PrepareCarefully {
             if (index == -1) {
                 return;
             }
+            RelationshipManager.RemoveAllRelationshipsForPawn(pawn.Pawn);
             if (PawnManager.RemovePawn(pawn)) {
                 if (pawnList.Count > 0) {
                     if (index >= pawnList.Count) {
@@ -145,6 +147,7 @@ namespace EdB.PrepareCarefully {
         }
 
         public void RandomizeCurrentPawn() {
+            RelationshipManager.RemoveAllRelationshipsForPawn(ViewState.CurrentPawn.Pawn);
             if (ViewState.PawnRandomizerOptions.TryGetValue(ViewState.CurrentPawn, out var randomizerOptions)) {
                 PawnManager.RandomizePawn(ViewState.CurrentPawn, randomizerOptions);
             }

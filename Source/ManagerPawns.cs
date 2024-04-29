@@ -379,9 +379,17 @@ namespace EdB.PrepareCarefully {
             }
             customizedPawn.Pawn.story.Childhood = childhood;
             customizedPawn.Pawn.story.Adulthood = adulthood;
-            RecalculateSkillLevelsFromSkillGains(customizedPawn);
             PawnToCustomizationsMapper.MapBackstories(customizedPawn.Pawn, customizedPawn.Customizations);
+            RecalculateSkillLevelsFromSkillGains(customizedPawn);
             CostAffected?.Invoke();
+        }
+
+        public void ClearSkillCaches(CustomizedPawn customizedPawn) {
+            Pawn pawn = customizedPawn?.Pawn;
+            if (pawn == null) {
+                return;
+            }
+            pawn.ClearCachedDisabledSkillRecords();
         }
 
         public void RandomizePawnBackstories(CustomizedPawn customizedPawn) {
@@ -542,6 +550,7 @@ namespace EdB.PrepareCarefully {
         // change to 6, maintaining a delta of 2 between the values.  To do this, we store the skill gains for each
         // pawn and adjust all of the skill levels accordingly everytime those skill gains change.
         public void RecalculateSkillLevelsFromSkillGains(CustomizedPawn customizedPawn) {
+            ClearSkillCaches(customizedPawn);
             Pawn pawn = customizedPawn.Pawn;
             CustomizationsPawn customizations = customizedPawn.Customizations;
             if (pawn == null || customizations == null) {
@@ -564,7 +573,7 @@ namespace EdB.PrepareCarefully {
                     continue;
                 }
                 int delta = currentGain - previousGain;
-                Logger.Debug("previous gains: " + previousGain + ", current gains: " + currentGain + ", delta = " + delta + ", level = " + record.Level);
+                //Logger.Debug("previous gains: " + previousGain + ", current gains: " + currentGain + ", delta = " + delta + ", level = " + record.Level);
                 record.Level += delta;
             }
             foreach (var skillGainPair in skillGains) {
@@ -962,11 +971,11 @@ namespace EdB.PrepareCarefully {
         }
 
         public void ClearPawnGraphicsCache(Pawn pawn) {
-            pawn?.Drawer?.renderer?.SetAllGraphicsDirty();
+            UtilityPawns.ClearPawnGraphicsCache(pawn);
         }
 
         public void ClearPawnGraphicsCache(CustomizedPawn pawn) {
-            ClearPawnGraphicsCache(pawn.Pawn);
+            UtilityPawns.ClearPawnGraphicsCache(pawn?.Pawn);
         }
 
         public void RemoveApparel(CustomizedPawn customizedPawn, Thing thing) {
