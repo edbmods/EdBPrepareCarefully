@@ -11,6 +11,10 @@ namespace EdB.PrepareCarefully {
         public PawnGenerationRequestBuilder PawnGenerationRequestBuilder { get; set; } = new PawnGenerationRequestBuilder();
         public Pawn CreatePawnFromCustomizations(CustomizationsPawn customizations) {
             var pawn = PawnGenerator.GeneratePawn(PawnGenerationRequestBuilder.BuildFromCustomizations(customizations));
+            //Logger.Debug("Generated pawn has " + pawn.genes.Xenogenes.Count + " xenogenes");
+            //foreach (var g in pawn.genes.Xenogenes) {
+            //    Logger.Debug("  Pawn has xenogene: " + g.def.defName);
+            //}
             ApplyAllCustomizationsToPawn(pawn, customizations);
             return pawn;
         }
@@ -30,6 +34,7 @@ namespace EdB.PrepareCarefully {
             ApplyIdeoCustomizationToPawn(pawn, customizations);
             ApplyTitleCustomizationsToPawn(pawn, customizations);
             ApplyOtherCustomizationsToPawn(pawn, customizations);
+            UtilityPawns.ClearPawnGraphicsCache(pawn);
         }
 
         public void ApplyFavoriteColorCustomizationToPawn(Pawn pawn, CustomizationsPawn customizations) {
@@ -81,7 +86,6 @@ namespace EdB.PrepareCarefully {
                 pawn.story.bodyType = customizations.BodyType;
             }
             ApplyHairCustomizationsToPawn(pawn, customizations);
-            pawn.story.furDef = customizations.Fur;
             pawn.style.beardDef = customizations.Beard;
             pawn.style.FaceTattoo = customizations.FaceTattoo;
             pawn.style.BodyTattoo = customizations.BodyTattoo;
@@ -97,32 +101,86 @@ namespace EdB.PrepareCarefully {
         }
 
         public void ApplyGeneCustomizationsToPawn(Pawn pawn, CustomizationsPawn customizations) {
-            //Logger.Debug("ApplyGeneCustomizationsToPawn()");
             if (!ModsConfig.BiotechActive || pawn == null || customizations == null) {
                 return;
             }
-            //Logger.Debug("  customizations.UniqueXenotype = " + customizations.UniqueXenotype);
-            if (customizations.UniqueXenotype) {
-                pawn.genes.xenotypeName = customizations.XenotypeName;
-            }
-            //Logger.Debug("  pawn.genes.xenotypeName = " + pawn.genes.xenotypeName);
-            //Logger.Debug("  XenotypeLabelCap = " + pawn.genes.XenotypeLabelCap);
             // May not include any customizations for genes (if loading from an older save format or from a save where
             // Biotech was disabled). In that case, we'll leave the genes from the original pawn.
-            if (customizations.Genes != null) {
-                var genesToRemove = new List<Gene>();
-                pawn?.genes?.GenesListForReading?.ForEach(gene => genesToRemove.Add(gene));
-                genesToRemove.ForEach(gene => pawn?.genes?.RemoveGene(gene));
-                customizations?.Genes?.Endogenes?.ForEach(gene => {
-                    pawn?.genes.AddGene(gene.GeneDef, false);
-                });
-                customizations?.Genes?.Xenogenes?.ForEach(gene => {
-                    pawn?.genes.AddGene(gene.GeneDef, true);
-                });
+            if (customizations.Genes == null) {
+                return;
             }
+
+            if (customizations.UniqueXenotype) {
+                pawn.genes.xenotypeName = customizations.XenotypeName;
+                //Logger.Debug("Set xenotype name: " + customizations.XenotypeName + ", name = " + pawn.genes.XenotypeLabelCap);
+            }
+
+            // Remove any genes that were in the generated pawn but should not be in the customized pawn
+            var genesToRemove = new List<Gene>();
+            foreach (var gene in pawn.genes.Endogenes.Reverse<Gene>()) {
+                if (!customizations.Genes.Endogenes.ContainsAny(g => g.GeneDef == gene.def)) {
+                    genesToRemove.Add(gene);
+                }
+            }
+            foreach (var gene in pawn.genes.Xenogenes.Reverse<Gene>()) {
+                if (!customizations.Genes.Xenogenes.ContainsAny(g => g.GeneDef == gene.def)) {
+                    genesToRemove.Add(gene);
+                }
+            }
+            foreach (var gene in genesToRemove) {
+                pawn.genes.RemoveGene(gene);
+            }
+
+
+            //var genesToRemove = new List<Gene>(pawn?.genes?.GenesListForReading.Reverse<Gene>());
+            //foreach (var gene in genesToRemove) {
+            //    pawn?.genes?.RemoveGene(gene);
+            //}
+            //customizations?.Genes?.Xenogenes?.ForEach(gene => {
+            //    pawn?.genes.AddGene(gene.GeneDef, true);
+            //});
+            //customizations?.Genes?.Endogenes?.ForEach(gene => {
+            //    pawn?.genes.AddGene(gene.GeneDef, false);
+            //});
+
+            ApplyGeneOverrides(pawn, pawn.genes?.Endogenes, customizations?.Genes?.Endogenes);
+            ApplyGeneOverrides(pawn, pawn.genes?.Xenogenes, customizations?.Genes?.Xenogenes);
+
+            //Logger.Debug("ApplyGeneCustomizationsToPawn()");
+            //foreach (var gene in pawn?.genes?.Endogenes) {
+            //    Logger.Debug("  Customized endogene " + gene.def.defName + ", overridden by = " + gene.overriddenByGene?.def?.defName);
+            //}
+
             // Note that if you add a gene that affects appearance (i.e. hair color), it may overwrite
             // any override value in the pawn story or style, so be sure to set those overrides again
             // afterwards
+        }
+
+        private void ApplyGeneOverrides(Pawn pawn, IEnumerable<Gene> pawnGeneList, IEnumerable<CustomizedGene> customizedGeneList) {
+            if (pawnGeneList == null || customizedGeneList == null) {
+                return;
+            }
+            foreach (var gene in customizedGeneList) {
+                if (gene.GeneDef.RandomChosen) {
+                    Gene target = pawnGeneList.FirstOrDefault(g => g.def == gene.GeneDef);
+                    if (target != null) {
+                        if (gene.OverriddenByEndogene != null) {
+                            Gene overrideWith = pawn.genes?.Endogenes.FirstOrDefault(g => g.def == gene.OverriddenByEndogene);
+                            if (overrideWith != null) {
+                                target.OverrideBy(overrideWith);
+                                overrideWith.OverrideBy(null);
+                            }
+                        }
+                        else if (gene.OverriddenByXenogene != null) {
+                            Gene overrideWith = pawn.genes?.Xenogenes.FirstOrDefault(g => g.def == gene.OverriddenByXenogene);
+                            if (overrideWith != null) {
+                                target.OverrideBy(overrideWith);
+                                overrideWith.OverrideBy(null);
+                            }
+                        }
+                    }
+                }
+            }
         }
 
         public void ApplyApparelCustomizationsToPawn(Pawn pawn, CustomizationsPawn customizations) {
@@ -219,12 +277,23 @@ namespace EdB.PrepareCarefully {
         }
 
         public void ApplyTraitCustomizationsToPawn(Pawn pawn, CustomizationsPawn customizations) {
-            List<Trait> existingTraits = pawn.story.traits.allTraits.ConvertAll(t => t);
-            foreach (var trait in existingTraits) {
+            List<Trait> traitsToRemove = new List<Trait>();
+            List<CustomizationsTrait> traitsToAdd = new List<CustomizationsTrait>();
+            foreach (var trait in pawn.story.traits.allTraits) {
+                if (!customizations.Traits.ContainsAny(t => t.TraitDef == trait.def && t.Degree == trait.Degree)) {
+                    traitsToRemove.Add(trait);
+                }
+            }
+            foreach (var trait in customizations.Traits) {
+                if (!pawn.story.traits.allTraits.ContainsAny(t => t.def == trait.TraitDef && t.Degree == trait.Degree)) {
+                    traitsToAdd.Add(trait);
+                }
+            }
+            foreach (var trait in traitsToRemove) {
                 pawn.story.traits.RemoveTrait(trait);
             }
-            foreach (var traitCustomization in customizations.Traits) {
-                pawn.story.traits.GainTrait(new Trait(traitCustomization.TraitDef, traitCustomization.Degree, true));
+            foreach (var trait in traitsToAdd) {
+                pawn.story.traits.GainTrait(new Trait(trait.TraitDef, trait.Degree, true));
             }
         }
         public void ApplySkillCustomizations(CustomizedPawn customizedPawn) {

@@ -206,11 +206,13 @@ namespace EdB.PrepareCarefully {
                 if (!record.genes.customXenotypeName.NullOrEmpty()) {
                     var customXenotypes = ReflectionUtil.GetStaticPropertyValue<List<CustomXenotype>>(typeof(CharacterCardUtility), "CustomXenotypes");
                     if (customXenotypes == null) {
-                        Logger.Debug("Go no custom xenotypes from the reflected property");
+                        Logger.Debug("Got no custom xenotypes from the reflected property");
                     }
                     CustomXenotype xenotype = customXenotypes?.Where(x => { return x.name == record.genes.customXenotypeName; }).FirstOrDefault();
                     if (xenotype != null) {
                         customizations.CustomXenotype = xenotype;
+                        customizations.UniqueXenotype = true;
+                        customizations.XenotypeName = record.genes.customXenotypeName;
                     }
                     else {
                         customizations.UniqueXenotype = true;
@@ -224,7 +226,48 @@ namespace EdB.PrepareCarefully {
                     }
                 }
 
-                if (record.genes?.endogenes != null || record.genes?.xenogenes != null) {
+                if (record.genes?.endogeneRecords != null || record.genes?.xenogeneRecords != null) {
+                    customizations.Genes = new CustomizedGenes();
+                    if (record.genes?.endogeneRecords != null) {
+                        List<CustomizedGene> genes = new List<CustomizedGene>();
+                        foreach (var g in record.genes.endogeneRecords) {
+                            if (g == null || g.def.NullOrEmpty()) {
+                                continue;
+                            }
+                            GeneDef def = DefDatabase<GeneDef>.GetNamedSilentFail(g.def);
+                            GeneDef overriddenByEndogene = g.overriddenByEndogene.NullOrEmpty() ? null : DefDatabase<GeneDef>.GetNamedSilentFail(g.overriddenByEndogene);
+                            GeneDef overriddenByXenogene = g.overriddenByXenogene.NullOrEmpty() ? null : DefDatabase<GeneDef>.GetNamedSilentFail(g.overriddenByXenogene);
+                            if (def != null) {
+                                genes.Add(new CustomizedGene() {
+                                    GeneDef = def,
+                                    OverriddenByEndogene = overriddenByEndogene,
+                                    OverriddenByXenogene = overriddenByXenogene,
+                                });
+                            }
+                        }
+                        customizations.Genes.Endogenes = genes;
+                    }
+                    if (record.genes?.xenogeneRecords != null) {
+                        List<CustomizedGene> genes = new List<CustomizedGene>();
+                        foreach (var g in record.genes.xenogeneRecords) {
+                            if (g == null || g.def.NullOrEmpty()) {
+                                continue;
+                            }
+                            GeneDef def = DefDatabase<GeneDef>.GetNamedSilentFail(g.def);
+                            GeneDef overriddenByEndogene = g.overriddenByEndogene.NullOrEmpty() ? null : DefDatabase<GeneDef>.GetNamedSilentFail(g.overriddenByEndogene);
+                            GeneDef overriddenByXenogene = g.overriddenByXenogene.NullOrEmpty() ? null : DefDatabase<GeneDef>.GetNamedSilentFail(g.overriddenByXenogene);
+                            if (def != null) {
+                                genes.Add(new CustomizedGene() {
+                                    GeneDef = def,
+                                    OverriddenByEndogene = overriddenByEndogene,
+                                    OverriddenByXenogene = overriddenByXenogene,
+                                });
+                            }
+                        }
+                        customizations.Genes.Xenogenes = genes;
+                    }
+                }
+                else if (!record.genes.customXenotypeName.NullOrEmpty() && (record.genes?.endogenes != null || record.genes?.xenogenes != null)) {
                     customizations.Genes = new CustomizedGenes();
                     if (record.genes?.endogenes != null) {
                         List<CustomizedGene> genes = record.genes?.endogenes
