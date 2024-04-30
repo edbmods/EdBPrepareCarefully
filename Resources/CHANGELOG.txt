@@ -1,5 +1,19 @@
  _____________________________________________________________________________
  
+   Version 1.5.5
+ _____________________________________________________________________________
+
+ - Bug fixes:
+   - Fixed loading xenotypes from presets so that fur definitions no longer
+     break pawn rendering in a way that pawns become invisible
+   - Fixed the way that traits are refreshed to stop deleting traits before
+     adding them back.  This avoids a problem where genes associated with a
+     trait where unexpectedly removed
+   - Fixed loading xenotypes so that the correct gene is chosen between
+     multiple genes for the same appearance type
+
+ _____________________________________________________________________________
+ 
    Version 1.5.4
  _____________________________________________________________________________
 
