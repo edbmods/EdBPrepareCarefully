@@ -7,10 +7,14 @@
    - Fixed loading xenotypes from presets so that fur definitions no longer
      break pawn rendering in a way that pawns become invisible
    - Fixed the way that traits are refreshed to stop deleting traits before
-     adding them back.  This avoids a problem where genes associated with a
-     trait where unexpectedly removed
+     adding them back. This avoids a problem where genes associated with a
+     trait were unexpectedly removed
    - Fixed loading xenotypes so that the correct gene is chosen between
      multiple genes for the same appearance type
+   - Traits added by xenotypes are no longer deleted when randomizing traits
+   - Traits added by xenotypes can no longer be deleted--to avoid the
+     the associated gene from also being deleted
+   - Suppressed traits can be deleted
 
  _____________________________________________________________________________
  
