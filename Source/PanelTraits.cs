@@ -63,6 +63,7 @@ namespace EdB.PrepareCarefully {
                 if (trait == null) {
                     continue;
                 }
+                bool canDelete = ManagerPawns.CanRemoveTrait(pawn, trait);
                 drawnTraitCount++;
                 if (index >= fields.Count) {
                     fields.Add(new WidgetField());
@@ -70,7 +71,7 @@ namespace EdB.PrepareCarefully {
                 WidgetField field = fields[index];
 
                 Vector2 labelSize = Text.CalcSize(trait.LabelCap);
-                float fieldWidth = labelSize.x + 32;
+                float fieldWidth = labelSize.x + 16 + (canDelete ? 16: 0);
                 if (currentPosition.x + fieldWidth > maxPositionX) {
                     y += FieldRect.height + 6;
                     currentPosition = new Vector2(FieldRect.x, FieldRect.y + y);
@@ -135,17 +136,19 @@ namespace EdB.PrepareCarefully {
                 currentPosition = new Vector2(currentPosition.x + fieldWidth + 6, currentPosition.y);
 
                 // Remove trait button.
-                Rect deleteRect = new Rect(field.Rect.xMax - 16, field.Rect.y + field.Rect.HalfHeight() - 6, 12, 12);
-                if (deleteRect.Contains(Event.current.mousePosition)) {
-                    GUI.color = Style.ColorButtonHighlight;
-                }
-                else {
-                    GUI.color = Style.ColorButton;
-                }
-                GUI.DrawTexture(deleteRect, Textures.TextureButtonDelete);
-                if (Widgets.ButtonInvisible(deleteRect, false)) {
-                    SoundDefOf.Tick_Tiny.PlayOneShotOnCamera();
-                    traitsToRemove.Add(trait);
+                if (canDelete) {
+                    Rect deleteRect = new Rect(field.Rect.xMax - 16, field.Rect.y + field.Rect.HalfHeight() - 6, 12, 12);
+                    if (deleteRect.Contains(Event.current.mousePosition)) {
+                        GUI.color = Style.ColorButtonHighlight;
+                    }
+                    else {
+                        GUI.color = Style.ColorButton;
+                    }
+                    GUI.DrawTexture(deleteRect, Textures.TextureButtonDelete);
+                    if (Widgets.ButtonInvisible(deleteRect, false)) {
+                        SoundDefOf.Tick_Tiny.PlayOneShotOnCamera();
+                        traitsToRemove.Add(trait);
+                    }
                 }
 
                 index++;

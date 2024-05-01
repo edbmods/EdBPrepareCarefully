@@ -297,6 +297,7 @@ namespace EdB.PrepareCarefully {
             if (previousPawn != null) {
                 DestroyPawn(previousPawn);
             }
+            StoreSkillGains(customizedPawn);
             CostAffected?.Invoke();
         }
 
@@ -402,59 +403,6 @@ namespace EdB.PrepareCarefully {
             UpdatePawnBackstories(customizedPawn, temporaryPawn.story.Childhood, temporaryPawn.story.Adulthood);
             DestroyPawn(temporaryPawn);
             CostAffected?.Invoke();
-
-            // TODO: Review PawnBioAndNameGenerator.GiveShuffledBioTo() to decide whether to use it as an alternative
-            //List<BackstoryCategoryFilter> backstoryCategories = GetBackstoryCategoryFiltersFor(pawn, factionType);
-            //bool flag = pawn.kindDef.fixedChildBackstories.Any();
-            //bool flag2 = pawn.kindDef.fixedAdultBackstories.Any();
-            //bool flag3 = pawn.ageTracker.AgeBiologicalYearsFloat >= 20f;
-            //if (!forceNoBackstory) {
-            //    if (flag) {
-            //        pawn.story.Childhood = pawn.kindDef.fixedChildBackstories.RandomElement();
-            //    }
-            //    else if (!onlyForcedBackstories) {
-            //        FillBackstorySlotShuffled(pawn, BackstorySlot.Childhood, backstoryCategories, factionType, flag3 ? new BackstorySlot?(BackstorySlot.Adulthood) : null);
-            //    }
-            //    if (flag3 && flag2) {
-            //        pawn.story.Adulthood = pawn.kindDef.fixedAdultBackstories.RandomElement();
-            //    }
-            //    else if (flag3 && !onlyForcedBackstories) {
-            //        FillBackstorySlotShuffled(pawn, BackstorySlot.Adulthood, backstoryCategories, factionType);
-            //    }
-            //}
-
-            // TODO: Review original approach
-            //PawnKindDef kindDef = pawn.kindDef;
-            //FactionDef factionDef = kindDef?.defaultFactionType;
-            //if (factionDef == null) {
-            //    factionDef = Faction.OfPlayer.def;
-            //}
-
-            //List<BackstoryCategoryFilter> backstoryCategoryFiltersFor = Reflection.ReflectorPawnBioAndNameGenerator.GetBackstoryCategoryFiltersFor(pawn, factionDef);
-            //// Generate a bio from which to get the backstories
-            //if (!Reflection.ReflectorPawnBioAndNameGenerator.TryGetRandomUnusedSolidBioFor(backstoryCategoryFiltersFor, kindDef, pawn.gender, null, out PawnBio pawnBio)) {
-            //    // Other mods are patching the vanilla method in ways that cause it to return false.  If that happens,
-            //    // we use our duplicate implementation instead.
-            //    var providerBackstories = ProviderBackstories;
-            //    if (!PawnBioGenerator.TryGetRandomUnusedSolidBioFor(backstoryCategoryFiltersFor, kindDef, pawn.gender, null, out pawnBio)) {
-            //        // If we still can't get a bio with our duplicate implementation, we pick backstories completely at random.
-            //        Logger.Debug(String.Format("Using fallback method to get solid random backstories for kindDef {0} \"{1}\" and faction {2} \"{3}\"",
-            //            kindDef.defName, kindDef.LabelCap, factionDef.defName, factionDef.LabelCap));
-            //        pawnBio = new PawnBio();
-            //        pawnBio.childhood = providerBackstories.GetChildhoodBackstoriesForPawn(pawn).RandomElement();
-            //        pawnBio.adulthood = providerBackstories.GetAdulthoodBackstoriesForPawn(pawn).RandomElement();
-            //    }
-            //}
-
-            //var providerAlienRaces = ProviderAlienRaces;
-            //AlienRace alienRace = providerAlienRaces.GetAlienRace(pawn.def);
-            //float adultStoryAge = alienRace == null ? providerAlienRaces.DefaultMinAgeForAdulthood : alienRace.MinAgeForAdulthood;
-            ////Logger.Debug(String.Format("Adulthood age for {0} is {1}", state.CurrentPawn.Pawn.def.defName, adultStoryAge));
-
-            //if (pawn.ageTracker.AgeBiologicalYears < (int)adultStoryAge) {
-            //    pawnBio.adulthood = null;
-            //}
-            //UpdatePawnBackstories(customizedPawn, pawnBio.childhood, pawnBio.adulthood);
         }
 
         public void SetSkillLevel(CustomizedPawn customizedPawn, SkillDef skill, int level) {
@@ -574,21 +522,9 @@ namespace EdB.PrepareCarefully {
                 }
                 int delta = currentGain - previousGain;
                 //Logger.Debug("previous gains: " + previousGain + ", current gains: " + currentGain + ", delta = " + delta + ", level = " + record.Level);
-                record.Level += delta;
-            }
-            foreach (var skillGainPair in skillGains) {
-                var skill = skillGainPair.Key;
-                var record = pawn.skills.GetSkill(skill);
-                if (record == null) {
-                    continue;
-                }
-                if (!skillGains.TryGetValue(skill, out int currentGain)) {
-                    continue;
-                }
-                int gain = skillGainPair.Value;
-                if (record.Level < gain) {
-                    record.Level = gain;
-                }
+                int currentLevel = record.Level;
+                int newLevel = currentLevel + delta;
+                record.Level = newLevel - record.Aptitude;
                 var customizedSkill = customizations.Skills.FirstOrDefault(s => s.SkillDef == skill);
                 if (customizedSkill != null) {
                     customizedSkill.Level = record.Level;
@@ -606,13 +542,19 @@ namespace EdB.PrepareCarefully {
             var traits = customizedPawn.Pawn.story.traits;
             if (!traits.HasTrait(traitToAdd.def, traitToAdd.Degree)) {
                 customizedPawn.Pawn.story.traits.GainTrait(traitToAdd);
-                PawnToCustomizationsMapper.MapTraits(customizedPawn.Pawn, customizedPawn.Customizations);
                 RecalculateSkillLevelsFromSkillGains(customizedPawn);
+                PawnToCustomizationsMapper.MapTraits(customizedPawn.Pawn, customizedPawn.Customizations);
             }
             CostAffected?.Invoke();
         }
+        public static bool CanRemoveTrait(Pawn pawn, Trait trait) {
+            return trait.sourceGene == null;
+        }
         public void RemoveTrait(CustomizedPawn customizedPawn, Trait trait) {
             if (customizedPawn?.Pawn == null) {
+                return;
+            }
+            if (trait.sourceGene != null) {
                 return;
             }
             var traits = customizedPawn.Pawn.story.traits;
@@ -626,9 +568,15 @@ namespace EdB.PrepareCarefully {
             if (traitToRemove == null) {
                 return;
             }
-            traits.RemoveTrait(traitToRemove);
-            PawnToCustomizationsMapper.MapTraits(customizedPawn.Pawn, customizedPawn.Customizations);
+            if (traitToRemove.Suppressed) {
+                traits.allTraits.Remove(traitToRemove);
+            }
+            else {
+                traits.RemoveTrait(traitToRemove);
+            }
+            UtilityPawns.ClearTraitCaches(customizedPawn.Pawn);
             RecalculateSkillLevelsFromSkillGains(customizedPawn);
+            PawnToCustomizationsMapper.MapTraits(customizedPawn.Pawn, customizedPawn.Customizations);
             CostAffected?.Invoke();
         }
         public void ReplaceTrait(CustomizedPawn customizedPawn, Trait replace, Trait with) {
@@ -651,12 +599,53 @@ namespace EdB.PrepareCarefully {
                 return;
             }
             Pawn pawn = customizedPawn.Pawn;
+            if (pawn.story?.traits?.allTraits == null) {
+                return;
+            }
+
+            List<Trait> forcedTraits = GetForcedTraitsNotAddedByPawnGenerator(pawn);
+
+            // Not calling the TraitSet.RemoveTrait() method to avoid its side effects (removing genes; removing abilities).
+            // Hopefully there are not any side effects from not calling it
             pawn.story.traits.allTraits.Clear();
-            var request = PawnGenerationRequestBuilder.BuildFromCustomizations(customizedPawn.Customizations);
-            Reflection.ReflectorPawnGenerator.GenerateTraits(customizedPawn.Pawn, request);
+
+            PawnGenerationRequest request = PawnGenerationRequestBuilder.BuildFromCustomizations(customizedPawn.Customizations);
+            Reflection.ReflectorPawnGenerator.GenerateTraits(pawn, request);
+
+            List<Trait> traitsToRemove = new List<Trait>();
+            // If one of the traits that was added is one of the forced traits that we're about to add, remove it.
+            foreach (var trait in pawn.story.traits.allTraits) {
+                if (forcedTraits.ContainsAny(t => t.def == trait.def && t.Degree == trait.Degree)) {
+                    traitsToRemove.Add(trait);
+                }
+            }
+            foreach (var trait in traitsToRemove) {
+                pawn.story.traits.allTraits.Remove(trait);
+            }
+
+            // Add all of the forced traits
+            foreach (var trait in forcedTraits) {
+                pawn.story.traits.GainTrait(trait, true);
+            }
+
+            UtilityPawns.ClearTraitCaches(pawn);
             RecalculateSkillLevelsFromSkillGains(customizedPawn);
             PawnToCustomizationsMapper.MapTraits(pawn, customizedPawn.Customizations);
             CostAffected?.Invoke();
+        }
+
+        public List<Trait> GetForcedTraitsNotAddedByPawnGenerator(Pawn pawn) {
+            List<Trait> result = new List<Trait>();
+            foreach (var gene in pawn.genes?.GenesListForReading) {
+                if (!gene.Overridden && gene.def.forcedTraits?.CountAllowNull() > 0) {
+                    foreach (var trait in gene.def.forcedTraits) {
+                        Trait traitToAdd = new Trait(trait.def, trait.degree);
+                        traitToAdd.sourceGene = gene;
+                        result.Add(traitToAdd);
+                    }
+                }
+            }
+            return result;
         }
 
         public void SetTraits(CustomizedPawn customizedPawn, IEnumerable<Trait> traits) {
@@ -1187,5 +1176,6 @@ namespace EdB.PrepareCarefully {
             pawn.Name = PawnBioAndNameGenerator.GeneratePawnName(pawn, NameStyle.Full, null, false, pawn.genes.Xenotype);
             PawnToCustomizationsMapper.MapName(pawn, customizations);
         }
+
     }
 }

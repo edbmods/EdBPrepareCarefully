@@ -15,6 +15,7 @@ namespace EdB.PrepareCarefully {
         public static Dictionary<SkillDef, int> ComputeSkillGains(Pawn pawn) {
             Dictionary<SkillDef, int> result = new Dictionary<SkillDef, int>();
             foreach (var skill in pawn.skills.skills) {
+                skill.DirtyAptitudes();
                 result.Add(skill.def, skill.Aptitude);
             }
             foreach (BackstoryDef item in pawn.story.AllBackstories.Where((BackstoryDef bs) => bs != null)) {
@@ -92,6 +93,22 @@ namespace EdB.PrepareCarefully {
 
         public static void ClearPawnGraphicsCache(Pawn pawn) {
             pawn?.Drawer?.renderer?.SetAllGraphicsDirty();
+        }
+
+        public static void ClearTraitCaches(Pawn pawn) {
+            pawn.Notify_DisabledWorkTypesChanged();
+            pawn.Drawer.renderer.SetAllGraphicsDirty();
+            if (pawn.skills != null) {
+                pawn.skills.Notify_SkillDisablesChanged();
+                pawn.skills.DirtyAptitudes();
+            }
+            if (!pawn.Dead && pawn.RaceProps.Humanlike && pawn.needs.mood != null) {
+                pawn.needs.mood.thoughts?.situational?.Notify_SituationalThoughtsDirty();
+            }
+            // TODO: Invoke private
+            //pawn.story.traits.CacheAnyTraitHasIngestibleOverrides();
+            pawn.needs?.AddOrRemoveNeedsAsAppropriate();
+            MeditationFocusTypeAvailabilityCache.ClearFor(pawn);
         }
     }
 }
