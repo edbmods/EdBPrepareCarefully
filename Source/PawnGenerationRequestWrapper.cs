@@ -43,6 +43,7 @@ namespace EdB.PrepareCarefully {
                 allowDowned = true;
             }
             var dedupedForcedXenogenes = RemoveDuplicateXenogenes(ForcedXenogenes);
+            var dedupedForcedEndogenes = RemoveDuplicateEndogenes(ForcedEndogenes);
             var result = new PawnGenerationRequest(
                 KindDef ?? Find.GameInitData.startingPawnKind ?? Faction.OfPlayer.def.basicMemberKind, //PawnKindDef kind,
                 Faction, //Faction faction = null,
@@ -84,7 +85,7 @@ namespace EdB.PrepareCarefully {
                 true, //bool forbidAnyTitle = false,
                 false, //bool forceDead = false,
                 dedupedForcedXenogenes, //List < GeneDef > forcedXenogenes = null,
-                ForcedEndogenes, //List < GeneDef > forcedEndogenes = null,
+                dedupedForcedEndogenes, //List < GeneDef > forcedEndogenes = null,
                 ForcedXenotype, //XenotypeDef forcedXenotype = null,
                 ForcedCustomXenotype, //CustomXenotype forcedCustomXenotype = null,
                 AllowedXenotypes, //List < XenotypeDef > allowedXenotypes = null,
@@ -105,32 +106,43 @@ namespace EdB.PrepareCarefully {
             }
         }
 
-        // If the generation request specifies a forced xenotype and force xenogenes, the default pawn generator will not de-duplicate
-        // the genes and will instead add multiple copies.  We de-dupe them here by removing duplicates from the forced xenogenes before
+        // If the generation request specifies a forced xenotype and forced xenogenes, the default pawn generator will not deduplicate
+        // the genes and will instead add multiple copies.  We dedupe them here by removing duplicates from the forced xenogenes before
         // we do the generation.
-        // Note that the default pawn generator does de-duplicate endogenes.
         protected List<GeneDef> RemoveDuplicateXenogenes(List<GeneDef> forcedGenes) {
             if (forcedGenes == null || forcedGenes.Count == 0 || (ForcedXenotype == null && ForcedCustomXenotype == null)) {
                 return forcedGenes;
             }
-            HashSet<GeneDef> geneSet = new HashSet<GeneDef>(forcedGenes);
-            List<GeneDef> genesToRemove = new List<GeneDef>();
-            Logger.Debug("  Xenotype " + ForcedXenotype?.defName + " is inheritable = " + ForcedXenotype?.inheritable);
+            //Logger.Debug("Starting forced xenogenes: " + forcedGenes.Count);
             if (ForcedXenotype != null && !ForcedXenotype.inheritable) {
+                List<GeneDef> genesToRemove = new List<GeneDef>();
                 foreach (var g in ForcedXenotype.genes) {
-                    if (geneSet.Contains(g)) {
-                        genesToRemove.Add(g);
-                    }
+                    genesToRemove.Add(g);
+                }
+                foreach (var g in genesToRemove) {
+                    forcedGenes.Remove(g);
                 }
             }
-            if (ForcedCustomXenotype != null && !ForcedCustomXenotype.inheritable) {
-                foreach (var g in ForcedCustomXenotype.genes) {
-                    if (geneSet.Contains(g)) {
-                        genesToRemove.Add(g);
-                    }
+            //Logger.Debug("Remaining forced xenogenes: " + forcedGenes.Count);
+            return forcedGenes;
+        }
+
+        protected List<GeneDef> RemoveDuplicateEndogenes(List<GeneDef> forcedGenes) {
+            if (forcedGenes == null || forcedGenes.Count == 0 || (ForcedXenotype == null && ForcedCustomXenotype == null)) {
+                return forcedGenes;
+            }
+            //Logger.Debug("Starting forced endogenes: " + forcedGenes.Count);
+            if (ForcedXenotype != null && ForcedXenotype.inheritable) {
+                List<GeneDef> genesToRemove = new List<GeneDef>();
+                foreach (var g in ForcedXenotype.genes) {
+                    genesToRemove.Add(g);
+                }
+                foreach (var g in genesToRemove) {
+                    forcedGenes.Remove(g);
                 }
             }
-            return new List<GeneDef>(forcedGenes.Where(g => !genesToRemove.Contains(g)));
+            //Logger.Debug("Remaining forced endogenes: " + forcedGenes.Count);
+            return forcedGenes;
         }
     }
 }

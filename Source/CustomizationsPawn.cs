@@ -50,12 +50,15 @@ namespace EdB.PrepareCarefully {
 
     public class CustomizedGene {
         public GeneDef GeneDef { get; set; }
+        public GeneDef OverriddenByEndogene { get; set; }
+        public GeneDef OverriddenByXenogene { get; set; }
     }
 
     public class CustomizationsPawn {
 
         public PawnKindDef PawnKind { get; set; }
         public XenotypeDef XenotypeDef { get; set; }
+        public bool? StandardXenotype { get; set; }
         public bool UniqueXenotype { get; set; }
         public string XenotypeName { get; set; }
         public CustomXenotype CustomXenotype { get; set; }
@@ -76,7 +79,6 @@ namespace EdB.PrepareCarefully {
         public HeadTypeDef HeadType { get; set; }
         public BodyTypeDef BodyType { get; set; }
         public BeardDef Beard { get; set; }
-        public FurDef Fur { get; set; }
 
         public TattooDef FaceTattoo { get; set; }
         public TattooDef BodyTattoo { get; set; }

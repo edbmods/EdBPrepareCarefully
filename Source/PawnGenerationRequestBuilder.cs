@@ -11,7 +11,6 @@ namespace EdB.PrepareCarefully {
         public PawnGenerationRequest BuildFromCustomizations(CustomizationsPawn customizations) {
             int biologicalAge = (int)(customizations.BiologicalAgeInTicks / 3600000);
             int chronologicalAge = (int)(customizations.ChronologicalAgeInTicks / 3600000);
-            //Logger.Debug("BuildFromCustomizations() ForcedXenotype = " + customizations.XenotypeDef?.LabelCap.ToString());
 
             PawnGenerationRequestWrapper wrapper = new PawnGenerationRequestWrapper() {
                 KindDef = customizations.PawnKind,
@@ -21,8 +20,11 @@ namespace EdB.PrepareCarefully {
                 FixedChronologicalAge = chronologicalAge,
                 ForceBodyType = customizations.BodyType,
                 ForcedXenotype = customizations.XenotypeDef,
-                ForcedCustomXenotype = customizations.CustomXenotype,
             };
+            if (customizations.UniqueXenotype) {
+                wrapper.ForcedEndogenes = customizations.Genes?.Endogenes?.Select(g => g.GeneDef).ToList();
+                wrapper.ForcedXenogenes = customizations.Genes?.Xenogenes?.Select(g => g.GeneDef).ToList();
+            }
             if (customizations.PawnKind is CreepJoinerFormKindDef) {
                 wrapper.IsCreepJoiner = true;
             }

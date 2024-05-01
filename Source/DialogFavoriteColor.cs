@@ -1,3 +1,4 @@
+using HarmonyLib;
 using RimWorld;
 using System;
 using System.Collections.Generic;
@@ -12,6 +13,7 @@ namespace EdB.PrepareCarefully {
         public Rect HeaderRect;
         public Rect CancelButtonRect;
         public Rect ConfirmButtonRect;
+        public CustomizedPawn CurrentPawn { get; set; }
         public float WindowPadding { get; protected set; }
         public Vector2 ContentMargin { get; protected set; }
         public Vector2 WindowSize { get; protected set; }
@@ -27,7 +29,7 @@ namespace EdB.PrepareCarefully {
         public Rect GreenSliderRect { get; protected set; }
         public Rect BlueSliderRect { get; protected set; }
         protected Color currentColor;
-        protected List<Color> swatches = new List<Color>();
+        protected List<Color> StandardColors = new List<Color>();
 
         public DialogFavoriteColor(Color startingColor) {
             this.closeOnCancel = true;
@@ -85,11 +87,17 @@ namespace EdB.PrepareCarefully {
             base.PreOpen();
 
             foreach (ColorDef colDef in DefDatabase<ColorDef>.AllDefs.Where((ColorDef x) => x.colorType == ColorType.Ideo || x.colorType == ColorType.Misc)) {
-                if (!swatches.Any((Color x) => x.IndistinguishableFrom(colDef.color))) {
-                    swatches.Add(colDef.color);
+                if (!StandardColors.Any((Color x) => x.IndistinguishableFrom(colDef.color))) {
+                    StandardColors.Add(colDef.color);
                 }
             }
-            swatches.SortByColor((Color x) => x);
+            if (UtilityIdeo.IdeoEnabledForPawn(CurrentPawn) && CurrentPawn.Pawn?.ideo?.Ideo != null) {
+                Color ideoColor = CurrentPawn.Pawn.ideo.Ideo.ApparelColor;
+                if (!StandardColors.Any((Color x) => x.IndistinguishableFrom(ideoColor))) {
+                    StandardColors.Add(ideoColor);
+                }
+            }
+            StandardColors.SortByColor((Color x) => x);
         }
 
         public override void DoWindowContents(Rect inRect) {
@@ -102,7 +110,7 @@ namespace EdB.PrepareCarefully {
 
             float topPadding = 4;
             float swatchesTop = ContentRect.y + topPadding;
-            float y = WidgetColorSelector.DrawSwatches(ContentRect.x, swatchesTop, ContentRect.width, 20, currentColor, swatches, (Color color) => { currentColor = color; });
+            float y = WidgetColorSelector.DrawSwatches(ContentRect.x, swatchesTop, ContentRect.width, 20, currentColor, StandardColors, (Color color) => { currentColor = color; }, CurrentPawn);
             y += 12;
             //Widgets.DrawBox(ContentRect, 1);
             Rect selectorRect = new Rect(ContentRect.x, swatchesTop + y, ContentRect.width, ContentRect.height - topPadding - y);

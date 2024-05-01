@@ -218,6 +218,7 @@
     <Compile Include="Source\UtilityQuality.cs" />
     <Compile Include="Source\UtilitySaveLoad.cs" />
     <Compile Include="Source\UtilityTraits.cs" />
+    <Compile Include="Source\Version5\SaveRecordGeneV5.cs" />
     <Compile Include="Source\Version5\SaveRecordValueGroupV5.cs" />
     <Compile Include="Source\Version5\SaveRecordValueV5.cs" />
     <Compile Include="Source\Version5\SaveRecordTemporaryPawnV5.cs" />

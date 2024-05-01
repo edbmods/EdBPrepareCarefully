@@ -142,7 +142,17 @@ namespace EdB.PrepareCarefully {
                 customXenotypeName = customizations.XenotypeName,
                 uniqueXenotype = customizations.UniqueXenotype,
                 endogenes = customizations.Genes?.Endogenes.ConvertAll(g => g.GeneDef?.defName),
-                xenogenes = customizations.Genes?.Xenogenes.ConvertAll(g => g.GeneDef?.defName)
+                xenogenes = customizations.Genes?.Xenogenes.ConvertAll(g => g.GeneDef?.defName),
+                endogeneRecords = customizations.Genes?.Endogenes.ConvertAll(g => new SaveRecordGeneV5() {
+                    def = g.GeneDef?.defName,
+                    overriddenByEndogene = g.OverriddenByEndogene?.defName,
+                    overriddenByXenogene = g.OverriddenByXenogene?.defName,
+                }),
+                xenogeneRecords = customizations.Genes?.Xenogenes.ConvertAll(g => new SaveRecordGeneV5() {
+                    def = g.GeneDef?.defName,
+                    overriddenByEndogene = g.OverriddenByEndogene?.defName,
+                    overriddenByXenogene = g.OverriddenByXenogene?.defName,
+                }),
             };
         }
 

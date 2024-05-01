@@ -39,26 +39,40 @@ namespace EdB.PrepareCarefully {
 
         public void MapGenes(Pawn pawn, CustomizationsPawn customizations) {
             if (ModsConfig.BiotechActive) {
-                var genes = new CustomizedGenes();
-                var endogenes = new List<CustomizedGene>();
-                foreach (var gene in pawn?.genes?.Endogenes) {
-                    endogenes.Add(new CustomizedGene() {
-                        GeneDef = gene.def
-                    });
-                }
-                genes.Endogenes = endogenes;
-                var xenogenes = new List<CustomizedGene>();
-                foreach (var gene in pawn?.genes?.Xenogenes) {
-                    xenogenes.Add(new CustomizedGene() {
-                        GeneDef = gene.def
-                    });
-                }
-                genes.Xenogenes = xenogenes;
-                customizations.Genes = genes;
+                customizations.Genes = new CustomizedGenes() {
+                    Endogenes = CreateCustomizedGeneList(pawn, pawn.genes.Endogenes),
+                    Xenogenes = CreateCustomizedGeneList(pawn, pawn.genes.Xenogenes)
+                };
             }
             else {
                 customizations.Genes = null;
             }
+        }
+
+        private List<CustomizedGene> CreateCustomizedGeneList(Pawn pawn, IEnumerable<Gene> genes) {
+            var result = new List<CustomizedGene>();
+            if (genes == null) {
+                return result;
+            }
+            foreach (var gene in genes) {
+                GeneDef overriddenByEndogene = null;
+                GeneDef overriddenByXenogene = null;
+                if (gene.overriddenByGene != null) {
+                    if (pawn?.genes?.Endogenes.Contains(gene.overriddenByGene) ?? false) {
+                        overriddenByEndogene = gene.overriddenByGene.def;
+                    }
+                    else if (pawn?.genes?.Xenogenes.Contains(gene.overriddenByGene) ?? false) {
+                        overriddenByXenogene = gene.overriddenByGene.def;
+                    }
+                }
+                result.Add(new CustomizedGene() {
+                    GeneDef = gene.def,
+                    OverriddenByEndogene = overriddenByEndogene,
+                    OverriddenByXenogene = overriddenByXenogene,
+                });
+                Logger.Debug("  Mapped gene " + gene.def.defName + ", overridden by = " + gene.overriddenByGene?.def?.defName);
+            }
+            return result;
         }
 
         public void MapIdeo(Pawn pawn, CustomizationsPawn customizations) {
@@ -127,7 +141,6 @@ namespace EdB.PrepareCarefully {
             customizations.Beard = pawn.style.beardDef;
             customizations.BodyTattoo = pawn.style.BodyTattoo;
             customizations.FaceTattoo = pawn.style.FaceTattoo;
-            customizations.Fur = pawn.story.furDef;
             customizations.SkinColor = pawn.story.SkinColor;
             customizations.SkinColorOverride = pawn.story.skinColorOverride;
         }

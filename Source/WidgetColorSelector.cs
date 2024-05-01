@@ -38,16 +38,18 @@ namespace EdB.PrepareCarefully {
 
                 GUI.color = SwatchOverlayColor;
                 Rect overlayRect = rect.InsetBy(1, 1);
-                if (UtilityIdeo.IdeoEnabledForPawn(pawn) && pawn?.Pawn?.Ideo != null) {
-                    if (color.IndistinguishableFrom(pawn.Pawn.Ideo.ApparelColor)) {
-                        GUI.DrawTexture(overlayRect, Textures.TextureIdeoColor);
-                        TooltipHandler.TipRegion(overlayRect, "IdeoColorPickerTip".Translate(pawn.Pawn.Named("PAWN")));
-                    }
-                }
+                bool iconDisplayed = false;
                 if (pawn?.Pawn?.story.favoriteColor != null) {
                     if (color.IndistinguishableFrom(pawn.Pawn.story.favoriteColor.Value)) {
                         GUI.DrawTexture(overlayRect, Textures.TextureFavoriteColor);
                         TooltipHandler.TipRegion(overlayRect, "FavoriteColorPickerTip".Translate(pawn.Pawn.Named("PAWN")));
+                        iconDisplayed = true;
+                    }
+                }
+                if (!iconDisplayed && UtilityIdeo.IdeoEnabledForPawn(pawn) && pawn?.Pawn?.Ideo != null) {
+                    if (color.IndistinguishableFrom(pawn.Pawn.Ideo.ApparelColor)) {
+                        GUI.DrawTexture(overlayRect, Textures.TextureIdeoColor);
+                        TooltipHandler.TipRegion(overlayRect, "IdeoColorPickerTip".Translate(pawn.Pawn.Named("PAWN")));
                     }
                 }
 
