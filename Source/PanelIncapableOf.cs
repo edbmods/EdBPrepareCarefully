@@ -38,7 +38,7 @@ namespace EdB.PrepareCarefully {
             CustomizedPawn customizedPawn = ViewState.CurrentPawn;
             Pawn pawn = customizedPawn.Pawn;
             List<string> incapableList = new List<string>();
-            WorkTags combinedDisabledWorkTags = pawn.story.DisabledWorkTagsBackstoryAndTraits;
+            WorkTags combinedDisabledWorkTags = pawn.CombinedDisabledWorkTags;
             if (combinedDisabledWorkTags != WorkTags.None) {
                 IEnumerable<WorkTags> list = Reflection.ReflectorCharacterCardUtility.WorkTagsFrom(combinedDisabledWorkTags);
                 foreach (var tag in list) {
