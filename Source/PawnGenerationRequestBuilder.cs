@@ -20,11 +20,9 @@ namespace EdB.PrepareCarefully {
                 FixedChronologicalAge = chronologicalAge,
                 ForceBodyType = customizations.BodyType,
                 ForcedXenotype = customizations.XenotypeDef,
+                ForcedEndogenes = customizations.Genes?.Endogenes?.Select(g => g.GeneDef).ToList(),
+                ForcedXenogenes = customizations.Genes?.Xenogenes?.Select(g => g.GeneDef).ToList()
             };
-            if (customizations.UniqueXenotype) {
-                wrapper.ForcedEndogenes = customizations.Genes?.Endogenes?.Select(g => g.GeneDef).ToList();
-                wrapper.ForcedXenogenes = customizations.Genes?.Xenogenes?.Select(g => g.GeneDef).ToList();
-            }
             if (customizations.PawnKind is CreepJoinerFormKindDef) {
                 wrapper.IsCreepJoiner = true;
             }
