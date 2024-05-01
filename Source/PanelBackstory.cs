@@ -221,7 +221,8 @@ namespace EdB.PrepareCarefully {
                 GUI.color = Color.white;
                 if (Widgets.ButtonInvisible(favoriteColorRect, false)) {
                     var dialog = new DialogFavoriteColor(favoriteColor) {
-                        ConfirmAction = (Color color) => FavoriteColorUpdated(color)
+                        ConfirmAction = (Color color) => FavoriteColorUpdated(color),
+                        CurrentPawn = ViewState.CurrentPawn
                     };
                     Find.WindowStack.Add(dialog);
                 }
