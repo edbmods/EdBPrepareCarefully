@@ -33,6 +33,8 @@ namespace EdB.PrepareCarefully {
         public bool AllowDowned { get; set; } = false;
         public bool IsCreepJoiner { get; set; } = false;
 
+        public MutantDef ForcedMutant { get; set; } = null;
+
         public BodyTypeDef ForceBodyType { get; set; } = null;
         public PawnGenerationRequestWrapper() {
         }
@@ -98,6 +100,7 @@ namespace EdB.PrepareCarefully {
             );
             result.ForceBodyType = ForceBodyType;
             result.IsCreepJoiner = IsCreepJoiner;
+            result.ForcedMutant = ForcedMutant;
             return result;
         }
         public PawnGenerationRequest Request {

@@ -77,44 +77,62 @@ namespace EdB.PrepareCarefully {
             string first = "";
             string nick = "";
             string last = "";
-            if (pawn.Name.GetType().IsAssignableFrom(typeof(NameTriple))) {
-                var nameTriple = pawn.Name as NameTriple;
+            NameTriple nameTriple = pawn.Name as NameTriple;
+            NameSingle nameSingle = pawn.Name as NameSingle;
+            float x = RectFirstName.x;
+            if (nameTriple != null) {
                 first = nameTriple.First;
                 nick = nameTriple.Nick;
                 last = nameTriple.Last;
             }
-            else if (pawn.Name.GetType().IsAssignableFrom(typeof(NameSingle))) {
+            else if (nameSingle != null) {
                 nick = (pawn.Name as NameSingle).Name;
             }
 
-            string text;
-            GUI.SetNextControlName("PrepareCarefullyFirst");
-            text = Widgets.TextField(RectFirstName, first);
-            if (text != first && FirstNameUpdated != null) {
-                FirstNameUpdated?.Invoke(text);
+            float randomizeButtonOffset = RectRandomize.x - RectLastName.xMax;
+            float randomizeButtonX = RectLastName.xMax + randomizeButtonOffset;
+            if (nameTriple != null) {
+                string text;
+                GUI.SetNextControlName("PrepareCarefullyFirst");
+                text = Widgets.TextField(RectFirstName, first);
+                if (text != first && FirstNameUpdated != null) {
+                    FirstNameUpdated?.Invoke(text);
+                }
+                if (nick == first || nick == last) {
+                    GUI.color = new Color(1, 1, 1, 0.5f);
+                }
+                GUI.SetNextControlName("PrepareCarefullyNick");
+                text = Widgets.TextField(RectNickName, nick);
+                if (text != nick && NickNameUpdated != null) {
+                    NickNameUpdated?.Invoke(text);
+                }
+                GUI.color = Color.white;
+                GUI.SetNextControlName("PrepareCarefullyLast");
+                text = Widgets.TextField(RectLastName, last);
+                if (text != last && LastNameUpdated != null) {
+                    LastNameUpdated?.Invoke(text);
+                }
+                TooltipHandler.TipRegion(RectFirstName, "FirstNameDesc".Translate());
+                TooltipHandler.TipRegion(RectNickName, "ShortIdentifierDesc".Translate());
+                TooltipHandler.TipRegion(RectLastName, "LastNameDesc".Translate());
             }
-            if (nick == first || nick == last) {
-                GUI.color = new Color(1, 1, 1, 0.5f);
+            else if (nameSingle != null) {
+                string text;
+                GUI.SetNextControlName("PrepareCarefullyNick");
+                text = Widgets.TextField(RectFirstName, nick);
+                if (text != nick && NickNameUpdated != null) {
+                    NickNameUpdated?.Invoke(text);
+                }
+                GUI.color = Color.white;
+                TooltipHandler.TipRegion(RectFirstName, "ShortIdentifierDesc".Translate());
+                randomizeButtonX = RectFirstName.xMax + randomizeButtonOffset;
             }
-            GUI.SetNextControlName("PrepareCarefullyNick");
-            text = Widgets.TextField(RectNickName, nick);
-            if (text != nick && NickNameUpdated != null) {
-                NickNameUpdated?.Invoke(text);
-            }
-            GUI.color = Color.white;
-            GUI.SetNextControlName("PrepareCarefullyLast");
-            text = Widgets.TextField(RectLastName, last);
-            if (text != last && LastNameUpdated != null) {
-                LastNameUpdated?.Invoke(text);
-            }
-            TooltipHandler.TipRegion(RectFirstName, "FirstNameDesc".Translate());
-            TooltipHandler.TipRegion(RectNickName, "ShortIdentifierDesc".Translate());
-            TooltipHandler.TipRegion(RectLastName, "LastNameDesc".Translate());
 
             // Random button
-            Style.SetGUIColorForButton(RectRandomize);
-            GUI.DrawTexture(RectRandomize, Textures.TextureButtonRandom);
-            if (Widgets.ButtonInvisible(RectRandomize, false)) {
+            Rect randomizeRect = new Rect(randomizeButtonX, RectRandomize.y, RectRandomize.width, RectRandomize.height);
+            Style.SetGUIColorForButton(randomizeRect);
+            GUI.DrawTexture(randomizeRect, Textures.TextureButtonRandom);
+            if (Widgets.ButtonInvisible(randomizeRect, false)) {
                 SoundDefOf.Tick_Low.PlayOneShotOnCamera();
                 GUI.FocusControl(null);
                 if (LastNameUpdated != null) {

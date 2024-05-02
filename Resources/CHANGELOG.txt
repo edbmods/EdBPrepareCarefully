@@ -4,9 +4,16 @@
  _____________________________________________________________________________
 
  - Bug fixes:
-   - Fixed loading xenotypes from presets so that genes are not regenerated
+   - When loading xenotypes from presets, genes are no longer regenerated
      for a xenotype randomly. This was causing some genes to be lost when
      loading a standard xenotype from a preset
+   - Removing all apparel from a pawn no longer blocks you from then adding
+     apparel back onto the pawn
+   - Pawns that use single-word names no longer break when loading from preset
+     and now are displayed properly in the name panel
+   - Mutants can now be saved and loaded from presets
+   - The favorite color option is hidden for pawns that should not have a
+     favorite color
 
  _____________________________________________________________________________
  

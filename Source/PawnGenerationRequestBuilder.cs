@@ -14,6 +14,7 @@ namespace EdB.PrepareCarefully {
 
             PawnGenerationRequestWrapper wrapper = new PawnGenerationRequestWrapper() {
                 KindDef = customizations.PawnKind,
+                ForcedMutant = customizations.Mutant?.MutantDef,
                 AllowDowned = true,
                 FixedGender = customizations.Gender,
                 FixedBiologicalAge = biologicalAge,

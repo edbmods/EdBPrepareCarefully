@@ -113,14 +113,16 @@ namespace EdB.PrepareCarefully {
             }
         }
 
-        public Pawn CreatePawn(PawnKindOption option) {
+        public Pawn CreatePawn(PawnKindDef kindDef, FactionDef factionDef) {
             PawnGenerationRequestWrapper wrapper = new PawnGenerationRequestWrapper();
-            if (option != null) {
-                wrapper.KindDef = option.KindDef;
-                wrapper.Faction = Find.FactionManager.FirstFactionOfDef(option.FactionDef);
-                if (option.KindDef is CreepJoinerFormKindDef) {
+            if (kindDef != null) {
+                wrapper.KindDef = kindDef;
+                if (kindDef is CreepJoinerFormKindDef) {
                     wrapper.IsCreepJoiner = true;
                 }
+            }
+            if (factionDef != null) {
+                wrapper.Faction = Find.FactionManager.FirstFactionOfDef(factionDef);
             }
             PawnGenerationRequest generationRequest = wrapper.Request;
             Pawn pawn = PawnGenerator.GeneratePawn(generationRequest);
@@ -134,7 +136,7 @@ namespace EdB.PrepareCarefully {
         }
 
         public CustomizedPawn AddPawn(CustomizedPawnType pawnType, PawnKindOption option = null) {
-            Pawn pawn = CreatePawn(option);
+            Pawn pawn = CreatePawn(option?.KindDef, option?.FactionDef);
             CustomizationsPawn customizations = PawnToCustomizationsMapper.Map(pawn);
             CustomizedPawn customizedPawn = new CustomizedPawn() {
                 Pawn = pawn,
@@ -234,9 +236,18 @@ namespace EdB.PrepareCarefully {
             if (customizations == null) {
                 return;
             }
-            customizations.NickName = name;
+            if (customizations.NameType == "Triple") {
+                customizations.NickName = name;
+            }
+            else if (customizations.NameType == "Single") {
+                customizations.SingleName = name;
+            }
+            else {
+                return;
+            }
             ApplyNameCustomizationsToPawn(customizations, customizedPawn.Pawn);
         }
+
         public void UpdateLastName(CustomizedPawn customizedPawn, string name) {
             if (customizedPawn == null) {
                 return;
@@ -269,7 +280,9 @@ namespace EdB.PrepareCarefully {
                 return;
             }
             Pawn previousPawn = customizedPawn?.Pawn;
-            PawnGenerationRequestWrapper wrapper = new PawnGenerationRequestWrapper();
+            PawnGenerationRequestWrapper wrapper = new PawnGenerationRequestWrapper() {
+                KindDef = previousPawn.kindDef
+            };
             
             if (options != null) {
                 wrapper.ForcedXenotype = options.Xenotype;
@@ -1173,9 +1186,39 @@ namespace EdB.PrepareCarefully {
             if (pawn == null || customizations == null) {
                 return;
             }
-            pawn.Name = PawnBioAndNameGenerator.GeneratePawnName(pawn, NameStyle.Full, null, false, pawn.genes.Xenotype);
+            Name name = PawnBioAndNameGenerator.GeneratePawnName(pawn, NameStyle.Full, null, false, pawn.genes.Xenotype);
+            NameSingle currentNameSingle = pawn.Name as NameSingle;
+            NameTriple currentNameTriple = pawn.Name as NameTriple;
+            NameSingle newNameSingle = name as NameSingle;
+            NameTriple newNameTriple = name as NameTriple;
+            if (currentNameSingle != null) {
+                if (newNameSingle != null) {
+                    pawn.Name = newNameSingle;
+                }
+                else if (newNameTriple != null) {
+                    pawn.Name = new NameSingle(newNameTriple.First);
+                }
+            }
+            else if (currentNameTriple != null) {
+                if (newNameTriple != null) {
+                    pawn.Name = newNameTriple;
+                }
+                else if (newNameSingle != null) {
+                    pawn.Name = new NameTriple(newNameSingle.Name, newNameSingle.Name, newNameSingle.Name);
+                }
+            }
             PawnToCustomizationsMapper.MapName(pawn, customizations);
         }
 
+        public static bool CanWearApparel(CustomizedPawn customizedPawn) {
+            Pawn pawn = customizedPawn.Pawn;
+            if (pawn == null || pawn.apparel == null) {
+                return false;
+            }
+            if (!(pawn.mutant?.Def.canWearApparel ?? true)) {
+                return false;
+            }
+            return true;
+        }
     }
 }

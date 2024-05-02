@@ -74,7 +74,7 @@ namespace EdB.PrepareCarefully {
             }
 
             // Manage apparel button.
-            if (!pawn.apparel.AllApparelLocked) {
+            if (ManagerPawns.CanWearApparel(customizedPawn)) {
                 Rect manageButtonRect = ManageButtonRect.OffsetBy(0, top);
                 Style.SetGUIColorForButton(manageButtonRect);
                 GUI.DrawTexture(manageButtonRect, Textures.TextureButtonManage);

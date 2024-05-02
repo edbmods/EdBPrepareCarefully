@@ -53,10 +53,15 @@ namespace EdB.PrepareCarefully {
         public GeneDef OverriddenByEndogene { get; set; }
         public GeneDef OverriddenByXenogene { get; set; }
     }
+    public class CustomizedMutant {
+        public MutantDef MutantDef { get; set; }
+    }
 
     public class CustomizationsPawn {
 
         public PawnKindDef PawnKind { get; set; }
+        public CustomizedMutant Mutant { get; set; }
+        public FactionDef FactionDef { get; set; }
         public XenotypeDef XenotypeDef { get; set; }
         public bool? StandardXenotype { get; set; }
         public bool UniqueXenotype { get; set; }
