@@ -16,6 +16,7 @@ namespace EdB.PrepareCarefully {
             var result = new CustomizationsPawn();
 
             MapKindDef(pawn, result);
+            MapMutantDef(pawn, result);
             MapXenotype(pawn, result);
             MapGenes(pawn, result);
             MapGender(pawn, result);
@@ -83,6 +84,17 @@ namespace EdB.PrepareCarefully {
         public void MapKindDef(Pawn pawn, CustomizationsPawn customizations) {
             customizations.PawnKind = pawn.kindDef;
         }
+        public void MapMutantDef(Pawn pawn, CustomizationsPawn customizations) {
+            if (pawn.mutant != null) {
+                customizations.Mutant = new CustomizedMutant() {
+                    MutantDef = pawn.mutant.Def
+                };
+            }
+            else {
+                customizations.Mutant = null;
+            }
+        }
+
         public void MapXenotype(Pawn pawn, CustomizationsPawn customizations) {
             customizations.XenotypeDef = pawn.genes.Xenotype;
             customizations.XenotypeName = pawn.genes.xenotypeName;
@@ -260,6 +272,13 @@ namespace EdB.PrepareCarefully {
                         //Logger.Debug("Found implant recipes for {" + hediff.def.defName + "} for part {" + hediff.Part?.LabelCap + "}");
                     }
                     else if (hediff.def.defName == "MechlinkImplant") {
+                        Implant implant = new Implant();
+                        implant.BodyPartRecord = hediff.Part;
+                        implant.Hediff = hediff;
+                        implant.HediffDef = hediff?.def;
+                        implants.Add(implant);
+                    }
+                    else if (hediff.Part != null) {
                         Implant implant = new Implant();
                         implant.BodyPartRecord = hediff.Part;
                         implant.Hediff = hediff;

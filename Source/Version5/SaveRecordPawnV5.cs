@@ -11,6 +11,7 @@ namespace EdB.PrepareCarefully {
         public string type;
         public SaveRecordFactionV4 faction;
         public string pawnKindDef;
+        public SaveRecordMutantV5 mutant;
         public string originalFactionDef;
         public string thingDef;
         public Gender gender;
@@ -27,6 +28,7 @@ namespace EdB.PrepareCarefully {
         public string beard;
         public string faceTattoo;
         public string bodyTattoo;
+        public string nameType;
         public string firstName;
         public string lastName;
         public string nickName;
@@ -71,6 +73,7 @@ namespace EdB.PrepareCarefully {
             Scribe_Values.Look<string>(ref this.type, "type", null, false);
             Scribe_Deep.Look<SaveRecordFactionV4>(ref this.faction, "faction");
             Scribe_Values.Look<string>(ref this.pawnKindDef, "pawnKindDef", null, false);
+            Scribe_Deep.Look(ref this.mutant, "mutant");
             Scribe_Values.Look<string>(ref this.originalFactionDef, "originalFactionDef", null, false);
             Scribe_Values.Look<string>(ref this.thingDef, "thingDef", ThingDefOf.Human.defName, false);
             Scribe_Values.Look<Gender>(ref this.gender, "gender", Gender.Male, false);
@@ -90,6 +93,7 @@ namespace EdB.PrepareCarefully {
             Scribe_Values.Look<string>(ref this.faceTattoo, "faceTattoo", null, false);
             Scribe_Values.Look<string>(ref this.bodyTattoo, "bodyTattoo", null, false);
             Scribe_Values.Look<string>(ref this.hairDef, "hairDef", null, false);
+            Scribe_Values.Look<string>(ref this.nameType, "nameType", null, false);
             Scribe_Values.Look<string>(ref this.firstName, "firstName", null, false);
             Scribe_Values.Look<string>(ref this.nickName, "nickName", null, false);
             Scribe_Values.Look<string>(ref this.lastName, "lastName", null, false);

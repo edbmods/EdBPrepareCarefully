@@ -143,6 +143,28 @@ namespace EdB.PrepareCarefully {
             return loaderResult;
         }
 
+        private T FindDefinition<T>(string defName) where T : Def {
+            if (defName.NullOrEmpty()) {
+                return null;
+            }
+            return DefDatabase<T>.GetNamedSilentFail(defName);
+        }
+        private T FindDefinitionOrLogMessage<T>(string defName, string name) where T : Def {
+            if (defName.NullOrEmpty()) {
+                return null;
+            }
+            T result = DefDatabase<T>.GetNamedSilentFail(defName);
+            if (result == null) {
+                if (name.NullOrEmpty()) {
+                    Logger.Debug("Could not find definition (" + defName + ")");
+                }
+                else {
+                    Logger.Debug("Could not find definition for " + name + " (" + defName + ")");
+                }
+            }
+            return result;
+        }
+
         public PawnLoaderResult ConvertSaveRecordToCustomizedPawn(SaveRecordPawnV5 record) {
             PawnLoaderResult result = new PawnLoaderResult();
             CustomizationsPawn customizations = new CustomizationsPawn();
@@ -168,6 +190,8 @@ namespace EdB.PrepareCarefully {
                 pawnKindDef = Faction.OfPlayer.def.basicMemberKind;
             }
             customizations.PawnKind = pawnKindDef;
+
+            LoadMutant(record, customizations, result);
 
             // TODO: Faction
             Faction playerFaction = Find.FactionManager.OfPlayer;
@@ -332,9 +356,8 @@ namespace EdB.PrepareCarefully {
             }
 
             customizations.Gender = record.gender;
-            customizations.FirstName = record.firstName;
-            customizations.NickName = record.nickName;
-            customizations.LastName = record.lastName;
+
+            LoadName(record, customizations, result);
 
             customizations.FavoriteColor = record.favoriteColor;
 
@@ -703,6 +726,33 @@ namespace EdB.PrepareCarefully {
             //}
         }
 
+        protected void LoadName(SaveRecordPawnV5 record, CustomizationsPawn customizations, PawnLoaderResult result) {
+            if (record.nameType == "Single") {
+                customizations.NameType = "Single";
+                customizations.SingleName = record.nickName;
+            }
+            else {
+                customizations.NameType = "Triple";
+                customizations.FirstName = record.firstName;
+                customizations.NickName = record.nickName;
+                customizations.LastName = record.lastName;
+            }
+        }
+
+        protected void LoadMutant(SaveRecordPawnV5 record, CustomizationsPawn customizations, PawnLoaderResult result) {
+            if (record.mutant?.def == null) {
+                return;
+            }
+            MutantDef def = FindDefinition<MutantDef>(record.mutant?.def);
+            if (def == null) {
+                return;
+            }
+            else {
+                customizations.Mutant = new CustomizedMutant() {
+                    MutantDef = def,
+                };
+            }
+        }
         protected void LoadPossessions(SaveRecordPawnV5 record, CustomizationsPawn customizations, PawnLoaderResult result) {
             result.Pawn.Customizations.Possessions = new List<CustomizedPossession>();
             if (record.possessions != null) {

@@ -14,17 +14,16 @@ namespace EdB.PrepareCarefully {
 
             PawnGenerationRequestWrapper wrapper = new PawnGenerationRequestWrapper() {
                 KindDef = customizations.PawnKind,
+                ForcedMutant = customizations.Mutant?.MutantDef,
                 AllowDowned = true,
                 FixedGender = customizations.Gender,
                 FixedBiologicalAge = biologicalAge,
                 FixedChronologicalAge = chronologicalAge,
                 ForceBodyType = customizations.BodyType,
                 ForcedXenotype = customizations.XenotypeDef,
+                ForcedEndogenes = customizations.Genes?.Endogenes?.Select(g => g.GeneDef).ToList(),
+                ForcedXenogenes = customizations.Genes?.Xenogenes?.Select(g => g.GeneDef).ToList()
             };
-            if (customizations.UniqueXenotype) {
-                wrapper.ForcedEndogenes = customizations.Genes?.Endogenes?.Select(g => g.GeneDef).ToList();
-                wrapper.ForcedXenogenes = customizations.Genes?.Xenogenes?.Select(g => g.GeneDef).ToList();
-            }
             if (customizations.PawnKind is CreepJoinerFormKindDef) {
                 wrapper.IsCreepJoiner = true;
             }

@@ -48,15 +48,19 @@ namespace EdB.PrepareCarefully {
         public void ApplyAgeCustomizationsToPawn(Pawn pawn, CustomizationsPawn customizations) {
             // Even though we generate the pawn with fixed ages, that doesn't result in the exact age in ticks.
             // Therefore, we still need to apply the age customizations.
-            pawn.ageTracker.AgeBiologicalTicks = customizations.BiologicalAgeInTicks;
-            pawn.ageTracker.AgeChronologicalTicks = customizations.ChronologicalAgeInTicks;
+            if (pawn.ageTracker.AgeBiologicalTicks != customizations.BiologicalAgeInTicks) {
+                pawn.ageTracker.AgeBiologicalTicks = customizations.BiologicalAgeInTicks;
+            }
+            if (pawn.ageTracker.AgeChronologicalTicks != customizations.ChronologicalAgeInTicks) {
+                pawn.ageTracker.AgeChronologicalTicks = customizations.ChronologicalAgeInTicks;
+            }
         }
 
         public void ApplyBackstoryCustomizationsToPawn(Pawn pawn, CustomizationsPawn customizations) {
-            if (customizations.ChildhoodBackstory != null) {
+            if (customizations.ChildhoodBackstory != null && pawn.story.Childhood != customizations.ChildhoodBackstory) {
                 pawn.story.Childhood = customizations.ChildhoodBackstory;
             }
-            if (customizations.AdulthoodBackstory != null) {
+            if (customizations.AdulthoodBackstory != null && pawn.story.Adulthood != customizations.AdulthoodBackstory) {
                 pawn.story.Adulthood = customizations.AdulthoodBackstory;
             }
         }
@@ -66,38 +70,72 @@ namespace EdB.PrepareCarefully {
         }
 
         public void ApplyNameCustomizationsToPawn(Pawn pawn, CustomizationsPawn customizations) {
-            if (customizations.NameType == "Triple") {
-                pawn.Name = new NameTriple(customizations.FirstName, customizations.NickName, customizations.LastName);
+            string pawnNameType = pawn.Name.GetType().IsAssignableFrom(typeof(NameSingle)) ? "Single" :
+                pawn.Name.GetType().IsAssignableFrom(typeof(NameTriple)) ? "Triple" : null;
+            string customizationsNameType = customizations.NameType;
+            if (pawnNameType == "Triple") {
+                var currentName = pawn.Name as NameTriple;
+                if (customizationsNameType == "Single") {
+                    string nickName = customizations.SingleName;
+                    if (!nickName.NullOrEmpty()) {
+                        if (currentName.First != nickName || currentName.Nick != nickName) {
+                            pawn.Name = new NameTriple(nickName, nickName, currentName.Last);
+                        }
+                    }
+                }
+                else {
+                    string first = customizations.FirstName.NullOrEmpty() ? currentName.First : customizations.FirstName;
+                    string nick = customizations.NickName.NullOrEmpty() ? currentName.Nick : customizations.NickName;
+                    string last = customizations.LastName.NullOrEmpty() ? currentName.Last : customizations.LastName;
+                    if (currentName.First != first || currentName.Nick != nick || currentName.Last != last) {
+                        pawn.Name = new NameTriple(first, nick, last);
+                    }
+                }
             }
-            else if (customizations.NameType == "Single") {
-                pawn.Name = new NameSingle(customizations.SingleName);
-            }
-            else {
-                // TODO: how to manage mapping problems?
+            else if (pawnNameType == "Single") {
+                var currentName = pawn.Name as NameSingle;
+                string value;
+                if (customizations.NameType == "Single") {
+                    value = customizations.SingleName;
+                }
+                else {
+                    value = !customizations.NickName.NullOrEmpty() ? customizations.NickName : customizations.FirstName;
+                }
+                if (currentName != null && !value.NullOrEmpty() && currentName.Name != value) {
+                    pawn.Name = new NameSingle(value);
+                }
             }
         }
 
         public void ApplyAppearanceCustomizationsToPawn(Pawn pawn, CustomizationsPawn customizations) {
             // TODO: Manage appearance genes: hair color, melanin
-            if (customizations.HeadType != null) {
+            if (customizations.HeadType != null && pawn.story.headType != customizations.HeadType) {
                 pawn.story.headType = customizations.HeadType;
             }
-            if (customizations.BodyType != null) {
+            if (customizations.BodyType != null && pawn.story.bodyType != customizations.BodyType) {
                 pawn.story.bodyType = customizations.BodyType;
             }
             ApplyHairCustomizationsToPawn(pawn, customizations);
-            pawn.style.beardDef = customizations.Beard;
-            pawn.style.FaceTattoo = customizations.FaceTattoo;
-            pawn.style.BodyTattoo = customizations.BodyTattoo;
+            if (pawn.style.beardDef != customizations.Beard) {
+                pawn.style.beardDef = customizations.Beard;
+            }
+            if (pawn.style.FaceTattoo != customizations.FaceTattoo) {
+                pawn.style.FaceTattoo = customizations.FaceTattoo;
+            }
+            if (pawn.style.BodyTattoo != customizations.BodyTattoo) {
+                pawn.style.BodyTattoo = customizations.BodyTattoo;
+            }
 
             ApplySkinColorCustomizationsToPawn(pawn, customizations);
         }
 
         public void ApplyHairCustomizationsToPawn(Pawn pawn, CustomizationsPawn customizations) {
-            if (customizations.Hair != null) {
+            if (customizations.Hair != null && pawn.story.hairDef != customizations.Hair) {
                 pawn.story.hairDef = customizations.Hair;
             }
-            pawn.story.HairColor = customizations.HairColor;
+            if (!pawn.story.HairColor.IndistinguishableFrom(customizations.HairColor)) {
+                pawn.story.HairColor = customizations.HairColor;
+            }
         }
 
         public void ApplyGeneCustomizationsToPawn(Pawn pawn, CustomizationsPawn customizations) {
@@ -131,25 +169,8 @@ namespace EdB.PrepareCarefully {
                 pawn.genes.RemoveGene(gene);
             }
 
-
-            //var genesToRemove = new List<Gene>(pawn?.genes?.GenesListForReading.Reverse<Gene>());
-            //foreach (var gene in genesToRemove) {
-            //    pawn?.genes?.RemoveGene(gene);
-            //}
-            //customizations?.Genes?.Xenogenes?.ForEach(gene => {
-            //    pawn?.genes.AddGene(gene.GeneDef, true);
-            //});
-            //customizations?.Genes?.Endogenes?.ForEach(gene => {
-            //    pawn?.genes.AddGene(gene.GeneDef, false);
-            //});
-
             ApplyGeneOverrides(pawn, pawn.genes?.Endogenes, customizations?.Genes?.Endogenes);
             ApplyGeneOverrides(pawn, pawn.genes?.Xenogenes, customizations?.Genes?.Xenogenes);
-
-            //Logger.Debug("ApplyGeneCustomizationsToPawn()");
-            //foreach (var gene in pawn?.genes?.Endogenes) {
-            //    Logger.Debug("  Customized endogene " + gene.def.defName + ", overridden by = " + gene.overriddenByGene?.def?.defName);
-            //}
 
             // Note that if you add a gene that affects appearance (i.e. hair color), it may overwrite
             // any override value in the pawn story or style, so be sure to set those overrides again

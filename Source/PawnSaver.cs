@@ -47,7 +47,16 @@ namespace EdB.PrepareCarefully {
             //    };
             //}
             result.pawnKindDef = customizations.PawnKind?.defName;
-            //result.pawnKindDef = customizedPawn.OriginalKindDef?.defName ?? customizedPawn.Pawn.kindDef.defName;
+
+            if (customizations.Mutant != null) {
+                string defName = customizations.Mutant.MutantDef?.defName;
+                if (!defName.NullOrEmpty()) {
+                    result.mutant = new SaveRecordMutantV5() {
+                        def = defName
+                    };
+                }
+            }
+
             //result.originalFactionDef = customizedPawn.OriginalFactionDef?.defName;
             result.gender = customizations.Gender;
             result.adulthood = customizations.AdulthoodBackstory?.defName;
@@ -61,9 +70,17 @@ namespace EdB.PrepareCarefully {
             result.beard = customizations.Beard?.defName;
             result.faceTattoo = customizations.FaceTattoo?.defName;
             result.bodyTattoo = customizations.BodyTattoo?.defName;
-            result.firstName = customizations.FirstName;
-            result.nickName = customizations.NickName;
-            result.lastName = customizations.LastName;
+
+            result.nameType = customizedPawn.Customizations.NameType;
+            if (customizedPawn.Customizations.NameType == "Triple") {
+                result.firstName = customizations.FirstName;
+                result.nickName = customizations.NickName;
+                result.lastName = customizations.LastName;
+            }
+            else if (customizedPawn.Customizations.NameType == "Single") {
+                result.nickName = customizations.SingleName;
+            }
+
             result.age = 0;
             //result.biologicalAge = customizations.BiologicalAge;
             //result.chronologicalAge = customizations.ChronologicalAge;

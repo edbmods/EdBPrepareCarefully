@@ -197,7 +197,7 @@ namespace EdB.PrepareCarefully {
             y += DrawAdulthood(customizedPawn, y, Width);
 
 
-            if (ModsConfig.IdeologyActive && !UtilityPawns.IsBaby(customizedPawn.Pawn)) {
+            if (ModsConfig.IdeologyActive && customizedPawn.Pawn.story.favoriteColor != null && !UtilityPawns.IsBaby(customizedPawn.Pawn)) {
                 y += 8;
                 Text.Font = GameFont.Small;
                 GUI.color = Style.ColorText;
