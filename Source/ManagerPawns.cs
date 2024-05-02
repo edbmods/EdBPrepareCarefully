@@ -225,7 +225,7 @@ namespace EdB.PrepareCarefully {
                 return;
             }
             customizations.FirstName = name;
-            ApplyNameCustomizationsToPawn(customizations, customizedPawn.Pawn);
+            Customizer.ApplyNameCustomizationsToPawn(customizedPawn.Pawn, customizations);
         }
 
         public void UpdateNickName(CustomizedPawn customizedPawn, string name) {
@@ -245,7 +245,7 @@ namespace EdB.PrepareCarefully {
             else {
                 return;
             }
-            ApplyNameCustomizationsToPawn(customizations, customizedPawn.Pawn);
+            Customizer.ApplyNameCustomizationsToPawn(customizedPawn.Pawn, customizations);
         }
 
         public void UpdateLastName(CustomizedPawn customizedPawn, string name) {
@@ -257,22 +257,7 @@ namespace EdB.PrepareCarefully {
                 return;
             }
             customizations.LastName = name;
-            ApplyNameCustomizationsToPawn(customizations, customizedPawn.Pawn);
-        }
-
-        public void ApplyNameCustomizationsToPawn(CustomizationsPawn customizations, Pawn pawn) {
-            if (pawn == null || customizations == null) {
-                return;
-            }
-            if (customizations.NameType == "Triple") {
-                pawn.Name = new NameTriple(customizations.FirstName, customizations.NickName, customizations.LastName);
-            }
-            else if (customizations.NameType == "Single") {
-                pawn.Name = new NameSingle(customizations.SingleName);
-            }
-            else {
-                // TODO: how to manage mapping problems?
-            }
+            Customizer.ApplyNameCustomizationsToPawn(customizedPawn.Pawn, customizations);
         }
 
         public void RandomizePawn(CustomizedPawn customizedPawn, PawnRandomizerOptions options = null) {
