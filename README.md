@@ -4,7 +4,7 @@
 
 The more translations, the better--they are a great contribution to the mod community.  However, while it is appreciated that people take the time to translate the mod to other languages, it's difficult to keep up with those contributions.  Every addition or change to a translation requires a new release of the mod, and taking on that additional effort is not possible.
 
-Therefore, translation pull requests will not be merged into the project.  Please consider creating a standalone translation mod for your language like [this one](https://steamcommunity.com/sharedfiles/filedetails/?id=1205095547).  These mods don't include any code--they simply include the translation resources for a given language.  With this approach, you can make changes and additions at your own pace, and you can take on the responsibility of releases for the translation.
+Therefore, translation pull requests will not be merged into the project.  Instead, please consider creating a standalone translation mod for your language.  These mods don't include any code--they simply include the translation resources for a given language.  With this approach, you can make changes and additions at your own pace, and you can take on the responsibility of releases for the translation.
 
 ## Building Prepare Carefully
 
