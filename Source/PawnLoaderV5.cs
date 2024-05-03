@@ -623,8 +623,18 @@ namespace EdB.PrepareCarefully {
                         }
                     }
                     if (!found) {
-                        result.AddWarning("Could not apply the saved implant recipe \"" + implantRecord.recipe + "\" to the body part \"" + bodyPart.def.defName + "\".  Recipe does not support that part.");
-                        continue;
+                        if (recipeDef.appliedOnFixedBodyPartGroups != null) {
+                            foreach (var g in recipeDef.appliedOnFixedBodyPartGroups) {
+                                if (bodyPart.IsInGroup(g)) {
+                                    found = true;
+                                    break;
+                                }
+                            }
+                        }
+                        if (!found) {
+                            result.AddWarning("Could not apply the saved implant recipe \"" + implantRecord.recipe + "\" to the body part \"" + bodyPart.def.defName + "\".  Recipe does not support that part.");
+                            continue;
+                        }
                     }
                     Implant implant = new Implant() {
                         BodyPartRecord = bodyPart,
