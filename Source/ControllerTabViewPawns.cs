@@ -225,7 +225,18 @@ namespace EdB.PrepareCarefully {
         public void UpdateSkillPassion(SkillDef skill) {
             // Left-click increases passion. Right-click decreases it
             bool increase = Event.current.button != 1 ? true : false;
+            if (Event.current.button != 1) {
+                AdjustSkillPassion(skill, 1);
+            }
+            else {
+                AdjustSkillPassion(skill, -1);
+            }
+        }
 
+        public void AdjustSkillPassion(SkillDef skill, int direction) {
+            if (direction == 0) {
+                return;
+            }
             CustomizedPawn customizedPawn = ViewState.CurrentPawn;
             if (customizedPawn == null) {
                 return;
@@ -241,13 +252,13 @@ namespace EdB.PrepareCarefully {
             Passion currentPassion = record.passion;
             Passion nextPassion = currentPassion;
             if (currentPassion == Passion.None) {
-                nextPassion = increase ? Passion.Minor : Passion.Major;
+                nextPassion = direction > 0 ? Passion.Minor : Passion.Major;
             }
             else if (currentPassion == Passion.Minor) {
-                nextPassion = increase ? Passion.Major : Passion.None;
+                nextPassion = direction > 0 ? Passion.Major : Passion.None;
             }
             else if (currentPassion == Passion.Major) {
-                nextPassion = increase ? Passion.None : Passion.Minor;
+                nextPassion = direction > 0 ? Passion.None : Passion.Minor;
             }
             PawnManager.UpdatePawnSkillPassion(customizedPawn, skill, nextPassion);
         }
