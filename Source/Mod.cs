@@ -136,6 +136,7 @@ namespace EdB.PrepareCarefully {
                 ProviderBackstories = providerBackstories,
                 ProviderHeadTypes = providerHeadTypes,
                 ProviderBodyTypes = providerBodyTypes,
+                ProviderFactions = providerFactions,
                 AgeModifier = ageModifier,
                 EquipmentDatabase = equipmentDatabase,
                 PawnLoader = pawnLoader,

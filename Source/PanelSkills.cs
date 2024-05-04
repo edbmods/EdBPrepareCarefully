@@ -6,6 +6,7 @@ using System.Text;
 using UnityEngine;
 using Verse;
 using Verse.Sound;
+
 namespace EdB.PrepareCarefully {
     public class PanelSkills : PanelBase {
         public delegate void ResetSkillsButtonClickedHandler();
@@ -144,22 +145,14 @@ namespace EdB.PrepareCarefully {
                     rect = RectPassion;
                     rect.y += cursor;
                     if (!disabled) {
-                        Passion passion = skillRecord.passion;
-                        Texture2D image;
-                        if (passion == Passion.Minor) {
-                            image = Textures.TexturePassionMinor;
-                        }
-                        else if (passion == Passion.Major) {
-                            image = Textures.TexturePassionMajor;
-                        }
-                        else {
-                            image = Textures.TexturePassionNone;
-                        }
-                        GUI.color = Color.white;
-                        GUI.DrawTexture(rect, image);
-                        if (Widgets.ButtonInvisible(rect, false)) {
-                            SoundDefOf.Tick_Tiny.PlayOneShotOnCamera();
-                            PassionButtonClicked?.Invoke(skillRecord.def);
+                        Texture2D image = GetPassionTextureForSkill(skillRecord);
+                        if (image != null) {
+                            GUI.color = Color.white;
+                            GUI.DrawTexture(rect, image);
+                            if (Widgets.ButtonInvisible(rect, false)) {
+                                SoundDefOf.Tick_Tiny.PlayOneShotOnCamera();
+                                PassionButtonClicked?.Invoke(skillRecord.def);
+                            }
                         }
                     }
 
@@ -220,6 +213,25 @@ namespace EdB.PrepareCarefully {
             }
 
             GUI.color = Color.white;
+        }
+
+        public Texture2D GetPassionTextureForSkill(SkillRecord skillRecord) {
+            if (skillRecord == null) {
+                return null;
+            }
+            Passion passion = skillRecord.passion;
+            if (passion == Passion.Minor) {
+                return Textures.TexturePassionMinor;
+            }
+            else if (passion == Passion.Major) {
+                return Textures.TexturePassionMajor;
+            }
+            else if (passion == Passion.None) {
+                return Textures.TexturePassionNone;
+            }
+            else {
+                return null;
+            }
         }
 
         public static void FillableBar(Rect rect, float fillPercent, Texture2D fillTex) {

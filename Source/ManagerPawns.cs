@@ -25,6 +25,7 @@ namespace EdB.PrepareCarefully {
         public ProviderAlienRaces ProviderAlienRaces { get; set; }
         public ProviderBackstories ProviderBackstories { get; set; }
         public ProviderBodyTypes ProviderBodyTypes { get; set; }
+        public ProviderFactions ProviderFactions { get; set; }
         public ProviderHeadTypes ProviderHeadTypes { get; set; }
         public AgeModifier AgeModifier { get; set; }
         public EquipmentDatabase EquipmentDatabase { get; set; }
@@ -113,20 +114,11 @@ namespace EdB.PrepareCarefully {
             }
         }
 
-        public Pawn CreatePawn(PawnKindDef kindDef, FactionDef factionDef) {
-            PawnGenerationRequestWrapper wrapper = new PawnGenerationRequestWrapper();
-            if (kindDef != null) {
-                wrapper.KindDef = kindDef;
-                if (kindDef is CreepJoinerFormKindDef) {
-                    wrapper.IsCreepJoiner = true;
-                }
-            }
-            if (factionDef != null) {
-                wrapper.Faction = Find.FactionManager.FirstFactionOfDef(factionDef);
-            }
-            PawnGenerationRequest generationRequest = wrapper.Request;
+        public Pawn CreatePawn(PawnGenerationRequest generationRequest) {
             Pawn pawn = PawnGenerator.GeneratePawn(generationRequest);
-            FixNonColonyPawnKindApparel(pawn, generationRequest);
+            if (generationRequest.Faction != Find.FactionManager.OfPlayer) {
+                FixNonColonyPawnKindApparel(pawn, generationRequest);
+            }
             pawn.SetFactionDirect(Find.FactionManager.OfPlayer);
             return pawn;
         }
@@ -136,13 +128,21 @@ namespace EdB.PrepareCarefully {
         }
 
         public CustomizedPawn AddPawn(CustomizedPawnType pawnType, PawnKindOption option = null) {
-            Pawn pawn = CreatePawn(option?.KindDef, option?.FactionDef);
+            Faction faction = null;
+            if (option.FactionDef != null) {
+                faction = ProviderFactions.FindRandomFactionForDef(option.FactionDef);
+            }
+            Pawn pawn = CreatePawn(new PawnGenerationRequestWrapper() {
+                KindDef = option?.KindDef,
+                Faction = faction
+            }.Request);
             CustomizationsPawn customizations = PawnToCustomizationsMapper.Map(pawn);
             CustomizedPawn customizedPawn = new CustomizedPawn() {
                 Pawn = pawn,
                 Customizations = customizations,
                 Type = pawnType,
                 Id = GeneratePawnId(),
+                OriginalFactionDef = option?.FactionDef
             };
             return AddPawnToPawnList(customizedPawn);
         }
@@ -189,6 +189,50 @@ namespace EdB.PrepareCarefully {
             State.Customizations.ColonyPawns.Add(pawn);
             CostAffected?.Invoke();
         }
+
+
+        public void RandomizePawn(CustomizedPawn customizedPawn, PawnRandomizerOptions options = null) {
+            if (customizedPawn == null) {
+                return;
+            }
+            Pawn previousPawn = customizedPawn?.Pawn;
+            PawnGenerationRequestWrapper wrapper = new PawnGenerationRequestWrapper() {
+                KindDef = previousPawn.kindDef
+            };
+
+            if (options != null) {
+                wrapper.ForcedXenotype = options.Xenotype;
+                wrapper.ForcedCustomXenotype = options.CustomXenotype;
+                wrapper.DevelopmentalStage = options.DevelopmentalStage;
+                if (options.AnyNonArchite) {
+                    wrapper.AllowedXenotypes = DefDatabase<XenotypeDef>.AllDefs.Where((XenotypeDef x) => !x.Archite && x != XenotypeDefOf.Baseliner).ToList();
+                    wrapper.ForceBaselinerChance = 0.5f;
+                }
+            }
+
+            if (ModsConfig.IdeologyActive) {
+                Ideo ideo = Find.FactionManager.OfPlayer?.ideos?.GetRandomIdeoForNewPawn();
+                if (ideo != null) {
+                    wrapper.FixedIdeology = ideo;
+                }
+            }
+
+            if (ModsConfig.AnomalyActive) {
+                wrapper.ForcedMutant = previousPawn?.mutant?.Def;
+            }
+            if (customizedPawn.OriginalFactionDef != null) {
+                wrapper.Faction = ProviderFactions.FindRandomFactionForDef(customizedPawn.OriginalFactionDef);
+            }
+
+            customizedPawn.Pawn = CreatePawn(wrapper.Request);
+            customizedPawn.Customizations = PawnToCustomizationsMapper.Map(customizedPawn.Pawn);
+            if (previousPawn != null) {
+                DestroyPawn(previousPawn);
+            }
+            StoreSkillGains(customizedPawn);
+            CostAffected?.Invoke();
+        }
+
         public PawnLoaderResult LoadPawn(CustomizedPawnType pawnType, string file) {
             if (string.IsNullOrEmpty(file)) {
                 Logger.Warning("Trying to load a character without a file name");
@@ -209,10 +253,6 @@ namespace EdB.PrepareCarefully {
             customizedPawn.Pawn = Customizer.CreatePawnFromCustomizations(customizedPawn.Customizations);
             pawnLoaderResult.Pawn = AddPawnToPawnList(customizedPawn);
 
-            //bool colonyPawn = state.PawnListMode == PawnListMode.ColonyPawnsMaximized;
-            //pawn.Type = colonyPawn ? CustomPawnType.Colonist : CustomPawnType.World;
-            // Regenerate a unique id in case the user is loading the same pawn more than once.
-            //pawn.GenerateId();
             return pawnLoaderResult;
         }
 
@@ -225,7 +265,7 @@ namespace EdB.PrepareCarefully {
                 return;
             }
             customizations.FirstName = name;
-            ApplyNameCustomizationsToPawn(customizations, customizedPawn.Pawn);
+            Customizer.ApplyNameCustomizationsToPawn(customizedPawn.Pawn, customizations);
         }
 
         public void UpdateNickName(CustomizedPawn customizedPawn, string name) {
@@ -245,7 +285,7 @@ namespace EdB.PrepareCarefully {
             else {
                 return;
             }
-            ApplyNameCustomizationsToPawn(customizations, customizedPawn.Pawn);
+            Customizer.ApplyNameCustomizationsToPawn(customizedPawn.Pawn, customizations);
         }
 
         public void UpdateLastName(CustomizedPawn customizedPawn, string name) {
@@ -257,61 +297,7 @@ namespace EdB.PrepareCarefully {
                 return;
             }
             customizations.LastName = name;
-            ApplyNameCustomizationsToPawn(customizations, customizedPawn.Pawn);
-        }
-
-        public void ApplyNameCustomizationsToPawn(CustomizationsPawn customizations, Pawn pawn) {
-            if (pawn == null || customizations == null) {
-                return;
-            }
-            if (customizations.NameType == "Triple") {
-                pawn.Name = new NameTriple(customizations.FirstName, customizations.NickName, customizations.LastName);
-            }
-            else if (customizations.NameType == "Single") {
-                pawn.Name = new NameSingle(customizations.SingleName);
-            }
-            else {
-                // TODO: how to manage mapping problems?
-            }
-        }
-
-        public void RandomizePawn(CustomizedPawn customizedPawn, PawnRandomizerOptions options = null) {
-            if (customizedPawn == null) {
-                return;
-            }
-            Pawn previousPawn = customizedPawn?.Pawn;
-            PawnGenerationRequestWrapper wrapper = new PawnGenerationRequestWrapper() {
-                KindDef = previousPawn.kindDef
-            };
-            
-            if (options != null) {
-                wrapper.ForcedXenotype = options.Xenotype;
-                wrapper.ForcedCustomXenotype = options.CustomXenotype;
-                wrapper.DevelopmentalStage = options.DevelopmentalStage;
-                if (options.AnyNonArchite) {
-                    wrapper.AllowedXenotypes = DefDatabase<XenotypeDef>.AllDefs.Where((XenotypeDef x) => !x.Archite && x != XenotypeDefOf.Baseliner).ToList();
-                    wrapper.ForceBaselinerChance = 0.5f;
-                }
-            }
-
-            if (ModsConfig.IdeologyActive) {
-                Ideo ideo = Find.FactionManager.OfPlayer?.ideos?.GetRandomIdeoForNewPawn();
-                if (ideo != null) {
-                    wrapper.FixedIdeology = ideo;
-                }
-            }
-
-            var request = wrapper.Request;
-            if (ModsConfig.AnomalyActive) {
-                request.ForcedMutant = previousPawn?.mutant?.Def;
-            }
-            customizedPawn.Pawn = PawnGenerator.GeneratePawn(request);
-            customizedPawn.Customizations = PawnToCustomizationsMapper.Map(customizedPawn.Pawn);
-            if (previousPawn != null) {
-                DestroyPawn(previousPawn);
-            }
-            StoreSkillGains(customizedPawn);
-            CostAffected?.Invoke();
+            Customizer.ApplyNameCustomizationsToPawn(customizedPawn.Pawn, customizations);
         }
 
         public void UpdatePawnBiologicalAge(CustomizedPawn customizedPawn, int years, int days) {

@@ -61,7 +61,6 @@ namespace EdB.PrepareCarefully {
 
         public PawnKindDef PawnKind { get; set; }
         public CustomizedMutant Mutant { get; set; }
-        public FactionDef FactionDef { get; set; }
         public XenotypeDef XenotypeDef { get; set; }
         public bool? StandardXenotype { get; set; }
         public bool UniqueXenotype { get; set; }

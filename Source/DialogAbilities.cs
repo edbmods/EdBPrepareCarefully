@@ -60,13 +60,13 @@ namespace EdB.PrepareCarefully {
             options.Clear();
             HashSet<AbilityDef> selected = new HashSet<AbilityDef>();
             selected.AddRange(pawn.Pawn.abilities.abilities.Select(a => a.def));
-            foreach (var option in DefDatabase<AbilityDef>.AllDefs.Where(a => !a.uiIcon?.NullOrBad() ?? false)) {
-                options.Add(new Option() {
-                    Value = option,
-                    Selected = selected.Contains(option),
-                    Disabled = false
-                });
-            }
+            options = DefDatabase<AbilityDef>.AllDefs.Where(a => !a.uiIcon?.NullOrBad() ?? false)
+                .OrderBy(def => def.label)
+                .Select(def => new Option() {
+                    Value = def,
+                    Selected = selected.Contains(def),
+                    Disabled = false,
+                }).ToList();
         }
 
         public string HeaderLabel {
@@ -124,7 +124,7 @@ namespace EdB.PrepareCarefully {
             FooterHeight = 40f;
             WindowPadding = 18;
             ContentMargin = new Vector2(10f, 18f);
-            WindowSize = new Vector2(440f, 584f);
+            WindowSize = new Vector2(550f, 584f);
             ButtonSize = new Vector2(140f, 40f);
 
             ContentSize = new Vector2(WindowSize.x - WindowPadding * 2 - ContentMargin.x * 2,

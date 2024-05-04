@@ -13,5 +13,6 @@ namespace EdB.PrepareCarefully {
         public Pawn Pawn { get; set; }
         public CustomizationsPawn Customizations { get; set; }
         public TemporaryPawn TemporaryPawn { get; set; }
+        public FactionDef OriginalFactionDef { get; set; } 
     }
 }
