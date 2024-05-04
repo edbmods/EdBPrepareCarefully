@@ -146,13 +146,14 @@ namespace EdB.PrepareCarefully {
                 Find.GameInitData.startingPossessions.Remove(key);
             }
             // Destroy any starting pawn that are not in our customized pawn list
+            Logger.Debug("Destroy any pawn that is not in our carefully prepared pawn list:");
             foreach (var pawn in Find.GameInitData.startingAndOptionalPawns) {
                 if (!State.Customizations.AllPawns.Select(p => p.Pawn).Contains(pawn)) {
-                    Logger.Debug("Destroyed starting pawn: " + pawn.LabelCap);
+                    Logger.Debug("    Destroyed starting pawn: " + pawn.LabelShort);
                     ManagerPawns.DestroyPawn(pawn);
                 }
                 else {
-                    Logger.Debug("Kept starting pawn: " + pawn.LabelCap);
+                    Logger.Debug("    Kept starting pawn: " + pawn.LabelShort);
                 }
             }
             Find.GameInitData.startingPawnCount = State.Customizations.ColonyPawns.Count;

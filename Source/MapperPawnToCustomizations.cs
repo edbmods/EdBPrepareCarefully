@@ -71,7 +71,7 @@ namespace EdB.PrepareCarefully {
                     OverriddenByEndogene = overriddenByEndogene,
                     OverriddenByXenogene = overriddenByXenogene,
                 });
-                Logger.Debug("  Mapped gene " + gene.def.defName + ", overridden by = " + gene.overriddenByGene?.def?.defName);
+                //Logger.Debug("  Mapped gene " + gene.def.defName + ", overridden by = " + gene.overriddenByGene?.def?.defName);
             }
             return result;
         }

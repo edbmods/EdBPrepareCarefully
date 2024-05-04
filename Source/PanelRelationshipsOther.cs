@@ -77,7 +77,7 @@ namespace EdB.PrepareCarefully {
             try {
                 foreach (CustomizedRelationship relationship in State.Customizations.Relationships) {
                     // Don't show relationships between two hidden pawns
-                    if (relationship.Source.Type != CustomizedPawnType.Hidden && relationship.Target.Type != CustomizedPawnType.Hidden) {
+                    if (relationship.Source.Type != CustomizedPawnType.Hidden || relationship.Target.Type != CustomizedPawnType.Hidden) {
                         cursor = DrawRelationship(cursor, relationship);
                     }
                 }
