@@ -3,6 +3,7 @@
    Version 1.5.7
  _____________________________________________________________________________
 
+ - Abilities are now sorted by name in their dialog
  - Bug fixes:
    - Fixed an error that happened in certain cases when trying to change a
      single-word name on a pawn loaded from a preset
