@@ -46,8 +46,9 @@ namespace EdB.PrepareCarefully {
             }
             var dedupedForcedXenogenes = RemoveDuplicateXenogenes(ForcedXenogenes);
             var dedupedForcedEndogenes = RemoveDuplicateEndogenes(ForcedEndogenes);
+            PawnKindDef kindDef = KindDef ?? Find.GameInitData.startingPawnKind ?? Faction.OfPlayer.def.basicMemberKind;
             var result = new PawnGenerationRequest(
-                KindDef ?? Find.GameInitData.startingPawnKind ?? Faction.OfPlayer.def.basicMemberKind, //PawnKindDef kind,
+                kindDef ?? Find.GameInitData.startingPawnKind ?? Faction.OfPlayer.def.basicMemberKind, //PawnKindDef kind,
                 Faction, //Faction faction = null,
                 Context, //PawnGenerationContext context = PawnGenerationContext.NonPlayer,
                 -1, //int tile = -1,
@@ -100,6 +101,9 @@ namespace EdB.PrepareCarefully {
             );
             result.ForceBodyType = ForceBodyType;
             result.IsCreepJoiner = IsCreepJoiner;
+            if (kindDef is CreepJoinerFormKindDef) {
+                result.IsCreepJoiner = true;
+            }
             result.ForcedMutant = ForcedMutant;
             return result;
         }

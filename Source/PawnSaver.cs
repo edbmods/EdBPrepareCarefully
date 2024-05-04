@@ -37,6 +37,7 @@ namespace EdB.PrepareCarefully {
             CustomizationsPawn customizations = customizedPawn.Customizations;
             SaveRecordPawnV5 result = new SaveRecordPawnV5();
             result.id = customizedPawn.Id ?? Guid.NewGuid().ToString();
+            result.originalFactionDef = customizedPawn.OriginalFactionDef?.defName;
             result.thingDef = customizedPawn.Pawn.def.defName;
             result.type = customizedPawn.Type.ToString();
             //if (customizedPawn.Type == CustomPawnType.World && customizedPawn.Faction != null) {
@@ -57,7 +58,6 @@ namespace EdB.PrepareCarefully {
                 }
             }
 
-            //result.originalFactionDef = customizedPawn.OriginalFactionDef?.defName;
             result.gender = customizations.Gender;
             result.adulthood = customizations.AdulthoodBackstory?.defName;
             result.childhood = customizations.ChildhoodBackstory?.defName;

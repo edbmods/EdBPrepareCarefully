@@ -151,6 +151,17 @@ namespace EdB.PrepareCarefully {
                 }
             }
         }
+        public Faction FindRandomFactionForDef(FactionDef def) {
+            if (def == null) {
+                return null;
+            }
+            var list = Find.FactionManager.AllFactionsListForReading;
+            if (list == null) {
+                return null;
+            }
+            return list.Where(f => f.def == def).RandomElement();
+        }
+
         public CustomFaction FindCustomFactionByIndex(FactionDef def, int index) {
             return customFactions.FirstOrDefault((faction) => {
                 return (faction.Def == def && faction.Index == index && !faction.Leader);

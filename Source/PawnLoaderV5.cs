@@ -178,6 +178,7 @@ namespace EdB.PrepareCarefully {
             else {
                 result.Pawn.Id = System.Guid.NewGuid().ToString();
             }
+            customizedPawn.OriginalFactionDef = FindDefinition<FactionDef>(record.originalFactionDef);
 
             PawnKindDef pawnKindDef = null;
             if (record.pawnKindDef != null) {
