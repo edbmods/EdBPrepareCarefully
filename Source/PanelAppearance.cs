@@ -21,7 +21,8 @@ namespace EdB.PrepareCarefully {
         public Rect RectGenderFemale;
         public Rect RectGenderMale;
 
-        protected CustomizedPawn currentPawn = null;
+        protected CustomizedPawn CachedCustomizedPawn = null;
+        protected Pawn CachedPawn = null;
         protected List<PawnLayer> currentPawnLayers = null;
         protected PawnLayer selectedPawnLayer = null;
         protected List<Action> pawnLayerActions = new List<Action>();
@@ -78,11 +79,12 @@ namespace EdB.PrepareCarefully {
 
             CustomizedPawn customizedPawn = ViewState.CurrentPawn;
             Pawn pawn = customizedPawn.Pawn;
-            if (currentPawn != customizedPawn) {
-                currentPawn = customizedPawn;
-                UpdatePawnLayers();
+            if (pawn == null) {
+                return 0;
             }
-            if (currentPawnLayers == null) {
+            if (currentPawnLayers == null || CachedCustomizedPawn != customizedPawn || CachedPawn != pawn) {
+                CachedCustomizedPawn = customizedPawn;
+                CachedPawn = pawn;
                 UpdatePawnLayers();
             }
 

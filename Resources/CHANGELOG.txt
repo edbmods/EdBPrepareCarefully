@@ -9,6 +9,7 @@
    - Fixed an error where implants that can be attached to a body part group
      (instead of to a specific body part) were not being loaded correctly from
      saved presets
+   - Fixed some issues with the Appearance panel when randomizing pawns
 
  _____________________________________________________________________________
  
