@@ -40,6 +40,7 @@ namespace EdB.PrepareCarefully {
         protected WidgetScrollViewVertical scrollView = new WidgetScrollViewVertical();
         protected FactionDef previousFaction = null;
         protected Rect RectHeader;
+        protected CustomizedPawn previousTickSelectedPawn = null;
 
         protected LabelTrimmer nameTrimmerNoScrollbar = new LabelTrimmer();
         protected LabelTrimmer nameTrimmerWithScrollbar = new LabelTrimmer();
@@ -100,6 +101,7 @@ namespace EdB.PrepareCarefully {
             IEnumerable<CustomizedPawn> pawns = GetPawns();
             int pawnCount = pawns.Count();
 
+            float? scrollTo = null;
             float cursor = 0;
             GUI.BeginGroup(RectScrollFrame);
             scrollView.Begin(RectScrollView);
@@ -111,6 +113,11 @@ namespace EdB.PrepareCarefully {
                     Rect rect = RectEntry;
                     rect.y += cursor;
                     rect.width -= (scrollView.ScrollbarsVisible ? 16 : 0);
+
+                    if (pawn == currentPawn && currentPawn != previousTickSelectedPawn) {
+                        scrollTo = cursor;
+                        previousTickSelectedPawn = currentPawn;
+                    }
 
                     GUI.color = Style.ColorPanelBackground;
                     GUI.DrawTexture(rect, BaseContent.WhiteTex);
@@ -218,6 +225,19 @@ namespace EdB.PrepareCarefully {
                 GUI.EndGroup();
             }
 
+            if (scrollTo != null) {
+                float top = scrollTo.Value;
+                float bottom = top + RectEntry.height;
+                float min = scrollView.Position.y;
+                float max = min + scrollView.ViewHeight;
+                if (top < min) {
+                    scrollView.ScrollTo(top);
+                }
+                else if (bottom > max) {
+                    float position = scrollView.Position.y + (bottom - max);
+                    scrollView.ScrollTo(position);
+                }
+            }
 
             // Quick Add button.
             if (RectButtonQuickAdd.Contains(Event.current.mousePosition)) {

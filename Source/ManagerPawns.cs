@@ -128,8 +128,8 @@ namespace EdB.PrepareCarefully {
         }
 
         public CustomizedPawn AddPawn(CustomizedPawnType pawnType, PawnKindOption option = null) {
-            Faction faction = null;
-            if (option.FactionDef != null) {
+            Faction faction = Faction.OfPlayer;
+            if (option?.FactionDef != null) {
                 faction = ProviderFactions.FindRandomFactionForDef(option.FactionDef);
             }
             Pawn pawn = CreatePawn(new PawnGenerationRequestWrapper() {
@@ -222,6 +222,9 @@ namespace EdB.PrepareCarefully {
             }
             if (customizedPawn.OriginalFactionDef != null) {
                 wrapper.Faction = ProviderFactions.FindRandomFactionForDef(customizedPawn.OriginalFactionDef);
+            }
+            else {
+                wrapper.Faction = Faction.OfPlayer;
             }
 
             customizedPawn.Pawn = CreatePawn(wrapper.Request);
