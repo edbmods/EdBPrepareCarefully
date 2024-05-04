@@ -4,7 +4,10 @@
  _____________________________________________________________________________
 
  - Bug fixes:
-   - 
+   - Fixed issue where sibling relationships were sometimes lost when loading
+     from a preset
+   - Fixed issue where non-parent/child relationships between starting pawns
+     and hidden/world pawns were removed when initializing the game
 
  _____________________________________________________________________________
  
