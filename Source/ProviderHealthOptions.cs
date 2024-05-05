@@ -82,12 +82,16 @@ namespace EdB.PrepareCarefully {
                 if (def.addsHediff != null
                         && ((def.appliedOnFixedBodyParts != null && def.appliedOnFixedBodyParts.Count > 0) || (def.appliedOnFixedBodyPartGroups != null && def.appliedOnFixedBodyPartGroups.Count > 0))
                         && (def.recipeUsers.NullOrEmpty() || def.recipeUsers.Contains(pawnThingDef))) {
+                    //Logger.Debug("Adding implant recipe: " + def.defName);
                     return true;
                 }
                 else {
+                    //Logger.Debug("Excluding implant recipe: " + def.defName);
                     return false;
                 }
             }));
+
+            
             
             // Remove duplicates: recipes that apply the same hediff on the same body parts.
             HashSet<int> recipeHashes = new HashSet<int>();
@@ -110,7 +114,7 @@ namespace EdB.PrepareCarefully {
                 foreach (var bodyPartDef in r.appliedOnFixedBodyParts) {
                     List<UniqueBodyPart> fixedParts = options.FindBodyPartsForDef(bodyPartDef);
                     if (fixedParts != null && fixedParts.Count > 0) {
-                        //Logger.Debug("Adding recipe for " + r.defName + " for fixed parts " + String.Join(", ", fixedParts.ConvertAll(p => p.Record.LabelCap)));
+                        Logger.Debug("Adding recipe for " + r.defName + " for fixed parts " + String.Join(", ", fixedParts.ConvertAll(p => p.Record.LabelCap)));
                         options.AddImplantRecipe(r, fixedParts);
                         foreach (var part in fixedParts) {
                             part.Replaceable = true;
@@ -120,12 +124,22 @@ namespace EdB.PrepareCarefully {
                 foreach (var group in r.appliedOnFixedBodyPartGroups) {
                     List<UniqueBodyPart> partsFromGroup = options.PartsForBodyPartGroup(group.defName);
                     if (partsFromGroup != null && partsFromGroup.Count > 0) {
-                        //Logger.Debug("Adding recipe for " + r.defName + " for group " + group.defName + " for parts " + String.Join(", ", partsFromGroup.ConvertAll(p => p.Record.LabelCap)));
+                        Logger.Debug("Adding recipe for " + r.defName + " for group " + group.defName + " for parts " + String.Join(", ", partsFromGroup.ConvertAll(p => p.Record.LabelCap)));
                         options.AddImplantRecipe(r, partsFromGroup);
                         foreach (var part in partsFromGroup) {
                             part.Replaceable = true;
                         }
                     }
+                }
+            }
+
+            // Add the special-case mechlink as an implant option
+            HediffDef mechlinkDef = DefDatabase<HediffDef>.GetNamedSilentFail("MechlinkImplant");
+            BodyPartDef brainDef = DefDatabase<BodyPartDef>.GetNamedSilentFail("Brain");
+            if (brainDef != null) {
+                UniqueBodyPart brain = options.FindBodyPartsForDef(brainDef).FirstOrDefault();
+                if (mechlinkDef != null) {
+                    options.AddImplantHediffDef(mechlinkDef, brain.Record);
                 }
             }
         }

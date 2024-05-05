@@ -11,57 +11,47 @@ using Verse.Sound;
 namespace EdB.PrepareCarefully {
     public class DialogManageImplants : Window {
         public class ImplantBodyPart {
-            public UniqueBodyPart UniquePart {
-                get; set;
-            }
+            public UniqueBodyPart UniquePart { get; set; }
             public BodyPartRecord Part {
                 get {
-                    return UniquePart.Record;
+                    return UniquePart?.Record;
                 }
             }
-            public bool Selected {
-                get; set;
-            }
-            public bool Disabled {
-                get; set;
-            }
-            public Implant Implant {
-                get; set;
-            }
-            public Implant BlockingImplant {
-                get; set;
-            }
+            public bool Selected { get; set; }
+            public bool Disabled { get; set; }
+            public Implant Implant { get; set; }
+            public Implant BlockingImplant { get; set; }
         }
-        public class ImplantRecipe {
-            protected List<ImplantBodyPart> parts = new List<ImplantBodyPart>();
+        public class DialogOption {
+            public ImplantOption ImplantOption { get; set; }
             public RecipeDef Recipe {
-                get; set;
+                get {
+                    return ImplantOption?.RecipeDef;
+                }
             }
-            public bool Selected {
-                get; set;
-            }
-            public bool PartiallySelected {
-                get; set;
-            }
-            public bool Disabled {
-                get; set;
-            }
+            public bool Selected { get; set; }
+            public bool PartiallySelected { get; set; }
+            public bool Disabled { get; set; }
             public bool RequiresPartSelection {
                 get {
-                    return parts != null && parts.Count > 1;
+                    return Parts.CountAllowNull() > 1;
                 }
             }
-            public Implant BlockingImplant {
-                get; set;
-            }
-            public List<ImplantBodyPart> Parts {
+            public string Label {
                 get {
-                    return parts;
-                }
-                set {
-                    parts = value;
+                    if (Recipe != null) {
+                        return Recipe?.LabelCap;
+                    }
+                    if (ImplantOption?.HediffDef != null) {
+                        return "EdB.PC.Dialog.Implant.InstallImplantLabel".Translate(ImplantOption.HediffDef.label);
+                    }
+                    else {
+                        return "";
+                    }
                 }
             }
+            public Implant BlockingImplant { get; set; }
+            public List<ImplantBodyPart> Parts { get; set; } = new List<ImplantBodyPart>();
         }
         public string ConfirmButtonLabel = "EdB.PC.Dialog.Implant.Button.Confirm";
         public string CancelButtonLabel = "EdB.PC.Common.Cancel";
@@ -86,8 +76,8 @@ namespace EdB.PrepareCarefully {
         protected string headerLabel;
         protected bool resizeDirtyFlag = true;
         protected bool confirmed = false;
-        protected WidgetTable<ImplantRecipe> table;
-        protected List<ImplantRecipe> recipes = new List<ImplantRecipe>();
+        protected WidgetTable<DialogOption> table;
+        protected List<DialogOption> options = new List<DialogOption>();
         protected List<Implant> implantList = new List<Implant>();
         protected Dictionary<BodyPartRecord, Implant> replacedParts = new Dictionary<BodyPartRecord, Implant>();
         protected CustomizedPawn customizedPawn = null;
@@ -126,18 +116,21 @@ namespace EdB.PrepareCarefully {
 
         protected void InitializeRecipes() {
             OptionsHealth health = providerHealth.GetOptions(customizedPawn);
-            this.recipes.Clear();
-            var result = new List<ImplantRecipe>();
-            foreach (var recipe in health.ImplantRecipes) {
-                var implant = new ImplantRecipe();
-                implant.Recipe = recipe;
-                implant.Selected = implantList.FirstOrDefault((Implant i) => { return i.Recipe == recipe; }) != null;
-                implant.Disabled = false;
-                implant.Parts = new List<ImplantBodyPart>();
-                foreach (var part in health.FindBodyPartsForImplantRecipe(recipe)) {
+            this.options.Clear();
+            var result = new List<DialogOption>();
+            foreach (var implantOption in health.ImplantOptions) {
+                var option = new DialogOption();
+                option.ImplantOption = implantOption;
+                option.Selected = implantList.FirstOrDefault((Implant i) => {
+                    return (i.Recipe == implantOption.RecipeDef && implantOption.RecipeDef != null)
+                            || (i.HediffDef == implantOption.HediffDef && implantOption.HediffDef != null);
+                }) != null;
+                option.Disabled = false;
+                option.Parts = new List<ImplantBodyPart>();
+                foreach (var part in health.FindBodyPartsForImplantRecipe(implantOption.RecipeDef)) {
                     var implantPart = new ImplantBodyPart();
                     implantPart.UniquePart = part;
-                    Implant foundImplant = implantList.FirstOrDefault((Implant i) => { return i.Recipe == recipe && i.BodyPartRecord == part.Record; });
+                    Implant foundImplant = implantList.FirstOrDefault((Implant i) => { return i.Recipe == implantOption.RecipeDef && i.BodyPartRecord == part.Record; });
                     if (foundImplant != null) {
                         implantPart.Selected = true;
                         implantPart.Implant = foundImplant;
@@ -147,11 +140,29 @@ namespace EdB.PrepareCarefully {
                         implantPart.Implant = null;
                     }
                     implantPart.Disabled = false;
-                    implant.Parts.Add(implantPart);
+                    option.Parts.Add(implantPart);
                 }
-                result.Add(implant);
+                if (implantOption.BodyPartRecord != null) {
+                    UniqueBodyPart uniqueBodyPart = health.FindBodyPartsForRecord(implantOption.BodyPartRecord);
+                    if (uniqueBodyPart != null) {
+                        var implantPart = new ImplantBodyPart();
+                        implantPart.UniquePart = uniqueBodyPart;
+                        Implant foundImplant = implantList.FirstOrDefault((Implant i) => { return i.HediffDef == implantOption.HediffDef && i.BodyPartRecord == implantOption.BodyPartRecord; });
+                        if (foundImplant != null) {
+                            implantPart.Selected = true;
+                            implantPart.Implant = foundImplant;
+                        }
+                        else {
+                            implantPart.Selected = false;
+                            implantPart.Implant = null;
+                        }
+                        implantPart.Disabled = false;
+                        option.Parts.Add(implantPart);
+                    }
+                }
+                result.Add(option);
             }
-            this.recipes = result;
+            this.options = result.OrderBy(o => o.Label).ToList();
         }
         
         protected void ResetDisabledState() {
@@ -160,7 +171,7 @@ namespace EdB.PrepareCarefully {
             // Iterate each selected implant in order to determine if it's valid--if it's not
             // trying to replace or install on top of an already-missing part.
 
-            // The first pass looks for duplicate implants that both try replace the same part.
+            // The first pass looks for duplicate implants that both try to replace the same part.
             Dictionary<BodyPartRecord, Implant> firstPassReplacedParts = new Dictionary<BodyPartRecord, Implant>();
             List<Implant> firstPassValidImplants = new List<Implant>();
             foreach (var implant in implantList) {
@@ -222,19 +233,18 @@ namespace EdB.PrepareCarefully {
             //    Logger.Debug("  " + i.recipe.LabelCap + ", " + i.PartName + (i.ReplacesPart ? ", replaces part" : ""));
             //}
 
-            // Iterate each each body part option for each recipe to determine if that body part is missing,
+            // Iterate each body part option for each recipe to determine if that body part is missing,
             // based on the whether or not it or one of its ancestors has been replaced.  Only evaluate each
             // body part once.  The result will be used to determine if recipes and part options should be
             // disabled.
             HashSet<BodyPartRecord> evaluatedParts = new HashSet<BodyPartRecord>();
             Dictionary<BodyPartRecord, Implant> blockedParts = new Dictionary<BodyPartRecord, Implant>();
-            foreach (var recipe in recipes) {
+            foreach (var recipe in options) {
                 foreach (var part in recipe.Parts) {
                     if (evaluatedParts.Contains(part.Part)) {
                         continue;
                     }
-                    Implant blockingImplant = null;
-                    if (!replacedParts.TryGetValue(part.Part, out blockingImplant)) {
+                    if (!replacedParts.TryGetValue(part.Part, out Implant blockingImplant)) {
                         foreach (var ancestor in part.UniquePart.Ancestors) {
                             if (replacedParts.TryGetValue(ancestor.Record, out blockingImplant)) {
                                 break;
@@ -251,12 +261,12 @@ namespace EdB.PrepareCarefully {
             // Go through each recipe and recipe part, marking the parts as disabled if
             // they are missing and marking the recipes as disabled if all of its parts
             // are disabled.
-            foreach (var recipe in recipes) {
-                recipe.Disabled = false;
-                recipe.BlockingImplant = null;
+            foreach (var option in options) {
+                option.Disabled = false;
+                option.BlockingImplant = null;
                 int disabledCount = 0;
-                int partCount = recipe.Parts.Count;
-                foreach (var part in recipe.Parts) {
+                int partCount = option.Parts.Count;
+                foreach (var part in option.Parts) {
                     part.Disabled = false;
                     part.BlockingImplant = null;
                     Implant blockingImplant = null;
@@ -266,18 +276,18 @@ namespace EdB.PrepareCarefully {
                             part.BlockingImplant = blockingImplant;
                             disabledCount++;
                             if (partCount == 1) {
-                                recipe.BlockingImplant = blockingImplant;
+                                option.BlockingImplant = blockingImplant;
                             }
                         }
                     }
                 }
-                if (disabledCount == recipe.Parts.Count) {
-                    recipe.Disabled = true;
+                if (disabledCount == option.Parts.Count) {
+                    option.Disabled = true;
                 }
             }
 
             // Evaluate each recipe's selected state.
-            foreach (var recipe in recipes) {
+            foreach (var recipe in options) {
                 recipe.PartiallySelected = false;
                 if (recipe.Selected) {
                     int selectedCount = 0;
@@ -298,7 +308,7 @@ namespace EdB.PrepareCarefully {
 
         protected void ResetCachedBlockedSelectionAlert() {
             bool showAlert = false;
-            foreach (var recipe in recipes) {
+            foreach (var recipe in options) {
                 foreach (var part in recipe.Parts) {
                     if (part.Disabled && part.Implant != null) {
                         showAlert = true;
@@ -314,7 +324,7 @@ namespace EdB.PrepareCarefully {
                 return;
             }
             List<Implant> blockedSelections = new List<Implant>();
-            foreach (var recipe in recipes) {
+            foreach (var recipe in options) {
                 int partCount = recipe.Parts.Count;
                 foreach (var part in recipe.Parts) {
                     if (part.Disabled && part.Implant != null) {
@@ -374,7 +384,7 @@ namespace EdB.PrepareCarefully {
             resizeDirtyFlag = true;
         }
 
-        public void ClickRecipeAction (ImplantRecipe recipe) {
+        public void ClickRecipeAction (DialogOption recipe) {
             if (recipe.Disabled && !recipe.Selected) {
                 return;
             }
@@ -398,22 +408,23 @@ namespace EdB.PrepareCarefully {
             MarkDisabledOptionsAsDirty();
         }
 
-        protected void AddImplant(ImplantRecipe recipe, ImplantBodyPart part) {
+        protected void AddImplant(DialogOption option, ImplantBodyPart part) {
             Implant implant = new Implant();
-            implant.Recipe = recipe.Recipe;
+            implant.Recipe = option.Recipe;
+            implant.HediffDef = option.ImplantOption.HediffDef;
             implant.BodyPartRecord = part.Part;
             implantList.Add(implant);
             part.Implant = implant;
         }
 
-        protected void RemoveImplant(ImplantRecipe recipe, ImplantBodyPart part) {
+        protected void RemoveImplant(DialogOption option, ImplantBodyPart part) {
             if (part.Implant != null) {
                 implantList.Remove(part.Implant);
                 part.Implant = null;
             }
         }
 
-        public void ClickPartAction(ImplantRecipe recipe, ImplantBodyPart part) {
+        public void ClickPartAction(DialogOption recipe, ImplantBodyPart part) {
             if (part.Disabled && !part.Selected) {
                 return;
             }
@@ -472,17 +483,17 @@ namespace EdB.PrepareCarefully {
             float radioWidth = 36;
             Vector2 nameSize = new Vector2(ContentRect.width - portraitSize.x - radioWidth, portraitSize.y * 0.5f);
 
-            table = new WidgetTable<ImplantRecipe>();
+            table = new WidgetTable<DialogOption>();
             table.Rect = new Rect(Vector2.zero, ContentRect.size);
             table.RowHeight = LineHeight;
             table.RowColor = new Color(0, 0, 0, 0);
             table.AlternateRowColor = new Color(0, 0, 0, 0);
-            table.SelectedAction = (ImplantRecipe recipe) => {
+            table.SelectedAction = (DialogOption recipe) => {
             };
-            table.AddColumn(new WidgetTable<ImplantRecipe>.Column() {
+            table.AddColumn(new WidgetTable<DialogOption>.Column() {
                 Name = "Recipe",
                 AdjustForScrollbars = true,
-                DrawAction = (ImplantRecipe recipe, Rect rect, WidgetTable<ImplantRecipe>.Metadata metadata) => {
+                DrawAction = (DialogOption option, Rect rect, WidgetTable<DialogOption>.Metadata metadata) => {
                     GUI.color = Color.white;
                     Text.Anchor = TextAnchor.LowerLeft;
                     Rect labelRect = new Rect(rect.x, rect.y, rect.width, LineHeight);
@@ -491,43 +502,43 @@ namespace EdB.PrepareCarefully {
                     Rect clickRect = new Rect(labelRect.x, labelRect.y, labelRect.width - checkboxRect.width, labelRect.height);
                     GUI.color = DottedLineColor;
                     GUI.DrawTexture(dottedLineRect, Textures.TextureDottedLine);
-                    Vector2 labelSize = Text.CalcSize(recipe.Recipe.LabelCap);
+                    Vector2 labelSize = Text.CalcSize(option.Label);
                     GUI.color = Style.ColorWindowBackground;
                     GUI.DrawTexture(new Rect(labelRect.x, labelRect.y, labelSize.x + 2, labelRect.height), BaseContent.WhiteTex);
                     GUI.DrawTexture(checkboxRect.InsetBy(-2, -2, -40, -2), BaseContent.WhiteTex);
-                    if (!recipe.Disabled) {
-                        Style.SetGUIColorForButton(labelRect, recipe.Selected, Style.ColorText, Style.ColorButtonHighlight, Style.ColorButtonHighlight);
-                        Widgets.Label(labelRect, recipe.Recipe.LabelCap);
+                    if (!option.Disabled) {
+                        Style.SetGUIColorForButton(labelRect, option.Selected, Style.ColorText, Style.ColorButtonHighlight, Style.ColorButtonHighlight);
+                        Widgets.Label(labelRect, option.Label);
                         if (Widgets.ButtonInvisible(clickRect)) {
-                            ClickRecipeAction(recipe);
+                            ClickRecipeAction(option);
                         }
                         GUI.color = Color.white;
                         Texture2D checkboxTexture = Textures.TextureCheckbox;
-                        if (recipe.PartiallySelected) {
+                        if (option.PartiallySelected) {
                             checkboxTexture = Textures.TextureCheckboxPartiallySelected;
                         }
-                        else if (recipe.Selected) {
+                        else if (option.Selected) {
                             checkboxTexture = Textures.TextureCheckboxSelected;
                         }
                         if (Widgets.ButtonImage(checkboxRect, checkboxTexture)) {
-                            ClickRecipeAction(recipe);
+                            ClickRecipeAction(option);
                         }
                     }
                     else {
                         GUI.color = Style.ColorControlDisabled;
-                        Widgets.Label(labelRect, recipe.Recipe.LabelCap);
-                        GUI.DrawTexture(checkboxRect, recipe.Selected ? Textures.TextureCheckboxPartiallySelected : Textures.TextureCheckbox);
+                        Widgets.Label(labelRect, option.Label);
+                        GUI.DrawTexture(checkboxRect, option.Selected ? Textures.TextureCheckboxPartiallySelected : Textures.TextureCheckbox);
                         if (Widgets.ButtonInvisible(checkboxRect)) {
-                            ClickRecipeAction(recipe);
+                            ClickRecipeAction(option);
                         }
-                        if (recipe.BlockingImplant != null) {
-                            TooltipHandler.TipRegion(labelRect, "EdB.PC.Dialog.Implant.Conflict".Translate(recipe.BlockingImplant.Recipe.LabelCap, recipe.BlockingImplant.BodyPartRecord.Label));
+                        if (option.BlockingImplant != null) {
+                            TooltipHandler.TipRegion(labelRect, "EdB.PC.Dialog.Implant.Conflict".Translate(option.BlockingImplant.Recipe.LabelCap, option.BlockingImplant.BodyPartRecord.Label));
                         }
                     }
-                    if (recipe.Selected && recipe.RequiresPartSelection) {
+                    if (option.Selected && option.RequiresPartSelection) {
                         float partInset = 32;
                         float cursor = labelRect.yMax;
-                        foreach (var part in recipe.Parts) {
+                        foreach (var part in option.Parts) {
                             string labelText = part.Part.LabelCap;
                             labelRect = new Rect(rect.x + partInset, cursor, rect.width - partInset * 2, LineHeight);
                             dottedLineRect = new Rect(labelRect.x, labelRect.y + 21, DottedLineSize.x, DottedLineSize.y);
@@ -543,11 +554,11 @@ namespace EdB.PrepareCarefully {
                                 Style.SetGUIColorForButton(labelRect, part.Selected, Style.ColorText, Style.ColorButtonHighlight, Style.ColorButtonHighlight);
                                 Widgets.Label(labelRect, labelText);
                                 if (Widgets.ButtonInvisible(clickRect)) {
-                                    ClickPartAction(recipe, part);
+                                    ClickPartAction(option, part);
                                 }
                                 GUI.color = Color.white;
                                 if (Widgets.ButtonImage(checkboxRect, part.Selected ? Textures.TextureCheckboxSelected : Textures.TextureCheckbox)) {
-                                    ClickPartAction(recipe, part);
+                                    ClickPartAction(option, part);
                                 }
                             }
                             else {
@@ -555,7 +566,7 @@ namespace EdB.PrepareCarefully {
                                 Widgets.Label(labelRect, labelText);
                                 GUI.DrawTexture(checkboxRect, part.Selected ? Textures.TextureCheckboxPartiallySelected : Textures.TextureCheckbox);
                                 if (Widgets.ButtonInvisible(checkboxRect)) {
-                                    ClickPartAction(recipe, part);
+                                    ClickPartAction(option, part);
                                 }
                                 if (part.BlockingImplant != null) {
                                     TooltipHandler.TipRegion(labelRect, "EdB.PC.Dialog.Implant.Conflict".Translate(part.BlockingImplant.Recipe.LabelCap, part.BlockingImplant.BodyPartRecord.Label));
@@ -566,7 +577,7 @@ namespace EdB.PrepareCarefully {
                     }
                     Text.Anchor = TextAnchor.UpperLeft;
                 },
-                MeasureAction = (ImplantRecipe recipe, float width, WidgetTable<ImplantRecipe>.Metadata metadata) => {
+                MeasureAction = (DialogOption recipe, float width, WidgetTable<DialogOption>.Metadata metadata) => {
                     if (recipe.Selected && recipe.Parts.Count > 1) {
                         return LineHeight + (LineHeight * recipe.Parts.Count);
                     }
@@ -602,7 +613,7 @@ namespace EdB.PrepareCarefully {
             GUI.BeginGroup(ContentRect);
 
             try {
-                table.Draw(this.recipes);
+                table.Draw(this.options);
             }
             finally {
                 GUI.EndGroup();

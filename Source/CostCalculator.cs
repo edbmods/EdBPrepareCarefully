@@ -174,6 +174,20 @@ namespace EdB.PrepareCarefully {
                 //Logger.Debug(string.Format("Market value for pawn apparel; pawn = {0}, apparel = {1}, cost = {2}", pawn.Pawn.LabelShortCap, apparel.def.defName, c));
             }
 
+            // Special-case check for mechlink.  For some reason, a pawn's market value doesn't include
+            // any installed mechlink
+            foreach (Implant option in pawn.Customizations.Implants) {
+                if (option.HediffDef == null) {
+                    continue;
+                }
+                if (option.HediffDef.defName == "MechlinkImplant") {
+                    ThingDef thingDef = DefDatabase<ThingDef>.GetNamedSilentFail("Mechlink");
+                    if (thingDef != null) {
+                        cost.bionics += MarketValueStatWorker.GetValue(StatRequest.For(thingDef, null));
+                    }
+                }
+            }
+
             // Calculate cost for any materials needed for implants.
             OptionsHealth healthOptions = ProviderHealthOptions.GetOptions(pawn);
             foreach (Implant option in pawn.Customizations.Implants) {

@@ -62,6 +62,7 @@
     <Compile Include="Source\AgeModifier.cs" />
     <Compile Include="Source\AlienRace.cs" />
     <Compile Include="Source\AlienRaceBodyAddon.cs" />
+    <Compile Include="Source\ImplantOption.cs" />
     <Compile Include="Source\PawnLoaderV3.cs" />
     <Compile Include="Source\PawnSaver.cs" />
     <Compile Include="Source\CostCalculator.cs" />

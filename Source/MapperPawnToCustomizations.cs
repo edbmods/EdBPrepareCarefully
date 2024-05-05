@@ -263,27 +263,20 @@ namespace EdB.PrepareCarefully {
                     //Logger.Debug("Did not find injury option for {" + hediff.def.defName + "} for part {" + hediff.Part?.LabelCap + "}");
                     RecipeDef implantRecipe = healthOptions.FindImplantRecipesThatAddHediff(hediff).RandomElementWithFallback(null);
                     if (implantRecipe != null) {
-                        Implant implant = new Implant();
-                        implant.Recipe = implantRecipe;
-                        implant.BodyPartRecord = hediff.Part;
-                        implant.Hediff = hediff;
-                        implant.HediffDef = hediff?.def;
-                        implants.Add(implant);
+                        implants.Add(new Implant() {
+                            Recipe = implantRecipe,
+                            BodyPartRecord = hediff.Part,
+                            Hediff = hediff,
+                            HediffDef = hediff?.def,
+                        });
                         //Logger.Debug("Found implant recipes for {" + hediff.def.defName + "} for part {" + hediff.Part?.LabelCap + "}");
                     }
-                    else if (hediff.def.defName == "MechlinkImplant") {
-                        Implant implant = new Implant();
-                        implant.BodyPartRecord = hediff.Part;
-                        implant.Hediff = hediff;
-                        implant.HediffDef = hediff?.def;
-                        implants.Add(implant);
-                    }
                     else if (hediff.Part != null) {
-                        Implant implant = new Implant();
-                        implant.BodyPartRecord = hediff.Part;
-                        implant.Hediff = hediff;
-                        implant.HediffDef = hediff?.def;
-                        implants.Add(implant);
+                        implants.Add(new Implant() {
+                            BodyPartRecord = hediff.Part,
+                            Hediff = hediff,
+                            HediffDef = hediff?.def,
+                        });
                     }
                     else if (hediff.def.defName != "MissingBodyPart") {
                         Logger.Warning("Could not add hediff {" + hediff.def.defName + "} to the pawn because no recipe adds it to the body part {" + (hediff.Part?.def?.defName ?? "WholeBody") + "}");
