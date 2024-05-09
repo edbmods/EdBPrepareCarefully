@@ -120,8 +120,6 @@ namespace EdB.PrepareCarefully {
         public List<Injury> Injuries { get; set; } = new List<Injury>();
         public List<Implant> Implants { get; set; } = new List<Implant>();
 
-        public List<CustomizedHediff> BodyParts = new List<CustomizedHediff>();
-
         // Titles
         public List<CustomizationTitle> Titles { get; set; } = new List<CustomizationTitle>();
 

@@ -35,6 +35,9 @@ namespace EdB.PrepareCarefully {
         protected Rect RectScrollView;
         protected Rect RectRow;
         protected Rect RectItem;
+        protected Rect RectOverseenLabel;
+        protected Rect RectOverseenSlider;
+        protected Rect RectOverseenPercentLabel;
         protected Vector2 AddButtonSize;
         protected static Vector2 SizeTextureSortIndicator = new Vector2(8, 4);
         protected EquipmentType selectedType = null;
@@ -47,6 +50,7 @@ namespace EdB.PrepareCarefully {
         private EquipmentOption LastDrawnEquipmentOption = null;
 
         private ThingCategoryDef FilterThingCategory = null;
+        private bool FilterMechs = false;
         private string FilterModName = null;
         private string FilterSearchTerm = null;
         private List<EquipmentOption> FilteredOptions = new List<EquipmentOption>();
@@ -128,6 +132,14 @@ namespace EdB.PrepareCarefully {
 
             RectRow = new Rect(0, 0, RectScrollView.width, 42);
             RectItem = new Rect(10, 2, 38, 38);
+
+            Text.Font = GameFont.Tiny;
+            Vector2 rectOverseenLabelSize = Text.CalcSize("EdB.PC.Equipment.AvailableEquipment.OverseenChanceLabel".Translate("StartOverseenChance".Translate()));
+            Vector2 rectOverseenPercentLabelSize = Text.CalcSize("000%".Translate());
+            Text.Font = GameFont.Small;
+            RectOverseenLabel = new Rect(0, 0, rectOverseenLabelSize.x, 18);
+            RectOverseenSlider = new Rect(RectOverseenLabel.xMax + 8, 3, 240, 12);
+            RectOverseenPercentLabel = new Rect(RectOverseenSlider.xMax + 8, 0, rectOverseenPercentLabelSize.x, 18);
         }
 
         protected bool FilterTick() {
@@ -154,6 +166,9 @@ namespace EdB.PrepareCarefully {
             else {
                 options = ProviderEquipment.Equipment;
             }
+            if (FilterMechs) {
+                options = ProviderEquipment.EquipmentDatabase.AllMechEquipmentOptions();
+            }
             if (FilterModName != null) {
                 options = ProviderEquipment.EquipmentDatabase.ApplyModNameFilter(options, FilterModName);
             }
@@ -164,21 +179,31 @@ namespace EdB.PrepareCarefully {
         }
 
         protected void PrepareThingCategoryFilterOptions() {
-            ThingCategoryFloatMenuOptions = new List<FloatMenuOption>();
-            ThingCategoryFloatMenuOptions.Add(new FloatMenuOption("EdB.PC.Equipment.AvailableEquipment.AllCategoriesOption".Translate(), () => {
+            List<FloatMenuOption> options = new List<FloatMenuOption>();
+            options.Add(new FloatMenuOption("EdB.PC.Equipment.AvailableEquipment.MechCategoryLabel".Translate(), () => {
                 FilterThingCategory = null;
+                FilterMechs = true;
                 ApplyCurrentFilters();
             }, MenuOptionPriority.Default, null, null, 0, null, null));
             foreach (var thingCategory in ProviderEquipment.EquipmentDatabase.ThingCategories) {
                 if (thingCategory.defName == "Root") {
                     continue;
                 }
-                ThingCategoryFloatMenuOptions.Add(new FloatMenuOption(LabelForThingCategory(thingCategory), () => {
+                options.Add(new FloatMenuOption(LabelForThingCategory(thingCategory), () => {
                     FilterThingCategory = thingCategory;
+                    FilterMechs = false;
                     ApplyCurrentFilters();
                 }, MenuOptionPriority.Default, null, null, 0, null, null));
-                ThingCategoryFloatMenuOptions = ThingCategoryFloatMenuOptions.OrderBy(m => m.Label).ToList();
             }
+
+            ThingCategoryFloatMenuOptions = new List<FloatMenuOption>() {
+                new FloatMenuOption("EdB.PC.Equipment.AvailableEquipment.AllCategoriesOption".Translate(), () => {
+                    FilterThingCategory = null;
+                    FilterMechs = false;
+                    ApplyCurrentFilters();
+                }, MenuOptionPriority.Default, null, null, 0, null, null)
+            };
+            ThingCategoryFloatMenuOptions.AddRange(options.OrderBy(m => m.Label));
         }
         protected void PrepareModNameFilterOptions() {
             ModNameFloatMenuOptions = new List<FloatMenuOption>();
@@ -395,6 +420,9 @@ namespace EdB.PrepareCarefully {
                 Count = 1,
                 Gender = null
             };
+            if (option.Mech) {
+                SelectedValues.OverseenChance = 1.0f;
+            }
             RecalculateSelectedOptionCost();
         }
 
@@ -409,7 +437,7 @@ namespace EdB.PrepareCarefully {
                     Widgets.ThingIcon(iconRect, equipment.ThingDef, equipment.ThingDef.defaultStuff);
                 }
             }
-            else if (equipment.RandomAnimal) {
+            else if (equipment.RandomAnimal || equipment.RandomMech) {
                 GUI.color = Style.ColorTextSecondary;
                 Rect iconRect = new Rect(12f, y + 6, 24f, 24f);
                 GUI.DrawTexture(iconRect, Textures.TextureButtonRandom);
@@ -530,6 +558,33 @@ namespace EdB.PrepareCarefully {
                         Find.WindowStack.Add(new FloatMenu(GenderFloatMenuOptions, null, false));
                     }
                     y += 24;
+                }
+
+                // Draw overseen chance
+                if (SelectedOption.Mech) {
+                    // Draw the slider
+                    Text.Font = GameFont.Tiny;
+                    GUI.color = Style.ColorText;
+                    Text.Anchor = TextAnchor.MiddleLeft;
+                    Rect overseenLabelRect = RectOverseenLabel.OffsetBy(insetMargin, y);
+                    Widgets.Label(overseenLabelRect, "EdB.PC.Equipment.AvailableEquipment.OverseenChanceLabel".Translate("StartOverseenChance".Translate()));
+                    Text.Anchor = TextAnchor.MiddleCenter;
+                    Text.Font = GameFont.Tiny;
+                    Rect sliderRect = RectOverseenSlider.OffsetBy(insetMargin, y);
+                    Rect percentLabelRect = RectOverseenPercentLabel.OffsetBy(insetMargin, y);
+                    Widgets.Label(percentLabelRect, String.Format("{0:F0}%", SelectedValues.OverseenChance.Value * 100f));
+                    Text.Anchor = TextAnchor.MiddleLeft;
+                    GUI.color = Color.white;
+                    float value = GUI.HorizontalSlider(sliderRect, SelectedValues.OverseenChance.Value, 0f, 1f);
+                    y += sliderRect.height;
+
+                    Text.Font = GameFont.Small;
+                    GUI.color = Color.white;
+                    Text.Anchor = TextAnchor.UpperLeft;
+                    y += 8;
+
+                    // Update the hit points based on the slider value
+                    SelectedValues.OverseenChance = value;
                 }
 
                 // Add button

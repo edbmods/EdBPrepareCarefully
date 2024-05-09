@@ -350,22 +350,20 @@ namespace EdB.PrepareCarefully {
                         result.AddWarning("Could not add the implant because it could not find the recipe definition \"" + implantRecord.recipe + "\"");
                         continue;
                     }
-                    bool found = false;
-                    foreach (var p in recipeDef.appliedOnFixedBodyParts) {
-                        if (p.defName.Equals(bodyPart.def.defName)) {
-                            found = true;
-                            break;
-                        }
+                    ImplantOption implantOption = healthOptions.FindImplantOptionThatAddsRecipeDefToBodyPart(recipeDef, bodyPart?.def);
+                    if (implantOption != null) {
+                        Implant implant = new Implant() {
+                            Option = implantOption,
+                            Recipe = recipeDef,
+                            BodyPartRecord = bodyPart,
+                            HediffDef = recipeDef.addsHediff,
+                        };
+                        implant.label = implant.Label;
+                        customizations.Implants.Add(implant);
                     }
-                    if (!found) {
-                        result.AddWarning("Could not apply the saved implant recipe \"" + implantRecord.recipe + "\" to the body part \"" + bodyPart.def.defName + "\".  Recipe does not support that part.");
-                        continue;
+                    else {
+                        result.AddWarning("Could not add implant to pawn because no matching option was found for specified RecipeDef {" + implantRecord.recipe + "} and BodyPartDef {" + bodyPart?.def?.defName + "}");
                     }
-                    Implant implant = new Implant();
-                    implant.BodyPartRecord = bodyPart;
-                    implant.Recipe = recipeDef;
-                    implant.label = implant.Label;
-                    customizations.Implants.Add(implant);
                 }
             }
 

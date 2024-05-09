@@ -22,6 +22,7 @@ namespace EdB.PrepareCarefully {
         protected EquipmentType TypeBuildings = new EquipmentType("Buildings", "EdB.PC.Equipment.Type.Buildings");
         protected EquipmentType TypeAnimals = new EquipmentType("Animals", "EdB.PC.Equipment.Type.Animals");
         protected EquipmentType TypeDiscard = new EquipmentType("Discard", "");
+        protected EquipmentType TypeMech = new EquipmentType("Mechs", "EdB.PC.Equipment.Type.Mechs");
         protected EquipmentType TypeUncategorized = new EquipmentType("Uncategorized", "");
 
         protected ThingCategoryDef thingCategorySweetMeals = null;
@@ -35,6 +36,7 @@ namespace EdB.PrepareCarefully {
         public Dictionary<ThingCategoryDef, int> ThingCategoryItemCounts { get; set; } = new Dictionary<ThingCategoryDef, int>();
         public Dictionary<string, int> ModItemCounts { get; set; } = new Dictionary<string, int>();
         public EquipmentOption RandomAnimalEquipmentOption { get; private set; }
+        public EquipmentOption RandomMechEquipmentOption { get; private set; }
 
         public EquipmentDatabase() {
             types.Add(TypeResources);
@@ -49,6 +51,7 @@ namespace EdB.PrepareCarefully {
             thingCategoryMeatRaw = DefDatabase<ThingCategoryDef>.GetNamedSilentFail("MeatRaw");
 
             AddRandomAnimalToEquipmentOptions();
+            AddRandomMechToEquipmentOptions();
         }
 
         public IEnumerable<EquipmentOption> EquipmentOptionsByType(EquipmentType type) {
@@ -61,6 +64,9 @@ namespace EdB.PrepareCarefully {
             else {
                 return def.DescendantThingDefs.Select(t => FindOptionForThingDef(t)).Where(t => t != null);
             }
+        }
+        public IEnumerable<EquipmentOption> AllMechEquipmentOptions() {
+            return EquipmentOptions.Where(e => e.Mech);
         }
         public IEnumerable<EquipmentOption> EquipmentOptionsBySearchTerm(string term) {
             foreach (var option in EquipmentOptions) {
@@ -173,7 +179,7 @@ namespace EdB.PrepareCarefully {
                                 && d.scatterableOnMapGen && !d.destroyOnDrop)
                                 || (d.category == ThingCategory.Building && d.Minifiable)
                                 //|| (d.category == ThingCategory.Building && d.scatterableOnMapGen) // TODO: Remove to get rid of "Ancient Lamppost"
-                                || (d.race != null && d.race.Animal)
+                                || ((d.race?.IsMechanoid ?? false) && d.GetCompProperties<CompProperties_OverseerSubject>() != null)
                         )
                         .GetEnumerator();
                 }
@@ -347,6 +353,17 @@ namespace EdB.PrepareCarefully {
             };
             EquipmentOptions.Add(RandomAnimalEquipmentOption);
         }
+        protected void AddRandomMechToEquipmentOptions() {
+            RandomMechEquipmentOption = new EquipmentOption() {
+                ThingDef = null,
+                DefaultSpawnType = EquipmentSpawnType.Mech,
+                Materials = null,
+                SupportsQuality = false,
+                RandomMech = true,
+                EquipmentType = TypeMech
+            };
+            EquipmentOptions.Add(RandomMechEquipmentOption);
+        }
 
         protected bool AddStyleToEquipmentOptions(StyleCategoryDef def) {
             if (def.thingDefStyles.NullOrEmpty()) {
@@ -465,6 +482,9 @@ namespace EdB.PrepareCarefully {
             if (def?.race?.Animal ?? false) {
                 return EquipmentSpawnType.Animal;
             }
+            if (def?.race?.IsMechanoid ?? false) {
+                return EquipmentSpawnType.Mech;
+            }
             if (def.apparel != null) {
                 return EquipmentSpawnType.SpawnsWith;
             }
@@ -545,6 +565,14 @@ namespace EdB.PrepareCarefully {
             if (def.plant != null) {
                 DiscardDebug(def, "Discarding because it is a plant");
                 return TypeDiscard;
+            }
+            if (def.race?.IsMechanoid ?? false) {
+                if (def.GetCompProperties<CompProperties_OverseerSubject>() != null) {
+                    return TypeMech;
+                }
+                else {
+                    return TypeDiscard;
+                }
             }
             if (def.IsApparel) {
                 return TypeApparel;

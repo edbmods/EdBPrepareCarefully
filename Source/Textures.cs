@@ -66,6 +66,8 @@ namespace EdB.PrepareCarefully {
         public static Texture2D TextureIconWarning;
         public static Texture2D TextureFavoriteColor;
         public static Texture2D TextureIdeoColor;
+        public static Texture2D TextureCheckmark;
+        public static Texture2D TextureCheckmarkForcedSelection;
 
         public static Texture2D TextureWhite {
             get {
@@ -160,6 +162,9 @@ namespace EdB.PrepareCarefully {
 
             TextureFavoriteColor = ContentFinder<Texture2D>.Get("UI/Icons/ColorSelector/ColorFavourite", true);
             TextureIdeoColor = ContentFinder<Texture2D>.Get("UI/Icons/ColorSelector/ColorIdeology", true);
+
+            TextureCheckmark = ContentFinder<Texture2D>.Get("EdB/PrepareCarefully/Checkmark", true);
+            TextureCheckmarkForcedSelection = ContentFinder<Texture2D>.Get("EdB/PrepareCarefully/CheckmarkForcedSelection", true);
 
             loaded = true;
         }

@@ -26,6 +26,8 @@ namespace EdB.PrepareCarefully {
         public static Color ColorTabViewBackground = new Color(42f / 255f, 43f / 255f, 44f / 255f);
 
         public static Color ColorWindowBackground = new Color(21f / 255f, 25f / 255f, 29f / 255f);
+        public static Color ColorCheckmark = new Color(38f / 255f, 217f / 255f, 38f / 255f);
+        public static Color ColorCheckmarkForcedSelection = ColorCheckmark * 0.8f;
 
         public static readonly float DialogHeaderHeight = 36;
         public static readonly Vector2 DialogMargin = new Vector2(10, 18);

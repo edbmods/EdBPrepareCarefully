@@ -3,10 +3,12 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using System.Security.Cryptography;
 using System.Text;
 using UnityEngine;
 using Verse;
 using Verse.Sound;
+using static HarmonyLib.Code;
 
 namespace EdB.PrepareCarefully {
     public class ProviderHealthOptions {
@@ -114,7 +116,7 @@ namespace EdB.PrepareCarefully {
                 foreach (var bodyPartDef in r.appliedOnFixedBodyParts) {
                     List<UniqueBodyPart> fixedParts = options.FindBodyPartsForDef(bodyPartDef);
                     if (fixedParts != null && fixedParts.Count > 0) {
-                        Logger.Debug("Adding recipe for " + r.defName + " for fixed parts " + String.Join(", ", fixedParts.ConvertAll(p => p.Record.LabelCap)));
+                        //Logger.Debug("Adding recipe for " + r.defName + " for fixed parts " + String.Join(", ", fixedParts.ConvertAll(p => p.Record.LabelCap)));
                         options.AddImplantRecipe(r, fixedParts);
                         foreach (var part in fixedParts) {
                             part.Replaceable = true;
@@ -124,7 +126,7 @@ namespace EdB.PrepareCarefully {
                 foreach (var group in r.appliedOnFixedBodyPartGroups) {
                     List<UniqueBodyPart> partsFromGroup = options.PartsForBodyPartGroup(group.defName);
                     if (partsFromGroup != null && partsFromGroup.Count > 0) {
-                        Logger.Debug("Adding recipe for " + r.defName + " for group " + group.defName + " for parts " + String.Join(", ", partsFromGroup.ConvertAll(p => p.Record.LabelCap)));
+                        //Logger.Debug("Adding recipe for " + r.defName + " for group " + group.defName + " for parts " + String.Join(", ", partsFromGroup.ConvertAll(p => p.Record.LabelCap)));
                         options.AddImplantRecipe(r, partsFromGroup);
                         foreach (var part in partsFromGroup) {
                             part.Replaceable = true;
@@ -133,14 +135,41 @@ namespace EdB.PrepareCarefully {
                 }
             }
 
-            // Add the special-case mechlink as an implant option
-            HediffDef mechlinkDef = DefDatabase<HediffDef>.GetNamedSilentFail("MechlinkImplant");
-            BodyPartDef brainDef = DefDatabase<BodyPartDef>.GetNamedSilentFail("Brain");
-            if (brainDef != null) {
-                UniqueBodyPart brain = options.FindBodyPartsForDef(brainDef).FirstOrDefault();
-                if (mechlinkDef != null) {
-                    options.AddImplantHediffDef(mechlinkDef, brain.Record);
+            // Add options for thing definitions that have an install implant comp
+            Dictionary<string, ImplantOption> implantOptionLookup = new Dictionary<string, ImplantOption>();
+            foreach (var def in DefDatabase<ThingDef>.AllDefs.Where(d => d.HasComp<CompUsableImplant>())) {
+                var useEffectInstallImplant = def.GetCompProperties<CompProperties_UseEffectInstallImplant>();
+                var usable = def.GetCompProperties<CompProperties_Usable>();
+                if (useEffectInstallImplant != null && usable != null) {
+                    string hediffDefName = useEffectInstallImplant.hediffDef?.defName;
+                    if (hediffDefName == null) {
+                        continue;
+                    }
+                    HediffDef hediffDef = useEffectInstallImplant.hediffDef;
+                    // Exclude psychic amplifier because that's added as an injury and requires special handling
+                    // to avoid the default behavior that adds a random ability
+                    if (hediffDef == HediffDefOf.PsychicAmplifier) {
+                        continue;
+                    }
+                    if (!implantOptionLookup.TryGetValue(hediffDefName, out ImplantOption option)) {
+                        option = new ImplantOption() {
+                            HediffDef = hediffDef,
+                            ThingDef = def,
+                            BodyPartDefs = new HashSet<BodyPartDef>(),
+                            Dependency = usable.userMustHaveHediff,
+                        };
+                        if (typeof(Hediff_Level).IsAssignableFrom(hediffDef.hediffClass)) {
+                            option.MinSeverity = hediffDef.minSeverity > 0 ? hediffDef.minSeverity : 1;
+                            option.MaxSeverity = hediffDef.maxSeverity;
+                            Logger.Debug(string.Format("Adding option {0} with severity {1}-{2} from thingDef {3}", hediffDef.defName, option.MinSeverity, option.MaxSeverity, def.defName));
+                        }
+                        implantOptionLookup.Add(hediffDefName, option);
+                    }
+                    option.BodyPartDefs.Add(useEffectInstallImplant.bodyPart);
                 }
+            }
+            foreach (var value in implantOptionLookup.Values) {
+                options.AddImplantOption(value);
             }
         }
 

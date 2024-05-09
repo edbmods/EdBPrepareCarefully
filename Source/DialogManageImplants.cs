@@ -31,6 +31,7 @@ namespace EdB.PrepareCarefully {
             }
             public bool Selected { get; set; }
             public bool PartiallySelected { get; set; }
+            public bool SelectedDependency { get; set; }
             public bool Disabled { get; set; }
             public bool RequiresPartSelection {
                 get {
@@ -42,7 +43,7 @@ namespace EdB.PrepareCarefully {
                     if (Recipe != null) {
                         return Recipe?.LabelCap;
                     }
-                    if (ImplantOption?.HediffDef != null) {
+                    else if (ImplantOption?.HediffDef != null) {
                         return "EdB.PC.Dialog.Implant.InstallImplantLabel".Translate(ImplantOption.HediffDef.label);
                     }
                     else {
@@ -52,6 +53,7 @@ namespace EdB.PrepareCarefully {
             }
             public Implant BlockingImplant { get; set; }
             public List<ImplantBodyPart> Parts { get; set; } = new List<ImplantBodyPart>();
+            public float Severity { get; set; } = 1;
         }
         public string ConfirmButtonLabel = "EdB.PC.Dialog.Implant.Button.Confirm";
         public string CancelButtonLabel = "EdB.PC.Common.Cancel";
@@ -70,6 +72,9 @@ namespace EdB.PrepareCarefully {
         public Rect HeaderRect { get; protected set; }
         public Rect CancelButtonRect { get; protected set; }
         public Rect ConfirmButtonRect { get; protected set; }
+        public Vector2 LevelLabelSize { get; protected set; }
+        public Vector2 LevelValueSize { get; protected set; }
+        public float LevelSliderWidth { get; protected set; }
         public Rect SingleButtonRect { get; protected set; }
         public Color DottedLineColor = new Color(60f / 255f, 64f / 255f, 67f / 255f);
         public Vector2 DottedLineSize = new Vector2(342, 2);
@@ -99,7 +104,7 @@ namespace EdB.PrepareCarefully {
         protected void InitializeWithCustomizedPawn(CustomizedPawn customizedPawn) {
             this.customizedPawn = customizedPawn;
             InitializeImplantList();
-            InitializeRecipes();
+            InitializeOptions();
             ResetDisabledState();
         }
 
@@ -107,6 +112,7 @@ namespace EdB.PrepareCarefully {
             implantList.Clear();
             replacedParts.Clear();
             foreach (var implant in customizedPawn.Customizations.Implants) {
+                Logger.Debug("initialize implant " + implant.Option?.HediffDef?.defName + ", severity = " + implant.Severity);
                 implantList.Add(implant);
                 if (implant.ReplacesPart) {
                     replacedParts.Add(implant.BodyPartRecord, implant);
@@ -114,17 +120,22 @@ namespace EdB.PrepareCarefully {
             }
         }
 
-        protected void InitializeRecipes() {
+        protected void InitializeOptions() {
             OptionsHealth health = providerHealth.GetOptions(customizedPawn);
             this.options.Clear();
             var result = new List<DialogOption>();
             foreach (var implantOption in health.ImplantOptions) {
                 var option = new DialogOption();
                 option.ImplantOption = implantOption;
-                option.Selected = implantList.FirstOrDefault((Implant i) => {
+                Implant matchingImplant = implantList.FirstOrDefault((Implant i) => {
                     return (i.Recipe == implantOption.RecipeDef && implantOption.RecipeDef != null)
                             || (i.HediffDef == implantOption.HediffDef && implantOption.HediffDef != null);
-                }) != null;
+                });
+                if (matchingImplant != null) {
+                    option.Selected = true;
+                    option.Severity = matchingImplant.Severity;
+                    Logger.Debug("Initialize implant option " + implantOption.HediffDef.defName + " with severity " + matchingImplant.Severity);
+                }
                 option.Disabled = false;
                 option.Parts = new List<ImplantBodyPart>();
                 foreach (var part in health.FindBodyPartsForImplantRecipe(implantOption.RecipeDef)) {
@@ -148,6 +159,27 @@ namespace EdB.PrepareCarefully {
                         var implantPart = new ImplantBodyPart();
                         implantPart.UniquePart = uniqueBodyPart;
                         Implant foundImplant = implantList.FirstOrDefault((Implant i) => { return i.HediffDef == implantOption.HediffDef && i.BodyPartRecord == implantOption.BodyPartRecord; });
+                        if (foundImplant != null) {
+                            implantPart.Selected = true;
+                            implantPart.Implant = foundImplant;
+                        }
+                        else {
+                            implantPart.Selected = false;
+                            implantPart.Implant = null;
+                        }
+                        implantPart.Disabled = false;
+                        option.Parts.Add(implantPart);
+                    }
+                }
+                if (implantOption.HediffDef != null && implantOption.BodyPartDefs != null) {
+                    List<UniqueBodyPart> allBodyParts = new List<UniqueBodyPart>();
+                    foreach (var partDef in implantOption.BodyPartDefs) {
+                        allBodyParts.AddRange(health.FindBodyPartsForDef(partDef));
+                    }
+                    foreach (var part in allBodyParts) {
+                        var implantPart = new ImplantBodyPart();
+                        implantPart.UniquePart = part;
+                        Implant foundImplant = implantList.FirstOrDefault((Implant i) => { return i.HediffDef == implantOption.HediffDef && i.BodyPartRecord == part.Record; });
                         if (foundImplant != null) {
                             implantPart.Selected = true;
                             implantPart.Implant = foundImplant;
@@ -384,43 +416,170 @@ namespace EdB.PrepareCarefully {
             resizeDirtyFlag = true;
         }
 
-        public void ClickRecipeAction (DialogOption recipe) {
-            if (recipe.Disabled && !recipe.Selected) {
+        public void ClickOptionAction(DialogOption option) {
+            if (option.Disabled && !option.Selected) {
                 return;
             }
             SoundDefOf.Tick_Tiny.PlayOneShotOnCamera();
-            if (recipe.Selected) {
-                recipe.Selected = false;
-                foreach (var part in recipe.Parts) {
-                    if (part.Selected) {
-                        part.Selected = false;
-                        RemoveImplant(recipe, part);
+            if (option.Selected) {
+                DeselectOption(option);
+                RemoveUnneededDependencies();
+                AddMissingDependencies();
+            }
+            else {
+                SelectOption(option);
+                AddMissingDependencies();
+            }
+            MarkDisabledOptionsAsDirty();
+        }
+
+        public void SelectOption(DialogOption option) {
+            option.SelectedDependency = false;
+            if (option.Selected) {
+                return;
+            }
+            option.Selected = true;
+            if (option.Parts.Count == 1) {
+                if (!option.Parts[0].Selected) {
+                    option.Parts[0].Selected = true;
+                    AddImplant(option, option.Parts[0]);
+                }
+            }
+        }
+
+        public void SelectDependencyOption(DialogOption option) {
+            if (option.Selected) {
+                return;
+            }
+            option.SelectedDependency = true;
+            if (option.Parts.Count == 1) {
+                option.Parts[0].Selected = true;
+                AddImplant(option, option.Parts[0]);
+            }
+        }
+
+        public void AddMissingDependencies() {
+            HashSet<DialogOption> missingDependencies = new HashSet<DialogOption>();
+            int maxAttempts = 100;
+            int attempt = 0;
+            while (NeedsDependencies(ref missingDependencies)) {
+                if (attempt++ > maxAttempts) {
+                    return;
+                }
+                foreach (var d in missingDependencies) {
+                    SelectDependencyOption(d);
+                }
+                missingDependencies.Clear();
+            }
+        }
+
+        public bool NeedsDependencies(ref HashSet<DialogOption> missingDependencies) {
+            Logger.Debug("NeedsDependencies()");
+            if (missingDependencies == null) {
+                missingDependencies = new HashSet<DialogOption>();
+            }
+            HashSet<HediffDef> selected = new HashSet<HediffDef>(implantList.Select(i => i.Option.HediffDef));
+            Logger.Debug("    Selected implants: " + string.Join(", ", selected.Select(d => d.defName)));
+            foreach (var implant in implantList) {
+                if (implant.Option.Dependency != null && !selected.Contains(implant.Option.Dependency)) {
+                    var optionToAdd = FindDialogOptionForHediff(implant.Option.Dependency);
+                    if (optionToAdd != null) {
+                        missingDependencies.Add(optionToAdd);
                     }
                 }
             }
-            else {
-                recipe.Selected = true;
-                if (recipe.Parts.Count == 1) {
-                    recipe.Parts[0].Selected = true;
-                    AddImplant(recipe, recipe.Parts[0]);
+            Logger.Debug("    Needs dependencies: " + string.Join(", ", missingDependencies.Select(o => o.ImplantOption.HediffDef.defName)));
+            return missingDependencies.Count > 0;
+        }
+
+        public void RemoveUnneededDependencies() {
+            HashSet<DialogOption> unneededDependencies = new HashSet<DialogOption>();
+            int maxAttempts = 100;
+            int attempt = 0;
+            while (HasUnneededDependencies(ref unneededDependencies)) {
+                if (attempt++ > maxAttempts) {
+                    return;
+                }
+                foreach (var d in unneededDependencies) {
+                    DeselectOption(d);
+                }
+                unneededDependencies.Clear();
+            }
+        }
+
+        public bool HasUnneededDependencies(ref HashSet<DialogOption> unneededDependencies) {
+            if (unneededDependencies == null) {
+                unneededDependencies = new HashSet<DialogOption>();
+            }
+            HashSet<HediffDef> neededDependencies = new HashSet<HediffDef>(implantList.Select(i => i.Option?.Dependency).Where(d => d != null));
+            foreach (var option in options.Where(o => o.SelectedDependency)) {
+                if (!neededDependencies.Contains(option.ImplantOption.HediffDef)) {
+                    unneededDependencies.Add(option);
+                }
+            }
+            Logger.Debug("Unneeded dependencies: " + string.Join(", ", unneededDependencies.Select(o => o.ImplantOption?.HediffDef?.defName ?? "null")));
+
+            return unneededDependencies.Count > 0;
+        }
+
+        protected DialogOption FindDialogOptionForHediff(HediffDef def) {
+            return options.FirstOrDefault(o => o.ImplantOption.HediffDef == def);
+        }
+
+        public void DeselectOption(DialogOption option) {
+            Logger.Debug("DeselectOption(" + option.ImplantOption.HediffDef.defName + ")");
+            option.Selected = false;
+            option.SelectedDependency = false;
+            if (option.Parts != null) {
+                Logger.Debug("    option.Parts = " + string.Join(", ", option.Parts.Select(p => p.UniquePart.Record.def.defName)));
+            }
+            foreach (var part in option.Parts) {
+                if (part.Selected) {
+                    part.Selected = false;
+                    RemoveImplant(option, part);
                 }
             }
             MarkDisabledOptionsAsDirty();
         }
 
+        public void UpdateSeverity(DialogOption option, float severity) {
+            if (option.Disabled || !option.Selected) {
+                return;
+            }
+            option.Severity = severity;
+            Implant implant = implantList.FirstOrDefault(i => i.Option == option.ImplantOption);
+            if (implant != null) {
+                implant.Severity = option.Severity;
+                Logger.Debug("Updated implant severity");
+            }
+            else {
+                Logger.Debug("Didn't find implant to update");
+            }
+        }
         protected void AddImplant(DialogOption option, ImplantBodyPart part) {
             Implant implant = new Implant();
+            implant.Option = option.ImplantOption;
             implant.Recipe = option.Recipe;
             implant.HediffDef = option.ImplantOption.HediffDef;
             implant.BodyPartRecord = part.Part;
+            implant.Severity = option.Severity;
             implantList.Add(implant);
             part.Implant = implant;
+            Logger.Debug("Added implant for " + option.ImplantOption.HediffDef.defName);
         }
 
         protected void RemoveImplant(DialogOption option, ImplantBodyPart part) {
             if (part.Implant != null) {
-                implantList.Remove(part.Implant);
+                if (implantList.Remove(part.Implant)) {
+                    Logger.Debug("Removed implant for " + option.ImplantOption.HediffDef.defName);
+                }
+                else {
+                    Logger.Debug("Couldn't find implant to remvoe for " + option.ImplantOption.HediffDef.defName);
+                }
                 part.Implant = null;
+            }
+            else {
+                Logger.Debug("Couldn't remove implant because part had no reference to the implant");
             }
         }
 
@@ -455,6 +614,11 @@ namespace EdB.PrepareCarefully {
             ContentMargin = new Vector2(10f, 18f);
             WindowSize = new Vector2(440f, 584f);
             ButtonSize = new Vector2(140f, 40f);
+
+            Text.Font = GameFont.Small;
+            LevelLabelSize = Text.CalcSize("EdB.PC.Dialog.Implant.LevelLabel".Translate("Level".Translate()));
+            LevelValueSize = Text.CalcSize("00");
+            Text.Font = GameFont.Small;
 
             ContentSize = new Vector2(WindowSize.x - WindowPadding * 2 - ContentMargin.x * 2,
                 WindowSize.y - WindowPadding * 2 - ContentMargin.y * 2 - FooterHeight - headerSize);
@@ -505,23 +669,37 @@ namespace EdB.PrepareCarefully {
                     Vector2 labelSize = Text.CalcSize(option.Label);
                     GUI.color = Style.ColorWindowBackground;
                     GUI.DrawTexture(new Rect(labelRect.x, labelRect.y, labelSize.x + 2, labelRect.height), BaseContent.WhiteTex);
+
+                    if (option.SelectedDependency) {
+                        TooltipHandler.TipRegion(labelRect, "EdB.PC.Dialog.Implant.RequiredImplantMessage".Translate());
+                    }
                     GUI.DrawTexture(checkboxRect.InsetBy(-2, -2, -40, -2), BaseContent.WhiteTex);
                     if (!option.Disabled) {
-                        Style.SetGUIColorForButton(labelRect, option.Selected, Style.ColorText, Style.ColorButtonHighlight, Style.ColorButtonHighlight);
+                        Style.SetGUIColorForButton(labelRect, option.Selected || option.SelectedDependency, Style.ColorText, Style.ColorButtonHighlight, Style.ColorButtonHighlight);
                         Widgets.Label(labelRect, option.Label);
                         if (Widgets.ButtonInvisible(clickRect)) {
-                            ClickRecipeAction(option);
+                            ClickOptionAction(option);
                         }
                         GUI.color = Color.white;
-                        Texture2D checkboxTexture = Textures.TextureCheckbox;
+                        GUI.DrawTexture(checkboxRect, Textures.TextureCheckbox);
+                        Texture checkmarkTexture = null;
                         if (option.PartiallySelected) {
-                            checkboxTexture = Textures.TextureCheckboxPartiallySelected;
+                            checkmarkTexture = Textures.TextureCheckboxPartiallySelected;
                         }
                         else if (option.Selected) {
-                            checkboxTexture = Textures.TextureCheckboxSelected;
+                            GUI.color = Style.ColorCheckmark;
+                            checkmarkTexture = Textures.TextureCheckmark;
                         }
-                        if (Widgets.ButtonImage(checkboxRect, checkboxTexture)) {
-                            ClickRecipeAction(option);
+                        else if (option.SelectedDependency) {
+                            GUI.color = Style.ColorCheckmark;
+                            checkmarkTexture = Textures.TextureCheckmarkForcedSelection;
+                        }
+                        if (checkmarkTexture != null) {
+                            GUI.DrawTexture(checkboxRect, checkmarkTexture);
+                        }
+                        GUI.color = Color.white;
+                        if (Widgets.ButtonInvisible(checkboxRect)) {
+                            ClickOptionAction(option);
                         }
                     }
                     else {
@@ -529,61 +707,86 @@ namespace EdB.PrepareCarefully {
                         Widgets.Label(labelRect, option.Label);
                         GUI.DrawTexture(checkboxRect, option.Selected ? Textures.TextureCheckboxPartiallySelected : Textures.TextureCheckbox);
                         if (Widgets.ButtonInvisible(checkboxRect)) {
-                            ClickRecipeAction(option);
+                            ClickOptionAction(option);
                         }
                         if (option.BlockingImplant != null) {
                             TooltipHandler.TipRegion(labelRect, "EdB.PC.Dialog.Implant.Conflict".Translate(option.BlockingImplant.Recipe.LabelCap, option.BlockingImplant.BodyPartRecord.Label));
                         }
                     }
-                    if (option.Selected && option.RequiresPartSelection) {
-                        float partInset = 32;
+                    if (option.Selected || option.SelectedDependency) {
+                        float inset = 32;
                         float cursor = labelRect.yMax;
-                        foreach (var part in option.Parts) {
-                            string labelText = part.Part.LabelCap;
-                            labelRect = new Rect(rect.x + partInset, cursor, rect.width - partInset * 2, LineHeight);
-                            dottedLineRect = new Rect(labelRect.x, labelRect.y + 21, DottedLineSize.x, DottedLineSize.y);
-                            checkboxRect = new Rect(labelRect.x + labelRect.width - 22 - 6, labelRect.MiddleY() - 12, 22, 22);
-                            clickRect = new Rect(labelRect.x, labelRect.y, labelRect.width - checkboxRect.width, labelRect.height);
-                            GUI.color = DottedLineColor;
-                            GUI.DrawTexture(dottedLineRect, Textures.TextureDottedLine);
-                            labelSize = Text.CalcSize(labelText);
-                            GUI.color = Style.ColorWindowBackground;
-                            GUI.DrawTexture(new Rect(labelRect.x, labelRect.y, labelSize.x + 2, labelRect.height), BaseContent.WhiteTex);
-                            GUI.DrawTexture(checkboxRect.InsetBy(-2, -2, -80, -2), BaseContent.WhiteTex);
-                            if (!part.Disabled) {
-                                Style.SetGUIColorForButton(labelRect, part.Selected, Style.ColorText, Style.ColorButtonHighlight, Style.ColorButtonHighlight);
-                                Widgets.Label(labelRect, labelText);
-                                if (Widgets.ButtonInvisible(clickRect)) {
-                                    ClickPartAction(option, part);
-                                }
-                                GUI.color = Color.white;
-                                if (Widgets.ButtonImage(checkboxRect, part.Selected ? Textures.TextureCheckboxSelected : Textures.TextureCheckbox)) {
-                                    ClickPartAction(option, part);
-                                }
+                        if (option.ImplantOption.MaxSeverity > 0) {
+                            float rowWidth = rect.width - inset * 2;
+                            float sliderWidth = rowWidth - LevelLabelSize.x - LevelValueSize.x - 12;
+                            float sliderHeight = 12;
+                            float sliderTop = cursor + LineHeight * 0.5f - sliderHeight * 0.5f;
+                            Rect levelLabelRect = new Rect(rect.x + inset, cursor, LevelLabelSize.x, LineHeight);
+                            Rect sliderRect = new Rect(levelLabelRect.xMax + 8, sliderTop, sliderWidth, sliderHeight);
+                            Rect levelValueRect = new Rect(sliderRect.xMax + 4, cursor, LevelValueSize.x, LineHeight);
+                            var guiState = UtilityGUIState.Save();
+                            Text.Font = GameFont.Small;
+                            Text.Anchor = TextAnchor.MiddleLeft;
+                            GUI.color = Style.ColorText;
+                            Widgets.Label(levelLabelRect, "EdB.PC.Dialog.Implant.LevelLabel".Translate("Level".Translate()));
+                            Widgets.Label(levelValueRect, ((int)option.Severity).ToString());
+                            guiState.Restore();
+                            float value = Widgets.HorizontalSlider(sliderRect, option.Severity, option.ImplantOption.MinSeverity, option.ImplantOption.MaxSeverity, false, null, null, null, 1.0f);
+                            if (value != option.Severity) {
+                                UpdateSeverity(option, value);
                             }
-                            else {
-                                GUI.color = Style.ColorControlDisabled;
-                                Widgets.Label(labelRect, labelText);
-                                GUI.DrawTexture(checkboxRect, part.Selected ? Textures.TextureCheckboxPartiallySelected : Textures.TextureCheckbox);
-                                if (Widgets.ButtonInvisible(checkboxRect)) {
-                                    ClickPartAction(option, part);
+                            cursor += sliderRect.height;
+                        }
+                        if (option.RequiresPartSelection) {
+                            foreach (var part in option.Parts) {
+                                string labelText = part.Part.LabelCap;
+                                labelRect = new Rect(rect.x + inset, cursor, rect.width - inset * 2, LineHeight);
+                                dottedLineRect = new Rect(labelRect.x, labelRect.y + 21, DottedLineSize.x, DottedLineSize.y);
+                                checkboxRect = new Rect(labelRect.x + labelRect.width - 22 - 6, labelRect.MiddleY() - 12, 22, 22);
+                                clickRect = new Rect(labelRect.x, labelRect.y, labelRect.width - checkboxRect.width, labelRect.height);
+                                GUI.color = DottedLineColor;
+                                GUI.DrawTexture(dottedLineRect, Textures.TextureDottedLine);
+                                labelSize = Text.CalcSize(labelText);
+                                GUI.color = Style.ColorWindowBackground;
+                                GUI.DrawTexture(new Rect(labelRect.x, labelRect.y, labelSize.x + 2, labelRect.height), BaseContent.WhiteTex);
+                                GUI.DrawTexture(checkboxRect.InsetBy(-2, -2, -80, -2), BaseContent.WhiteTex);
+                                if (!part.Disabled) {
+                                    Style.SetGUIColorForButton(labelRect, part.Selected, Style.ColorText, Style.ColorButtonHighlight, Style.ColorButtonHighlight);
+                                    Widgets.Label(labelRect, labelText);
+                                    if (Widgets.ButtonInvisible(clickRect)) {
+                                        ClickPartAction(option, part);
+                                    }
+                                    GUI.color = Color.white;
+                                    if (Widgets.ButtonImage(checkboxRect, part.Selected ? Textures.TextureCheckboxSelected : Textures.TextureCheckbox)) {
+                                        ClickPartAction(option, part);
+                                    }
                                 }
-                                if (part.BlockingImplant != null) {
-                                    TooltipHandler.TipRegion(labelRect, "EdB.PC.Dialog.Implant.Conflict".Translate(part.BlockingImplant.Recipe.LabelCap, part.BlockingImplant.BodyPartRecord.Label));
+                                else {
+                                    GUI.color = Style.ColorControlDisabled;
+                                    Widgets.Label(labelRect, labelText);
+                                    GUI.DrawTexture(checkboxRect, part.Selected ? Textures.TextureCheckboxPartiallySelected : Textures.TextureCheckbox);
+                                    if (Widgets.ButtonInvisible(checkboxRect)) {
+                                        ClickPartAction(option, part);
+                                    }
+                                    if (part.BlockingImplant != null) {
+                                        TooltipHandler.TipRegion(labelRect, "EdB.PC.Dialog.Implant.Conflict".Translate(part.BlockingImplant.Recipe.LabelCap, part.BlockingImplant.BodyPartRecord.Label));
+                                    }
                                 }
+                                cursor += labelRect.height;
                             }
-                            cursor += labelRect.height;
                         }
                     }
                     Text.Anchor = TextAnchor.UpperLeft;
                 },
-                MeasureAction = (DialogOption recipe, float width, WidgetTable<DialogOption>.Metadata metadata) => {
-                    if (recipe.Selected && recipe.Parts.Count > 1) {
-                        return LineHeight + (LineHeight * recipe.Parts.Count);
+                MeasureAction = (DialogOption option, float width, WidgetTable<DialogOption>.Metadata metadata) => {
+                    float height = LineHeight;
+                    if (option.Selected && option.Parts.Count > 1) {
+                        height += LineHeight * option.Parts.Count;
                     }
-                    else {
-                        return LineHeight;
+                    if (option.Selected && option.ImplantOption.MaxSeverity > 0) {
+                        height += LineHeight;
                     }
+                    return height;
                 },
                 Width = ContentSize.x
             });

@@ -121,6 +121,34 @@ namespace EdB.PrepareCarefully {
                         State.ReplacedScenarioParts.Add(part);
                     }
                 }
+
+                // Go through all of the scenario steps that spawn a mech and add the mech to the equipment/resource list.
+                if (part is ScenPart_StartingMech mech) {
+                    PawnKindDef pawnKindDef = part.GetPrivateField<PawnKindDef>("mechKind");
+                    float overseenChance = part.GetPrivateField<float>("overseenByPlayerPawnChance");
+                    if (pawnKindDef != null && pawnKindDef.race != null) {
+                        EquipmentDatabase.PreloadDefinition(pawnKindDef.race);
+                        EquipmentOption option = EquipmentDatabase.FindOptionForThingDef(pawnKindDef.race);
+                        if (option != null) {
+                            AddEquipment(new CustomizedEquipment() {
+                                EquipmentOption = option,
+                                Count = 1,
+                                SpawnType = EquipmentSpawnType.Mech,
+                                OverseenChance = overseenChance
+                            });
+                            State.ReplacedScenarioParts.Add(part);
+                        }
+                    }
+                    else {
+                        AddEquipment(new CustomizedEquipment() {
+                            EquipmentOption = EquipmentDatabase.RandomMechEquipmentOption,
+                            Count = 1,
+                            SpawnType = EquipmentSpawnType.Mech,
+                            OverseenChance = overseenChance
+                        });
+                        State.ReplacedScenarioParts.Add(part);
+                    }
+                }
             }
 
             // Go through starting possessions

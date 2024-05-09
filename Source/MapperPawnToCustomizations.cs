@@ -261,43 +261,37 @@ namespace EdB.PrepareCarefully {
                 }
                 else {
                     //Logger.Debug("Did not find injury option for {" + hediff.def.defName + "} for part {" + hediff.Part?.LabelCap + "}");
-                    RecipeDef implantRecipe = healthOptions.FindImplantRecipesThatAddHediff(hediff).RandomElementWithFallback(null);
-                    if (implantRecipe != null) {
-                        implants.Add(new Implant() {
-                            Recipe = implantRecipe,
+                    ImplantOption implantOption = healthOptions.FindImplantOptionsThatAddHediff(hediff).RandomElementWithFallback(null);
+                    if (implantOption != null) {
+                        var implant = new Implant() {
+                            Option = implantOption,
+                            Recipe = implantOption.RecipeDef,
                             BodyPartRecord = hediff.Part,
                             Hediff = hediff,
                             HediffDef = hediff?.def,
-                        });
-                        //Logger.Debug("Found implant recipes for {" + hediff.def.defName + "} for part {" + hediff.Part?.LabelCap + "}");
-                    }
-                    else if (hediff.Part != null) {
-                        implants.Add(new Implant() {
-                            BodyPartRecord = hediff.Part,
-                            Hediff = hediff,
-                            HediffDef = hediff?.def,
-                        });
-                    }
-                    else if (hediff.def.defName != "MissingBodyPart") {
-                        Logger.Warning("Could not add hediff {" + hediff.def.defName + "} to the pawn because no recipe adds it to the body part {" + (hediff.Part?.def?.defName ?? "WholeBody") + "}");
+                        };
+                        if (hediff is Hediff_Level level) {
+                            //Logger.Debug("Mapping implant " + implantOption.HediffDef.defName + " with severity " + level.level);
+                            if (level.level >= 0) {
+                                implant.Severity = level.level;
+                            }
+                        }
+                        implants.Add(implant);
                     }
                     else {
-                        Logger.Warning("Could not add hediff {" + hediff.def.defName + "} to the pawn.  It is not currently supported");
+                        Logger.Warning("Could not add hediff {" + hediff.def.defName + "} to the pawn because found no matching implant option for the body part {" + (hediff.Part?.def?.defName ?? "WholeBody") + "}");
                     }
                 }
             }
             customizations.Injuries.Clear();
             customizations.Implants.Clear();
-            customizations.BodyParts.Clear();
             foreach (var injury in injuries) {
                 //Logger.Debug("Adding injury: " + injury.Option.Label);
                 customizations.Injuries.Add(injury);
-                customizations.BodyParts.Add(injury);
             }
             foreach (var implant in implants) {
                 //Logger.Debug("Adding implant: " + implant.Label);
                 customizations.Implants.Add(implant);
-                customizations.BodyParts.Add(implant);
             }
         }
 
