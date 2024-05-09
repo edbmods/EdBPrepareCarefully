@@ -140,13 +140,16 @@ namespace EdB.PrepareCarefully {
                         }
                     }
                     else {
-                        AddEquipment(new CustomizedEquipment() {
-                            EquipmentOption = EquipmentDatabase.RandomMechEquipmentOption,
-                            Count = 1,
-                            SpawnType = EquipmentSpawnType.Mech,
-                            OverseenChance = overseenChance
-                        });
-                        State.ReplacedScenarioParts.Add(part);
+                        var option = EquipmentDatabase.RandomMechEquipmentOption;
+                        if (option != null) {
+                            AddEquipment(new CustomizedEquipment() {
+                                EquipmentOption = EquipmentDatabase.RandomMechEquipmentOption,
+                                Count = 1,
+                                SpawnType = EquipmentSpawnType.Mech,
+                                OverseenChance = overseenChance
+                            });
+                            State.ReplacedScenarioParts.Add(part);
+                        }
                     }
                 }
             }

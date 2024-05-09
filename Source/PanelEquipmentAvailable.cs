@@ -180,11 +180,13 @@ namespace EdB.PrepareCarefully {
 
         protected void PrepareThingCategoryFilterOptions() {
             List<FloatMenuOption> options = new List<FloatMenuOption>();
-            options.Add(new FloatMenuOption("EdB.PC.Equipment.AvailableEquipment.MechCategoryLabel".Translate(), () => {
-                FilterThingCategory = null;
-                FilterMechs = true;
-                ApplyCurrentFilters();
-            }, MenuOptionPriority.Default, null, null, 0, null, null));
+            if (ModsConfig.BiotechActive) {
+                options.Add(new FloatMenuOption("EdB.PC.Equipment.AvailableEquipment.MechCategoryLabel".Translate(), () => {
+                    FilterThingCategory = null;
+                    FilterMechs = true;
+                    ApplyCurrentFilters();
+                }, MenuOptionPriority.Default, null, null, 0, null, null));
+            }
             foreach (var thingCategory in ProviderEquipment.EquipmentDatabase.ThingCategories) {
                 if (thingCategory.defName == "Root") {
                     continue;
