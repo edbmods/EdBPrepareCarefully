@@ -1,6 +1,17 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
 <!-- CHANGE NOTES -->
 
+<!-- v1.5.8 -->
+<!-- ADDED: EdB.PC.Dialog.Implant.InstallImplantLabel -->
+<!-- ADDED: EdB.PC.Dialog.Implant.LevelLabel -->
+<!-- ADDED: EdB.PC.Dialog.Implant.RequiredImplantMessage -->
+<!-- ADDED: EdB.PC.Equipment.AvailableEquipment.MechCategoryLabel -->
+<!-- ADDED: EdB.PC.Equipment.AvailableEquipment.RandomMechLabel -->
+<!-- ADDED: EdB.PC.Equipment.AvailableEquipment.OverseenChanceLabel -->
+<!-- ADDED: EdB.PC.Equipment.SelectedEquipment.OverseenChanceLabel -->
+<!-- ADDED: EdB.PC.Equipment.SelectedEquipment.SpawnType.Mech -->
+<!-- ADDED: EdB.PC.Equipment.Type.Mechs -->
+
 <!-- v1.5.3 -->
 <!-- ADDED: EdB.PC.Panel.Apparel.ApparelLocked -->
 <!-- ADDED: EdB.PC.Equipment.AvailableEquipment.DefaultStyleOption -->
@@ -208,6 +219,9 @@
   <EdB.PC.Dialog.Implant.Button.Confirm>Apply</EdB.PC.Dialog.Implant.Button.Confirm>
   <EdB.PC.Dialog.Implant.Conflict>This implant cannot be installed because it conflicts with the following:\n\n- {0}, {1}</EdB.PC.Dialog.Implant.Conflict>
   <EdB.PC.Dialog.Implant.Header>Select Implants and Bionics</EdB.PC.Dialog.Implant.Header>
+  <EdB.PC.Dialog.Implant.InstallImplantLabel>Implant {0}</EdB.PC.Dialog.Implant.InstallImplantLabel>
+  <EdB.PC.Dialog.Implant.RequiredImplantMessage>This implant must be added because it is required by one of the other implants that you selected</EdB.PC.Dialog.Implant.RequiredImplantMessage>
+  <EdB.PC.Dialog.Implant.LevelLabel>{0}:</EdB.PC.Dialog.Implant.LevelLabel>
 
   <EdB.PC.Dialog.Injury.Header>Select a condition</EdB.PC.Dialog.Injury.Header>
   <EdB.PC.Dialog.Injury.Error.Required>You must select a condition</EdB.PC.Dialog.Injury.Error.Required>
@@ -262,6 +276,7 @@
   <EdB.PC.Equipment.Type.Apparel>Apparel</EdB.PC.Equipment.Type.Apparel>
   <EdB.PC.Equipment.Type.Buildings>Furniture</EdB.PC.Equipment.Type.Buildings>
   <EdB.PC.Equipment.Type.Food>Food</EdB.PC.Equipment.Type.Food>
+  <EdB.PC.Equipment.Type.Mechs>Mechanoids</EdB.PC.Equipment.Type.Mechs>
   <EdB.PC.Equipment.Type.Medical>Medical</EdB.PC.Equipment.Type.Medical>
   <EdB.PC.Equipment.Type.Resources>Resources</EdB.PC.Equipment.Type.Resources>
   <EdB.PC.Equipment.Type.Weapons>Weapons</EdB.PC.Equipment.Type.Weapons>
@@ -269,10 +284,12 @@
   <EdB.PC.Equipment.LoadingProgress.StuffDefs>Processing materials...</EdB.PC.Equipment.LoadingProgress.StuffDefs>
   <EdB.PC.Equipment.LoadingProgress.ThingDefs>Processing items...</EdB.PC.Equipment.LoadingProgress.ThingDefs>
   <EdB.PC.Equipment.LoadingProgress.Finished>Finished</EdB.PC.Equipment.LoadingProgress.Finished>
+  <EdB.PC.Equipment.SelectedEquipment.OverseenChanceLabel>{0}: {1}%</EdB.PC.Equipment.SelectedEquipment.OverseenChanceLabel>
   <EdB.PC.Equipment.SelectedEquipment.SpawnType.SpawnsWith>Start With</EdB.PC.Equipment.SelectedEquipment.SpawnType.SpawnsWith>
   <EdB.PC.Equipment.SelectedEquipment.SpawnType.SpawnsNear>Start Near</EdB.PC.Equipment.SelectedEquipment.SpawnType.SpawnsNear>
   <EdB.PC.Equipment.SelectedEquipment.SpawnType.Possession>Possessions - {0}</EdB.PC.Equipment.SelectedEquipment.SpawnType.Possession>
   <EdB.PC.Equipment.SelectedEquipment.SpawnType.Animal>Animals</EdB.PC.Equipment.SelectedEquipment.SpawnType.Animal>
+  <EdB.PC.Equipment.SelectedEquipment.SpawnType.Mech>Mechanoids</EdB.PC.Equipment.SelectedEquipment.SpawnType.Mech>
   <EdB.PC.Equipment.AvailableEquipment.AllCategoriesOption>All Categories</EdB.PC.Equipment.AvailableEquipment.AllCategoriesOption>
   <EdB.PC.Equipment.AvailableEquipment.AllModsOption>All Mods</EdB.PC.Equipment.AvailableEquipment.AllModsOption>
   <EdB.PC.Equipment.AvailableEquipment.CostLabelAndValue>Cost: {0}</EdB.PC.Equipment.AvailableEquipment.CostLabelAndValue>
@@ -281,8 +298,11 @@
   <EdB.PC.Equipment.AvailableEquipment.GenderLabel>Gender:</EdB.PC.Equipment.AvailableEquipment.GenderLabel>
   <EdB.PC.Equipment.AvailableEquipment.HitPointsLabel>Hit Points:</EdB.PC.Equipment.AvailableEquipment.HitPointsLabel>
   <EdB.PC.Equipment.AvailableEquipment.MaterialLabel>Material:</EdB.PC.Equipment.AvailableEquipment.MaterialLabel>
+  <EdB.PC.Equipment.AvailableEquipment.MechCategoryLabel>Mechanoids</EdB.PC.Equipment.AvailableEquipment.MechCategoryLabel>
   <EdB.PC.Equipment.AvailableEquipment.QualityLabel>Quality:</EdB.PC.Equipment.AvailableEquipment.QualityLabel>
+  <EdB.PC.Equipment.AvailableEquipment.OverseenChanceLabel>{0}:</EdB.PC.Equipment.AvailableEquipment.OverseenChanceLabel>
   <EdB.PC.Equipment.AvailableEquipment.RandomAnimalLabel>Random Pet</EdB.PC.Equipment.AvailableEquipment.RandomAnimalLabel>
+  <EdB.PC.Equipment.AvailableEquipment.RandomMechLabel>Random Mechanoid</EdB.PC.Equipment.AvailableEquipment.RandomMechLabel>
   <EdB.PC.Equipment.AvailableEquipment.SpawnTypeLabel>Spawn Type:</EdB.PC.Equipment.AvailableEquipment.SpawnTypeLabel>
   <EdB.PC.Equipment.AvailableEquipment.StyleLabel>Style:</EdB.PC.Equipment.AvailableEquipment.StyleLabel>
 

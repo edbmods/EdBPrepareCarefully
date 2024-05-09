@@ -447,17 +447,29 @@ namespace EdB.PrepareCarefully {
             if (pawn == null || implant == null) {
                 return;
             }
-            Logger.Debug("Adding implant to pawn, recipe = " + implant.Recipe?.defName + ", hediff = " + implant.HediffDef?.defName);
+            //Logger.Debug("Adding implant to pawn, recipe = " + implant.Recipe?.defName + ", hediff = " + implant.HediffDef?.defName + ", bodyPart = " + implant.BodyPartRecord?.def?.defName);
             if (implant.BodyPartRecord == null) {
                 Logger.Warning("Could not add implant to pawn because no BodyPartRecord is defined");
             }
             if (implant.Recipe != null) {
                 implant.Hediff = HediffMaker.MakeHediff(implant.Recipe.addsHediff, pawn, implant.BodyPartRecord);
-                pawn.health.AddHediff(implant.Hediff, implant.BodyPartRecord, new DamageInfo?());
+                if (implant.Severity > 0) {
+                    implant.Hediff.Severity = implant.Severity;
+                }
+                pawn.health.AddHediff(implant.Hediff, implant.BodyPartRecord);
             }
             else if (implant.HediffDef != null) {
-                implant.Hediff = HediffMaker.MakeHediff(implant.HediffDef, pawn, implant.BodyPartRecord);
-                pawn.health.AddHediff(implant.Hediff, implant.BodyPartRecord, new DamageInfo?());
+                var hediff = HediffMaker.MakeHediff(implant.HediffDef, pawn, implant.BodyPartRecord);
+                if (implant.Severity > 0) {
+                    if (hediff is Hediff_Level level) {
+                        level.level = (int)implant.Severity;
+                    }
+                    else {
+                        hediff.Severity = implant.Severity;
+                    }
+                }
+                pawn.health.AddHediff(hediff, implant.BodyPartRecord);
+                implant.Hediff = hediff;
             }
             else {
                 Logger.Warning("Could not add implant to pawn because no RecipeDef or HediffDef is defined");
@@ -494,7 +506,7 @@ namespace EdB.PrepareCarefully {
                 injury.Hediff = hediff;
             }
             else if (injury.Option.HediffDef == HediffDefOf.PsychicAmplifier) {
-                Logger.Debug("Adding Psylink with level " + injury.Severity);
+                //Logger.Debug("Adding Psylink with level " + injury.Severity);
                 Hediff_Psylink mainPsylinkSource = pawn.GetMainPsylinkSource();
                 HashSet<AbilityDef> abilitiesBefore = new HashSet<AbilityDef>(pawn.abilities.AllAbilitiesForReading.Select(a => a.def));
                 if (mainPsylinkSource == null) {
@@ -518,7 +530,7 @@ namespace EdB.PrepareCarefully {
                 }
             }
             else {
-                Hediff hediff = HediffMaker.MakeHediff(injury.Option.HediffDef, pawn, injury.bodyPartRecord);
+                Hediff hediff = HediffMaker.MakeHediff(injury.Option.HediffDef, pawn, injury.BodyPartRecord);
                 hediff.Severity = injury.Severity;
                 if (hediff is Hediff_ChemicalDependency chemicalDependency) {
                     chemicalDependency.chemical = injury.Chemical;

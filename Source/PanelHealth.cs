@@ -14,12 +14,10 @@ namespace EdB.PrepareCarefully {
         protected static readonly string HediffTypeImplant = "HediffTypeImplant";
 
         public delegate void AddInjuryHandler(Injury injury);
-        public delegate void AddImplantHandler(Implant implant);
         public delegate void RemoveHediffsHandler(IEnumerable<Hediff> hediffs);
         public delegate void UpdateImplantsHandler(IEnumerable<Implant> implants);
 
         public event AddInjuryHandler InjuryAdded;
-        public event AddImplantHandler ImplantAdded;
         public event RemoveHediffsHandler HediffsRemoved;
         public event UpdateImplantsHandler ImplantsUpdated;
 
@@ -201,7 +199,6 @@ namespace EdB.PrepareCarefully {
 
                 OptionsHealth healthOptions = ProviderHealth.GetOptions(customizedPawn);
                 string selectedHediffType = this.selectedHediffType;
-                RecipeDef selectedRecipe = null;
                 InjuryOption selectedInjury = null;
                 BodyPartRecord selectedBodyPart = null;
                 bool bodyPartSelectionRequired = true;
@@ -304,9 +301,6 @@ namespace EdB.PrepareCarefully {
                                 addInjuryAction();
                             }
                         }
-                        else if (selectedHediffType == HediffTypeImplant) {
-                            ImplantAdded(new Implant(selectedBodyPart, selectedRecipe));
-                        }
                     }
                 };
 
@@ -315,7 +309,6 @@ namespace EdB.PrepareCarefully {
                     CancelButtonLabel = "EdB.PC.Common.Cancel".Translate(),
                     HeaderLabel = "EdB.PC.Dialog.Injury.Header".Translate(),
                     NameFunc = (InjuryOption option) => {
-                        //return option.HediffDef.defName;
                         return option.Label;
                     },
                     DescriptionFunc = (InjuryOption option) => {
@@ -413,15 +406,6 @@ namespace EdB.PrepareCarefully {
                 };
                 Find.WindowStack.Add(hediffTypeDialog);
             }
-        }
-
-        protected void ApplyImplantsToPawn(CustomizedPawn pawn, List<Implant> implants) {
-            //Logger.Debug("Updated implants");
-            //foreach (var i in implants) {
-            //    Logger.Debug("  " + i.recipe.LabelCap + ", " + i.PartName + (i.ReplacesPart ? ", replaces part" : ""));
-            //}
-            // TODO
-            //pawn.UpdateImplants(implants);
         }
 
         protected void AddInjuryToPawn(InjuryOption option, InjurySeverity severity, BodyPartRecord bodyPart) {

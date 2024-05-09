@@ -20,6 +20,9 @@ namespace EdB.PrepareCarefully {
             else if (spawnType == EquipmentSpawnType.Possession) {
                 return "EdB.PC.Equipment.SelectedEquipment.SpawnType.Possession".Translate();
             }
+            else if (spawnType == EquipmentSpawnType.Mech) {
+                return "EdB.PC.Equipment.SelectedEquipment.SpawnType.Mech".Translate();
+            }
             else {
                 return "";
             }

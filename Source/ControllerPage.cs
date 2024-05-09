@@ -146,13 +146,14 @@ namespace EdB.PrepareCarefully {
                 Find.GameInitData.startingPossessions.Remove(key);
             }
             // Destroy any starting pawn that are not in our customized pawn list
+            Logger.Debug("Destroy any pawn that is not in our carefully prepared pawn list:");
             foreach (var pawn in Find.GameInitData.startingAndOptionalPawns) {
                 if (!State.Customizations.AllPawns.Select(p => p.Pawn).Contains(pawn)) {
-                    Logger.Debug("Destroyed starting pawn: " + pawn.LabelCap);
+                    Logger.Debug("    Destroyed starting pawn: " + pawn.LabelShort);
                     ManagerPawns.DestroyPawn(pawn);
                 }
                 else {
-                    Logger.Debug("Kept starting pawn: " + pawn.LabelCap);
+                    Logger.Debug("    Kept starting pawn: " + pawn.LabelShort);
                 }
             }
             Find.GameInitData.startingPawnCount = State.Customizations.ColonyPawns.Count;
@@ -189,10 +190,7 @@ namespace EdB.PrepareCarefully {
 
             // Add scenario parts for all of our customized equipment selections
             foreach (var equipment in State.Customizations.Equipment) {
-                ScenPart part = CreateScenarioPartForCustomizedEquipment(equipment);
-                if (part != null) {
-                    scenarioPartsToUse.Add(part);
-                }
+                scenarioPartsToUse.AddRange(CreateScenarioPartForCustomizedEquipment(equipment).Where(p => p != null));
             }
 
             ReflectionUtil.SetFieldValue(Find.Scenario, "parts", scenarioPartsToUse);
@@ -207,23 +205,26 @@ namespace EdB.PrepareCarefully {
             return false;
         }
 
-        public ScenPart CreateScenarioPartForCustomizedEquipment(CustomizedEquipment equipment) {
-            Logger.Debug(string.Format("AddScenarioPartForCustomizedEquipment({0}), Animal = {1}", equipment.EquipmentOption?.ThingDef?.defName, equipment.Animal));
+        public IEnumerable<ScenPart> CreateScenarioPartForCustomizedEquipment(CustomizedEquipment equipment) {
+            Logger.Debug(string.Format("AddScenarioPartForCustomizedEquipment({0}), Animal = {1}, Mech = {2}", equipment.EquipmentOption?.ThingDef?.defName, equipment.Animal, equipment.Mech));
             if (equipment.Animal) {
-                return CreateStartingAnimalScenarioPart(equipment);
+                return new List<ScenPart>() { CreateStartingAnimalScenarioPart(equipment) };
+            }
+            else if (equipment.Mech) {
+                return CreateStartingMechScenarioParts(equipment);
             }
             var spawnType = equipment.SpawnType;
             if (equipment.EquipmentOption.RestrictedSpawnType && equipment.EquipmentOption.DefaultSpawnType != spawnType) {
                 spawnType = equipment.EquipmentOption.DefaultSpawnType;
             }
             if (spawnType == EquipmentSpawnType.SpawnsWith) {
-                return CreateStartsWithScenarioPart(equipment);
+                return new List<ScenPart>() { CreateStartsWithScenarioPart(equipment) };
             }
             else if (spawnType == EquipmentSpawnType.SpawnsNear) {
-                return CreateScatterThingsNearScenarioPart(equipment);
+                return new List<ScenPart>() { CreateScatterThingsNearScenarioPart(equipment) };
             }
             else {
-                return null;
+                return Enumerable.Empty<ScenPart>();
             }
         }
 
@@ -260,6 +261,49 @@ namespace EdB.PrepareCarefully {
                 return CreateStartingAnimalWithRandomGenderScenarioPart(equipment);
             }
         }
+        public IEnumerable<ScenPart> CreateStartingMechScenarioParts(CustomizedEquipment equipment) {
+            if (equipment.EquipmentOption.RandomMech) {
+                return CreateRandomStartingMechScenarioParts(equipment);
+            }
+            else {
+                return CreateDefinedStartingMechScenarioParts(equipment);
+            }
+        }
+        public IEnumerable<ScenPart> CreateDefinedStartingMechScenarioParts(CustomizedEquipment equipment) {
+            ScenPartDef scenPartDef = DefDatabase<ScenPartDef>.GetNamedSilentFail("StartingMech");
+            if (scenPartDef == null) {
+                Logger.Warning("Could not find definition for starting mech scenario part.  Cannot add scenario part");
+                yield break;
+            }
+            PawnKindDef pawnKindDef = FindPawnKindDefForRace(equipment);
+            if (pawnKindDef == null) {
+                Logger.Warning(string.Format("Could not spawn selected mech ({0}). Could not find matching pawn kind", equipment.EquipmentOption?.ThingDef?.defName));
+                yield break;
+            }
+            for (int i = 0; i < equipment.Count; i++) {
+                var part = new ScenPart_StartingMech() {
+                    def = scenPartDef
+                };
+                part.SetPrivateField("mechKind", pawnKindDef);
+                part.SetPrivateField("overseenByPlayerPawnChance", equipment.OverseenChance);
+                yield return part;
+            }
+        }
+        public IEnumerable<ScenPart> CreateRandomStartingMechScenarioParts(CustomizedEquipment equipment) {
+            ScenPartDef scenPartDef = DefDatabase<ScenPartDef>.GetNamedSilentFail("StartingMech");
+            if (scenPartDef == null) {
+                Logger.Warning("Could not find definition for starting mech scenario part.  Cannot add scenario part");
+                yield break;
+            }
+            for (int i = 0; i < equipment.Count; i++) {
+                var part = new ScenPart_StartingMech() {
+                    def = scenPartDef
+                };
+                part.SetPrivateField("overseenByPlayerPawnChance", equipment.OverseenChance);
+                yield return part;
+            }
+        }
+
         public ScenPart CreateRandomStartingAnimalScenarioPart(CustomizedEquipment equipment) {
             ScenPartDef scenPartDef = DefDatabase<ScenPartDef>.GetNamedSilentFail("StartingAnimal");
             if (scenPartDef == null) {
@@ -278,7 +322,7 @@ namespace EdB.PrepareCarefully {
                 Logger.Warning("Could not find definition for starting animal scenario part.  Cannot add scenario part");
                 return null;
             }
-            PawnKindDef pawnKindDef = FindPawnKindDefForAnimal(equipment);
+            PawnKindDef pawnKindDef = FindPawnKindDefForRace(equipment);
             if (pawnKindDef == null) {
                 Logger.Warning(string.Format("Could not spawn selected animal ({0}). Could not find matching pawn kind", equipment.EquipmentOption?.ThingDef?.defName));
                 return null;
@@ -291,7 +335,7 @@ namespace EdB.PrepareCarefully {
             return part;
         }
         public ScenPart CreateStartingAnimalWithSpecificGenderScenarioPart(CustomizedEquipment equipment) {
-            PawnKindDef pawnKindDef = FindPawnKindDefForAnimal(equipment);
+            PawnKindDef pawnKindDef = FindPawnKindDefForRace(equipment);
             if (pawnKindDef == null) {
                 Logger.Warning(string.Format("Could not spawn selected animal ({0}). Could not find matching pawn kind", equipment.EquipmentOption?.ThingDef?.defName));
                 return null;
@@ -303,8 +347,8 @@ namespace EdB.PrepareCarefully {
             };
             return part;
         }
-        public PawnKindDef FindPawnKindDefForAnimal(CustomizedEquipment equipment) {
-            return (from td in DefDatabase<PawnKindDef>.AllDefs where td.race == equipment.EquipmentOption.ThingDef select td).FirstOrDefault();
+        public PawnKindDef FindPawnKindDefForRace(CustomizedEquipment equipment) {
+            return DefDatabase<PawnKindDef>.AllDefs.Where(k => k.race == equipment.EquipmentOption.ThingDef).FirstOrDefault();
         }
 
         public void MarkCostsForRecalculation() {

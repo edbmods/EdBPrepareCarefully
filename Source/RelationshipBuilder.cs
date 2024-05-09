@@ -10,15 +10,13 @@ namespace EdB.PrepareCarefully {
     public class RelationshipBuilder {
         private List<CustomizedRelationship> relationships;
         private List<ParentChildGroup> parentChildGroups;
-        FieldInfo directRelationsField = null;
-        FieldInfo pawnsWithField = null;
+        private List<CustomizedPawn> pawns;
         private List<int> compatibilityPool = new List<int>();
 
-        public RelationshipBuilder(List<CustomizedRelationship> relationships, List<ParentChildGroup> parentChildGroups) {
-            directRelationsField = typeof(Pawn_RelationsTracker).GetField("directRelations", BindingFlags.Instance | BindingFlags.NonPublic);
-            pawnsWithField = typeof(Pawn_RelationsTracker).GetField("pawnsWithDirectRelationsWithMe", BindingFlags.Instance | BindingFlags.NonPublic);
+        public RelationshipBuilder(IEnumerable<CustomizedPawn> pawns, List<CustomizedRelationship> relationships, List<ParentChildGroup> parentChildGroups) {
             this.relationships = relationships;
             this.parentChildGroups = parentChildGroups;
+            this.pawns = pawns.ToList();
 
             int compatibilityPoolSize = Mathf.Max(Mathf.Min(relationships.Count * 6, 12), 50);
             this.FillCompatibilityPool(compatibilityPoolSize);
@@ -27,6 +25,9 @@ namespace EdB.PrepareCarefully {
         public List<CustomizedPawn> Build() {
             // These include all the pawns that have relationships with them.
             HashSet<CustomizedPawn> relevantPawns = new HashSet<CustomizedPawn>();
+            foreach (var pawn in pawns) {
+                relevantPawns.Add(pawn);
+            }
             foreach (var rel in relationships) {
                 relevantPawns.Add(rel.Source);
                 relevantPawns.Add(rel.Target);
@@ -50,7 +51,7 @@ namespace EdB.PrepareCarefully {
                 }
             }
 
-            // Go through each starting pawn and evaluate that any existing relationships need to be remain.
+            // Go through each starting pawn and evaluate that any existing relationships need to remain.
             // If not, remove them.
             PawnRelationDef parentDef = PawnRelationDefOf.Parent;
             foreach (var pawn in relevantPawns) {
@@ -61,10 +62,10 @@ namespace EdB.PrepareCarefully {
                 if (relationCount == 0) {
                     continue;
                 }
-                Logger.Debug("Checking existing relations for " + pawn.Pawn.LabelCap + ", " + relationCount);
+                Logger.Debug("Checking existing relations for " + pawn.Pawn.LabelShort + ", " + relationCount);
                 for (int i = 0; i < relationCount; i++) {
                     var r = pawn.Pawn.relations.DirectRelations[i];
-                    Logger.Debug(string.Format("  [{0}]: relationship {1} between {2} and {3}", i, r.def.defName, pawn.Pawn.LabelShortCap, r.otherPawn.LabelShortCap));
+                    Logger.Debug(string.Format("    [{0}]: relationship {1} between {2} and {3}", i, r.def.defName, pawn.Pawn.LabelShort, r.otherPawn.LabelShort));
                 }
                 var validity = new List<bool>(Enumerable.Range(0, relationCount).Select(i => false));
                 foreach (var group in parentChildGroups) {
@@ -74,7 +75,7 @@ namespace EdB.PrepareCarefully {
                                 return r.def == parentDef && r.otherPawn == parent.Pawn && child.Pawn == pawn.Pawn;
                             });
                             if (index != -1) {
-                                Logger.Debug(string.Format("  Found direct parent relation between child {0} and parent {1} at index: {2}", pawn.Pawn.LabelShortCap, parent.Pawn.LabelShortCap, index));
+                                Logger.Debug(string.Format("    Found direct parent relation between child {0} and parent {1} at index: {2}", pawn.Pawn.LabelShort, parent.Pawn.LabelShort, index));
                                 validity[index] = true;
                             }
                         }
@@ -87,20 +88,21 @@ namespace EdB.PrepareCarefully {
                            || (pawn == relationship.Source && r.otherPawn == relationship.Target.Pawn));
                     });
                     if (index != -1) {
-                        Logger.Debug(string.Format("  Found direct relation {0} between pawn {1} and target {2} at index: {3}", relationship.Def.defName, pawn.Pawn.LabelShortCap, relationship.Source.Pawn.LabelShortCap, index));
+                        Logger.Debug(string.Format("    Found direct relation {0} between pawn {1} and target {2} at index: {3}", relationship.Def.defName, pawn.Pawn.LabelShort, relationship.Source.Pawn.LabelShort, index));
                         validity[index] = true;
                     }
                 }
-                Logger.Debug("  " + string.Join(", ", validity.Select(v => v ? "1" : "0")));
+                Logger.Debug("    Relationship validity: [" + string.Join(", ", validity.Select(v => v ? "valid" : "invalid")) + "]");
                 List<DirectPawnRelation> relationsToRemove = new List<DirectPawnRelation>();
                 for (int i=0; i<relationCount; i++) {
                     if (!validity[i]) {
                         var r = pawn.Pawn.relations.DirectRelations[i];
                         relationsToRemove.Add(r);
-                        Logger.Debug(string.Format("  Didn't find [{0}]: relationship {1} between {2} and {3}", i, r.def.defName, pawn.Pawn.LabelShortCap, r.otherPawn.LabelShortCap));
+                        Logger.Debug(string.Format("    Didn't find [{0}]: relationship {1} between {2} and {3}", i, r.def.defName, pawn.Pawn.LabelShort, r.otherPawn.LabelShort));
                     }
                 }
                 foreach (var r in relationsToRemove) {
+                    Logger.Debug(string.Format("    Removed relationship {0} between {1} and {2}", r.def.defName, pawn.Pawn.LabelShort, r.otherPawn.LabelShort));
                     pawn.Pawn.relations.RemoveDirectRelation(r);
                 }
             }
@@ -309,11 +311,11 @@ namespace EdB.PrepareCarefully {
             }
 
             if (source.relations.DirectRelationExists(def, target)) {
-                Logger.Debug(string.Format("Skipped adding direct relation {0} between {1} and {2}. Already there", def.defName, source.LabelShortCap, target.LabelShortCap));
+                Logger.Debug(string.Format("Skipped adding direct relation {0} between {1} and {2}. Already there", def.defName, source.LabelShort, target.LabelShort));
                 return;
             }
             source.relations.AddDirectRelation(def, target);
-            Logger.Debug(string.Format("Added direct relation {0} between {1} and {2}", def.defName, source.LabelShortCap, target.LabelShortCap));
+            Logger.Debug(string.Format("Added direct relation {0} between {1} and {2}", def.defName, source.LabelShort, target.LabelShort));
 
             // Try to find a better pawn compatibility, if it makes sense for the relationship.
             //CarefullyPawnRelationDef pcDef = DefDatabase<CarefullyPawnRelationDef>.GetNamedSilentFail(def.defName);

@@ -9,6 +9,7 @@ namespace EdB.PrepareCarefully {
         SpawnsWith,
         SpawnsNear,
         Possession,
-        Animal
+        Animal,
+        Mech
     }
 }

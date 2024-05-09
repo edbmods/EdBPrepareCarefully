@@ -313,11 +313,8 @@ namespace EdB.PrepareCarefully {
         public void AddImplant(Implant implant) {
             PawnManager.AddPawnImplant(ViewState?.CurrentPawn, implant);
         }
-        public void RemoveHediff(Hediff hediff) {
-            PawnManager.RemovePawnHediff(ViewState?.CurrentPawn, hediff);
-        }
         public void RemoveHediffs(IEnumerable<Hediff> hediffs) {
-            PawnManager.RemovePawnHediffs(ViewState?.CurrentPawn, hediffs);
+            PawnManager.RemoveHediffs(ViewState?.CurrentPawn, hediffs);
         }
 
         public void RandomizeAppearance() {

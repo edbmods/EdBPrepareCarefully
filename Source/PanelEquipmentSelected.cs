@@ -175,7 +175,7 @@ namespace EdB.PrepareCarefully {
                     }
                     Widgets.ThingIcon(iconRect, equipment.EquipmentOption.ThingDef, stuff);
                 }
-                else if (equipment.EquipmentOption.RandomAnimal) {
+                else if (equipment.EquipmentOption.RandomAnimal || equipment.EquipmentOption.RandomMech) {
                     GUI.color = Style.ColorTextSecondary;
                     Rect iconRect = new Rect(12f, y + 6, 24f, 24f);
                     GUI.DrawTexture(iconRect, Textures.TextureButtonRandom);
@@ -212,6 +212,12 @@ namespace EdB.PrepareCarefully {
                 else if (equipment.Gender != null) {
                     Text.Font = GameFont.Tiny;
                     string subtitleText = equipment.Gender.Value.GetLabel().CapitalizeFirst();
+                    Widgets.Label(subtitleRect, subtitleText.Truncate(subtitleRect.width - 48));
+                }
+                else if (equipment.OverseenChance != null) {
+                    Text.Font = GameFont.Tiny;
+                    string subtitleText = "EdB.PC.Equipment.SelectedEquipment.OverseenChanceLabel"
+                            .Translate("StartOverseenChance".Translate(), string.Format("{0:F0}", equipment.OverseenChance.Value * 100f));
                     Widgets.Label(subtitleRect, subtitleText.Truncate(subtitleRect.width - 48));
                 }
                 else {

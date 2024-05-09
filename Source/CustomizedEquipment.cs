@@ -12,13 +12,18 @@ namespace EdB.PrepareCarefully {
         public EquipmentSpawnType? SpawnType { get; set; }
         public int Count { get; set; }
         public Gender? Gender { get; set; }
+        public float? OverseenChance { get; set; }
 
         public bool Animal {
             get {
                 return EquipmentOption.RandomAnimal || (EquipmentOption.ThingDef?.race?.Animal ?? false);
             }
         }
-
+        public bool Mech {
+            get {
+                return EquipmentOption.RandomMech || (EquipmentOption.ThingDef?.race?.IsMechanoid ?? false);
+            }
+        }
         public CustomizedEquipment CreateCopy() {
             return new CustomizedEquipment() {
                 EquipmentOption = this.EquipmentOption,
@@ -27,6 +32,7 @@ namespace EdB.PrepareCarefully {
                 Count = this.Count,
                 SpawnType = this.SpawnType,
                 Gender = this.Gender,
+                OverseenChance = this.OverseenChance,
             };
         }
 
@@ -36,7 +42,8 @@ namespace EdB.PrepareCarefully {
                    EqualityComparer<ThingDef>.Default.Equals(StuffDef, equipment.StuffDef) &&
                    Quality == equipment.Quality &&
                    SpawnType == equipment.SpawnType &&
-                   Gender == equipment.Gender;
+                   Gender == equipment.Gender &&
+                   OverseenChance == equipment.OverseenChance;
         }
 
         public override int GetHashCode() {
@@ -46,6 +53,7 @@ namespace EdB.PrepareCarefully {
             hashCode = hashCode * -1521134295 + Quality.GetHashCode();
             hashCode = hashCode * -1521134295 + SpawnType.GetHashCode();
             hashCode = hashCode * -1521134295 + Gender.GetHashCode();
+            hashCode = hashCode * -1521134295 + OverseenChance.GetHashCode();
             return hashCode;
         }
     }

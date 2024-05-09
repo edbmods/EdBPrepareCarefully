@@ -3,10 +3,12 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using System.Security.Cryptography;
 using System.Text;
 using UnityEngine;
 using Verse;
 using Verse.Sound;
+using static HarmonyLib.Code;
 
 namespace EdB.PrepareCarefully {
     public class ProviderHealthOptions {
@@ -82,12 +84,16 @@ namespace EdB.PrepareCarefully {
                 if (def.addsHediff != null
                         && ((def.appliedOnFixedBodyParts != null && def.appliedOnFixedBodyParts.Count > 0) || (def.appliedOnFixedBodyPartGroups != null && def.appliedOnFixedBodyPartGroups.Count > 0))
                         && (def.recipeUsers.NullOrEmpty() || def.recipeUsers.Contains(pawnThingDef))) {
+                    //Logger.Debug("Adding implant recipe: " + def.defName);
                     return true;
                 }
                 else {
+                    //Logger.Debug("Excluding implant recipe: " + def.defName);
                     return false;
                 }
             }));
+
+            
             
             // Remove duplicates: recipes that apply the same hediff on the same body parts.
             HashSet<int> recipeHashes = new HashSet<int>();
@@ -127,6 +133,43 @@ namespace EdB.PrepareCarefully {
                         }
                     }
                 }
+            }
+
+            // Add options for thing definitions that have an install implant comp
+            Dictionary<string, ImplantOption> implantOptionLookup = new Dictionary<string, ImplantOption>();
+            foreach (var def in DefDatabase<ThingDef>.AllDefs.Where(d => d.HasComp<CompUsableImplant>())) {
+                var useEffectInstallImplant = def.GetCompProperties<CompProperties_UseEffectInstallImplant>();
+                var usable = def.GetCompProperties<CompProperties_Usable>();
+                if (useEffectInstallImplant != null && usable != null) {
+                    string hediffDefName = useEffectInstallImplant.hediffDef?.defName;
+                    if (hediffDefName == null) {
+                        continue;
+                    }
+                    HediffDef hediffDef = useEffectInstallImplant.hediffDef;
+                    // Exclude psychic amplifier because that's added as an injury and requires special handling
+                    // to avoid the default behavior that adds a random ability
+                    if (hediffDef == HediffDefOf.PsychicAmplifier) {
+                        continue;
+                    }
+                    if (!implantOptionLookup.TryGetValue(hediffDefName, out ImplantOption option)) {
+                        option = new ImplantOption() {
+                            HediffDef = hediffDef,
+                            ThingDef = def,
+                            BodyPartDefs = new HashSet<BodyPartDef>(),
+                            Dependency = usable.userMustHaveHediff,
+                        };
+                        if (typeof(Hediff_Level).IsAssignableFrom(hediffDef.hediffClass)) {
+                            option.MinSeverity = hediffDef.minSeverity > 0 ? hediffDef.minSeverity : 1;
+                            option.MaxSeverity = hediffDef.maxSeverity;
+                            Logger.Debug(string.Format("Adding option {0} with severity {1}-{2} from thingDef {3}", hediffDef.defName, option.MinSeverity, option.MaxSeverity, def.defName));
+                        }
+                        implantOptionLookup.Add(hediffDefName, option);
+                    }
+                    option.BodyPartDefs.Add(useEffectInstallImplant.bodyPart);
+                }
+            }
+            foreach (var value in implantOptionLookup.Values) {
+                options.AddImplantOption(value);
             }
         }
 

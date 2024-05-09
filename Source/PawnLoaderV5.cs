@@ -616,44 +616,39 @@ namespace EdB.PrepareCarefully {
                         result.AddWarning("Could not add the implant because it could not find the recipe definition \"" + implantRecord.recipe + "\"");
                         continue;
                     }
-                    bool found = false;
-                    foreach (var p in recipeDef.appliedOnFixedBodyParts) {
-                        if (p.defName.Equals(bodyPart.def.defName)) {
-                            found = true;
-                            break;
-                        }
+                    ImplantOption implantOption = healthOptions.FindImplantOptionThatAddsRecipeDefToBodyPart(recipeDef, bodyPart?.def);
+                    if (implantOption != null) {
+                        Implant implant = new Implant() {
+                            Option = implantOption,
+                            BodyPartRecord = bodyPart,
+                            Recipe = recipeDef,
+                            HediffDef = recipeDef.addsHediff,
+                        };
+                        // TODO: This looks weird; something to do with caching the label. Should rework it.
+                        implant.label = implant.Label;
+                        customizations.Implants.Add(implant);
+                        Logger.Debug("Added implant customizations " + recipeDef?.defName);
                     }
-                    if (!found) {
-                        if (recipeDef.appliedOnFixedBodyPartGroups != null) {
-                            foreach (var g in recipeDef.appliedOnFixedBodyPartGroups) {
-                                if (bodyPart.IsInGroup(g)) {
-                                    found = true;
-                                    break;
-                                }
-                            }
-                        }
-                        if (!found) {
-                            result.AddWarning("Could not apply the saved implant recipe \"" + implantRecord.recipe + "\" to the body part \"" + bodyPart.def.defName + "\".  Recipe does not support that part.");
-                            continue;
-                        }
+                    else {
+                        result.AddWarning("Could not add implant to pawn because no matching option was found for specified RecipeDef {" + implantRecord.recipe + "} and BodyPartDef {" + bodyPart?.def?.defName + "}");
                     }
-                    Implant implant = new Implant() {
-                        BodyPartRecord = bodyPart,
-                        Recipe = recipeDef
-                    };
-                    // TODO: This looks weird; something to do with caching the label. Should rework it.
-                    implant.label = implant.Label;
-                    customizations.Implants.Add(implant);
-                    Logger.Debug("Added implant customizations " + recipeDef?.defName);
                 }
                 else if (implantRecord.hediffDef != null) {
                     HediffDef hediffDef = DefDatabase<HediffDef>.GetNamedSilentFail(implantRecord.hediffDef);
                     if (hediffDef != null) {
-                        Implant implant = new Implant();
-                        implant.BodyPartRecord = bodyPart;
-                        implant.label = implant.Label;
-                        implant.HediffDef = hediffDef;
-                        customizations.Implants.Add(implant);
+                        ImplantOption implantOption = healthOptions.FindImplantOptionThatAddsHediffDefToBodyPart(hediffDef, bodyPart?.def);
+                        if (implantOption == null) {
+                            result.AddWarning("Could not add implant to pawn because no matching option was found for specified HediffDef {" + implantRecord.hediffDef + "} and BodyPartDef {" + bodyPart?.def?.defName + "}");
+                        }
+                        else {
+                            Implant implant = new Implant();
+                            implant.Option = implantOption;
+                            implant.BodyPartRecord = bodyPart;
+                            implant.label = implant.Label;
+                            implant.HediffDef = hediffDef;
+                            implant.Severity = implantRecord.severity;
+                            customizations.Implants.Add(implant);
+                        }
                     }
                     else {
                         result.AddWarning("Could not add implant to pawn because the specified HediffDef {" + implantRecord.hediffDef + "} for the implant was not found");

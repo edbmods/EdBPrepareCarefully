@@ -71,7 +71,7 @@ namespace EdB.PrepareCarefully {
                     OverriddenByEndogene = overriddenByEndogene,
                     OverriddenByXenogene = overriddenByXenogene,
                 });
-                Logger.Debug("  Mapped gene " + gene.def.defName + ", overridden by = " + gene.overriddenByGene?.def?.defName);
+                //Logger.Debug("  Mapped gene " + gene.def.defName + ", overridden by = " + gene.overriddenByGene?.def?.defName);
             }
             return result;
         }
@@ -261,50 +261,37 @@ namespace EdB.PrepareCarefully {
                 }
                 else {
                     //Logger.Debug("Did not find injury option for {" + hediff.def.defName + "} for part {" + hediff.Part?.LabelCap + "}");
-                    RecipeDef implantRecipe = healthOptions.FindImplantRecipesThatAddHediff(hediff).RandomElementWithFallback(null);
-                    if (implantRecipe != null) {
-                        Implant implant = new Implant();
-                        implant.Recipe = implantRecipe;
-                        implant.BodyPartRecord = hediff.Part;
-                        implant.Hediff = hediff;
-                        implant.HediffDef = hediff?.def;
+                    ImplantOption implantOption = healthOptions.FindImplantOptionsThatAddHediff(hediff).RandomElementWithFallback(null);
+                    if (implantOption != null) {
+                        var implant = new Implant() {
+                            Option = implantOption,
+                            Recipe = implantOption.RecipeDef,
+                            BodyPartRecord = hediff.Part,
+                            Hediff = hediff,
+                            HediffDef = hediff?.def,
+                        };
+                        if (hediff is Hediff_Level level) {
+                            //Logger.Debug("Mapping implant " + implantOption.HediffDef.defName + " with severity " + level.level);
+                            if (level.level >= 0) {
+                                implant.Severity = level.level;
+                            }
+                        }
                         implants.Add(implant);
-                        //Logger.Debug("Found implant recipes for {" + hediff.def.defName + "} for part {" + hediff.Part?.LabelCap + "}");
-                    }
-                    else if (hediff.def.defName == "MechlinkImplant") {
-                        Implant implant = new Implant();
-                        implant.BodyPartRecord = hediff.Part;
-                        implant.Hediff = hediff;
-                        implant.HediffDef = hediff?.def;
-                        implants.Add(implant);
-                    }
-                    else if (hediff.Part != null) {
-                        Implant implant = new Implant();
-                        implant.BodyPartRecord = hediff.Part;
-                        implant.Hediff = hediff;
-                        implant.HediffDef = hediff?.def;
-                        implants.Add(implant);
-                    }
-                    else if (hediff.def.defName != "MissingBodyPart") {
-                        Logger.Warning("Could not add hediff {" + hediff.def.defName + "} to the pawn because no recipe adds it to the body part {" + (hediff.Part?.def?.defName ?? "WholeBody") + "}");
                     }
                     else {
-                        Logger.Warning("Could not add hediff {" + hediff.def.defName + "} to the pawn.  It is not currently supported");
+                        Logger.Warning("Could not add hediff {" + hediff.def.defName + "} to the pawn because found no matching implant option for the body part {" + (hediff.Part?.def?.defName ?? "WholeBody") + "}");
                     }
                 }
             }
             customizations.Injuries.Clear();
             customizations.Implants.Clear();
-            customizations.BodyParts.Clear();
             foreach (var injury in injuries) {
                 //Logger.Debug("Adding injury: " + injury.Option.Label);
                 customizations.Injuries.Add(injury);
-                customizations.BodyParts.Add(injury);
             }
             foreach (var implant in implants) {
                 //Logger.Debug("Adding implant: " + implant.Label);
                 customizations.Implants.Add(implant);
-                customizations.BodyParts.Add(implant);
             }
         }
 

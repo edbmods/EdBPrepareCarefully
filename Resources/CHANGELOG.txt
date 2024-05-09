@@ -1,5 +1,19 @@
  _____________________________________________________________________________
  
+   Version 1.5.8
+ _____________________________________________________________________________
+
+ - Added support for Mechanitor implants in the Health panel's Implants and
+   Bionics dialog
+ - Added Mechanoid options to the Equipment Tab 
+ - Bug fixes:
+   - Fixed issue where sibling relationships were sometimes lost when loading
+     from a preset
+   - Fixed issue where non-parent/child relationships between starting pawns
+     and hidden/world pawns were removed when initializing the game
+
+ _____________________________________________________________________________
+ 
    Version 1.5.7
  _____________________________________________________________________________
 

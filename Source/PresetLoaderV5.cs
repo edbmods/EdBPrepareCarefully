@@ -230,9 +230,9 @@ namespace EdB.PrepareCarefully {
                         }
                     }
                 }
-                if (group.Parents.Count > 0 && group.Children.Count > 0) {
+                
+                if (ValidateParentChildGroup(group)) {
                     customizations.ParentChildGroups.Add(group);
-                    Logger.Debug("Loaded parent child group");
                 }
             }
             ManagerRelationships.ReassignHiddenPawnIndices();
@@ -241,6 +241,21 @@ namespace EdB.PrepareCarefully {
                 p.Pawn = customizedPawn.Pawn;
                 p.TemporaryPawn = customizedPawn.TemporaryPawn;
             }
+        }
+
+        protected bool ValidateParentChildGroup(ParentChildGroup group) {
+            if (group == null) {
+                return false;
+            }
+            int parentCount = group.Parents.CountAllowNull();
+            int childCount = group.Children.CountAllowNull();
+            if (parentCount == 0 && childCount < 2) {
+                return false;
+            }
+            if (childCount == 0) {
+                return false;
+            }
+            return true;
         }
 
         protected Dictionary<string, Ideo> ResolveIdeoMap(SaveRecordPresetV5 preset) {

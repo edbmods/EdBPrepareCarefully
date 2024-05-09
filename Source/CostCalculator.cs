@@ -95,6 +95,7 @@ namespace EdB.PrepareCarefully {
         protected HashSet<string> cheapApparel = new HashSet<string>();
         public StatWorker MarketValueStatWorker { get; set; }
         public float CostForRandomAnimal { get; set; } = 250f;
+        public float CostForRandomMech { get; set; } = 1200f;
 
 
         public CostCalculator() {
@@ -174,6 +175,21 @@ namespace EdB.PrepareCarefully {
                 //Logger.Debug(string.Format("Market value for pawn apparel; pawn = {0}, apparel = {1}, cost = {2}", pawn.Pawn.LabelShortCap, apparel.def.defName, c));
             }
 
+            // Implants that have a ThingDef associated with them (like a Mechlink) need to include the
+            // cost of that ThingDef
+            foreach (Implant implant in pawn.Customizations.Implants) {
+                if (implant.HediffDef == null) {
+                    continue;
+                }
+                if (implant.Option?.ThingDef != null) {
+                    int count = 1;
+                    if (implant.Option.MaxSeverity > 0) {
+                        count = (int)implant.Severity;
+                    }
+                    cost.bionics += MarketValueStatWorker.GetValue(StatRequest.For(implant.Option.ThingDef, null)) * count;
+                }
+            }
+
             // Calculate cost for any materials needed for implants.
             OptionsHealth healthOptions = ProviderHealthOptions.GetOptions(pawn);
             foreach (Implant option in pawn.Customizations.Implants) {
@@ -227,6 +243,9 @@ namespace EdB.PrepareCarefully {
             }
             else if (equipment.EquipmentOption.RandomAnimal) {
                 return CostForRandomAnimal * equipment.Count;
+            }
+            else if (equipment.EquipmentOption.RandomMech) {
+                return CostForRandomMech * equipment.Count;
             }
             else {
                 return 0;

@@ -27,6 +27,7 @@ namespace EdB.PrepareCarefully {
         public ProviderBodyTypes ProviderBodyTypes { get; set; }
         public ProviderFactions ProviderFactions { get; set; }
         public ProviderHeadTypes ProviderHeadTypes { get; set; }
+        public ProviderHealthOptions ProviderHealthOptions { get; set; }
         public AgeModifier AgeModifier { get; set; }
         public EquipmentDatabase EquipmentDatabase { get; set; }
         public PawnLoader PawnLoader { get; set; }
@@ -691,7 +692,6 @@ namespace EdB.PrepareCarefully {
                 return;
             }
             customizations.Injuries.Add(injury);
-            customizations.BodyParts.Add(injury);
             Customizer.ApplyInjuryAndImplantCustomizationsToPawn(pawn, customizations);
             PawnToCustomizationsMapper.MapInjuriesAndImplants(pawn, customizations);
             CostAffected?.Invoke();
@@ -703,7 +703,6 @@ namespace EdB.PrepareCarefully {
                 return;
             }
             customizations.Implants.Add(implant);
-            customizations.BodyParts.Add(implant);
             Customizer.ApplyInjuryAndImplantCustomizationsToPawn(pawn, customizations);
             PawnToCustomizationsMapper.MapInjuriesAndImplants(pawn, customizations);
             CostAffected?.Invoke();
@@ -715,66 +714,119 @@ namespace EdB.PrepareCarefully {
                 return;
             }
             List<Implant> implantsToRemove = new List<Implant>();
-            foreach (var bodyPart in customizations.BodyParts) {
-                Implant asImplant = bodyPart as Implant;
-                implantsToRemove.Add(asImplant);
+            foreach (var existingImplant in customizations.Implants) {
+                var matchingImplant = implants.FirstOrDefault(i => i.Equals(existingImplant));
+                if (matchingImplant == null) {
+                    implantsToRemove.Add(existingImplant);
+                }
             }
-            foreach (var implant in implantsToRemove) {
-                customizations.BodyParts.Remove(implant);
-            }
+            RemoveHediffsInternal(customizedPawn, implantsToRemove.SelectMany(i => HediffsMatchingImplant(customizedPawn, i)));
             customizations.Implants.Clear();
-            foreach (var implant in implants) {
-                customizations.BodyParts.Add(implant);
-                customizations.Implants.Add(implant);
-            }
+            customizations.Implants.AddRange(implants);
             Customizer.ApplyInjuryAndImplantCustomizationsToPawn(pawn, customizations);
             PawnToCustomizationsMapper.MapInjuriesAndImplants(pawn, customizations);
             ClearPawnGraphicsCache(pawn);
             CostAffected?.Invoke();
         }
 
-        public void RemovePawnHediffs(CustomizedPawn customizedPawn, IEnumerable<Hediff> hediffs) {
+        public IEnumerable<Hediff> HediffsMatchingImplant(CustomizedPawn customizedPawn, Implant implant) {
+            Pawn pawn = customizedPawn.Pawn;
+            if (pawn == null) {
+                return Enumerable.Empty<Hediff>();
+            }
+            if (implant == null) {
+                Logger.Warning("implant is null");
+                return Enumerable.Empty<Hediff>();
+            }
+
+            return pawn.health.hediffSet.hediffs.Where(h => h?.def == implant?.Option?.HediffDef && h?.Part == implant?.BodyPartRecord);
+        }
+
+        private void RemoveHediffsInternal(CustomizedPawn customizedPawn, IEnumerable<Hediff> hediffs) {
             Pawn pawn = customizedPawn?.Pawn;
             CustomizationsPawn customizations = customizedPawn?.Customizations;
             if (pawn == null || customizations == null) {
                 return;
             }
-            foreach (Hediff hediff in hediffs) {
-                pawn.health.RemoveHediff(hediff);
-                Injury injury = customizations.Injuries.FirstOrDefault(i => i.Hediff == hediff);
-                Implant implant = customizations.Implants.FirstOrDefault(i => i.Hediff == hediff);
-                if (injury != null) {
-                    RemoveCustomBodyParts(injury, customizations);
-                }
-                if (implant != null) {
-                    RemoveCustomBodyParts(implant, customizations);
-                }
+            var list = hediffs.ToList();
+            foreach (Hediff hediff in list) {
+                RemoveHediff(customizedPawn, hediff);
             }
+            RemoveHediffsWithUnsatisfiedDependencies(customizedPawn);
+        }
+
+        public void RemoveHediffs(CustomizedPawn customizedPawn, IEnumerable<Hediff> hediffs) {
+            Pawn pawn = customizedPawn?.Pawn;
+            CustomizationsPawn customizations = customizedPawn?.Customizations;
+            if (pawn == null || customizations == null) {
+                return;
+            }
+            RemoveHediffsInternal(customizedPawn, hediffs);
+            RemoveHediffsWithUnsatisfiedDependencies(customizedPawn);
             Customizer.ApplyInjuryAndImplantCustomizationsToPawn(pawn, customizations);
             PawnToCustomizationsMapper.MapInjuriesAndImplants(pawn, customizations);
             ClearPawnGraphicsCache(pawn);
             CostAffected?.Invoke();
         }
-        public void RemoveCustomBodyParts(CustomizedHediff part, CustomizationsPawn customizations) {
-            Implant implant = part as Implant;
-            Injury injury = part as Injury;
-            if (implant != null) {
-                customizations.Implants.Remove(implant);
+
+        protected void RemoveHediff(CustomizedPawn customizedPawn, Hediff hediff) {
+            Pawn pawn = customizedPawn?.Pawn;
+            CustomizationsPawn customizations = customizedPawn?.Customizations;
+            if (pawn == null || customizations == null) {
+                return;
             }
+            Logger.Debug("Removed hediff: " + hediff.def.defName + ", " + hediff.Part?.def?.defName);
+            pawn.health.RemoveHediff(hediff);
+            Injury injury = customizations.Injuries.FirstOrDefault(i => i.Hediff == hediff);
+            Implant implant = customizations.Implants.FirstOrDefault(i => i.Hediff == hediff);
             if (injury != null) {
                 customizations.Injuries.Remove(injury);
             }
-            customizations.BodyParts.Remove(part);
-            CostAffected?.Invoke();
+            if (implant != null) {
+                customizations.Implants.Remove(implant);
+            }
         }
-        public void RemovePawnHediff(CustomizedPawn customizedPawn, Hediff hediff) {
+
+        protected void RemoveHediffsWithUnsatisfiedDependencies(CustomizedPawn customizedPawn) {
+            HashSet<Hediff> unsatisifedHediffs = new HashSet<Hediff>();
+            int maxAttempts = 100;
+            int attempt = 0;
+            while (HasHediffsWithUnsatisfiedDependencies(customizedPawn, ref unsatisifedHediffs)) {
+                if (attempt++ > maxAttempts) {
+                    return;
+                }
+                foreach (var hediff in unsatisifedHediffs) {
+                    RemoveHediff(customizedPawn, hediff);
+                }
+                unsatisifedHediffs.Clear();
+            }
+        }
+
+        protected bool HasHediffsWithUnsatisfiedDependencies(CustomizedPawn customizedPawn, ref HashSet<Hediff> unsatisfiedHediffs) {
             Pawn pawn = customizedPawn?.Pawn;
             if (pawn == null) {
-                return;
+                return false;
             }
-            pawn.health.RemoveHediff(hediff);
-            CostAffected?.Invoke();
+            var options = ProviderHealthOptions.GetOptions(customizedPawn);
+            if (options == null) {
+                return false;
+            }
+            Dictionary<Hediff, HediffDef> dependencies = new Dictionary<Hediff, HediffDef>();
+            foreach (var hediff in pawn.health.hediffSet.hediffs) {
+                var matchingImplantOption = options.FindImplantOptionsThatAddHediff(hediff).FirstOrDefault();
+                if (matchingImplantOption?.Dependency != null) {
+                    dependencies[hediff] = matchingImplantOption.Dependency;
+                }
+            }
+            unsatisfiedHediffs = new HashSet<Hediff>();
+            foreach (var pair in dependencies) {
+                if (!pawn.health.hediffSet.hediffs.ContainsAny(h => h.def == pair.Value)) {
+                    unsatisfiedHediffs.Add(pair.Key);
+                }
+            }
+            return unsatisfiedHediffs.Count > 0;
         }
+
         public void UpdateBodyType(CustomizedPawn customizedPawn, BodyTypeDef bodyTypeDef) {
             Pawn pawn = customizedPawn?.Pawn;
             CustomizationsPawn customizations = customizedPawn?.Customizations;

@@ -73,7 +73,7 @@ namespace EdB.PrepareCarefully {
                     Pawn otherPawn = r.otherPawn;
                     if (!customPawnLookup.Contains(otherPawn)) {
                         if (!hiddenPawns.ContainsAny(c => c.Pawn == otherPawn)) {
-                            Logger.Debug("  Added hidden pawn: " + otherPawn.Label + ", faction = " + otherPawn.Faction?.Name + ", leader = " + (otherPawn.Faction?.leader == otherPawn ? "true" : "false"));
+                            Logger.Debug("  Added hidden pawn: " + otherPawn.LabelShort + ", faction = " + otherPawn.Faction?.Name + ", leader = " + (otherPawn.Faction?.leader == otherPawn ? "true" : "false"));
                             hiddenPawns.Add(new CustomizedPawn() {
                                 Pawn = otherPawn,
                                 Type = CustomizedPawnType.Hidden,
@@ -381,10 +381,11 @@ namespace EdB.PrepareCarefully {
 
         public void InitializeRelationshipsForStartingPawns(IEnumerable<CustomizedPawn> customPawns) {
             Logger.Debug("InitializeRelationshipsForStartingPawns(): " + customPawns?.Count());
+            IEnumerable<CustomizedPawn> allPawns = customPawns.Concat(hiddenPawns);
 
             // Go through each pawn and check for relationships between it and all other pawns.
-            foreach (CustomizedPawn pawn in customPawns) {
-                foreach (CustomizedPawn other in customPawns) {
+            foreach (CustomizedPawn pawn in allPawns) {
+                foreach (CustomizedPawn other in allPawns) {
                     if (pawn == other) {
                         continue;
                     }
@@ -535,7 +536,7 @@ namespace EdB.PrepareCarefully {
         }
 
         public RelationshipBuilder GetRelationshipBuilder() {
-            return new RelationshipBuilder(State.Customizations.Relationships, State.Customizations.ParentChildGroups);
+            return new RelationshipBuilder(State.Customizations.AllPawns, State.Customizations.Relationships, State.Customizations.ParentChildGroups);
         }
     }
 }

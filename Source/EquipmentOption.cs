@@ -16,10 +16,16 @@ namespace EdB.PrepareCarefully {
         public bool RestrictedSpawnType { get; set; }
         public EquipmentType EquipmentType {  get; set; }
         public bool RandomAnimal { get; set; }
-        
+        public bool RandomMech { get; set; }
+
         public bool Animal {
             get {
                 return RandomAnimal || (ThingDef?.race?.Animal ?? false);
+            }
+        }
+        public bool Mech {
+            get {
+                return RandomMech || (ThingDef?.race?.IsMechanoid ?? false);
             }
         }
         public bool Gendered {
@@ -29,11 +35,14 @@ namespace EdB.PrepareCarefully {
         }
         public string Label {
             get {
-                if (!RandomAnimal) {
-                    return ThingDef.LabelCap;
+                if (RandomAnimal) {
+                    return "EdB.PC.Equipment.AvailableEquipment.RandomAnimalLabel".Translate();
+                }
+                else if (RandomMech) {
+                    return "EdB.PC.Equipment.AvailableEquipment.RandomMechLabel".Translate();
                 }
                 else {
-                    return "EdB.PC.Equipment.AvailableEquipment.RandomAnimalLabel".Translate();
+                    return ThingDef.LabelCap;
                 }
             }
         }
