@@ -354,15 +354,17 @@ namespace EdB.PrepareCarefully {
             EquipmentOptions.Add(RandomAnimalEquipmentOption);
         }
         protected void AddRandomMechToEquipmentOptions() {
-            RandomMechEquipmentOption = new EquipmentOption() {
-                ThingDef = null,
-                DefaultSpawnType = EquipmentSpawnType.Mech,
-                Materials = null,
-                SupportsQuality = false,
-                RandomMech = true,
-                EquipmentType = TypeMech
-            };
-            EquipmentOptions.Add(RandomMechEquipmentOption);
+            if (ModsConfig.BiotechActive) {
+                RandomMechEquipmentOption = new EquipmentOption() {
+                    ThingDef = null,
+                    DefaultSpawnType = EquipmentSpawnType.Mech,
+                    Materials = null,
+                    SupportsQuality = false,
+                    RandomMech = true,
+                    EquipmentType = TypeMech
+                };
+                EquipmentOptions.Add(RandomMechEquipmentOption);
+            }
         }
 
         protected bool AddStyleToEquipmentOptions(StyleCategoryDef def) {

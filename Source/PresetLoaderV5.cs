@@ -58,6 +58,20 @@ namespace EdB.PrepareCarefully {
                     });
                     continue;
                 }
+                else if (e.def == null && e.spawnType == "Mech") {
+                    var option = EquipmentDatabase.RandomMechEquipmentOption;
+                    if (option != null) {
+                        customizedEquipment.Add(new CustomizedEquipment() {
+                            EquipmentOption = EquipmentDatabase.RandomMechEquipmentOption,
+                            Count = e.count,
+                            OverseenChance = e.overseenChance ?? 1.0f
+                        });
+                    }
+                    else {
+                        result.AddWarning("Could not load equipment option for random mech because Biotech is not enabled");
+                    }
+                    continue;
+                }
                 ThingDef thingDef = e?.def != null ? DefDatabase<ThingDef>.GetNamedSilentFail(e.def) : null;
                 if (thingDef == null) {
                     result.AddWarning(string.Format("Could not load thing definition for equipment \"{0}\"", e.def));
@@ -87,12 +101,17 @@ namespace EdB.PrepareCarefully {
                 catch {
                     spawnType = EquipmentDatabase.DefaultSpawnTypeForThingDef(thingDef);
                 }
+                float? overseenChance = null;
+                if (spawnType == EquipmentSpawnType.Mech) {
+                    overseenChance = e.overseenChance ?? 1.0f;
+                }
                 customizedEquipment.Add(new CustomizedEquipment() {
                     EquipmentOption = equipmentOption,
                     StuffDef = stuffDef,
                     Quality = quality,
                     SpawnType = spawnType,
-                    Count = e.count
+                    Count = e.count,
+                    OverseenChance = overseenChance,
                 });
             }
             customizations.Equipment = customizedEquipment;

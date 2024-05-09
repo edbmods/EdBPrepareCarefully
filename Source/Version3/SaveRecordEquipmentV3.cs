@@ -12,6 +12,7 @@ namespace EdB.PrepareCarefully {
         public string stuffDef;
         public string quality;
         public string gender;
+        public float? overseenChance;
 
         public SaveRecordEquipmentV3() {
         }
@@ -23,6 +24,7 @@ namespace EdB.PrepareCarefully {
             gender = equipment.Gender.HasValue ? equipment.Gender.ToString() : null;
             quality = equipment.Quality.HasValue ? equipment.Quality.Value.ToString() : null;
             spawnType = equipment.SpawnType.HasValue ? equipment.SpawnType.Value.ToString() : null;
+            overseenChance = equipment.SpawnType == EquipmentSpawnType.Mech ? (equipment.OverseenChance ?? 1.0f) : (float?)null;
         }
 
         public void ExposeData() {
@@ -32,6 +34,7 @@ namespace EdB.PrepareCarefully {
             Scribe_Values.Look<string>(ref this.quality, "quality", null, false);
             Scribe_Values.Look<string>(ref this.spawnType, "spawnType", null, false);
             Scribe_Values.Look<int>(ref this.count, "count", 0, false);
+            Scribe_Values.Look<float?>(ref this.overseenChance, "overseenChance", null, false);
         }
     }
 }
