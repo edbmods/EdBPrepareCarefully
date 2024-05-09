@@ -110,7 +110,7 @@ namespace EdB.PrepareCarefully {
                 Scribe_Values.Look<string>(ref modString, "mods", "", false);
                 result.Mods = ConvertModStringToModList(modString);
                 try {
-                    Scribe_Deep.Look<SaveRecordPawnV3>(ref pawnRecord, "pawn", null);
+                    Scribe_Deep.Look<SaveRecordPawnV3>(ref pawnRecord, "colonist", null);
                 }
                 catch (Exception e) {
                     Messages.Message(modString, MessageTypeDefOf.SilentInput);
