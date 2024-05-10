@@ -179,6 +179,7 @@ namespace EdB.PrepareCarefully {
                                 && d.scatterableOnMapGen && !d.destroyOnDrop)
                                 || (d.category == ThingCategory.Building && d.Minifiable)
                                 //|| (d.category == ThingCategory.Building && d.scatterableOnMapGen) // TODO: Remove to get rid of "Ancient Lamppost"
+                                || (d.race?.Animal ?? false)
                                 || ((d.race?.IsMechanoid ?? false) && d.GetCompProperties<CompProperties_OverseerSubject>() != null)
                         )
                         .GetEnumerator();
