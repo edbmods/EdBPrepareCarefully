@@ -211,10 +211,13 @@ namespace EdB.PrepareCarefully {
                 if (part == null) {
                     continue;
                 }
+                // If there's already an implant on that body part record, skip it. Otherwise add it
+                // to the list of first pass valid implants
                 if (firstPassReplacedParts.ContainsKey(part.Record)) {
                     continue;
                 }
                 firstPassValidImplants.Add(implant);
+                // Also keep track of whether we've replaced a body part with an implant
                 if (implant.ReplacesPart) {
                     firstPassReplacedParts.Add(implant.BodyPartRecord, implant);
                 }
@@ -224,6 +227,7 @@ namespace EdB.PrepareCarefully {
             // that don't replace parts but whose target part has been removed.
             Dictionary<BodyPartRecord, Implant> secondPassReplacedParts = new Dictionary<BodyPartRecord, Implant>();
             List<Implant> secondPassValidImplants = new List<Implant>();
+            // Iterate all of the implants that we marked as valid in the first pass
             foreach (var implant in firstPassValidImplants) {
                 UniqueBodyPart part = health.FindBodyPartsForRecord(implant.BodyPartRecord);
                 if (part == null) {
@@ -260,19 +264,19 @@ namespace EdB.PrepareCarefully {
                 validImplants.Add(implant);
             }
 
-            //Logger.Debug("Valid implants");
-            //foreach (var i in validImplants) {
-            //    Logger.Debug("  " + i.recipe.LabelCap + ", " + i.PartName + (i.ReplacesPart ? ", replaces part" : ""));
-            //}
+            Logger.Debug("Valid implants:");
+            foreach (var i in validImplants) {
+                Logger.Debug("  " + i.Label + ", " + i.BodyPartRecord?.def?.defName + (i.ReplacesPart ? ", replaces part" : ""));
+            }
 
-            // Iterate each body part option for each recipe to determine if that body part is missing,
+            // Iterate each body part option for each option to determine if that body part is missing,
             // based on the whether or not it or one of its ancestors has been replaced.  Only evaluate each
-            // body part once.  The result will be used to determine if recipes and part options should be
+            // body part once.  The result will be used to determine if options and part options should be
             // disabled.
             HashSet<BodyPartRecord> evaluatedParts = new HashSet<BodyPartRecord>();
             Dictionary<BodyPartRecord, Implant> blockedParts = new Dictionary<BodyPartRecord, Implant>();
-            foreach (var recipe in options) {
-                foreach (var part in recipe.Parts) {
+            foreach (var option in options) {
+                foreach (var part in option.Parts) {
                     if (evaluatedParts.Contains(part.Part)) {
                         continue;
                     }
@@ -290,7 +294,7 @@ namespace EdB.PrepareCarefully {
                 }
             }
 
-            // Go through each recipe and recipe part, marking the parts as disabled if
+            // Go through each option and option part, marking the parts as disabled if
             // they are missing and marking the recipes as disabled if all of its parts
             // are disabled.
             foreach (var option in options) {
@@ -318,19 +322,19 @@ namespace EdB.PrepareCarefully {
                 }
             }
 
-            // Evaluate each recipe's selected state.
-            foreach (var recipe in options) {
-                recipe.PartiallySelected = false;
-                if (recipe.Selected) {
+            // Evaluate each option's selected state.
+            foreach (var option in options) {
+                option.PartiallySelected = false;
+                if (option.Selected) {
                     int selectedCount = 0;
-                    foreach (var part in recipe.Parts) {
+                    foreach (var part in option.Parts) {
                         if (part.Selected && !part.Disabled) {
                             selectedCount++;
                             break;
                         }
                     }
                     if (selectedCount == 0) {
-                        recipe.PartiallySelected = true;
+                        option.PartiallySelected = true;
                     }
                 }
             }
@@ -340,8 +344,8 @@ namespace EdB.PrepareCarefully {
 
         protected void ResetCachedBlockedSelectionAlert() {
             bool showAlert = false;
-            foreach (var recipe in options) {
-                foreach (var part in recipe.Parts) {
+            foreach (var option in options) {
+                foreach (var part in option.Parts) {
                     if (part.Disabled && part.Implant != null) {
                         showAlert = true;
                         break;
@@ -356,17 +360,19 @@ namespace EdB.PrepareCarefully {
                 return;
             }
             List<Implant> blockedSelections = new List<Implant>();
-            foreach (var recipe in options) {
-                int partCount = recipe.Parts.Count;
-                foreach (var part in recipe.Parts) {
-                    if (part.Disabled && part.Implant != null) {
-                        blockedSelections.Add(part.Implant);
+            foreach (var option in options) {
+                int partCount = option.Parts?.Count ?? 0;
+                if (option.Parts != null) {
+                    foreach (var part in option.Parts) {
+                        if (part.Disabled && part.Implant != null) {
+                            blockedSelections.Add(part.Implant);
+                        }
                     }
                 }
             }
             string listItems = "";
             foreach (var item in blockedSelections) {
-                listItems += "\n" + "EdB.PC.Dialog.Implant.Alert.Item".Translate(item.Recipe.LabelCap, item.BodyPartRecord.def.label);
+                listItems += "\n" + "EdB.PC.Dialog.Implant.Alert.Item".Translate(item.Label, item.BodyPartRecord?.def?.label);
             }
             cachedBlockedSelectionAlert = "EdB.PC.Dialog.Implant.Alert".Translate(listItems);
         }
@@ -769,7 +775,7 @@ namespace EdB.PrepareCarefully {
                                         ClickPartAction(option, part);
                                     }
                                     if (part.BlockingImplant != null) {
-                                        TooltipHandler.TipRegion(labelRect, "EdB.PC.Dialog.Implant.Conflict".Translate(part.BlockingImplant.Recipe.LabelCap, part.BlockingImplant.BodyPartRecord.Label));
+                                        TooltipHandler.TipRegion(labelRect, "EdB.PC.Dialog.Implant.Conflict".Translate(part.BlockingImplant.Label, part.BlockingImplant.BodyPartRecord.Label));
                                     }
                                 }
                                 cursor += labelRect.height;

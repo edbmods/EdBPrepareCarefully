@@ -26,7 +26,12 @@ namespace EdB.PrepareCarefully {
 
         public string Label {
             get {
-                return Recipe?.addsHediff?.LabelCap ?? "";
+                if (Recipe != null) {
+                    return Recipe?.addsHediff?.LabelCap ?? "";
+                }
+                else {
+                    return "EdB.PC.Dialog.Implant.InstallImplantLabel".Translate(Option?.HediffDef?.label);
+                }
             }
         }
 
@@ -35,6 +40,9 @@ namespace EdB.PrepareCarefully {
                 if (Recipe != null && Recipe.addsHediff != null
                         && (typeof(Hediff_AddedPart).IsAssignableFrom(Recipe.addsHediff.hediffClass)
                             || typeof(Hediff_MissingPart).IsAssignableFrom(Recipe.addsHediff.hediffClass))) {
+                    return true;
+                }
+                else if (Option?.HediffDef?.organicAddedBodypart ?? false) {
                     return true;
                 }
                 return false;

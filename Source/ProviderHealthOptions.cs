@@ -171,6 +171,15 @@ namespace EdB.PrepareCarefully {
             foreach (var value in implantOptionLookup.Values) {
                 options.AddImplantOption(value);
             }
+
+            // Add options for mutations
+            foreach (var def in DefDatabase<HediffDef>.AllDefs.Where(d => d.organicAddedBodypart && d.defaultInstallPart != null)) {
+                ImplantOption option = new ImplantOption() {
+                    HediffDef = def,
+                    BodyPartDefs = new HashSet<BodyPartDef>() { def.defaultInstallPart },
+                };
+                options.AddImplantOption(option);
+            }
         }
 
         protected bool InitializeHediffGivenByUseEffect(OptionsHealth options, CompProperties_UseEffectInstallImplant useEffect) {
