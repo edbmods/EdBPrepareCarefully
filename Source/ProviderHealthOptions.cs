@@ -132,7 +132,7 @@ namespace EdB.PrepareCarefully {
             foreach (var r in recipes) {
                 // Add all of the body parts for that recipe to the list.
                 foreach (var bodyPartDef in r.appliedOnFixedBodyParts) {
-                    List<UniqueBodyPart> fixedParts = options.FindBodyPartsForDef(bodyPartDef);
+                    List<UniqueBodyPart> fixedParts = options.FindBodyPartsForDef(bodyPartDef).ToList();
                     if (fixedParts != null && fixedParts.Count > 0) {
                         //Logger.Debug("Adding recipe for " + r.defName + " for fixed parts " + String.Join(", ", fixedParts.ConvertAll(p => p.Record.LabelCap)));
                         options.AddImplantRecipe(r, fixedParts);
@@ -216,7 +216,7 @@ namespace EdB.PrepareCarefully {
             }
             if (useEffect.bodyPart != null) {
                 List<BodyPartDef> validParts = new List<BodyPartDef>() { useEffect.bodyPart };
-                List<UniqueBodyPart> parts = options.FindBodyPartsForDef(useEffect.bodyPart);
+                List<UniqueBodyPart> parts = options.FindBodyPartsForDef(useEffect.bodyPart).ToList();
                 if (parts == null || parts.Count == 0) {
                     //Logger.Debug("Found no valid body parts for hediff use effect: " + hediffDef.defName + ", " + useEffect.bodyPart.defName);
                     return false;
@@ -250,7 +250,7 @@ namespace EdB.PrepareCarefully {
             if (giver.partsToAffect != null && !giver.canAffectAnyLivePart) {
                 List<BodyPartDef> validParts = new List<BodyPartDef>();
                 foreach (var def in giver.partsToAffect) {
-                    List<UniqueBodyPart> parts = options.FindBodyPartsForDef(def);
+                    List<UniqueBodyPart> parts = options.FindBodyPartsForDef(def).ToList();
                     if (parts != null) {
                         validParts.Add(def);
                     }
