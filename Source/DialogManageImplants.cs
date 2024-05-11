@@ -445,6 +445,9 @@ namespace EdB.PrepareCarefully {
                 return;
             }
             option.Selected = true;
+            if (option.ImplantOption?.MaxSeverity == 1) {
+                UpdateSeverity(option, 1);
+            }
             if (option.Parts.Count == 1) {
                 if (!option.Parts[0].Selected) {
                     option.Parts[0].Selected = true;
@@ -480,12 +483,12 @@ namespace EdB.PrepareCarefully {
         }
 
         public bool NeedsDependencies(ref HashSet<DialogOption> missingDependencies) {
-            Logger.Debug("NeedsDependencies()");
+            //Logger.Debug("NeedsDependencies()");
             if (missingDependencies == null) {
                 missingDependencies = new HashSet<DialogOption>();
             }
             HashSet<HediffDef> selected = new HashSet<HediffDef>(implantList.Select(i => i.Option?.HediffDef).Where(h => h != null));
-            Logger.Debug("    Selected implants: " + string.Join(", ", selected.Select(d => d.defName)));
+            //Logger.Debug("    Selected implants: " + string.Join(", ", selected.Select(d => d.defName)));
             foreach (var implant in implantList) {
                 if (implant.Option?.Dependency != null && !selected.Contains(implant.Option.Dependency)) {
                     var optionToAdd = FindDialogOptionForHediff(implant.Option.Dependency);
@@ -494,7 +497,7 @@ namespace EdB.PrepareCarefully {
                     }
                 }
             }
-            Logger.Debug("    Needs dependencies: " + string.Join(", ", missingDependencies.Select(o => o.ImplantOption?.HediffDef?.defName)));
+            //Logger.Debug("    Needs dependencies: " + string.Join(", ", missingDependencies.Select(o => o.ImplantOption?.HediffDef?.defName)));
             return missingDependencies.Count > 0;
         }
 
@@ -523,7 +526,7 @@ namespace EdB.PrepareCarefully {
                     unneededDependencies.Add(option);
                 }
             }
-            Logger.Debug("Unneeded dependencies: " + string.Join(", ", unneededDependencies.Select(o => o.ImplantOption?.HediffDef?.defName ?? "null")));
+            //Logger.Debug("Unneeded dependencies: " + string.Join(", ", unneededDependencies.Select(o => o.ImplantOption?.HediffDef?.defName ?? "null")));
 
             return unneededDependencies.Count > 0;
         }
@@ -537,7 +540,7 @@ namespace EdB.PrepareCarefully {
             option.Selected = false;
             option.SelectedDependency = false;
             if (option.Parts != null) {
-                Logger.Debug("    option.Parts = " + string.Join(", ", option.Parts.Select(p => p.UniquePart.Record.def.defName)));
+                //Logger.Debug("    option.Parts = " + string.Join(", ", option.Parts.Select(p => p.UniquePart.Record.def.defName)));
             }
             foreach (var part in option.Parts) {
                 if (part.Selected) {
@@ -556,10 +559,10 @@ namespace EdB.PrepareCarefully {
             Implant implant = implantList.FirstOrDefault(i => i.Option == option.ImplantOption);
             if (implant != null) {
                 implant.Severity = option.Severity;
-                Logger.Debug("Updated implant severity");
+                //Logger.Debug("Updated implant severity");
             }
             else {
-                Logger.Debug("Didn't find implant to update");
+                //Logger.Debug("Didn't find implant to update");
             }
         }
         protected void AddImplant(DialogOption option, ImplantBodyPart part) {
@@ -722,7 +725,7 @@ namespace EdB.PrepareCarefully {
                     if (option.Selected || option.SelectedDependency) {
                         float inset = 32;
                         float cursor = labelRect.yMax;
-                        if (option.ImplantOption.MaxSeverity > 0) {
+                        if (option.ImplantOption.MaxSeverity > 1) {
                             float rowWidth = rect.width - inset * 2;
                             float sliderWidth = rowWidth - LevelLabelSize.x - LevelValueSize.x - 12;
                             float sliderHeight = 12;
@@ -789,7 +792,7 @@ namespace EdB.PrepareCarefully {
                     if (option.Selected && option.Parts.Count > 1) {
                         height += LineHeight * option.Parts.Count;
                     }
-                    if (option.Selected && option.ImplantOption.MaxSeverity > 0) {
+                    if (option.Selected && option.ImplantOption.MaxSeverity > 1) {
                         height += LineHeight;
                     }
                     return height;
