@@ -484,17 +484,17 @@ namespace EdB.PrepareCarefully {
             if (missingDependencies == null) {
                 missingDependencies = new HashSet<DialogOption>();
             }
-            HashSet<HediffDef> selected = new HashSet<HediffDef>(implantList.Select(i => i.Option.HediffDef));
+            HashSet<HediffDef> selected = new HashSet<HediffDef>(implantList.Select(i => i.Option?.HediffDef).Where(h => h != null));
             Logger.Debug("    Selected implants: " + string.Join(", ", selected.Select(d => d.defName)));
             foreach (var implant in implantList) {
-                if (implant.Option.Dependency != null && !selected.Contains(implant.Option.Dependency)) {
+                if (implant.Option?.Dependency != null && !selected.Contains(implant.Option.Dependency)) {
                     var optionToAdd = FindDialogOptionForHediff(implant.Option.Dependency);
                     if (optionToAdd != null) {
                         missingDependencies.Add(optionToAdd);
                     }
                 }
             }
-            Logger.Debug("    Needs dependencies: " + string.Join(", ", missingDependencies.Select(o => o.ImplantOption.HediffDef.defName)));
+            Logger.Debug("    Needs dependencies: " + string.Join(", ", missingDependencies.Select(o => o.ImplantOption?.HediffDef?.defName)));
             return missingDependencies.Count > 0;
         }
 

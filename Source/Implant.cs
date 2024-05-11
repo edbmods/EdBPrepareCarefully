@@ -8,8 +8,6 @@ using Verse;
 namespace EdB.PrepareCarefully {
     public class Implant : CustomizedHediff {
 
-        public string label = "";
-
         public Implant() {
         }
 

@@ -261,13 +261,6 @@ namespace EdB.PrepareCarefully {
         public void AddImplantOption(ImplantOption option) {
             ImplantOptions.Add(option);
         }
-        public void AddImplantHediffDef(HediffDef hediffDef, BodyPartRecord bodyPartRecord = null) {
-            ImplantOptions.Add(new ImplantOption() {
-                RecipeDef = null,
-                HediffDef = hediffDef,
-                BodyPartRecord = bodyPartRecord,
-            });
-        }
 
         public IEnumerable<UniqueBodyPart> FindBodyPartsForImplantRecipe(RecipeDef recipeDef) {
             if (recipeDef == null) {
