@@ -77,6 +77,7 @@ namespace EdB.PrepareCarefully {
                 // After we've initialized the new game, swap in the original scenario parts so that the game save
                 // doesn't include any Prepare Carefully-specific scene parts.
                 Mod.Instance.RestoreScenarioParts();
+                Mod.ClearInstance();
             }
         }
     }

@@ -400,7 +400,7 @@ namespace EdB.PrepareCarefully {
                     ApplyImplantToPawn(pawn, implant);
                 }
                 catch (Exception e) {
-                    Logger.Warning("Failed to add implant {" + implant.label + "} to part {" + implant.BodyPartRecord?.def?.defName + "}", e);
+                    Logger.Warning("Failed to add implant {" + implant.Label + "} to part {" + implant.BodyPartRecord?.def?.defName + "}", e);
                     implantsToRemove.Add(implant);
                 }
             }

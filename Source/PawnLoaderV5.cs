@@ -624,8 +624,6 @@ namespace EdB.PrepareCarefully {
                             Recipe = recipeDef,
                             HediffDef = recipeDef.addsHediff,
                         };
-                        // TODO: This looks weird; something to do with caching the label. Should rework it.
-                        implant.label = implant.Label;
                         customizations.Implants.Add(implant);
                         Logger.Debug("Added implant customizations " + recipeDef?.defName);
                     }
@@ -637,18 +635,13 @@ namespace EdB.PrepareCarefully {
                     HediffDef hediffDef = DefDatabase<HediffDef>.GetNamedSilentFail(implantRecord.hediffDef);
                     if (hediffDef != null) {
                         ImplantOption implantOption = healthOptions.FindImplantOptionThatAddsHediffDefToBodyPart(hediffDef, bodyPart?.def);
-                        if (implantOption == null) {
-                            result.AddWarning("Could not add implant to pawn because no matching option was found for specified HediffDef {" + implantRecord.hediffDef + "} and BodyPartDef {" + bodyPart?.def?.defName + "}");
-                        }
-                        else {
-                            Implant implant = new Implant();
-                            implant.Option = implantOption;
-                            implant.BodyPartRecord = bodyPart;
-                            implant.label = implant.Label;
-                            implant.HediffDef = hediffDef;
-                            implant.Severity = implantRecord.severity;
-                            customizations.Implants.Add(implant);
-                        }
+                        Implant implant = new Implant() {
+                            Option = implantOption,
+                            BodyPartRecord = bodyPart,
+                            HediffDef = hediffDef,
+                            Severity = implantRecord.severity,
+                        };
+                        customizations.Implants.Add(implant);
                     }
                     else {
                         result.AddWarning("Could not add implant to pawn because the specified HediffDef {" + implantRecord.hediffDef + "} for the implant was not found");

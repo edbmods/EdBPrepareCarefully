@@ -12,36 +12,39 @@ using static HarmonyLib.Code;
 
 namespace EdB.PrepareCarefully {
     public class ProviderHealthOptions {
-        protected Dictionary<ThingDef, OptionsHealth> optionsLookup = new Dictionary<ThingDef, OptionsHealth>();
+        protected Dictionary<Tuple<ThingDef, MutantDef>, OptionsHealth> optionsLookup = new Dictionary<Tuple<ThingDef, MutantDef>, OptionsHealth>();
         protected HashSet<string> excludedOptions = new HashSet<string>() {
             "VatLearning", "VatGrowing", "Pregnant", "PsychicBond", "PsychicBondTorn",
             "ResearchCommand", "Animal_Flu", "Stillborn", "Animal_Plague"
         };
 
         public OptionsHealth GetOptions(CustomizedPawn customizedPawn) {
-            if (!optionsLookup.TryGetValue(customizedPawn.Pawn.def, out var result)) {
-                result = InitializeHealthOptions(customizedPawn.Pawn.def);
-                optionsLookup.Add(customizedPawn.Pawn.def, result);
+            var cacheKey = Tuple.Create(customizedPawn.Pawn.def, customizedPawn.Pawn.mutant?.Def);
+            if (!optionsLookup.TryGetValue(cacheKey, out var result)) {
+                result = InitializeHealthOptions(customizedPawn.Pawn.def, customizedPawn.Pawn.mutant?.Def);
+                optionsLookup.Add(cacheKey, result);
             }
             return result;
         }
 
         public OptionsHealth GetOptions(Pawn pawn) {
-            if (!optionsLookup.TryGetValue(pawn.def, out var result)) {
-                result = InitializeHealthOptions(pawn.def);
-                optionsLookup.Add(pawn.def, result);
+            var cacheKey = Tuple.Create(pawn.def, pawn.mutant?.Def);
+            if (!optionsLookup.TryGetValue(cacheKey, out var result)) {
+                result = InitializeHealthOptions(pawn.def, pawn.mutant?.Def);
+                optionsLookup.Add(cacheKey, result);
             }
             return result;
         }
         public OptionsHealth GetOptions(ThingDef def) {
-            if (!optionsLookup.TryGetValue(def, out var result)) {
-                result = InitializeHealthOptions(def);
-                optionsLookup.Add(def, result);
+            var cacheKey = Tuple.Create(def, (MutantDef)null);
+            if (!optionsLookup.TryGetValue(cacheKey, out var result)) {
+                result = InitializeHealthOptions(def, null);
+                optionsLookup.Add(cacheKey, result);
             }
             return result;
         }
 
-        protected OptionsHealth InitializeHealthOptions(ThingDef pawnThingDef) {
+        protected OptionsHealth InitializeHealthOptions(ThingDef pawnThingDef, MutantDef mutantDef) {
             OptionsHealth result = new OptionsHealth();
             BodyDef bodyDef = pawnThingDef.race.body;
             result.BodyDef = bodyDef;
@@ -49,7 +52,10 @@ namespace EdB.PrepareCarefully {
             HashSet<UniqueBodyPart> ancestors = new HashSet<UniqueBodyPart>();
             ProcessBodyPart(result, bodyDef.corePart, 1, ancestors);
 
-            InitializeImplantRecipes(result, pawnThingDef);
+            List<ImplantOption> implantOptions = InitializeImplantRecipes(result, pawnThingDef, mutantDef);
+            foreach (var implantOption in implantOptions) {
+                result.AddImplantOption(implantOption);
+            }
             InitializeInjuryOptions(result, pawnThingDef);
 
             result.Sort();
@@ -77,10 +83,11 @@ namespace EdB.PrepareCarefully {
             return index;
         }
 
-        protected void InitializeImplantRecipes(OptionsHealth options, ThingDef pawnThingDef) {
+        protected List<ImplantOption> InitializeImplantRecipes(OptionsHealth options, ThingDef pawnThingDef, MutantDef mutantDef) {
+            List<ImplantOption> result = new List<ImplantOption>();
             // Find all recipes that replace a body part.
             List<RecipeDef> recipes = new List<RecipeDef>();
-            recipes.AddRange(DefDatabase<RecipeDef>.AllDefs.Where((RecipeDef def) => {
+            IEnumerable<RecipeDef> startingRecipes = DefDatabase<RecipeDef>.AllDefs.Where((RecipeDef def) => {
                 if (def.addsHediff != null
                         && ((def.appliedOnFixedBodyParts != null && def.appliedOnFixedBodyParts.Count > 0) || (def.appliedOnFixedBodyPartGroups != null && def.appliedOnFixedBodyPartGroups.Count > 0))
                         && (def.recipeUsers.NullOrEmpty() || def.recipeUsers.Contains(pawnThingDef))) {
@@ -91,9 +98,20 @@ namespace EdB.PrepareCarefully {
                     //Logger.Debug("Excluding implant recipe: " + def.defName);
                     return false;
                 }
-            }));
-
-            
+            }).Where(r => {
+                if (mutantDef != null && r.mutantBlacklist.CountAllowNull() > 0 && r.mutantBlacklist.Contains(mutantDef)) {
+                    Logger.Debug("removing recipe because mutant pawn is not allowed: " + r.LabelCap + ", mutant = " + mutantDef.LabelCap + ", exclusion list = " + string.Join(",", r.mutantBlacklist));
+                    return false;
+                }
+                else if (r.mutantPrerequisite.CountAllowNull() > 0 && !r.mutantPrerequisite.Contains(mutantDef)) {
+                    Logger.Debug("removing recipe because pawn is not an allowed kind of mutant: " + r.LabelCap + ", required = " + string.Join(",", r.mutantPrerequisite));
+                    return false;
+                }
+                else {
+                    return true;
+                } 
+            });
+            recipes.AddRange(startingRecipes);
             
             // Remove duplicates: recipes that apply the same hediff on the same body parts.
             HashSet<int> recipeHashes = new HashSet<int>();
@@ -114,7 +132,7 @@ namespace EdB.PrepareCarefully {
             foreach (var r in recipes) {
                 // Add all of the body parts for that recipe to the list.
                 foreach (var bodyPartDef in r.appliedOnFixedBodyParts) {
-                    List<UniqueBodyPart> fixedParts = options.FindBodyPartsForDef(bodyPartDef);
+                    List<UniqueBodyPart> fixedParts = options.FindBodyPartsForDef(bodyPartDef).ToList();
                     if (fixedParts != null && fixedParts.Count > 0) {
                         //Logger.Debug("Adding recipe for " + r.defName + " for fixed parts " + String.Join(", ", fixedParts.ConvertAll(p => p.Record.LabelCap)));
                         options.AddImplantRecipe(r, fixedParts);
@@ -169,8 +187,19 @@ namespace EdB.PrepareCarefully {
                 }
             }
             foreach (var value in implantOptionLookup.Values) {
-                options.AddImplantOption(value);
+                result.Add(value);
             }
+
+            // Add options for mutations
+            foreach (var def in DefDatabase<HediffDef>.AllDefs.Where(d => d.organicAddedBodypart && d.defaultInstallPart != null)) {
+                ImplantOption option = new ImplantOption() {
+                    HediffDef = def,
+                    BodyPartDefs = new HashSet<BodyPartDef>() { def.defaultInstallPart },
+                };
+                result.Add(option);
+            }
+
+            return result;
         }
 
         protected bool InitializeHediffGivenByUseEffect(OptionsHealth options, CompProperties_UseEffectInstallImplant useEffect) {
@@ -187,7 +216,7 @@ namespace EdB.PrepareCarefully {
             }
             if (useEffect.bodyPart != null) {
                 List<BodyPartDef> validParts = new List<BodyPartDef>() { useEffect.bodyPart };
-                List<UniqueBodyPart> parts = options.FindBodyPartsForDef(useEffect.bodyPart);
+                List<UniqueBodyPart> parts = options.FindBodyPartsForDef(useEffect.bodyPart).ToList();
                 if (parts == null || parts.Count == 0) {
                     //Logger.Debug("Found no valid body parts for hediff use effect: " + hediffDef.defName + ", " + useEffect.bodyPart.defName);
                     return false;
@@ -221,7 +250,7 @@ namespace EdB.PrepareCarefully {
             if (giver.partsToAffect != null && !giver.canAffectAnyLivePart) {
                 List<BodyPartDef> validParts = new List<BodyPartDef>();
                 foreach (var def in giver.partsToAffect) {
-                    List<UniqueBodyPart> parts = options.FindBodyPartsForDef(def);
+                    List<UniqueBodyPart> parts = options.FindBodyPartsForDef(def).ToList();
                     if (parts != null) {
                         validParts.Add(def);
                     }

@@ -358,7 +358,6 @@ namespace EdB.PrepareCarefully {
                             BodyPartRecord = bodyPart,
                             HediffDef = recipeDef.addsHediff,
                         };
-                        implant.label = implant.Label;
                         customizations.Implants.Add(implant);
                     }
                     else {

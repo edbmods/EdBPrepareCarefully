@@ -1,5 +1,18 @@
  _____________________________________________________________________________
  
+   Version 1.5.11
+ _____________________________________________________________________________
+
+ - Added some missing implants (tentacles, etc.)
+ - Bug fixes:
+   - Pawns can no longer add implants that are mutant-specific or restricted
+     if their mutant type does not match
+   - Fixed some errors when trying to open the Bionics and Implants dialog
+     when using some mods
+   - Removed the implant level slider when the implant only has one level
+
+ _____________________________________________________________________________
+ 
    Version 1.5.10
  _____________________________________________________________________________
 

@@ -121,12 +121,12 @@ namespace EdB.PrepareCarefully {
                 return null;
             }
         }
-        public List<UniqueBodyPart> FindBodyPartsForDef(BodyPartDef def) {
+        public IEnumerable<UniqueBodyPart> FindBodyPartsForDef(BodyPartDef def) {
             if (bodyPartDefLookup.TryGetValue(def, out List<UniqueBodyPart> result)) {
                 return result;
             }
             else {
-                return null;
+                return Enumerable.Empty<UniqueBodyPart>();
             }
         }
         public IEnumerable<RecipeDef> FindImplantRecipesThatAddHediff(Hediff hediff) {
@@ -261,13 +261,6 @@ namespace EdB.PrepareCarefully {
         public void AddImplantOption(ImplantOption option) {
             ImplantOptions.Add(option);
         }
-        public void AddImplantHediffDef(HediffDef hediffDef, BodyPartRecord bodyPartRecord = null) {
-            ImplantOptions.Add(new ImplantOption() {
-                RecipeDef = null,
-                HediffDef = hediffDef,
-                BodyPartRecord = bodyPartRecord,
-            });
-        }
 
         public IEnumerable<UniqueBodyPart> FindBodyPartsForImplantRecipe(RecipeDef recipeDef) {
             if (recipeDef == null) {
@@ -329,7 +322,7 @@ namespace EdB.PrepareCarefully {
             else {
                 List<BodyPartRecord> records = new List<BodyPartRecord>();
                 foreach (var part in option.ValidParts) {
-                    records.AddRange(FindBodyPartsForDef(part).ConvertAll(p => p.Record));
+                    records.AddRange(FindBodyPartsForDef(part).Select(p => p.Record));
                 }
                 return records;
             }

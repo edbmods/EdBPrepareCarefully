@@ -262,13 +262,15 @@ namespace EdB.PrepareCarefully {
                 else {
                     //Logger.Debug("Did not find injury option for {" + hediff.def.defName + "} for part {" + hediff.Part?.LabelCap + "}");
                     ImplantOption implantOption = healthOptions.FindImplantOptionsThatAddHediff(hediff).RandomElementWithFallback(null);
-                    if (implantOption != null) {
+                    HediffDef hediffDef = hediff?.def;
+                    BodyPartRecord bodyPartRecord = hediff.Part;
+                    if (hediffDef != null) {
                         var implant = new Implant() {
                             Option = implantOption,
-                            Recipe = implantOption.RecipeDef,
-                            BodyPartRecord = hediff.Part,
+                            Recipe = implantOption?.RecipeDef,
+                            BodyPartRecord = bodyPartRecord,
                             Hediff = hediff,
-                            HediffDef = hediff?.def,
+                            HediffDef = hediffDef,
                         };
                         if (hediff is Hediff_Level level) {
                             //Logger.Debug("Mapping implant " + implantOption.HediffDef.defName + " with severity " + level.level);
@@ -279,7 +281,7 @@ namespace EdB.PrepareCarefully {
                         implants.Add(implant);
                     }
                     else {
-                        Logger.Warning("Could not add hediff {" + hediff.def.defName + "} to the pawn because found no matching implant option for the body part {" + (hediff.Part?.def?.defName ?? "WholeBody") + "}");
+                        Logger.Debug("Could not find implant option for hediff {" + hediff.def?.defName + "} and body part {" + (hediff.Part?.def?.defName ?? "WholeBody") + "}");
                     }
                 }
             }

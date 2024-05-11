@@ -8,7 +8,7 @@ using Verse;
 
 namespace EdB.PrepareCarefully {
     public class Mod {
-        public static readonly Version MinimumGameVersion = new Version(1, 3, 3102);
+        public static readonly Version MinimumGameVersion = new Version(1, 5, 0);
         private static Mod instance = new Mod();
         public static Mod Instance {
             get {
@@ -19,6 +19,9 @@ namespace EdB.PrepareCarefully {
             }
         }
 
+        public static void ClearInstance() {
+            instance = null;
+        }
         public ModState State { get; set; }
 
         public void Clear() {
