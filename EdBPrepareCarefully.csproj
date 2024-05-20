@@ -64,6 +64,7 @@
     <Compile Include="Source\AlienRaceBodyAddon.cs" />
     <Compile Include="Source\ImplantOption.cs" />
     <Compile Include="Source\PawnLoaderV3.cs" />
+    <Compile Include="Source\ExtensionsPawnRelationDef.cs" />
     <Compile Include="Source\PawnSaver.cs" />
     <Compile Include="Source\CostCalculator.cs" />
     <Compile Include="Source\Customizations.cs" />

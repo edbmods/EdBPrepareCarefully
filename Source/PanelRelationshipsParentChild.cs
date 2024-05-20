@@ -307,7 +307,6 @@ namespace EdB.PrepareCarefully {
                 }
                 return pawn.LabelShortCap;
             }
-
         }
 
         protected string GetTooltipText(CustomizedPawn pawn) {
@@ -352,7 +351,7 @@ namespace EdB.PrepareCarefully {
                 }
             });
             rowGroups.Add(new WidgetTable<CustomizedPawn>.RowGroup("<b>" + "EdB.PC.AddParentChild.Header.SelectWorldPawn".Translate() + "</b>",
-                RelationshipManager.AvailableWorldPawns));
+                RelationshipManager.AvailableWorldPawns.Concat(sortedHiddenPawns)));
             WidgetTable<CustomizedPawn>.RowGroup newPawnGroup = new WidgetTable<CustomizedPawn>.RowGroup("<b>" + "EdB.PC.AddParentChild.Header.CreateTemporaryPawn".Translate() + "</b>", RelationshipManager.TemporaryPawns);
             rowGroups.Add(newPawnGroup);
             var pawnDialog = new DialogSelectParentChildPawn() {
