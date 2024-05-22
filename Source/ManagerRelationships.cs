@@ -51,13 +51,13 @@ namespace EdB.PrepareCarefully {
             InitializeHiddenPawns(customPawns);
             State.Customizations.ParentChildGroups = InitializeParentChildGroupsForStartingPawns(customPawns);
             InitializeRelationshipsForStartingPawns(customPawns);
-            // Add a male and a female pawn to the new hidden pawn list.
-            temporaryPawns.Add(CreateNewTemporaryPawn(Gender.Female));
-            temporaryPawns.Add(CreateNewTemporaryPawn(Gender.Male));
             // Assign indices to hidden pawns (indices are used to name pawns, i.e. "Unknown 1" and "Unknown 2").
             // We do this here (and not when we initially created the hidden pawns) so that the initial indices will
             // start at 1 and count up from there as they are displayed from left to right in the UI.
             ReassignHiddenPawnIndices();
+            // Add a male and a female pawn to the new temporary pawn list.
+            temporaryPawns.Add(CreateNewTemporaryPawn(Gender.Female));
+            temporaryPawns.Add(CreateNewTemporaryPawn(Gender.Male));
         }
 
         // If there are any world pawns that our starting pawns have a relationship with, then store
@@ -261,8 +261,33 @@ namespace EdB.PrepareCarefully {
         }
 
         public void ReassignHiddenPawnIndices() {
+            Logger.Debug("ReassignHiddenPawnIndices()");
+            // Reset all of the indices
             HiddenPawnIndex = 1;
             TemporaryPawnIndex = 1;
+            foreach (var group in State.Customizations.ParentChildGroups) {
+                foreach (var parent in group.Parents) {
+                    if (parent.TemporaryPawn != null) {
+                        parent.TemporaryPawn.Index = 0;
+                    }
+                }
+                foreach (var child in group.Children) {
+                    if (child.TemporaryPawn != null) {
+                        child.TemporaryPawn.Index = 0;
+                    }
+                }
+            }
+            foreach (var r in State.Customizations.Relationships) {
+                if (r.Source.TemporaryPawn != null) {
+                    r.Source.TemporaryPawn.Index = 0;
+                }
+                if (r.Target.TemporaryPawn != null) {
+                    r.Target.TemporaryPawn.Index = 0;
+                }
+            }
+
+            // Reassign all of the indices.  Pawns may appear multiple times in the relationship lists, so we only
+            // give them a new index if we haven't already assigned one.
             foreach (var group in State.Customizations.ParentChildGroups) {
                 foreach (var parent in group.Parents) {
                     if (parent.Type == CustomizedPawnType.Hidden && parent.TemporaryPawn.Index == 0) {
@@ -285,9 +310,21 @@ namespace EdB.PrepareCarefully {
                 if (r.Source.Type == CustomizedPawnType.Hidden && r.Source.TemporaryPawn.Index == 0) {
                     r.Source.TemporaryPawn.Index = HiddenPawnIndex++;
                 }
+                else if (r.Source.Type == CustomizedPawnType.Temporary && r.Source.TemporaryPawn.Index == 0) {
+                    r.Source.TemporaryPawn.Index = TemporaryPawnIndex++;
+                }
                 if (r.Target.Type == CustomizedPawnType.Hidden && r.Target.TemporaryPawn.Index == 0) {
                     r.Target.TemporaryPawn.Index = HiddenPawnIndex++;
                 }
+                else if (r.Target.Type == CustomizedPawnType.Temporary && r.Target.TemporaryPawn.Index == 0) {
+                    r.Target.TemporaryPawn.Index = TemporaryPawnIndex++;
+                }
+            }
+            foreach (var p in temporaryPawns) {
+                p.TemporaryPawn.Index = TemporaryPawnIndex++;
+            }
+            foreach (var p in hiddenPawns) {
+                p.TemporaryPawn.Index = HiddenPawnIndex++;
             }
         }
 
@@ -506,7 +543,7 @@ namespace EdB.PrepareCarefully {
 
         public CustomizedPawn ReplaceNewTemporaryCharacter(int index) {
             var pawn = temporaryPawns[index];
-            temporaryPawns[index] = CreateNewTemporaryPawn(pawn.Pawn.gender);
+            temporaryPawns[index] = CreateNewTemporaryPawn(pawn.TemporaryPawn.Gender);
             CustomizedPawn result = AddTemporaryParentChildPawn(pawn);
             return result;
         }

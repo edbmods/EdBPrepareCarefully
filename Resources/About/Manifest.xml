@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <Manifest>
     <identifier>EdB.PrepareCarefully</identifier>
-    <version>1.5.11</version>
+    <version>1.5.12</version>
     <showCrossPromotions>false</showCrossPromotions>
     <manifestUri>https://github.com/edbmods/EdBPrepareCarefully/raw/master/Resources/About/Manifest.xml</manifestUri>
     <downloadUri>https://github.com/edbmods/EdBPrepareCarefully/releases/latest</downloadUri>

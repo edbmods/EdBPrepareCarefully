@@ -8,6 +8,7 @@ using Verse;
 namespace EdB.PrepareCarefully {
     public class PawnSaver {
         public ProviderHealthOptions ProviderHealthOptions { get; set; }
+        public ProviderPassions ProviderPassions { get; set; }
 
         public void SaveToFile(CustomizedPawn customizedPawn, string colonistName) {
             if (customizedPawn?.Customizations == null) {
@@ -233,7 +234,7 @@ namespace EdB.PrepareCarefully {
                 result.skills.Add(new SaveRecordSkillV4() {
                     name = skill.SkillDef?.defName,
                     value = skill.Level,
-                    passion = skill.Passion
+                    passion = ProviderPassions.MapToString(skill.Passion),
                 });
             }
         }

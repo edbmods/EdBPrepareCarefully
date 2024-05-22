@@ -119,13 +119,13 @@ namespace EdB.PrepareCarefully {
                 WidgetPortrait.Draw(customizedPawn.Pawn, clipRect, new Rect(0, 0, rect.width, 70).OutsetBy(10, 10).OffsetBy(0, -3));
             }
             else {
-                Pawn pawn = customizedPawn.Pawn;
+                Gender? gender = customizedPawn.Pawn?.gender ?? customizedPawn.TemporaryPawn?.Gender;
                 GUI.color = Style.ColorButton;
                 Rect portraitRect = new Rect(rect.MiddleX() - SizeGender.HalfX(), rect.y + SpacingGender, SizeGender.x, SizeGender.y);
-                if (pawn.gender == Gender.Female) {
+                if (gender == Gender.Female) {
                     GUI.DrawTexture(portraitRect, Textures.TextureGenderFemaleLarge);
                 }
-                else if (pawn.gender == Gender.Male) {
+                else if (gender == Gender.Male) {
                     GUI.DrawTexture(portraitRect, Textures.TextureGenderMaleLarge);
                 }
                 else {
@@ -220,7 +220,7 @@ namespace EdB.PrepareCarefully {
             Text.Font = GameFont.Tiny;
             Text.Anchor = TextAnchor.MiddleCenter;
             GUI.color = Style.ColorText;
-            Widgets.Label(sourceRelLabelRect.OffsetBy(0, 1), relationship.InverseDef.GetGenderSpecificLabelCap(relationship.Source.Pawn));
+            Widgets.Label(sourceRelLabelRect.OffsetBy(0, 1), relationship.InverseDef.GetGenderSpecificLabelCap(relationship.Source));
 
             Rect targetRelLabelRect = new Rect(sourcePawnRect.xMax, targetPawnRect.yMax - SizeLabelSpacing.y - HeightLabel, targetPawnRect.x - sourcePawnRect.xMax, HeightLabel);
             targetRelLabelRect.width -= (SizeArrow.x + SizeLabelSpacing.x);
@@ -232,7 +232,7 @@ namespace EdB.PrepareCarefully {
             Text.Font = GameFont.Tiny;
             Text.Anchor = TextAnchor.MiddleCenter;
             GUI.color = Style.ColorText;
-            Widgets.Label(targetRelLabelRect.OffsetBy(0, 1), relationship.Def.GetGenderSpecificLabelCap(relationship.Target.Pawn));
+            Widgets.Label(targetRelLabelRect.OffsetBy(0, 1), relationship.Def.GetGenderSpecificLabelCap(relationship.Target));
 
             Text.Anchor = TextAnchor.UpperLeft;
             Text.Font = GameFont.Small;
@@ -297,7 +297,7 @@ namespace EdB.PrepareCarefully {
                     CancelButtonLabel = "EdB.PC.Common.Cancel".Translate(),
                     HeaderLabel = "EdB.PC.AddRelationship.Header.Relationship".Translate(),
                     NameFunc = (PawnRelationDef def) => {
-                        return def.GetGenderSpecificLabelCap(sourceParentChildPawn.Pawn);
+                        return def.GetGenderSpecificLabelCap(sourceParentChildPawn);
                     },
                     SelectedFunc = (PawnRelationDef def) => {
                         return def == selectedRelationship;
@@ -373,7 +373,7 @@ namespace EdB.PrepareCarefully {
                     return def;
                 }).ToList();
                 relationDefs.Sort((PawnRelationDef a, PawnRelationDef b) => {
-                    return a.GetGenderSpecificLabelCap(sourceParentChildPawn.Pawn).CompareTo(b.GetGenderSpecificLabelCap(sourceParentChildPawn.Pawn));
+                    return a.GetGenderSpecificLabelCap(sourceParentChildPawn).CompareTo(b.GetGenderSpecificLabelCap(sourceParentChildPawn));
                 });
                 relationshipDialog.Options = relationDefs;
                 Find.WindowStack.Add(relationshipDialog);

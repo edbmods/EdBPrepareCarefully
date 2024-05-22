@@ -15,6 +15,7 @@ namespace EdB.PrepareCarefully {
         public PawnCustomizer Customizer { get; set; }
         public ManagerPawns PawnManager { get; set; }
         public ManagerRelationships RelationshipManager { get; set; }
+        public ProviderPassions ProviderPassions { get; set; }
 
         protected Dictionary<Type, PawnLayerOptionUpdatedHandler> PawnLayerOptionUpdateHandlers { get; set; } = new Dictionary<Type, PawnLayerOptionUpdatedHandler>();
         protected Dictionary<Type, PawnLayerColorUpdatedHandler> PawnLayerColorUpdateHandlers { get; set; } = new Dictionary<Type, PawnLayerColorUpdatedHandler>();
@@ -251,14 +252,11 @@ namespace EdB.PrepareCarefully {
             }
             Passion currentPassion = record.passion;
             Passion nextPassion = currentPassion;
-            if (currentPassion == Passion.None) {
-                nextPassion = direction > 0 ? Passion.Minor : Passion.Major;
+            if (direction > 0) {
+                nextPassion = ProviderPassions.NextPassionValue(currentPassion);
             }
-            else if (currentPassion == Passion.Minor) {
-                nextPassion = direction > 0 ? Passion.Major : Passion.None;
-            }
-            else if (currentPassion == Passion.Major) {
-                nextPassion = direction > 0 ? Passion.None : Passion.Minor;
+            else {
+                nextPassion = ProviderPassions.PreviousPassionValue(currentPassion);
             }
             PawnManager.UpdatePawnSkillPassion(customizedPawn, skill, nextPassion);
         }
