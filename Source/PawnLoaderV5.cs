@@ -11,6 +11,7 @@ using Verse;
 namespace EdB.PrepareCarefully {
     public class PawnLoaderV5 {
         public ProviderHealthOptions ProviderHealthOptions { get; set; }
+        public ProviderPassions ProviderPassions { get; set; }
 
         // Maintain lists of definitions that were replaced in newer versions of the game.
         public Dictionary<string, string> thingDefReplacements = new Dictionary<string, string>();
@@ -534,12 +535,13 @@ namespace EdB.PrepareCarefully {
                         result.AddWarning("Could not load skill definition \"" + skill.name + "\" from saved preset");
                         continue;
                     }
+                    Passion passion = ProviderPassions.MapFromString(skill.passion);
                     customizations.Skills.Add(new CustomizationsSkill() {
                             SkillDef = def,
                             Level = skill.value,
                             OriginalLevel = skill.value,
-                            Passion = skill.passion,
-                            OriginalPassion = skill.passion,
+                            Passion = passion,
+                            OriginalPassion = passion,
                         }
                     );
                 }

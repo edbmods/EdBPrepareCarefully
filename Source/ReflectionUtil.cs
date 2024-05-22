@@ -190,6 +190,29 @@ namespace EdB.PrepareCarefully {
             return default(T);
         }
 
+        public static T GetStaticFieldValue<T>(Type target, string name) {
+            if (target == null) {
+                Logger.Warning("Could not get value from static field {" + name + "} using reflection because the target type was null");
+                return default(T);
+            }
+            FieldInfo field = Field(target, name);
+            if (field == null) {
+                Logger.Warning("Could not get value from static field {" + name + "} using reflection because we could not find the field on the target type");
+                return default(T);
+            }
+            object o = field.GetValue(null);
+            if (o == null) {
+                return default(T);
+            }
+            if (typeof(T).IsAssignableFrom(o.GetType())) {
+                return (T)field.GetValue(target);
+            }
+            else {
+                Logger.Warning("Could not cast the value from static field {" + name + "} whose type is {" + o.GetType().FullName + "} to the specified type {" + typeof(T).FullName + "}");
+            }
+            return default(T);
+        }
+
         public static T GetPropertyValue<T>(object target, string name) {
             if (target == null) {
                 Logger.Warning("Could not get value from property {" + name + "} using reflection because the target was null");

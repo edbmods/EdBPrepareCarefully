@@ -146,6 +146,7 @@
     <Compile Include="Source\OptionsHealth.cs" />
     <Compile Include="Source\HarmonyPatches.cs" />
     <Compile Include="Source\PawnGenerationRequestWrapper.cs" />
+    <Compile Include="Source\ProviderPassions.cs" />
     <Compile Include="Source\ProviderPawnKinds.cs" />
     <Compile Include="Source\PawnLayer.cs" />
     <Compile Include="Source\PawnLayerAlienAddon.cs" />

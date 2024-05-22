@@ -79,6 +79,8 @@ namespace EdB.PrepareCarefully {
             };
             providerEquipmentTypes.PostConstruction();
             var providerPawnKinds = new ProviderPawnKinds();
+            var providerPassions = new ProviderPassions();
+            providerPassions.PostConstruct();
 
             var ageModifier = new AgeModifier();
 
@@ -94,7 +96,8 @@ namespace EdB.PrepareCarefully {
                 ProviderHealthOptions = providerHealthOptions,
             };
             var pawnLoaderV5 = new PawnLoaderV5() {
-                ProviderHealthOptions = providerHealthOptions
+                ProviderHealthOptions = providerHealthOptions,
+                ProviderPassions = providerPassions,
             };
             var pawnLoader = new PawnLoader() {
                 PawnLoaderV3 = pawnLoaderV3,
@@ -121,7 +124,8 @@ namespace EdB.PrepareCarefully {
                 PresetLoaderV5 = presetLoaderV5,
             };
             var pawnSaver = new PawnSaver() {
-                ProviderHealthOptions = providerHealthOptions
+                ProviderHealthOptions = providerHealthOptions,
+                ProviderPassions = providerPassions,
             };
             var presetSaver = new PresetSaver() {
                 PawnSaver = pawnSaver
@@ -164,6 +168,7 @@ namespace EdB.PrepareCarefully {
                 Customizer = pawnCustomizer,
                 PawnManager = pawnManager,
                 RelationshipManager = relationshipManager,
+                ProviderPassions = providerPassions,
             };
             var controllerRelationships = new ControllerTabViewRelationships() {
                 State = state,
@@ -277,7 +282,8 @@ namespace EdB.PrepareCarefully {
             };
             var skillsPanel = new PanelSkills() {
                 State = state,
-                ViewState = viewState
+                ViewState = viewState,
+                ProviderPassions = providerPassions,
             };
             var incapableOfPanel = new PanelIncapableOf() {
                 State = state,

@@ -26,6 +26,7 @@ namespace EdB.PrepareCarefully {
         protected WidgetScrollViewVertical scrollView = new WidgetScrollViewVertical();
         public ModState State { get; set; }
         public ViewState ViewState { get; set; }
+        public ProviderPassions ProviderPassions { get; set; }
 
         public PanelSkills() {
         }
@@ -219,19 +220,7 @@ namespace EdB.PrepareCarefully {
             if (skillRecord == null) {
                 return null;
             }
-            Passion passion = skillRecord.passion;
-            if (passion == Passion.Minor) {
-                return Textures.TexturePassionMinor;
-            }
-            else if (passion == Passion.Major) {
-                return Textures.TexturePassionMajor;
-            }
-            else if (passion == Passion.None) {
-                return Textures.TexturePassionNone;
-            }
-            else {
-                return null;
-            }
+            return ProviderPassions.TextureForPassion(skillRecord.passion);
         }
 
         public static void FillableBar(Rect rect, float fillPercent, Texture2D fillTex) {

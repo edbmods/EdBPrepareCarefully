@@ -3,6 +3,7 @@
    Version 1.5.12
  _____________________________________________________________________________
 
+ - Added support for the additional passions in Vanilla Skills Expanded
  - Bug fixes:
    - Fixed problems with temporary pawns in the Relationships tab
 
