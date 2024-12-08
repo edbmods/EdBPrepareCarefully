@@ -363,7 +363,8 @@ namespace EdB.PrepareCarefully {
                 }
             }
             if (!ProviderPawnKinds.PawnKindsWithNoFaction.EnumerableNullOrEmpty()) {
-                rowGroups.Add(new WidgetTable<PawnKindOption>.RowGroup("<b>Other</b>", ProviderPawnKinds.PawnKindsWithNoFaction.Select(k => new PawnKindOption(null, k))));
+                string otherFaction = "EdB.PC.PawnKind.Other".Translate().RawText ?? "Other";
+                rowGroups.Add(new WidgetTable<PawnKindOption>.RowGroup($"<b>{otherFaction}</b>", ProviderPawnKinds.PawnKindsWithNoFaction.Select(k => new PawnKindOption(null, k))));
             }
 
             DialogPawnKinds dialog = new DialogPawnKinds() {
