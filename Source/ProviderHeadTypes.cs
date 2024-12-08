@@ -118,12 +118,17 @@ namespace EdB.PrepareCarefully {
             }
         }
         public string GetHeadTypeLabel(HeadTypeDef headType) {
-            if (headType.label.NullOrEmpty()) {
+            // Try get xml label first
+            string headTypeCustomLabel = $"EdB.PC.HeadType.{headType.defName}.label".Translate();
+            if (headType.label.NullOrEmpty() && !headTypeCustomLabel.NullOrEmpty()) {
+                return headTypeCustomLabel;
+            }
+            
+            if (headTypeCustomLabel.NullOrEmpty()) {
                 return ConvertHeadTypeDefNameToLabel(headType.defName);
             }
-            else {
-                return headType.LabelCap;
-            }
+
+            return headType.LabelCap;
         }
 
         protected string ConvertHeadTypeDefNameToLabel(string defName) {
