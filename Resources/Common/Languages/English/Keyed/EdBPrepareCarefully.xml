@@ -470,6 +470,40 @@ Click the randomize button to generate a colonist with this xenotype</EdB.PC.Pan
 
   <EdB.PC.Panel.WorldPawnList.Title>World</EdB.PC.Panel.WorldPawnList.Title>
 
-
-
+  <EdB.PC.HeadType.Male_AverageNormal.label>Male Average Normal</EdB.PC.HeadType.Male_AverageNormal.label>
+  <EdB.PC.HeadType.Male_AveragePointy.label>Male Average Pointy</EdB.PC.HeadType.Male_AveragePointy.label>
+  <EdB.PC.HeadType.Male_AverageWide.label>Male Average Wide</EdB.PC.HeadType.Male_AverageWide.label>
+  <EdB.PC.HeadType.Male_NarrowNormal.label>Male Narrow Normal</EdB.PC.HeadType.Male_NarrowNormal.label>
+  <EdB.PC.HeadType.Male_NarrowPointy.label>Male Narrow Pointy</EdB.PC.HeadType.Male_NarrowPointy.label>
+  <EdB.PC.HeadType.Male_NarrowWide.label>Male Narrow Wide</EdB.PC.HeadType.Male_NarrowWide.label>
+  <EdB.PC.HeadType.Male_HeavyJawNormal.label>Male Heavy Jaw</EdB.PC.HeadType.Male_HeavyJawNormal.label>
+  <EdB.PC.HeadType.Female_AverageNormal.label>Female Average Normal</EdB.PC.HeadType.Female_AverageNormal.label>
+  <EdB.PC.HeadType.Female_AveragePointy.label>Female Average Pointy</EdB.PC.HeadType.Female_AveragePointy.label>
+  <EdB.PC.HeadType.Female_AverageWide.label>Female Average Wide</EdB.PC.HeadType.Female_AverageWide.label>
+  <EdB.PC.HeadType.Female_NarrowNormal.label>Female Narrow Normal</EdB.PC.HeadType.Female_NarrowNormal.label>
+  <EdB.PC.HeadType.Female_NarrowPointy.label>Female Narrow Pointy</EdB.PC.HeadType.Female_NarrowPointy.label>
+  <EdB.PC.HeadType.Female_NarrowWide.label>Female Narrow Wide</EdB.PC.HeadType.Female_NarrowWide.label>
+  <EdB.PC.HeadType.Female_HeavyJawNormal.label>Female Heavy Jaw</EdB.PC.HeadType.Female_HeavyJawNormal.label>
+  <EdB.PC.HeadType.Furskin_Average1.label>Furskin Average 1</EdB.PC.HeadType.Furskin_Average1.label>
+  <EdB.PC.HeadType.Furskin_Average2.label>Furskin Average 2</EdB.PC.HeadType.Furskin_Average2.label>
+  <EdB.PC.HeadType.Furskin_Average3.label>Furskin Average 3</EdB.PC.HeadType.Furskin_Average3.label>
+  <EdB.PC.HeadType.Furskin_Narrow1.label>Furskin Narrow 1</EdB.PC.HeadType.Furskin_Narrow1.label>
+  <EdB.PC.HeadType.Furskin_Narrow2.label>Furskin Narrow 2</EdB.PC.HeadType.Furskin_Narrow2.label>
+  <EdB.PC.HeadType.Furskin_Narrow3.label>Furskin Narrow 3</EdB.PC.HeadType.Furskin_Narrow3.label>
+  <EdB.PC.HeadType.Furskin_Heavy1.label>Furskin Heavy 1</EdB.PC.HeadType.Furskin_Heavy1.label>
+  <EdB.PC.HeadType.Furskin_Heavy2.label>Furskin Heavy 2</EdB.PC.HeadType.Furskin_Heavy2.label>
+  <EdB.PC.HeadType.Furskin_Heavy3.label>Furskin Heavy 3</EdB.PC.HeadType.Furskin_Heavy3.label>
+  <EdB.PC.HeadType.Furskin_Gaunt.label>Furskin Gaunt</EdB.PC.HeadType.Furskin_Gaunt.label>
+  <EdB.PC.HeadType.Gaunt.label>Gaunt</EdB.PC.HeadType.Gaunt.label>
+  <EdB.PC.HeadType.Ghoul_Normal.label>Ghoul Normal</EdB.PC.HeadType.Ghoul_Normal.label>
+  <EdB.PC.HeadType.Ghoul_Narrow.label>Ghoul Narrow</EdB.PC.HeadType.Ghoul_Narrow.label>
+  <EdB.PC.HeadType.Ghoul_Wide.label>Ghoul Wide</EdB.PC.HeadType.Ghoul_Wide.label>
+  <EdB.PC.HeadType.Ghoul_Heavy.label>Ghoul Heavy</EdB.PC.HeadType.Ghoul_Heavy.label>
+  <EdB.PC.HeadType.CultEscapee.label>Cult Escapee</EdB.PC.HeadType.CultEscapee.label>
+  <EdB.PC.HeadType.TimelessOne.label>Timeless One</EdB.PC.HeadType.TimelessOne.label>
+  <EdB.PC.HeadType.DarkScholar_Male.label>Male Dark Scholar</EdB.PC.HeadType.DarkScholar_Male.label>
+  <EdB.PC.HeadType.Leathery_Male.label>Male Leathery</EdB.PC.HeadType.Leathery_Male.label>
+  <EdB.PC.HeadType.DarkScholar_Female.label>Female Dark Scholar</EdB.PC.HeadType.DarkScholar_Female.label>
+  <EdB.PC.HeadType.Leathery_Female.label>Female Leathery</EdB.PC.HeadType.Leathery_Female.label>
+  <EdB.PC.PawnKind.Other>Other</EdB.PC.PawnKind.Other>
 </LanguageData>
