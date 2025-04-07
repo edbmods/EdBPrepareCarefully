@@ -9,3 +9,4 @@ Libraries/*
 *.bat
 !dist.bat
 *.dll
+/EdBPrepareCarefully.csproj
