@@ -39,7 +39,7 @@ namespace EdB.PrepareCarefully {
 
         public void ApplyFavoriteColorCustomizationToPawn(Pawn pawn, CustomizationsPawn customizations) {
             if (ModsConfig.IdeologyActive) {
-                if (customizations.FavoriteColor.HasValue) {
+                if (customizations.FavoriteColor != null) {
                     pawn.story.favoriteColor = customizations.FavoriteColor;
                 }
             }

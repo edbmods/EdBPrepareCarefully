@@ -1,5 +1,20 @@
  _____________________________________________________________________________
  
+   Version 1.6.1
+ _____________________________________________________________________________
+
+ - Compatibility for 1.6
+ - Can no longer choose any color when selecting a favorite color--only colors
+   from color definitions
+ - Bug fixes:
+   - Equipment saved in a presets as "spawn near" (or any other spawn
+     type) is now loaded correctly
+   - Animal genders saved in presets are now loading correctly
+   - You can switch back to the "Random" selection in animal gender dropdown
+     after selecting another option
+
+ _____________________________________________________________________________
+ 
    Version 1.5.12
  _____________________________________________________________________________
 

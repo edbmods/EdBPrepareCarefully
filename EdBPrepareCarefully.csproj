@@ -311,8 +311,4 @@
     <None Include="Libraries\README.md" />
   </ItemGroup>
   <ItemGroup />
-  <PropertyGroup>
-    <PostBuildEvent>cd $(SolutionDir)
-deploy.bat</PostBuildEvent>
-  </PropertyGroup>
 </Project>

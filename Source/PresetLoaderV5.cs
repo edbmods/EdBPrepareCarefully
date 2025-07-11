@@ -83,20 +83,23 @@ namespace EdB.PrepareCarefully {
                     continue;
                 }
                 ThingDef stuffDef = e.stuffDef != null ? DefDatabase<ThingDef>.GetNamedSilentFail(e.stuffDef) : null;
-                Gender gender = Gender.Female;;
-                try {
-                    gender = (Gender)Enum.Parse(typeof(Gender), e.gender);
+                Gender? gender = null;
+                if (!e.gender.NullOrEmpty()) {
+                    try {
+                        gender = (Gender)Enum.Parse(typeof(Gender), e.gender);
+                    }
+                    catch { }
                 }
-                catch {}
                 QualityCategory? quality = null;
-                try {
-                    quality = Enum.Parse(typeof(QualityCategory), e.quality) as QualityCategory?;
+                if (!e.quality.NullOrEmpty()) {
+                    try {
+                        quality = Enum.Parse(typeof(QualityCategory), e.quality) as QualityCategory?;
+                    }
+                    catch { }
                 }
-                catch {
-                }
-                EquipmentSpawnType? spawnType = null;
+                EquipmentSpawnType? spawnType;
                 try {
-                    spawnType = Enum.Parse(typeof(EquipmentSpawnType), e.quality) as EquipmentSpawnType?;
+                    spawnType = Enum.Parse(typeof(EquipmentSpawnType), e.spawnType) as EquipmentSpawnType?;
                 }
                 catch {
                     spawnType = EquipmentDatabase.DefaultSpawnTypeForThingDef(thingDef);
@@ -111,6 +114,7 @@ namespace EdB.PrepareCarefully {
                     Quality = quality,
                     SpawnType = spawnType,
                     Count = e.count,
+                    Gender = gender,
                     OverseenChance = overseenChance,
                 });
             }

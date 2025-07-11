@@ -361,7 +361,15 @@ namespace EdB.PrepareCarefully {
 
             LoadName(record, customizations, result);
 
-            customizations.FavoriteColor = record.favoriteColor;
+            if (record.favoriteColorDef != null) {
+                ColorDef favoriteColorDef = DefDatabase<ColorDef>.GetNamedSilentFail(record.favoriteColorDef);
+                if (favoriteColorDef != null) {
+                    customizations.FavoriteColor = favoriteColorDef;
+                }
+            }
+            else if (record.favoriteColor != null) {
+                customizations.FavoriteColor = UtilityColor.FindColorDefForColor(record.favoriteColor.Value);
+            }
 
             // TODO: Faction stuff for world pawns
             //if (record.originalFactionDef != null) {

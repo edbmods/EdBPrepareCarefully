@@ -83,11 +83,9 @@ namespace EdB.PrepareCarefully {
             }
 
             result.age = 0;
-            //result.biologicalAge = customizations.BiologicalAge;
-            //result.chronologicalAge = customizations.ChronologicalAge;
             result.biologicalAgeInTicks = customizations.BiologicalAgeInTicks;
             result.chronologicalAgeInTicks = customizations.ChronologicalAgeInTicks;
-            result.favoriteColor = customizations.FavoriteColor;
+            result.favoriteColorDef = customizations.FavoriteColor?.defName;
 
             ConvertTraits(result, customizations);
             ConvertSkills(result, customizations);

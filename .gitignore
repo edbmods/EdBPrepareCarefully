@@ -9,3 +9,4 @@ Libraries/*
 *.bat
 !dist.bat
 *.dll
+Directory.Build.targets

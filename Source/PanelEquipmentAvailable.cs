@@ -91,7 +91,7 @@ namespace EdB.PrepareCarefully {
             SpawnTypeFloatMenuOptions.Add(new FloatMenuOption(UtilityEquipmentSpawnType.LabelForSpawnTypeHeader(EquipmentSpawnType.SpawnsNear), () => { SelectedValues.SpawnType = EquipmentSpawnType.SpawnsNear; }, MenuOptionPriority.Default, null, null, 0, null, null));
             SpawnTypeFloatMenuOptions.Add(new FloatMenuOption(UtilityEquipmentSpawnType.LabelForSpawnTypeHeader(EquipmentSpawnType.SpawnsWith), () => { SelectedValues.SpawnType = EquipmentSpawnType.SpawnsWith; }, MenuOptionPriority.Default, null, null, 0, null, null));
 
-            GenderFloatMenuOptions.Add(new FloatMenuOption("Random".Translate(), () => { SelectedValues.Quality = null; RecalculateSelectedOptionCost(); }, MenuOptionPriority.Default, null, null, 0, null, null));
+            GenderFloatMenuOptions.Add(new FloatMenuOption("Random".Translate(), () => { SelectedValues.Gender = null; RecalculateSelectedOptionCost(); }, MenuOptionPriority.Default, null, null, 0, null, null));
             GenderFloatMenuOptions.Add(new FloatMenuOption(Gender.Female.GetLabel().CapitalizeFirst(), () => { SelectedValues.Gender = Gender.Female; RecalculateSelectedOptionCost(); }, MenuOptionPriority.Default, null, null, 0, null, null));
             GenderFloatMenuOptions.Add(new FloatMenuOption(Gender.Male.GetLabel().CapitalizeFirst(), () => { SelectedValues.Gender = Gender.Male; RecalculateSelectedOptionCost(); }, MenuOptionPriority.Default, null, null, 0, null, null));
         }

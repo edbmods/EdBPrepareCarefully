@@ -21,7 +21,7 @@ namespace EdB.PrepareCarefully {
 
         public delegate void UpdateBackstoryHandler(BackstorySlot slot, BackstoryDef backstory);
         public delegate void RandomizeButtonClickedHandler();
-        public delegate void UpdateFavoriteColorHandler(Color? color);
+        public delegate void UpdateFavoriteColorHandler(ColorDef colorDef);
 
         public event UpdateBackstoryHandler BackstoryUpdated;
         public event RandomizeButtonClickedHandler RandomizeButtonClicked;
@@ -207,21 +207,21 @@ namespace EdB.PrepareCarefully {
                 GUI.color = Color.white;
 
                 Rect favoriteColorRect = FavoriteColorRect.OffsetBy(0, y);
-                Color favoriteColor = customizedPawn.Pawn.story.favoriteColor ?? new Color(0.5f, 0.5f, 0.5f);
-
+                ColorDef favoriteColor = customizedPawn.Pawn.story.favoriteColor;
+                
                 if (favoriteColorRect.Contains(Event.current.mousePosition)) {
                     Widgets.DrawAtlas(favoriteColorRect, Textures.TextureFieldAtlasWhite);
-                    GUI.color = favoriteColor;
+                    GUI.color = favoriteColor.color;
                     Widgets.DrawAtlas(favoriteColorRect.InsetBy(1), Textures.TextureFieldAtlasWhite);
                 }
                 else {
-                    GUI.color = favoriteColor;
+                    GUI.color = favoriteColor.color;
                     Widgets.DrawAtlas(favoriteColorRect, Textures.TextureFieldAtlasWhite);
                 }
                 GUI.color = Color.white;
                 if (Widgets.ButtonInvisible(favoriteColorRect, false)) {
                     var dialog = new DialogFavoriteColor(favoriteColor) {
-                        ConfirmAction = (Color color) => FavoriteColorUpdated(color),
+                        ConfirmAction = (ColorDef colorDef) => FavoriteColorUpdated(colorDef),
                         CurrentPawn = ViewState.CurrentPawn
                     };
                     Find.WindowStack.Add(dialog);
