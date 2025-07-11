@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using RimWorld;
 using UnityEngine;
+using Verse;
 
 namespace EdB.PrepareCarefully {
     public static class UtilityColor {
@@ -19,6 +20,15 @@ namespace EdB.PrepareCarefully {
             else {
                 return false;
             }
+        }
+
+        public static ColorDef FindColorDefForColor(Color color) {
+            foreach (ColorDef def in DefDatabase<ColorDef>.AllDefs) {
+                if (AlmostEqual(color, def.color)) {
+                    return def;
+                }
+            }
+            return null;
         }
     }
 }

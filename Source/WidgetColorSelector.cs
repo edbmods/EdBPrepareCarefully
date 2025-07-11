@@ -1,3 +1,4 @@
+using RimWorld;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -9,6 +10,7 @@ using Verse;
 namespace EdB.PrepareCarefully {
     public class WidgetColorSelector {
         public delegate void SelectColorHandler(Color color);
+        public delegate void SelectColorDefHandler(ColorDef colorDef);
 
         public static Vector2 SwatchSize = new Vector2(16, 16);
         public static Vector2 SwatchSpacing = new Vector2(4, 4);
@@ -40,7 +42,7 @@ namespace EdB.PrepareCarefully {
                 Rect overlayRect = rect.InsetBy(1, 1);
                 bool iconDisplayed = false;
                 if (pawn?.Pawn?.story.favoriteColor != null) {
-                    if (color.IndistinguishableFrom(pawn.Pawn.story.favoriteColor.Value)) {
+                    if (color.IndistinguishableFrom(pawn.Pawn.story.favoriteColor.color)) {
                         GUI.DrawTexture(overlayRect, Textures.TextureFavoriteColor);
                         TooltipHandler.TipRegion(overlayRect, "FavoriteColorPickerTip".Translate(pawn.Pawn.Named("PAWN")));
                         iconDisplayed = true;
@@ -56,6 +58,59 @@ namespace EdB.PrepareCarefully {
                 if (!selected) {
                     if (Widgets.ButtonInvisible(rect, false)) {
                         selectAction?.Invoke(color);
+                    }
+                }
+
+                rect.x += swatchSize + SwatchSpacing.x;
+                if (rect.xMax >= width) {
+                    rect.y += swatchSize + SwatchSpacing.y;
+                    rect.x = x + 1;
+                }
+            }
+
+            GUI.color = Color.white;
+            return rect.yMax - y;
+        }
+        public static float DrawColorDefSwatches(float x, float y, float width, float swatchSize, ColorDef currentColor, List<ColorDef> swatches, SelectColorDefHandler selectAction, CustomizedPawn pawn = null) {
+            if (swatches.CountAllowNull() == 0) {
+                return 0;
+            }
+            Rect rect = new Rect(x + 1, y + 1, swatchSize, swatchSize);
+            foreach (ColorDef colorDef in swatches) {
+                bool selected = currentColor == colorDef;
+                if (selected) {
+                    Rect selectionRect = new Rect(rect.x - 2, rect.y - 2, swatchSize + 4, swatchSize + 4);
+                    GUI.color = SelectedSwatchBorderColor;
+                    GUI.DrawTexture(selectionRect, BaseContent.WhiteTex);
+                }
+
+                Rect borderRect = new Rect(rect.x - 1, rect.y - 1, swatchSize + 2, swatchSize + 2);
+                GUI.color = SwatchBorderColor;
+                GUI.DrawTexture(borderRect, BaseContent.WhiteTex);
+
+                GUI.color = colorDef.color;
+                GUI.DrawTexture(rect, BaseContent.WhiteTex);
+
+                GUI.color = SwatchOverlayColor;
+                Rect overlayRect = rect.InsetBy(1, 1);
+                bool iconDisplayed = false;
+                if (pawn?.Pawn?.story.favoriteColor != null) {
+                    if (colorDef == pawn.Pawn.story.favoriteColor) {
+                        GUI.DrawTexture(overlayRect, Textures.TextureFavoriteColor);
+                        TooltipHandler.TipRegion(overlayRect, "FavoriteColorPickerTip".Translate(pawn.Pawn.Named("PAWN")));
+                        iconDisplayed = true;
+                    }
+                }
+                if (!iconDisplayed && UtilityIdeo.IdeoEnabledForPawn(pawn) && pawn?.Pawn?.Ideo != null) {
+                    if (colorDef == pawn.Pawn.Ideo.colorDef) {
+                        GUI.DrawTexture(overlayRect, Textures.TextureIdeoColor);
+                        TooltipHandler.TipRegion(overlayRect, "IdeoColorPickerTip".Translate(pawn.Pawn.Named("PAWN")));
+                    }
+                }
+
+                if (!selected) {
+                    if (Widgets.ButtonInvisible(rect, false)) {
+                        selectAction?.Invoke(colorDef);
                     }
                 }
 

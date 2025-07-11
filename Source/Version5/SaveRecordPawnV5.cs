@@ -33,6 +33,7 @@ namespace EdB.PrepareCarefully {
         public string lastName;
         public string nickName;
         public Color? favoriteColor;
+        public string favoriteColorDef;
         public int age;
         public int biologicalAge;
         public int chronologicalAge;
@@ -98,6 +99,7 @@ namespace EdB.PrepareCarefully {
             Scribe_Values.Look<string>(ref this.nickName, "nickName", null, false);
             Scribe_Values.Look<string>(ref this.lastName, "lastName", null, false);
             Scribe_Values.Look<Color?>(ref this.favoriteColor, "favoriteColor", null, false);
+            Scribe_Values.Look<string>(ref this.favoriteColorDef, "favoriteColorDef", null, false);
             Scribe_Values.Look<int>(ref this.biologicalAge, "biologicalAge", 0, false);
             Scribe_Values.Look<int>(ref this.chronologicalAge, "chronologicalAge", 0, false);
             Scribe_Values.Look<long?>(ref this.biologicalAgeInTicks, "biologicalAgeInTicks", null, false);

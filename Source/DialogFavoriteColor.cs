@@ -21,17 +21,17 @@ namespace EdB.PrepareCarefully {
         public Vector2 ContentSize { get; protected set; }
         public Rect ContentRect { get; protected set; }
         public float FooterHeight { get; protected set; }
-        public Action<Color> ConfirmAction { get; set; }
+        public Action<ColorDef> ConfirmAction { get; set; }
         public string CancelButtonLabel { get; protected set; }
         public string ConfirmButtonLabel { get; protected set; }
         public Rect ColorSwatchRect { get; protected set; }
         public Rect RedSliderRect { get; protected set; }
         public Rect GreenSliderRect { get; protected set; }
         public Rect BlueSliderRect { get; protected set; }
-        protected Color currentColor;
-        protected List<Color> StandardColors = new List<Color>();
+        protected ColorDef currentColor;
+        protected List<ColorDef> StandardColors = new List<ColorDef>();
 
-        public DialogFavoriteColor(Color startingColor) {
+        public DialogFavoriteColor(ColorDef startingColor) {
             this.closeOnCancel = true;
             this.doCloseX = true;
             this.absorbInputAroundWindow = true;
@@ -87,35 +87,25 @@ namespace EdB.PrepareCarefully {
             base.PreOpen();
 
             foreach (ColorDef colDef in DefDatabase<ColorDef>.AllDefs.Where((ColorDef x) => x.colorType == ColorType.Ideo || x.colorType == ColorType.Misc)) {
-                if (!StandardColors.Any((Color x) => x.IndistinguishableFrom(colDef.color))) {
-                    StandardColors.Add(colDef.color);
-                }
+                StandardColors.Add(colDef);
             }
-            if (UtilityIdeo.IdeoEnabledForPawn(CurrentPawn) && CurrentPawn.Pawn?.ideo?.Ideo != null) {
-                Color ideoColor = CurrentPawn.Pawn.ideo.Ideo.ApparelColor;
-                if (!StandardColors.Any((Color x) => x.IndistinguishableFrom(ideoColor))) {
-                    StandardColors.Add(ideoColor);
-                }
+            StandardColors.SortByColor((ColorDef x) => x.color);
+            if (currentColor == null) {
+                currentColor = StandardColors.FirstOrDefault();
             }
-            StandardColors.SortByColor((Color x) => x);
         }
 
         public override void DoWindowContents(Rect inRect) {
             GUI.color = Color.white;
             Text.Font = GameFont.Medium;
-            float originalR = currentColor.r;
-            float originalG = currentColor.g;
-            float originalB = currentColor.b;
             Widgets.Label(HeaderRect, "EdB.PC.Dialog.FavoriteColor.Header".Translate());
 
-            float topPadding = 4;
-            float swatchesTop = ContentRect.y + topPadding;
-            float y = WidgetColorSelector.DrawSwatches(ContentRect.x, swatchesTop, ContentRect.width, 20, currentColor, StandardColors, (Color color) => { currentColor = color; }, CurrentPawn);
-            y += 12;
-            //Widgets.DrawBox(ContentRect, 1);
-            Rect selectorRect = new Rect(ContentRect.x, swatchesTop + y, ContentRect.width, ContentRect.height - topPadding - y);
-            //Widgets.DrawBox(selectorRect, 1);
-            WidgetColorSelector.DrawSelector(selectorRect, currentColor, (Color color) => { currentColor = color; });
+            if (StandardColors.Count > 0) {
+                float topPadding = 4;
+                float swatchesTop = ContentRect.y + topPadding;
+                float y = WidgetColorSelector.DrawColorDefSwatches(ContentRect.x, swatchesTop, ContentRect.width, 20, currentColor, StandardColors, (ColorDef colorDef) => { currentColor = colorDef; }, CurrentPawn);
+                y += 12;
+            }
 
             GUI.color = Color.white;
             Text.Font = GameFont.Small;

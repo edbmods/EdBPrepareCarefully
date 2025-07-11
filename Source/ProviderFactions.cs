@@ -235,8 +235,8 @@ namespace EdB.PrepareCarefully {
             if (def == null) {
                 return null;
             }
-            if (def.defaultFactionType != null) {
-                return GetFaction(def.defaultFactionType);
+            if (def.defaultFactionDef != null) {
+                return GetFaction(def.defaultFactionDef);
             }
             else {
                 return null;

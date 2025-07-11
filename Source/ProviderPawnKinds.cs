@@ -71,9 +71,9 @@ namespace EdB.PrepareCarefully {
                 if (kindDef.LabelCap.ToString().NullOrEmpty()) {
                     continue;
                 }
-                if (kindDef.defaultFactionType != null) {
-                    if (uniquePawnKindsByFaction.ContainsKey(kindDef.defaultFactionType)) {
-                        uniquePawnKindsByFaction[kindDef.defaultFactionType].Add(kindDef);
+                if (kindDef.defaultFactionDef != null) {
+                    if (uniquePawnKindsByFaction.ContainsKey(kindDef.defaultFactionDef)) {
+                        uniquePawnKindsByFaction[kindDef.defaultFactionDef].Add(kindDef);
                     }
                 }
                 else {

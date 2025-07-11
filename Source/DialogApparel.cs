@@ -444,7 +444,9 @@ namespace EdB.PrepareCarefully {
                 CurrentSwatches.AddRange(SelectedOption.ThingDef.colorGenerator.GetColorList());
             }
             if (CustomizedPawn?.Pawn?.story?.favoriteColor != null) {
-                CurrentSwatches.Add(CustomizedPawn.Pawn.story.favoriteColor.Value);
+                if (CustomizedPawn.Pawn.story.favoriteColor != null) {
+                    CurrentSwatches.Add(CustomizedPawn.Pawn.story.favoriteColor.color);
+                }
             }
             if (UtilityIdeo.IdeoEnabledForPawn(CustomizedPawn) && CustomizedPawn?.Pawn?.Ideo?.ApparelColor != null) {
                 CurrentSwatches.Add(CustomizedPawn.Pawn.Ideo.ApparelColor);

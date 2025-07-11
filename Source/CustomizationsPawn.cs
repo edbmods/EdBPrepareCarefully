@@ -93,7 +93,7 @@ namespace EdB.PrepareCarefully {
         // Backstory
         public BackstoryDef ChildhoodBackstory { get; set; }
         public BackstoryDef AdulthoodBackstory { get; set; }
-        public Color? FavoriteColor { get; set; }
+        public ColorDef FavoriteColor { get; set; }
 
         // Traits
 

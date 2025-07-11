@@ -91,7 +91,7 @@ namespace EdB.PrepareCarefully {
         // the pawn with the colony faction, we temporarily set the pawns faction to null and regenerate the apparel.
         public void FixNonColonyPawnKindApparel(Pawn pawn, PawnGenerationRequest generationRequest) {
             // We only need to null out the faction if the pawn kind def is not the colony's pawn kind def.
-            if (generationRequest.KindDef == null || generationRequest.KindDef?.defaultFactionType == Find.World.factionManager.OfPlayer.def) {
+            if (generationRequest.KindDef == null || generationRequest.KindDef?.defaultFactionDef == Find.World.factionManager.OfPlayer.def) {
                 return;
             }
             pawn.apparel?.DestroyAll(DestroyMode.Vanish);
@@ -1209,14 +1209,14 @@ namespace EdB.PrepareCarefully {
             PawnSaver.SaveToFile(customizedPawn, filename);
         }
 
-        public void UpdateFavoriteColor(CustomizedPawn customizedPawn, Color? color) {
+        public void UpdateFavoriteColor(CustomizedPawn customizedPawn, ColorDef colorDef) {
             Pawn pawn = customizedPawn?.Pawn;
             CustomizationsPawn customizations = customizedPawn?.Customizations;
             if (pawn == null || customizations == null) {
                 return;
             }
             if (ModsConfig.IdeologyActive) {
-                pawn.story.favoriteColor = color;
+                pawn.story.favoriteColor = colorDef;
                 PawnToCustomizationsMapper.MapFavoriteColor(pawn, customizations);
             }
         }
@@ -1256,10 +1256,12 @@ namespace EdB.PrepareCarefully {
             if (pawn == null || pawn.apparel == null) {
                 return false;
             }
-            if (!(pawn.mutant?.Def.canWearApparel ?? true)) {
-                return false;
+            if (pawn.mutant?.Def == null) {
+                return true;
             }
-            return true;
+            else {
+                return !pawn.mutant.Def.disableApparel;
+            }
         }
     }
 }

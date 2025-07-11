@@ -20,46 +20,43 @@ Note that the solution has dependencies on the following RimWorld DLLs:
 Copy those dependencies from the RimWorld game directory into the "Libraries" directory.  Be sure to make _copies_ of the originals--don't accidentally move/delete them from the original game directory.
 
 The solution also has a dependency on the following third-party DLL:
-- 0Harmony.dll
+- 0Harmony.dll (version 2.3.6)
 
-The Harmony DLL is available from https://github.com/pardeike/Harmony/releases and should also be placed in the "Libraries" directory.  Prepare Carefully uses version 2.0.0.8 of Harmony. When you download Harmony, you'll see
-multiple versions of the DLL organized into various directories.  Be sure to use the one in the "Release/net472" directory.
-
-Only if you _must_ create a build that also supports RimWorld 1.0, you will need to get the DLL from the latest Prepare Carefully release for 1.0, along with the DLL for Harmony _1.2_.  Place these DLLs into the `Resources/Assemblies` directory.
+The Harmony DLL is available from https://github.com/pardeike/Harmony/releases/tag/v2.3.6.0 and should be placed in the "Libraries/Harmony/2.3.6" directory.  Be sure to use the "net472" version from the Harmony-Thin download.
 
 The result of the build will be the following DLL:
 - EdBPrepareCarefully.dll
 
-This DLL must be packaged alongside the contents of the `Resources` directory to create a working mod. The DLL built by the project should be placed inside a `1.1/Assemblies` directory along with the Harmony DLL.  The directory structure should look like this:
+This DLL must be packaged alongside the contents of the `Resources` directory to create a working mod. The DLL built by the project should be placed inside a `1.6/Assemblies` directory.
+If you need your mod package to support earlier versions of RimWorld, you'll need to download the latest Prepare Carefully DLL for each of the previous versions and place it in the correct `Assemblies` directory.
+If you need your mod package to support version 1.4 or earlier of RimWorld, you'll need to download version 2.2.2.0 of Harmony and place it inside the `Pre1.5/Assemblies` directory.
+The directory structure should look like this:
 
 ```
 + EdBPrepareCarefully
-  + 1.1
+  + 1.2
     + Assemblies
-      - 0Harmony.dll
+      - EdBPrepareCarefully.dll
+  + 1.3
+    + Assemblies
+      - EdBPrepareCarefully.dll
+  + 1.4
+    + Assemblies
+      - EdBPrepareCarefully.dll
+  + 1.5
+    + Assemblies
+      - EdBPrepareCarefully.dll
+  + 1.6
+    + Assemblies
       - EdBPrepareCarefully.dll
   + About
-  + Assemblies
-  + Defs
-  + Languages
-  + Textures
+  + Common
+  + Pre1.5
+    + Assemblies
+      - 0Harmony.dll
   - CHANGLELOG.txt
   - LICENSE
   - LoadFolders.xml
 ```
 
 If Windows is the OS on which you're developing, you don't need to manually create the mod directory.  Instead, you can automatically package up the mod by running the `dist.bat` script.  This will copy all of the mod resources and the DLL into a `dist/EdBPrepareCarefully` directory.  Copy this `EdBPrepareCarefully` directory into your RimWorld `Mods` folder to use the mod in your game.
-
-## Versioning
-
-Prepare Carefully uses a versioning scheme inspired by [semantic versioning](http://semver.org/) that combines the major/minor version of RimWorld with the major/minor version of the mod to end up with the following format:
-
-`{RimWorld major version}.{RimWorld minor version}.{mod version for this RimWorld version}`
-
-Other conventions used to determine the mod version numbers:
-- Mod version numbers always start at `1` and never start at `0`
-
-Some examples:
-+ **0.18.2**: The second release of the mod for the Beta 18 version of RimWorld
-+ **1.0.11**: The eleventh release of the mod for RimWorld 1.0
-+ **1.1.1**: The first release of the mod for RimWorld 1.1
