@@ -208,7 +208,14 @@ namespace EdB.PrepareCarefully {
         public IEnumerable<ScenPart> CreateScenarioPartForCustomizedEquipment(CustomizedEquipment equipment) {
             Logger.Debug(string.Format("AddScenarioPartForCustomizedEquipment({0}), Animal = {1}, Mech = {2}", equipment.EquipmentOption?.ThingDef?.defName, equipment.Animal, equipment.Mech));
             if (equipment.Animal) {
-                return new List<ScenPart>() { CreateStartingAnimalScenarioPart(equipment) };
+                ScenPart scenePart = CreateStartingAnimalScenarioPart(equipment);
+                if (scenePart != null) {
+                    return new List<ScenPart>() { scenePart };
+                }
+                else {
+                    Logger.Warning("Failed to add animal scene part");
+                    return new List<ScenPart>();
+                }
             }
             else if (equipment.Mech) {
                 return CreateStartingMechScenarioParts(equipment);

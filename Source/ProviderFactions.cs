@@ -25,24 +25,28 @@ namespace EdB.PrepareCarefully {
                 }
                 try {
                     // Exclude animals, mechanoids and other non-human pawn kinds.
-                    if (!kindDef.RaceProps.Humanlike) {
-                        //Logger.Debug("Excluding pawnKindDef because it's non-human {0}, {1}", kindDef.defName, kindDef.LabelCap);
+                    if (kindDef.race == null || kindDef.RaceProps == null || !kindDef.RaceProps.Humanlike) {
+                        //Logger.Debug(string.Format("Skipping pawnKindDef because it's non-human: {0}, {1}", kindDef?.defName, kindDef?.LabelCap));
+                        continue;
+                    }
+                    if (!kindDef.race.CanHaveFaction) {
+                        Logger.Debug(string.Format("Skipping pawnKindDef because it cannot have a faction: {0}, {1}", kindDef?.defName, kindDef?.LabelCap));
                         continue;
                     }
                     // Exclude any pawn kind that has no faction.
                     Faction faction = GetFaction(kindDef);
                     if (faction == null) {
-                        //Logger.Debug("Excluding pawnKindDef because it has no faction {0}, {1}", kindDef.defName, kindDef.LabelCap);
+                        Logger.Debug(string.Format("Skipping pawnKindDef because it has no faction: {0}, {1}", kindDef?.defName, kindDef?.LabelCap));
                         continue;
                     }
                     // Double-check that it's a humanlike pawn by looking at the value on the faction.
                     if (!faction.def.humanlikeFaction) {
-                        //Logger.Debug("Excluding pawnKindDef because its faction is not humanlike {0}, {1}", kindDef.defName, kindDef.LabelCap);
+                        //Logger.Debug(string.Format("Skipping pawnKindDef because its faction is not humanlike: {0}, {1}", kindDef?.defName, kindDef?.LabelCap));
                         continue;
                     }
                 }
                 catch (Exception) {
-                    Logger.Warning("Failed to get a list of factions from a kindDef: " + kindDef.defName);
+                    Logger.Warning("Failed to get a list of factions from a pawnKindDef: " + kindDef.defName);
                 }
             }
 
@@ -52,7 +56,7 @@ namespace EdB.PrepareCarefully {
             // Classify each humanlike faction definition as either a player faction or not
             NonPlayerHumanlikeFactionDefs = new List<FactionDef>(HumanlikeFactionDefs.Where(def => !def.isPlayer));
 
-            // Determine all of the faction defs that for factions on the world
+            // Determine all of the faction defs that are for factions on the world
             FactionDefsOnWorld = new List<FactionDef>(Find.World.factionManager.AllFactionsInViewOrder.Select(f => f.def).Where(def => def.humanlikeFaction && !def.isPlayer));
 
             InitializeCustomFactions();
@@ -159,74 +163,25 @@ namespace EdB.PrepareCarefully {
             if (list == null) {
                 return null;
             }
-            return list.Where(f => f.def == def).RandomElement();
+            return list.Where(f => f.def == def).RandomElementWithFallback(null);
         }
 
-        public CustomFaction FindCustomFactionByIndex(FactionDef def, int index) {
-            return customFactions.FirstOrDefault((faction) => {
-                return (faction.Def == def && faction.Index == index && !faction.Leader);
-            });
-        }
-        public CustomFaction FindCustomFactionWithLeaderOptionByIndex(FactionDef def, int index) {
-            return customFactions.FirstOrDefault((faction) => {
-                return (faction.Def == def && faction.Index == index && faction.Leader);
-            });
-        }
-        public CustomFaction FindRandomCustomFactionByDef(FactionDef def) {
-            return RandomCustomFactions.FirstOrDefault((faction) => { return faction.Def == def; });
-        }
-        public CustomFaction RandomFaction {
-            get {
-                return randomFaction;
-            }
-        }
-        public List<CustomFaction> CustomFactions {
-            get {
-                return customFactions;
-            }
-        }
-        public List<CustomFaction> RandomCustomFactions {
-            get {
-                return customFactions.FindAll((faction) => { return faction.Index == null; });
-            }
-        }
-        public List<CustomFaction> SpecificCustomFactions {
-            get {
-                return customFactions.FindAll((faction) => { return faction.Index != null && faction.Leader == false; });
-            }
-        }
-        public List<CustomFaction> LeaderCustomFactions {
-            get {
-                return customFactions.FindAll((faction) => { return faction.Index != null && faction.Leader == true; });
-            }
-        }
-        public void AddCustomFaction(CustomFaction customFaction) {
-            if (customFaction.Def == null) {
-                return;
-            }
-            if (customFaction.Index == null) {
-                return;
-            }
-            int count;
-            if (factionCounts.TryGetValue(customFaction.Def, out count)) {
-                if (count <= customFaction.Index) {
-                    customFactions.Add(customFaction);
-                }
-            }
-        }
-        public int GetFactionCount(FactionDef def) {
-            return factionCounts[def];
-        }
 
         public Faction GetFaction(FactionDef def) {
-            if (def == Faction.OfPlayer.def) {
+            if (def == null) {
+                return null;
+            }
+            if (def == Faction.OfPlayer?.def) {
                 return Faction.OfPlayer;
             }
             else {
                 Faction faction;
+                // If we don't find a faction (which means it's not in the world), then create one
                 if (!factionLookup.TryGetValue(def, out faction)) {
                     faction = CreateFaction(def);
-                    factionLookup.Add(def, faction);
+                    if (faction != null) {
+                        factionLookup.Add(def, faction);
+                    }
                 }
                 return faction;
             }
@@ -245,18 +200,28 @@ namespace EdB.PrepareCarefully {
         public List<Faction> GetFactions(FactionDef def) {
             return Find.World.factionManager.AllFactions.Where((Faction faction) => { return faction.def == def; }).ToList();
         }
+
+        // We're doing this is solve some problem with backstories or something?
+        // You cannot create a pawn with one of these factions.  It will throw a bunch of errors.
         protected Faction CreateFaction(FactionDef def) {
-            Faction faction = Faction.OfPlayer;
-            if (def != Faction.OfPlayer.def) {
-                faction = new Faction() {
-                    def = def
-                };
-                FactionRelation rel = new FactionRelation();
-                rel.other = Faction.OfPlayer;
-                rel.baseGoodwill = 50;
-                (typeof(Faction).GetField("relations", BindingFlags.Instance | BindingFlags.NonPublic).GetValue(faction) as List<FactionRelation>).Add(rel);
+            Logger.Debug("Creating faction: " + def?.defName);
+            try {
+                Faction faction = Faction.OfPlayer;
+                if (def != Faction.OfPlayer?.def) {
+                    faction = new Faction() {
+                        def = def
+                    };
+                    FactionRelation rel = new FactionRelation();
+                    rel.other = Faction.OfPlayer;
+                    rel.baseGoodwill = 50;
+                    (typeof(Faction).GetField("relations", BindingFlags.Instance | BindingFlags.NonPublic).GetValue(faction) as List<FactionRelation>).Add(rel);
+                }
+                return faction;
             }
-            return faction;
+            catch (Exception e) {
+                Logger.Warning("Failed to create faction for factionDef = " + def?.defName, e);
+                return null;
+            }
         }
     }
 }

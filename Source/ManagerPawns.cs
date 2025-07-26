@@ -18,7 +18,6 @@ namespace EdB.PrepareCarefully {
 
         public ModState State { get; set; }
 
-
         public PawnCustomizer Customizer { get; set; }
         public MapperPawnToCustomizations PawnToCustomizationsMapper { get; set; }
         public ProviderAgeLimits ProviderAgeLimits { get; set; }
@@ -117,9 +116,9 @@ namespace EdB.PrepareCarefully {
 
         public Pawn CreatePawn(PawnGenerationRequest generationRequest) {
             Pawn pawn = PawnGenerator.GeneratePawn(generationRequest);
-            if (generationRequest.Faction != Find.FactionManager.OfPlayer) {
-                FixNonColonyPawnKindApparel(pawn, generationRequest);
-            }
+            //if (generationRequest.Faction != Find.FactionManager.OfPlayer) {
+            //    FixNonColonyPawnKindApparel(pawn, generationRequest);
+            //}
             pawn.SetFactionDirect(Find.FactionManager.OfPlayer);
             return pawn;
         }
@@ -129,13 +128,30 @@ namespace EdB.PrepareCarefully {
         }
 
         public CustomizedPawn AddPawn(CustomizedPawnType pawnType, PawnKindOption option = null) {
-            Faction faction = Faction.OfPlayer;
-            if (option?.FactionDef != null) {
+            Faction faction = null;
+            XenotypeDef forcedXenotype = null;
+
+            if (option != null) {
                 faction = ProviderFactions.FindRandomFactionForDef(option.FactionDef);
+                if (option.KindDef != null && faction == null) {
+                    forcedXenotype = GetForcedXenotype(option.KindDef, option.FactionDef);
+                    if (forcedXenotype != null) {
+                        //Logger.Debug("Force pawn generation to use Xenotype " + forcedXenotype?.defName + " from PawnKindDef " + option?.KindDef?.defName);
+                    }
+                    else {
+                        //Logger.Debug("Faction is null with a selected PawnKindDef, but no forced Xenotype set");
+                    }
+                }
             }
+            else {
+                faction = Faction.OfPlayer;
+            }
+
+            //Logger.Debug(string.Format("Adding pawn with KindDef = {0}, FactionDef = {1}, Faction = {2}, Xenotype = {3}", option?.KindDef, option?.FactionDef, faction, forcedXenotype));
             Pawn pawn = CreatePawn(new PawnGenerationRequestWrapper() {
                 KindDef = option?.KindDef,
-                Faction = faction
+                Faction = faction,
+                ForcedXenotype = forcedXenotype,
             }.Request);
             CustomizationsPawn customizations = PawnToCustomizationsMapper.Map(pawn);
             CustomizedPawn customizedPawn = new CustomizedPawn() {
@@ -147,6 +163,27 @@ namespace EdB.PrepareCarefully {
             };
             return AddPawnToPawnList(customizedPawn);
         }
+
+        private XenotypeDef GetForcedXenotype(PawnKindDef pawnKindDef, FactionDef factionDef) {
+            var chances = PawnGenerator.XenotypesAvailableFor(pawnKindDef, factionDef);
+            if (chances == null || chances.Count == 0) {
+                return null;
+            }
+            float value = UnityEngine.Random.value;
+            float threshold = 0;
+            foreach (var item in chances) {
+                XenotypeDef xenotype = item.Key;
+                float chance = item.Value;
+                //Logger.Debug("Checking XenotypeSet chance: " + xenotype.defName + ", " + chance);
+                threshold += chance;
+                //Logger.Debug("  Threshold = " + threshold + " vs. value = " + value);
+                if (value < threshold) {
+                    return xenotype;
+                }
+            }
+            return null;
+        }
+
         public CustomizedPawn AddPawnToPawnList(CustomizedPawn customizedPawn) {
             if (customizedPawn.Type == CustomizedPawnType.Colony) {
                 State.Customizations.ColonyPawns.Add(customizedPawn);

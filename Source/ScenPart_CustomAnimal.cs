@@ -76,7 +76,7 @@ namespace EdB.PrepareCarefully {
             if (tag == "PlayerStartsWith") {
                 StringBuilder label = new StringBuilder();
                 List<string> entries = new List<string>();
-                if (this.KindDef.RaceProps.hasGenders) {
+                if (this.KindDef.race != null && this.KindDef.RaceProps.hasGenders) {
                     label.Append("PawnMainDescGendered".Translate(this.gender.GetLabel(), this.KindDef.label).CapitalizeFirst());
                 }
                 else {

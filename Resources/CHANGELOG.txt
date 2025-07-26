@@ -1,5 +1,19 @@
  _____________________________________________________________________________
  
+   Version 1.6.2
+ _____________________________________________________________________________
+
+ - Removed shambler and wild man pawn kinds from the list of pawn types that
+   you can select from to add a new pawn because were not working properly
+ - Added more factions to the list of pawn kinds when you add a pawn using
+   the "Add..." dialog, and fixed the way that xenotypes are set to match the
+   faction defition where applicable
+ - Better error checking for null properties on factions and pawn kind
+   definitions
+ - Better error checking when adding custom animals
+
+ _____________________________________________________________________________
+ 
    Version 1.6.1
  _____________________________________________________________________________
 
@@ -7,11 +21,11 @@
  - Can no longer choose any color when selecting a favorite color--only colors
    from color definitions
  - Bug fixes:
-   - Equipment saved in a presets as "spawn near" (or any other spawn
-     type) is now loaded correctly
+   - Equipment saved in a preset as "spawn near" (or any other spawn type)
+     is now loading correctly
    - Animal genders saved in presets are now loading correctly
-   - You can switch back to the "Random" selection in animal gender dropdown
-     after selecting another option
+   - You can switch back to the "Random" selection in the animal gender
+     dropdown after selecting another option
 
  _____________________________________________________________________________
  
