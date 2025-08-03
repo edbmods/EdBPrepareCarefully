@@ -13,6 +13,7 @@ namespace EdB.PrepareCarefully {
         public FactionDef LastSelectedFactionDef { get; set; }
         public PawnKindOption LastSelectedPawnKindDef { get; set; }
         public Rot4 PawnViewRotation { get; set; } = Rot4.South;
+        public bool HatsVisible { get; set; } = true;
         public bool PointsEnabled { get; set; } = false;
         public bool CostCalculationDirtyFlag { get; set; } = true;
 

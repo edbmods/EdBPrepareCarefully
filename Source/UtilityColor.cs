@@ -24,7 +24,7 @@ namespace EdB.PrepareCarefully {
 
         public static ColorDef FindColorDefForColor(Color color) {
             foreach (ColorDef def in DefDatabase<ColorDef>.AllDefs) {
-                if (AlmostEqual(color, def.color)) {
+                if (color.IndistinguishableFrom(def.color)) {
                     return def;
                 }
             }

@@ -111,10 +111,11 @@ namespace EdB.PrepareCarefully {
             return AllBackstoryCategoriesFromFilterList(filters);
         }
 
-        // EVERY RELEASE:
+        // EVERY RELEASE
         // Evaluate to make sure the logic in PawnBioAndNameGenerator.GetBackstoryCategoryFiltersFor() has not changed in a way
         // that invalidates this rewrite. This is a modified version of that method but with the first argument a PawnKindDef
-        // instead of a Pawn and with logging removed.
+        // instead of a Pawn. Removed pawn-specific references and removed logging statement when no backstories are found.
+        // (Checked for 1.6)
         private List<BackstoryCategoryFilter> GetBackstoryCategoryFiltersFor(PawnKindDef kindDef, FactionDef faction) {
             if (!kindDef.backstoryFiltersOverride.NullOrEmpty<BackstoryCategoryFilter>()) {
                 return kindDef.backstoryFiltersOverride;
@@ -135,6 +136,7 @@ namespace EdB.PrepareCarefully {
                 return list;
             }
             return new List<BackstoryCategoryFilter> {
+                // Matches PawnBioAndNameGenerator.FallbackCategoryGroup
                 new BackstoryCategoryFilter {
                     categories = new List<string> {
                         "Civil"

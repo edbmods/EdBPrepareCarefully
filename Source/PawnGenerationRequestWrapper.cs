@@ -105,6 +105,7 @@ namespace EdB.PrepareCarefully {
                 result.IsCreepJoiner = true;
             }
             result.ForcedMutant = ForcedMutant;
+            result.DontGiveWeapon = true;
             return result;
         }
         public PawnGenerationRequest Request {

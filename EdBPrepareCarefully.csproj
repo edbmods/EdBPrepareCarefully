@@ -121,7 +121,6 @@
     <Compile Include="Source\PanelSaveCharacter.cs" />
     <Compile Include="Source\PanelModule.cs" />
     <Compile Include="Source\CustomizedPawnType.cs" />
-    <Compile Include="Source\DialogFactions.cs" />
     <Compile Include="Source\DialogInitializationError.cs" />
     <Compile Include="Source\DialogPawnKinds.cs" />
     <Compile Include="Source\DialogColonist.cs" />

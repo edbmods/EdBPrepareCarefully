@@ -17,6 +17,9 @@ namespace EdB.PrepareCarefully {
             "VatLearning", "VatGrowing", "Pregnant", "PsychicBond", "PsychicBondTorn",
             "ResearchCommand", "Animal_Flu", "Stillborn", "Animal_Plague"
         };
+        protected HashSet<string> excludedGivers = new HashSet<string>() {
+            "Verse.HediffGiver_Terrain"
+        };
 
         public OptionsHealth GetOptions(CustomizedPawn customizedPawn) {
             var cacheKey = Tuple.Create(customizedPawn.Pawn.def, customizedPawn.Pawn.mutant?.Def);
@@ -100,11 +103,11 @@ namespace EdB.PrepareCarefully {
                 }
             }).Where(r => {
                 if (mutantDef != null && r.mutantBlacklist.CountAllowNull() > 0 && r.mutantBlacklist.Contains(mutantDef)) {
-                    Logger.Debug("removing recipe because mutant pawn is not allowed: " + r.LabelCap + ", mutant = " + mutantDef.LabelCap + ", exclusion list = " + string.Join(",", r.mutantBlacklist));
+                    Logger.Debug("Removing recipe because mutant pawn is not allowed: " + r.LabelCap + ", mutant = " + mutantDef.LabelCap + ", exclusion list = " + string.Join(",", r.mutantBlacklist));
                     return false;
                 }
                 else if (r.mutantPrerequisite.CountAllowNull() > 0 && !r.mutantPrerequisite.Contains(mutantDef)) {
-                    Logger.Debug("removing recipe because pawn is not an allowed kind of mutant: " + r.LabelCap + ", required = " + string.Join(",", r.mutantPrerequisite));
+                    Logger.Debug("Removing recipe because pawn is not an allowed kind of mutant: " + r.LabelCap + ", required = " + string.Join(",", r.mutantPrerequisite));
                     return false;
                 }
                 else {
@@ -228,13 +231,24 @@ namespace EdB.PrepareCarefully {
             return true;
         }
 
+        protected bool IsGiverExcluded(HediffGiver giver) {
+            if (giver?.GetType() == null) {
+                return true;
+            }
+            return excludedGivers.Contains(giver.GetType().FullName);
+        }
+
         protected void InitializeHediffGiverInjuries(OptionsHealth options, HediffGiver giver) {
             if (giver == null) {
-                Logger.Warning("Could not add injury/health condition because a HediffGiver was null");
+                Logger.Warning("Could not add injury/health conditions from HediffGiver because it was null");
+                return;
+            }
+            if (IsGiverExcluded(giver)) {
+                Logger.Debug("Did not add injury/health conditions from excluded HediffGiver " + giver.GetType().FullName);
                 return;
             }
             if (giver.hediff == null) {
-                Logger.Warning("Could not add injury/health condition because the hediff for " + giver.GetType().FullName + " was null");
+                Logger.Warning("Could not add injury/health conditions from HediffGiver because the hediff for " + giver.GetType().FullName + " was null");
                 return;
             }
             InjuryOption option = new InjuryOption();

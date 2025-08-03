@@ -38,30 +38,43 @@ namespace EdB.PrepareCarefully {
 
             var equipmentDatabase = new EquipmentDatabase();
 
+            Logger.Debug("Initializing alien races");
             var providerAlienRaces = new ProviderAlienRaces();
+            Logger.Debug("Initializing hair");
             var providerHair = new ProviderHair() {
                 ProviderAlienRaces = providerAlienRaces
             };
+            Logger.Debug("Initializing beards");
             var providerBeards = new ProviderBeards() {
                 ProviderAlienRaces = providerAlienRaces
             };
+            Logger.Debug("Initializing body types");
             var providerBodyTypes = new ProviderBodyTypes() {
                 ProviderAlienRaces = providerAlienRaces
             };
+            Logger.Debug("Initializing head types");
             var providerHeadTypes = new ProviderHeadTypes() {
                 ProviderAlienRaces = providerAlienRaces
             };
+            Logger.Debug("Initializing face tattoos");
             var providerFaceTattoos = new ProviderFaceTattoos() {
                 ProviderAlienRaces = providerAlienRaces
             };
+            Logger.Debug("Initializing body tattoos");
             var providerBodyTattoos = new ProviderBodyTattoos() {
                 ProviderAlienRaces = providerAlienRaces
             };
+            Logger.Debug("Initializing age limits");
             var providerAgeLimits = new ProviderAgeLimits();
+            Logger.Debug("Initializing pawn kinds");
+            var providerPawnKinds = new ProviderPawnKinds();
+            Logger.Debug("Initializing factions");
             var providerFactions = new ProviderFactions();
+            Logger.Debug("Initializing backstories");
             var providerBackstories = new ProviderBackstories() {
                 ProviderFactions = providerFactions
             };
+            Logger.Debug("Initializing pawn layers");
             var providerPawnLayers = new ProviderPawnLayers() {
                 ProviderAlienRaces = providerAlienRaces,
                 ProviderHair = providerHair,
@@ -71,16 +84,21 @@ namespace EdB.PrepareCarefully {
                 ProviderBodyTattoos = providerBodyTattoos,
                 ProviderFaceTattoos = providerFaceTattoos
             };
+            Logger.Debug("Initializing titles");
             var providerTitles = new ProviderTitles();
+            Logger.Debug("Initializing traits");
             var providerTraits = new ProviderTraits();
+            Logger.Debug("Initializing health options");
             var providerHealthOptions = new ProviderHealthOptions();
+            Logger.Debug("Initializing equipment");
             var providerEquipmentTypes = new ProviderEquipment() {
                 EquipmentDatabase = equipmentDatabase
             };
             providerEquipmentTypes.PostConstruction();
-            var providerPawnKinds = new ProviderPawnKinds();
+            Logger.Debug("Initializing passions");
             var providerPassions = new ProviderPassions();
             providerPassions.PostConstruct();
+            Logger.Debug("Providers initialized");
 
             var ageModifier = new AgeModifier();
 
