@@ -44,6 +44,7 @@ namespace EdB.PrepareCarefully {
         private Rect RectPortrait;
         private Rect RectButtonRandomize;
         private Rect RectButtonRotateView;
+        private Rect RectButtonHat;
         private Rect RectPawn;
 
         protected static float SwatchLimit = 210;
@@ -63,7 +64,7 @@ namespace EdB.PrepareCarefully {
 
             Vector2 portraitSize = new Vector2(panelContentWidth, 164);
             RectPortrait = new Rect(panelPadding.x, panelPadding.y, portraitSize.x, portraitSize.y);
-            RectPawn = RectPortrait.OutsetBy(0, 12).OffsetBy(0, 8);
+            RectPawn = new Rect(0, 8, RectPortrait.width, RectPortrait.height - 8);
             RectLayerSelector = new Rect(panelPadding.x, RectPortrait.yMax + 8, panelContentWidth, buttonHeight);
             RectButtonRandomize = new Rect(RectPortrait.xMax - randomizeButtonSize.x - 12, RectPortrait.y + 12,
                 randomizeButtonSize.x, randomizeButtonSize.y);
@@ -72,6 +73,8 @@ namespace EdB.PrepareCarefully {
 
             Vector2 rotateViewButtonSize = new Vector2(24, 12);
             RectButtonRotateView = new Rect(RectPortrait.x + 10, RectPortrait.yMax - rotateViewButtonSize.y - 10, rotateViewButtonSize.x, rotateViewButtonSize.y);
+
+            RectButtonHat = new Rect(RectPortrait.xMax - 40, RectPortrait.yMax - 40, 32, 32);
         }
 
         public override float Draw(float y) {
@@ -101,14 +104,26 @@ namespace EdB.PrepareCarefully {
             }
 
             Rect rectPortrait = RectPortrait.OffsetBy(0, y);
-            Rect rectGenderFemale = RectGenderFemale.OffsetBy(0, y);
-            Rect rectGenderMale = RectGenderMale.OffsetBy(0, y);
             GUI.DrawTexture(rectPortrait, Textures.TexturePortraitBackground);
-            DrawPawn(customizedPawn, RectPawn.OffsetBy(0, y));
+
+            try {
+                GUI.BeginClip(rectPortrait);
+                DrawPawn(customizedPawn, RectPawn);
+            }
+            catch (Exception e) {
+                Logger.Error("Failed to draw pawn", e);
+            }
+            finally {
+                GUI.EndClip();
+            }
+
             GUI.color = ColorPortraitBorder;
             Widgets.DrawBox(rectPortrait, 1);
             GUI.color = Color.white;
+
             // Gender buttons.
+            Rect rectGenderFemale = RectGenderFemale.OffsetBy(0, y);
+            Rect rectGenderMale = RectGenderMale.OffsetBy(0, y);
             if (pawn.RaceProps != null && pawn.RaceProps.hasGenders) {
                 bool genderFemaleSelected = pawn.gender == Gender.Female;
                 Style.SetGUIColorForButton(rectGenderFemale, genderFemaleSelected);
@@ -127,7 +142,58 @@ namespace EdB.PrepareCarefully {
                     UpdatePawnLayers();
                 }
             }
-
+            // Random button
+            if (RectButtonRandomize.Contains(Event.current.mousePosition)) {
+                GUI.color = Style.ColorButtonHighlight;
+            }
+            else {
+                GUI.color = Style.ColorButton;
+            }
+            GUI.DrawTexture(RectButtonRandomize, Textures.TextureButtonRandom);
+            if (Widgets.ButtonInvisible(RectButtonRandomize, false)) {
+                SoundDefOf.Tick_Low.PlayOneShotOnCamera();
+                RandomizeAppearance?.Invoke();
+            }
+            // Rotate view button
+            if (RectButtonRotateView.Contains(Event.current.mousePosition)) {
+                GUI.color = Style.ColorButtonHighlight;
+            }
+            else {
+                GUI.color = Style.ColorButton;
+            }
+            GUI.DrawTexture(RectButtonRotateView, Textures.TextureButtonRotateView);
+            if (Widgets.ButtonInvisible(RectButtonRotateView, false)) {
+                SoundDefOf.Tick_Low.PlayOneShotOnCamera();
+                if (ViewState.PawnViewRotation == Rot4.South) {
+                    ViewState.PawnViewRotation = Rot4.East;
+                }
+                else if (ViewState.PawnViewRotation == Rot4.East) {
+                    ViewState.PawnViewRotation = Rot4.North;
+                }
+                else if (ViewState.PawnViewRotation == Rot4.North) {
+                    ViewState.PawnViewRotation = Rot4.West;
+                }
+                else if (ViewState.PawnViewRotation == Rot4.West) {
+                    ViewState.PawnViewRotation = Rot4.South;
+                }
+            }
+            // Hat button
+            if (RectButtonHat.Contains(Event.current.mousePosition)) {
+                GUI.color = Style.ColorButtonHighlight;
+            }
+            else {
+                GUI.color = Style.ColorButton;
+            }
+            if (ViewState.HatsVisible) {
+                GUI.DrawTexture(RectButtonHat, Textures.TextureButtonHatVisible);
+            }
+            else {
+                GUI.DrawTexture(RectButtonHat, Textures.TextureButtonHatHidden);
+            }
+            if (Widgets.ButtonInvisible(RectButtonHat, false)) {
+                SoundDefOf.Tick_Low.PlayOneShotOnCamera();
+                ViewState.HatsVisible = !ViewState.HatsVisible;
+            }
 
             // Draw selector field.
             Rect rectLayerSelector = RectLayerSelector.OffsetBy(0, y);
@@ -174,43 +240,6 @@ namespace EdB.PrepareCarefully {
                 }
             }
 
-            // Random button
-            if (RectButtonRandomize.Contains(Event.current.mousePosition)) {
-                GUI.color = Style.ColorButtonHighlight;
-            }
-            else {
-                GUI.color = Style.ColorButton;
-            }
-            GUI.DrawTexture(RectButtonRandomize, Textures.TextureButtonRandom);
-            if (Widgets.ButtonInvisible(RectButtonRandomize, false)) {
-                SoundDefOf.Tick_Low.PlayOneShotOnCamera();
-                RandomizeAppearance?.Invoke();
-            }
-
-            // Rotate view button
-            if (RectButtonRotateView.Contains(Event.current.mousePosition)) {
-                GUI.color = Style.ColorButtonHighlight;
-            }
-            else {
-                GUI.color = Style.ColorButton;
-            }
-            GUI.DrawTexture(RectButtonRotateView, Textures.TextureButtonRotateView);
-            if (Widgets.ButtonInvisible(RectButtonRotateView, false)) {
-                SoundDefOf.Tick_Low.PlayOneShotOnCamera();
-                if (ViewState.PawnViewRotation == Rot4.South) {
-                    ViewState.PawnViewRotation = Rot4.East;
-                }
-                else if (ViewState.PawnViewRotation == Rot4.East) {
-                    ViewState.PawnViewRotation = Rot4.North;
-                }
-                else if (ViewState.PawnViewRotation == Rot4.North) {
-                    ViewState.PawnViewRotation = Rot4.West;
-                }
-                else if (ViewState.PawnViewRotation == Rot4.West) {
-                    ViewState.PawnViewRotation = Rot4.South;
-                }
-            }
-
             y += 8;
             GUI.color = Color.white;
             return y - top;
@@ -218,7 +247,7 @@ namespace EdB.PrepareCarefully {
 
         protected void DrawPawn(CustomizedPawn customizedPawn, Rect rect) {
             Rect pawnRect = rect.OffsetBy(-rect.x, -rect.y);
-            RenderTexture pawnTexture = PortraitsCache.Get(customizedPawn.Pawn, rect.size, ViewState.PawnViewRotation);
+            RenderTexture pawnTexture = PortraitsCache.Get(customizedPawn.Pawn, rect.size, ViewState.PawnViewRotation, default(Vector3), 1, true, true, ViewState.HatsVisible);
             try {
                 GUI.BeginClip(rect);
                 GUI.DrawTexture(pawnRect, (Texture)pawnTexture);

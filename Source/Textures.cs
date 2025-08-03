@@ -62,6 +62,8 @@ namespace EdB.PrepareCarefully {
         public static Texture2D TextureAdult;
         public static Texture2D TextureButtonManage;
         public static Texture2D TextureButtonRotateView;
+        public static Texture2D TextureButtonHatHidden;
+        public static Texture2D TextureButtonHatVisible;
         public static Texture2D TextureFieldAtlasWhite;
         public static Texture2D TextureIconWarning;
         public static Texture2D TextureFavoriteColor;
@@ -143,6 +145,8 @@ namespace EdB.PrepareCarefully {
             TextureFilterAtlas2 = ContentFinder<Texture2D>.Get("EdB/PrepareCarefully/FilterAtlas2", true);
             TextureButtonManage = ContentFinder<Texture2D>.Get("EdB/PrepareCarefully/ButtonManage", false);
             TextureButtonRotateView = ContentFinder<Texture2D>.Get("EdB/PrepareCarefully/ButtonRotateView", false);
+            TextureButtonHatHidden = ContentFinder<Texture2D>.Get("EdB/PrepareCarefully/ButtonHatHidden", false);
+            TextureButtonHatVisible = ContentFinder<Texture2D>.Get("EdB/PrepareCarefully/ButtonHatVisible", false);
             TextureIconWarning = ContentFinder<Texture2D>.Get("EdB/PrepareCarefully/IconWarning", false);
 
             TextureTabAtlas = ContentFinder<Texture2D>.Get("UI/Widgets/TabAtlas", true);

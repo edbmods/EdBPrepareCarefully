@@ -3,6 +3,7 @@
    Version 1.6.2
  _____________________________________________________________________________
 
+ - Added a button to the pawn portrait to toggle headgear visibility
  - Removed shambler and wild man pawn kinds from the list of pawn types that
    you can select from to add a new pawn because were not working properly
  - Added more factions to the list of pawn kinds when you add a pawn using
