@@ -19,9 +19,9 @@ namespace EdB.PrepareCarefully {
                 Scribe.loader.InitLoading(PresetFiles.FilePathForSavedPreset(presetName));
                 preset.ExposeData();
 
-                //if (ModsConfig.IdeologyActive) {
-                //    pawnLoader.IdeoMap = ResolveIdeoMap(preset);
-                //}
+                if (ModsConfig.IdeologyActive) {
+                   PawnLoaderV5.IdeoMap = ResolveIdeoMap(preset);
+                }
             }
             catch (Exception e) {
                 Logger.Error("Failed to load preset file", e);
