@@ -506,7 +506,7 @@ namespace EdB.PrepareCarefully {
             List<CustomizedRelationship> toDelete = new List<CustomizedRelationship>();
             foreach (var r in State.Customizations.Relationships) {
                 if (r.Source == pawn || r.Target == pawn) {
-                    deletionList.Add(r);
+                    toDelete.Add(r);
                 }
             }
             // Remove the pawn from any parent/child group that they are in.  If the parent/child
@@ -530,7 +530,7 @@ namespace EdB.PrepareCarefully {
             }
             parentChildPawns.RemoveAll((CustomizedPawn p) => { return p == pawn; });
             
-            foreach (var r in deletionList) {
+            foreach (var r in toDelete) {
                 State.Customizations.Relationships.Remove(r);
             }
 

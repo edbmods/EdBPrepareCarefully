@@ -40,7 +40,7 @@ namespace EdB.PrepareCarefully {
                 foreach (var pawn in state.Customizations.TemporaryPawns) {
                     preset.temporaryPawns.Add(new SaveRecordTemporaryPawnV5() {
                         id = pawn.Id,
-                        gender = pawn.Pawn?.gender.ToString()
+                        gender = pawn.Pawn != null ? pawn.Pawn.gender.ToString() : pawn.TemporaryPawn?.Gender.ToString()
                     });
                 }
                 foreach (CustomizedPawn customizedPawn in state.Customizations.AllPawns) {
@@ -56,7 +56,7 @@ namespace EdB.PrepareCarefully {
                             if (!idSet.Contains(parent.Id)) {
                                 preset.temporaryPawns.Add(new SaveRecordTemporaryPawnV5() {
                                     id = parent.Id,
-                                    gender = parent.Pawn?.gender.ToString()
+                                    gender = parent.Pawn != null ? parent.Pawn.gender.ToString() : parent.TemporaryPawn?.Gender.ToString()
                                 });
                                 idSet.Add(parent.Id);
                             }
@@ -67,7 +67,7 @@ namespace EdB.PrepareCarefully {
                             if (!idSet.Contains(child.Id)) {
                                 preset.temporaryPawns.Add(new SaveRecordTemporaryPawnV5() {
                                     id = child.Id,
-                                    gender = child.Pawn?.gender.ToString()
+                                    gender = child.Pawn != null ? child.Pawn.gender.ToString() : child.TemporaryPawn?.Gender.ToString()
                                 });
                                 idSet.Add(child.Id);
                             }

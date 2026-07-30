@@ -246,7 +246,7 @@ namespace EdB.PrepareCarefully {
                             }
                         }
                         else if (temporaryPawns.ContainsKey(id)) {
-                            group.Parents.Add(temporaryPawns[id]);
+                            group.Children.Add(temporaryPawns[id]);
                         }
                         else {
                             Logger.Warning("Could not load a custom child relationship because it could not find a pawn with the saved identifer.");

@@ -810,7 +810,7 @@ namespace EdB.PrepareCarefully {
                                 TitleDef = titleDef,
                                 Honor = title.favor
                             });
-                            Logger.Debug("Added title " + titleDef.defName + " for " + factionDef.defName);
+                            Logger.Debug("Added title " + (titleDef?.defName ?? "null") + " for " + factionDef.defName);
                             factions.Remove(faction);
                         }
                     }
